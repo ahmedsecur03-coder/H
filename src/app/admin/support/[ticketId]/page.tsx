@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,7 @@ export default function AdminTicketDetailsPage() {
   const firestore = useFirestore();
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
@@ -149,11 +150,9 @@ export default function AdminTicketDetailsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-        <Button variant="ghost" asChild>
-            <Link href="/admin/support">
-                <ArrowRight className="ml-2 h-4 w-4" />
-                العودة إلى كل التذاكر
-            </Link>
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowRight className="ml-2 h-4 w-4" />
+            العودة إلى كل التذاكر
         </Button>
 
       <Card className="flex flex-col h-[calc(100vh-14rem)]">
