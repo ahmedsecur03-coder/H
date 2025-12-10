@@ -1,4 +1,4 @@
-import type { NavItem } from '@/lib/types';
+import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -15,18 +15,41 @@ import {
 } from 'lucide-react';
 
 
-export const dashboardNavItems: NavItem[] = [
+export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { href: '/dashboard/services', label: 'جميع الخدمات', icon: Package },
-  { href: '/dashboard/orders', label: 'إدارة الطلبات', icon: ShoppingCart },
-  { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
+  { 
+    label: 'الخدمات', 
+    icon: Package,
+    children: [
+        { href: '/dashboard/services?category=instagram', label: 'انستغرام' },
+        { href: '/dashboard/services?category=tiktok', label: 'تيك توك' },
+        { href: '/dashboard/services?category=facebook', label: 'فيسبوك' },
+        { href: '/dashboard/services?category=youtube', label: 'يوتيوب' },
+        { href: '/dashboard/services?category=telegram', label: 'تليجرام' },
+        { href: '/dashboard/services?category=twitter', label: 'إكس (تويتر)' },
+        { href: '/dashboard/services?category=snapchat', label: 'سناب شات' },
+        { href: '/dashboard/services?category=kwai', label: 'كواي' },
+        { href: '/dashboard/services?category=vk', label: 'VK' },
+        { href: '/dashboard/services?category=kick', label: 'Kick' },
+        { href: '/dashboard/services?category=clubhouse', label: 'كلوب هاوس' },
+        { href: '/dashboard/services?category=website-traffic', label: 'زيارات مواقع' },
+    ]
+  },
+  {
+      label: 'الحملات الإعلانية',
+      icon: Megaphone,
+      children: [
+        { href: '/dashboard/campaigns/new', label: 'حملة جديدة' },
+        { href: '/dashboard/campaigns', label: 'إدارة الحملات' },
+      ]
+  },
+  { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/dashboard/affiliate', label: 'نظام الإحالة', icon: Users },
-  { href: '/dashboard/campaigns', label: 'مركز الحملات', icon: Megaphone },
+  { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
 ];
 
-export const adminNavItems: NavItem[] = [
+export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
     { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
     { href: '/admin/users', label: 'المستخدمون', icon: Users2 },

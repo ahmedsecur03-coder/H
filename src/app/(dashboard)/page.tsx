@@ -35,6 +35,12 @@ import {
   Percent,
   Loader2,
   Users,
+  Trophy,
+  Rocket,
+  Shield,
+  Star,
+  Sparkles,
+  Diamond,
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -50,6 +56,7 @@ import type { User as UserType, Order, Service } from '@/lib/types';
 import { performanceData } from '@/lib/placeholder-data';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const chartConfig = {
   orders: {
@@ -80,10 +87,27 @@ function getRankForSpend(spend: number) {
   return currentRank;
 }
 
+const servicePlatforms = [
+    { name: "انستغرام", icon: Users },
+    { name: "تيك توك", icon: Users },
+    { name: "فيسبوك", icon: Users },
+    { name: "يوتيوب", icon: Users },
+    { name: "تليجرام", icon: Users },
+    { name: "إكس (تويتر)", icon: Users },
+    { name: "سناب شات", icon: Users },
+    { name: "كواي", icon: Users },
+    { name: "VK", icon: Users },
+    { name: "Kick", icon: Users },
+    { name: "كلوب هاوس", icon: Users },
+    { name: "زيارات مواقع", icon: Users },
+];
+
+
 function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
   const { toast } = useToast();
 
+  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
   const [link, setLink] = useState('');
@@ -97,11 +121,14 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 
   const { categories, servicesForCategory, selectedService } = useMemo(() => {
     if (!allServices) return { categories: [], servicesForCategory: [], selectedService: null };
-    const categories = [...new Set(allServices.map(s => s.category))];
-    const servicesForCategory = selectedCategory ? allServices.filter(s => s.category === selectedCategory) : [];
+    
+    const categories = selectedPlatform ? [...new Set(allServices.filter(s => s.platform === selectedPlatform).map(s => s.category))] : [];
+    
+    const servicesForCategory = selectedCategory ? allServices.filter(s => s.platform === selectedPlatform && s.category === selectedCategory) : [];
+
     const selectedService = selectedServiceId ? allServices.find(s => s.id === selectedServiceId) : null;
     return { categories, servicesForCategory, selectedService };
-  }, [allServices, selectedCategory, selectedServiceId]);
+  }, [allServices, selectedPlatform, selectedCategory, selectedServiceId]);
   
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
   const discountPercentage = rank.discount / 100;
@@ -183,6 +210,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 
         toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
         // Reset form
+        setSelectedPlatform(undefined);
         setSelectedCategory(undefined);
         setSelectedServiceId(undefined);
         setLink('');
@@ -200,15 +228,28 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">طلب سريع</CardTitle>
-        <CardDescription>ابدأ طلبك الجديد مباشرة من هنا.</CardDescription>
+        <CardTitle className="font-headline">تقديم طلب جديد</CardTitle>
+        <CardDescription>اختر المنصة، ثم الفئة، ثم الخدمة لبدء طلبك.</CardDescription>
       </CardHeader>
       <CardContent>
         {servicesLoading ? <Skeleton className="h-96 w-full" /> : (
             <form onSubmit={handleSubmit} className="grid gap-4">
+              
+              <div className="grid gap-2">
+                <Label>المنصة</Label>
+                <div className='flex flex-wrap gap-2'>
+                    {servicePlatforms.map(p => (
+                        <Button key={p.name} type="button" variant={selectedPlatform === p.name ? "default" : "outline"} onClick={() => {setSelectedPlatform(p.name); setSelectedCategory(undefined); setSelectedServiceId(undefined);}}>
+                            {/* <p.icon className="ml-2" /> */}
+                            {p.name}
+                        </Button>
+                    ))}
+                </div>
+              </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="category">الفئة</Label>
-                <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory}>
+                <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory} disabled={!selectedPlatform}>
                   <SelectTrigger id="category"><SelectValue placeholder="اختر فئة" /></SelectTrigger>
                   <SelectContent>
                     {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
@@ -224,21 +265,26 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="link">الرابط</Label>
-                <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="quantity">الكمية</Label>
-                <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-                {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
-              </div>
-              <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
-                التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال الطلب'}
-              </Button>
+              
+              {selectedServiceId && (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="link">الرابط</Label>
+                        <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="quantity">الكمية</Label>
+                        <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
+                        {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
+                    </div>
+                    <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
+                        التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال الطلب'}
+                    </Button>
+                </>
+              )}
             </form>
         )}
       </CardContent>
@@ -304,109 +350,56 @@ export default function DashboardPage() {
     'ماسي': { commission: '20%' },
   }[userData?.affiliateLevel || 'برونزي'];
 
+  const achievements = [
+    { icon: Rocket, title: "المنطلق الصاروخي", completed: true },
+    { icon: Shield, title: "المستخدم الموثوق", completed: true },
+    { icon: ShoppingCart, title: "سيد الطلبات", completed: true },
+    { icon: Star, title: "النجم الصاعد", completed: false },
+    { icon: DollarSign, title: "ملك الإنفاق", completed: false },
+    { icon: Sparkles, title: "العميل المميز", completed: false },
+    { icon: Diamond, title: "الأسطورة الكونية", completed: false },
+  ];
+
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>الرصيد</span>
+                <span>الرصيد الأساسي</span>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">رصيد الحملات: ${(userData?.adBalance ?? 0).toFixed(2)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
                <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>إجمالي الإنفاق</span>
-                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                <span>الرصيد الإعلاني</span>
+                <Megaphone className="h-4 w-4 text-muted-foreground" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">منذ الانضمام</p>
+              <div className="text-2xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>الرتبة الحالية</span>
-                 <Gem className="h-4 w-4 text-muted-foreground" />
+                <span>إجمالي الإنفاق</span>
+                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
-               <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم {rank.discount}% على الخدمات</p>
-            </CardContent>
-          </Card>
-           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>الطلبات المكتملة</span>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completedOrdersData?.length ?? 0}</div>
-               <p className="text-xs text-muted-foreground">إجمالي الطلبات المكتملة</p>
-            </CardContent>
-          </Card>
-           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>أرباح الإحالة</span>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
-               <p className="text-xs text-muted-foreground">إجمالي الأرباح</p>
-            </CardContent>
-          </Card>
-           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>المسوق بالعمولة</span>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{userData?.affiliateLevel ?? 'برونزي'}</div>
-              <p className="text-xs text-muted-foreground">العمولة: {affiliateLevelInfo.commission}</p>
+              <div className="text-2xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">أداء الحساب</CardTitle>
-                <CardDescription>نظرة عامة على إنفاقك وطلباتك خلال آخر 7 أيام.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <BarChart accessibilityLayer data={performanceData}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
-                    />
-                    <YAxis yAxisId="left" orientation="right" stroke="hsl(var(--primary))" />
-                    <YAxis yAxisId="right" orientation="left" stroke="hsl(var(--accent))" />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} yAxisId="left" />
-                    <Bar dataKey="spend" fill="var(--color-spend)" radius={4} yAxisId="right" />
-                  </BarChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+        <QuickOrderForm user={authUser} userData={userData} />
 
         <Card>
           <CardHeader>
@@ -417,9 +410,7 @@ export default function DashboardPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>الخدمة</TableHead>
-                  <TableHead>الكمية</TableHead>
                   <TableHead>الحالة</TableHead>
-                  <TableHead className="text-left">التاريخ</TableHead>
                   <TableHead className="text-left">التكلفة</TableHead>
                 </TableRow>
               </TableHeader>
@@ -428,17 +419,15 @@ export default function DashboardPage() {
                   ordersData.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.serviceName}</TableCell>
-                      <TableCell>{order.quantity}</TableCell>
                       <TableCell>
                         <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
                       </TableCell>
-                      <TableCell className="text-left">{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                       <TableCell className="text-left">${order.charge.toFixed(2)}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
+                    <TableCell colSpan={3} className="text-center">
                       لا توجد طلبات لعرضها.
                     </TableCell>
                   </TableRow>
@@ -450,7 +439,41 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-        <QuickOrderForm user={authUser} userData={userData} />
+         <Card>
+            <CardHeader>
+                <CardTitle>رتبتك الكونية</CardTitle>
+            </CardHeader>
+            <CardContent className='text-center'>
+                 <Gem className="h-16 w-16 text-primary mx-auto mb-2" />
+                 <p className='text-2xl font-bold'>{userData?.rank ?? '...'}</p>
+                 <p className="text-xs text-muted-foreground">خصم {rank.discount}% على الخدمات</p>
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader>
+                <CardTitle>الإنجازات الكونية</CardTitle>
+                 <CardDescription>لقد أكملت {achievements.filter(a => a.completed).length} من {achievements.length} من الإنجازات</CardDescription>
+            </CardHeader>
+            <CardContent className='grid grid-cols-4 gap-4'>
+                 {achievements.map((ach, i) => (
+                    <TooltipProvider key={i}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className={cn(
+                                    'flex flex-col items-center justify-center gap-1 p-2 rounded-md aspect-square',
+                                    ach.completed ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+                                )}>
+                                    <ach.icon className="h-6 w-6" />
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{ach.title}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                ))}
+            </CardContent>
+        </Card>
       </div>
     </div>
   );

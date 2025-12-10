@@ -8,22 +8,22 @@ body {
 
 @layer base {
   :root {
-    --background: 222 83% 4%; /* Deep Space Blue */
+    --background: 224 71% 4%; /* Deep Space Blue */
     --foreground: 210 40% 98%;
 
-    --card: 222 70% 8%;
+    --card: 224 65% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 83% 4%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 38 92% 50%; /* Gold */
-    --primary-foreground: 222 83% 4%;
+    --primary: 28 80% 55%; /* Orange */
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 217 33% 17%;
+    --muted: 224 65% 12%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 217 33% 17%; 
@@ -34,9 +34,9 @@ body {
 
     --border: 217 33% 17%;
     --input: 217 28% 12%;
-    --ring: 38 92% 50%;
+    --ring: 28 80% 55%;
     
-    --chart-1: 38 92% 50%;
+    --chart-1: 28 80% 55%;
     --chart-2: 198 93% 60%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
@@ -44,33 +44,33 @@ body {
 
     --radius: 0.5rem;
     
-    --sidebar-background: 222 83% 4%;
+    --sidebar-background: 224 71% 4%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 38 92% 50%;
-    --sidebar-primary-foreground: 222 83% 4%;
-    --sidebar-accent: 222 70% 8%;
-    --sidebar-accent-foreground: 38 92% 50%;
+    --sidebar-primary: 28 80% 55%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 224 65% 8%;
+    --sidebar-accent-foreground: 28 80% 55%;
     --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 38 92% 50%;
+    --sidebar-ring: 28 80% 55%;
   }
 
   .dark {
-    --background: 222 83% 4%; /* Deep Space Blue */
+    --background: 224 71% 4%; /* Deep Space Blue */
     --foreground: 210 40% 98%;
 
-    --card: 222 70% 8%;
+    --card: 224 65% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 83% 4%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 38 92% 50%; /* Gold */
-    --primary-foreground: 222 83% 4%;
+    --primary: 28 80% 55%; /* Orange */
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 217 33% 17%;
+    --muted: 224 65% 12%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 217 33% 17%; 
@@ -81,9 +81,9 @@ body {
 
     --border: 217 33% 17%;
     --input: 217 28% 12%;
-    --ring: 38 92% 50%;
+    --ring: 28 80% 55%;
     
-    --chart-1: 38 92% 50%;
+    --chart-1: 28 80% 55%;
     --chart-2: 198 93% 60%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;

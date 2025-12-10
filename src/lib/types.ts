@@ -37,10 +37,15 @@ export type Order = {
 };
 
 export type NavItem = {
-  href: string;
+  href?: string;
   label: string;
   icon: React.ElementType;
 };
+
+export type NestedNavItem = NavItem & {
+  children?: NavItem[];
+}
+
 
 export type Campaign = {
     id: string;

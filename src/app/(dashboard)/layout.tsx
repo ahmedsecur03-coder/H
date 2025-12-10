@@ -15,6 +15,9 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubContent,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
@@ -24,6 +27,41 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
+import type { NestedNavItem } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+function Header() {
+  const { user } = useUser();
+   const appUser = {
+      name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
+      email: user?.email || "مستخدم مجهول",
+      avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
+  };
+  return (
+    <header className="sticky top-0 z-10 flex h-auto items-start flex-col gap-4 bg-background/80 backdrop-blur-sm px-4 pt-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:pt-6">
+      <div className='flex items-center justify-between w-full'>
+        <div className='flex items-center gap-4'>
+         <SidebarTrigger className="md:hidden" />
+          <div>
+            <h1 className='text-2xl font-bold text-foreground'>أهلاً بك، Hagaaty!</h1>
+            <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
+          </div>
+        </div>
+       <div className="flex items-center gap-4 ml-auto">
+         <UserNav user={appUser} />
+       </div>
+      </div>
+       <Card className='w-fit ml-auto border-primary/50'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$809.49</div>
+          </CardContent>
+        </Card>
+    </header>
+  );
+}
 
 
 export default function DashboardLayout({
@@ -73,44 +111,71 @@ export default function DashboardLayout({
     );
   }
 
-  // Once loading is complete and user is authenticated, render the real layout.
-  const appUser = {
-      name: user.displayName || `مستخدم #${user.uid.substring(0, 6)}`,
-      email: user.email || "مستخدم مسجل",
-      avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+  const renderNavItems = (items: NestedNavItem[]) => {
+    return items.map((item) => (
+      <SidebarMenuItem key={item.href || item.label}>
+        {item.children ? (
+          <SidebarMenuSub>
+            <SidebarMenuButton
+              tooltip={{
+                children: item.label,
+                className: 'font-body',
+                side: 'left',
+              }}
+              className='justify-between'
+            >
+              <div className='flex items-center gap-2'>
+                {item.icon && <item.icon />}
+                <span>{item.label}</span>
+              </div>
+            </SidebarMenuButton>
+            <SidebarMenuSubContent>
+              {item.children.map((child) => (
+                <SidebarMenuSubButton key={child.href} asChild>
+                  <Link href={child.href}>
+                    {child.label}
+                  </Link>
+                </SidebarMenuSubButton>
+              ))}
+            </SidebarMenuSubContent>
+          </SidebarMenuSub>
+        ) : (
+          <SidebarMenuButton
+            asChild
+            tooltip={{
+              children: item.label,
+              className: 'font-body',
+              side: 'left',
+            }}
+          >
+            <Link href={item.href || '#'}>
+               {item.icon && <item.icon />}
+              <span>{item.label}</span>
+            </Link>
+          </SidebarMenuButton>
+        )}
+      </SidebarMenuItem>
+    ));
   };
+
 
   return (
     <SidebarProvider>
       <Sidebar side="right" collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-16 items-center justify-center px-4 group-data-[collapsible=icon]:hidden">
+          <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
+             <Button variant="outline" size="sm" className='bg-card'>88 الانتقال للوحة المسؤول</Button>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {dashboardNavItems.map((item, index) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={{
-                    children: item.label,
-                    className: 'font-body',
-                    side: 'left',
-                  }}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {renderNavItems(dashboardNavItems)}
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-transparent">
+        <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             {children}
         </main>
