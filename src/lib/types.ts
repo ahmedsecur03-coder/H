@@ -37,12 +37,14 @@ export type Order = {
 
 export type Campaign = {
   id: string;
+  userId: string;
   name: string;
   platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
   status: 'نشط' | 'متوقف' | 'مكتمل';
   spend: number;
   budget: number;
   startDate: string;
+  endDate?: string;
 };
 
 export type Ticket = {

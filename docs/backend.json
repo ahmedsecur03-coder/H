@@ -139,6 +139,10 @@
           "type": "string",
           "description": "Denormalized name of the service for display purposes."
         },
+        "link": {
+            "type": "string",
+            "description": "The target link for the service (e.g., profile URL, post URL)."
+        },
         "quantity": {
           "type": "number",
           "description": "Quantity of the service ordered."
@@ -165,7 +169,8 @@
         "quantity",
         "charge",
         "orderDate",
-        "status"
+        "status",
+        "link"
       ]
     },
     "Campaign": {
@@ -181,6 +186,10 @@
         "userId": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N Campaign)"
+        },
+        "name": {
+            "type": "string",
+            "description": "Name of the campaign."
         },
         "platform": {
           "type": "string",
@@ -200,6 +209,10 @@
           "type": "number",
           "description": "Budget allocated to the campaign."
         },
+        "spend": {
+            "type": "number",
+            "description": "Amount of the budget already spent."
+        },
         "status": {
           "type": "string",
           "description": "Current status of the campaign (e.g., active, paused, completed)."
@@ -208,10 +221,11 @@
       "required": [
         "id",
         "userId",
+        "name",
         "platform",
         "startDate",
-        "endDate",
         "budget",
+        "spend",
         "status"
       ]
     },
@@ -237,6 +251,10 @@
           "type": "string",
           "description": "Payment method used for the deposit (e.g., Vodafone Cash, Binance Pay)."
         },
+        "details": {
+          "type": "object",
+          "description": "Payment-specific details (e.g., phone number, transaction ID)."
+        },
         "depositDate": {
           "type": "string",
           "description": "Date and time the deposit was made.",
@@ -253,7 +271,8 @@
         "amount",
         "paymentMethod",
         "depositDate",
-        "status"
+        "status",
+        "details"
       ]
     },
     "AffiliateTransaction": {
@@ -367,6 +386,27 @@
           "type": "string",
           "description": "Date and time the ticket was created.",
           "format": "date-time"
+        },
+        "messages": {
+          "type": "array",
+          "description": "A list of all messages in the ticket thread.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sender": {
+                "type": "string",
+                "enum": ["user", "admin"]
+              },
+              "text": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": ["sender", "text", "timestamp"]
+          }
         }
       },
       "required": [
@@ -375,7 +415,8 @@
         "subject",
         "message",
         "status",
-        "createdDate"
+        "createdDate",
+        "messages"
       ]
     }
   },
