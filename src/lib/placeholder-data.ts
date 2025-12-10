@@ -37,6 +37,8 @@ export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { href: '/dashboard/api', label: 'API', icon: Code2 },
+  { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
+
 ];
 
 export const adminNavItems: NestedNavItem[] = [

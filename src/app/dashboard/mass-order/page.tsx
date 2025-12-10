@@ -103,7 +103,7 @@ export default function MassOrderPage() {
                 return;
             }
 
-            const [serviceId, link, quantityStr] = parts;
+            const [serviceId, link, quantityStr] = parts.map(p => p.trim());
             const quantity = parseInt(quantityStr, 10);
             const service = servicesMap.get(serviceId);
 
@@ -128,8 +128,10 @@ export default function MassOrderPage() {
             }
             processedLines.push(pLine);
         });
-
+        
+        const validLines = processedLines.filter(p => p.isValid);
         const invalidLines = processedLines.filter(p => !p.isValid);
+
         if (invalidLines.length > 0) {
             invalidLines.forEach(p => finalErrors.push(`السطر ${p.line}: ${p.error}`));
             setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: 0, errors: finalErrors });
@@ -164,13 +166,13 @@ export default function MassOrderPage() {
                     rank: newRank,
                 });
 
-                for (const pLine of processedLines) {
+                for (const pLine of validLines) {
                     if (pLine.isValid && pLine.finalCost && pLine.service) {
                         const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
                         const newOrder: Omit<Order, 'id'> = {
                             userId: authUser!.uid,
                             serviceId: pLine.serviceId,
-                            serviceName: `${pLine.service.category} - ${pLine.service.platform}`,
+                            serviceName: `${pLine.service.platform} - ${pLine.service.category}`,
                             link: pLine.link,
                             quantity: pLine.quantity,
                             charge: pLine.finalCost,
@@ -183,7 +185,7 @@ export default function MassOrderPage() {
             });
             
             toast({ title: 'نجاح', description: 'تم إرسال جميع الطلبات بنجاح.' });
-            setBatchResult({ successCount: processedLines.length, errorCount: 0, totalCost: totalFinalCost, errors: [] });
+            setBatchResult({ successCount: validLines.length, errorCount: 0, totalCost: totalFinalCost, errors: [] });
             setMassOrderText('');
 
         } catch (error: any) {
