@@ -56,6 +56,17 @@ export type Ticket = {
   }[];
 };
 
+export type Deposit = {
+  id: string;
+  userId: string;
+  amount: number;
+  paymentMethod: 'فودافون كاش' | 'Binance Pay';
+  details: { [key: string]: string }; // e.g., { "phoneNumber": "010..." } or { "transactionId": "..." }
+  depositDate: string;
+  status: 'معلق' | 'مقبول' | 'مرفوض';
+};
+
+
 export type NavItem = {
   href: string;
   label: string;
