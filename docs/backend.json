@@ -10,10 +10,18 @@
           "type": "string",
           "description": "Unique identifier for the user entity."
         },
+        "name": {
+          "type": "string",
+          "description": "User's full name."
+        },
         "email": {
           "type": "string",
           "description": "User's email address.",
           "format": "email"
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "URL of the user's avatar image."
         },
         "balance": {
           "type": "number",
@@ -22,6 +30,10 @@
         "adBalance": {
           "type": "number",
           "description": "User's advertising balance."
+        },
+        "totalSpent": {
+          "type": "number",
+          "description": "Total amount of money spent by the user."
         },
         "rank": {
           "type": "string",
@@ -34,15 +46,23 @@
         "referrerId": {
           "type": "string",
           "description": "Reference to the User who referred this user. (Relationship: User 1:N User (referrals))"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date and time the user was created.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
+        "name",
         "email",
         "balance",
         "adBalance",
+        "totalSpent",
         "rank",
-        "referralCode"
+        "referralCode",
+        "createdAt"
       ]
     },
     "Service": {
@@ -103,9 +123,17 @@
           "type": "string",
           "description": "Reference to Service. (Relationship: Service 1:N Order)"
         },
+        "serviceName": {
+          "type": "string",
+          "description": "Denormalized name of the service for display purposes."
+        },
         "quantity": {
           "type": "number",
           "description": "Quantity of the service ordered."
+        },
+        "charge": {
+          "type": "number",
+          "description": "The total amount charged for the order."
         },
         "orderDate": {
           "type": "string",
@@ -121,7 +149,9 @@
         "id",
         "userId",
         "serviceId",
+        "serviceName",
         "quantity",
+        "charge",
         "orderDate",
         "status"
       ]
@@ -339,156 +369,53 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles. Uses path-based ownership for private data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
       },
-      {
-        "path": "/services/{serviceId}",
-        "definition": {
-          "entityName": "Service",
-          "schema": {
-            "$ref": "#/backend/entities/Service"
-          },
-          "description": "Stores service catalog information. Publicly readable.",
-          "params": [
-            {
-              "name": "serviceId",
-              "description": "The unique identifier for the service."
-            }
-          ]
-        }
+      "description": "Stores user profiles. Uses path-based ownership for private data."
+    },
+    "/services/{serviceId}": {
+      "schema": {
+        "$ref": "#/entities/Service"
       },
-      {
-        "path": "/users/{userId}/orders/{orderId}",
-        "definition": {
-          "entityName": "Order",
-          "schema": {
-            "$ref": "#/backend/entities/Order"
-          },
-          "description": "Stores orders placed by users. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who placed the order."
-            },
-            {
-              "name": "orderId",
-              "description": "The unique identifier for the order."
-            }
-          ]
-        }
+      "description": "Stores service catalog information. Publicly readable."
+    },
+    "/users/{userId}/orders/{orderId}": {
+      "schema": {
+        "$ref": "#/entities/Order"
       },
-      {
-        "path": "/users/{userId}/campaigns/{campaignId}",
-        "definition": {
-          "entityName": "Campaign",
-          "schema": {
-            "$ref": "#/backend/entities/Campaign"
-          },
-          "description": "Stores advertising campaigns created by users. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who created the campaign."
-            },
-            {
-              "name": "campaignId",
-              "description": "The unique identifier for the campaign."
-            }
-          ]
-        }
+      "description": "Stores orders placed by users. Includes denormalized 'userId' for authorization independence."
+    },
+    "/users/{userId}/campaigns/{campaignId}": {
+      "schema": {
+        "$ref": "#/entities/Campaign"
       },
-      {
-        "path": "/users/{userId}/deposits/{depositId}",
-        "definition": {
-          "entityName": "Deposit",
-          "schema": {
-            "$ref": "#/backend/entities/Deposit"
-          },
-          "description": "Stores deposit requests made by users. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who made the deposit."
-            },
-            {
-              "name": "depositId",
-              "description": "The unique identifier for the deposit."
-            }
-          ]
-        }
+      "description": "Stores advertising campaigns created by users. Includes denormalized 'userId' for authorization independence."
+    },
+    "/users/{userId}/deposits/{depositId}": {
+      "schema": {
+        "$ref": "#/entities/Deposit"
       },
-      {
-        "path": "/users/{userId}/affiliateTransactions/{affiliateTransactionId}",
-        "definition": {
-          "entityName": "AffiliateTransaction",
-          "schema": {
-            "$ref": "#/backend/entities/AffiliateTransaction"
-          },
-          "description": "Stores affiliate transactions for users. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who earned the commission."
-            },
-            {
-              "name": "affiliateTransactionId",
-              "description": "The unique identifier for the affiliate transaction."
-            }
-          ]
-        }
+      "description": "Stores deposit requests made by users. Includes denormalized 'userId' for authorization independence."
+    },
+    "/users/{userId}/affiliateTransactions/{affiliateTransactionId}": {
+      "schema": {
+        "$ref": "#/entities/AffiliateTransaction"
       },
-      {
-        "path": "/blogPosts/{blogPostId}",
-        "definition": {
-          "entityName": "BlogPost",
-          "schema": {
-            "$ref": "#/backend/entities/BlogPost"
-          },
-          "description": "Stores blog posts. Publicly readable.",
-          "params": [
-            {
-              "name": "blogPostId",
-              "description": "The unique identifier for the blog post."
-            }
-          ]
-        }
+      "description": "Stores affiliate transactions for users. Includes denormalized 'userId' for authorization independence."
+    },
+    "/blogPosts/{blogPostId}": {
+      "schema": {
+        "$ref": "#/entities/BlogPost"
       },
-      {
-        "path": "/users/{userId}/tickets/{ticketId}",
-        "definition": {
-          "entityName": "Ticket",
-          "schema": {
-            "$ref": "#/backend/entities/Ticket"
-          },
-          "description": "Stores support tickets created by users. Includes denormalized 'userId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who created the ticket."
-            },
-            {
-              "name": "ticketId",
-              "description": "The unique identifier for the ticket."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure is designed to support the \"Hajaty Hub\" application, an SMM panel and digital services hub. It follows the core principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved by denormalizing authorization data where necessary to avoid using `get()` calls in security rules. Hierarchical data is structured to reflect ownership, simplifying security rules. Segregation separates data with different access requirements. Membership maps are employed for collaborative data access. This structure will create simple, robust, and easily debuggable security rules.\n\nSpecifically, for authorization independence, the `Order`, `Campaign`, `Deposit`, `AffiliateTransaction`, `BlogPost`, and `Ticket` collections all include a `userId` field, which allows for secure reads and writes based on the current user's ID without needing to perform additional lookups. This supports QAPs by enabling secure `list` operations based on user ownership.\n\nSegregation is employed by separating user-specific data into subcollections under the `/users/{userId}` path, while global data like `/services` and `/blogPosts` are stored in root-level collections. The use of explicit state modeling through the `status` field in entities like `Order`, `Campaign`, and `Deposit` ensures data clarity and predictability."
+      "description": "Stores blog posts. Publicly readable."
+    },
+    "/users/{userId}/tickets/{ticketId}": {
+      "schema": {
+        "$ref": "#/entities/Ticket"
+      },
+      "description": "Stores support tickets created by users. Includes denormalized 'userId' for authorization independence."
+    }
   }
 }

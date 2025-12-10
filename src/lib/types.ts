@@ -8,15 +8,17 @@ export type User = {
   adBalance: number;
   totalSpent: number;
   referralCode: string;
+  createdAt: string;
 };
 
 export type Order = {
   id: string;
+  serviceId: string;
   serviceName: string;
-  link: string;
+  link?: string;
   quantity: number;
   charge: number;
-  date: string;
+  orderDate: string;
   status: 'مكتمل' | 'قيد التنفيذ' | 'ملغي' | 'جزئي';
 };
 

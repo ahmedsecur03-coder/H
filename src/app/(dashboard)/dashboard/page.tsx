@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -24,8 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockOrders, mockUser, performanceData } from '@/lib/placeholder-data';
-import { DollarSign, Package, ShoppingCart, TrendingUp, Gem } from 'lucide-react';
+import { performanceData } from '@/lib/placeholder-data';
+import { DollarSign, Package, ShoppingCart, Gem } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -33,6 +35,10 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { User as UserType, Order } from '@/lib/types';
 
 const chartConfig = {
   orders: {
@@ -46,12 +52,44 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function DashboardPage() {
+  const { user: authUser } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(
+    () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
+    [firestore, authUser]
+  );
+  const { data: userData, isLoading: isUserLoading } = useDoc<UserType>(userDocRef);
+
+  const ordersQuery = useMemoFirebase(
+    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
+    [firestore, authUser]
+  );
+  const { data: ordersData, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+
   const statusVariant = {
     مكتمل: 'default',
     'قيد التنفيذ': 'secondary',
     ملغي: 'destructive',
     جزئي: 'outline',
   } as const;
+
+  if (isUserLoading || isOrdersLoading) {
+    return (
+      <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
+          </div>
+          <Skeleton className="h-[350px]" />
+          <Skeleton className="h-[300px]" />
+        </div>
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
+          <Skeleton className="h-[450px]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
@@ -65,8 +103,8 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${mockUser.balance.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">رصيد الحملات: ${mockUser.adBalance.toFixed(2)}</p>
+              <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">رصيد الحملات: ${(userData?.adBalance ?? 0).toFixed(2)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -77,7 +115,7 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${mockUser.totalSpent.toFixed(2)}</div>
+              <div className="text-2xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">منذ الانضمام</p>
             </CardContent>
           </Card>
@@ -89,7 +127,7 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{mockUser.rank}</div>
+              <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
               <p className="text-xs text-muted-foreground">خصم 2% على الخدمات</p>
             </CardContent>
           </Card>
@@ -101,8 +139,8 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
-               <p className="text-xs text-muted-foreground">+5 عن الشهر الماضي</p>
+              <div className="text-2xl font-bold">{ordersData?.length ?? 0}</div>
+               <p className="text-xs text-muted-foreground">آخر 5 طلبات</p>
             </CardContent>
           </Card>
         </div>
@@ -149,17 +187,25 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockOrders.slice(0, 5).map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.serviceName}</TableCell>
-                    <TableCell>{order.quantity.toLocaleString()}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant[order.status]}>{order.status}</Badge>
+                {ordersData && ordersData.length > 0 ? (
+                  ordersData.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.serviceName}</TableCell>
+                      <TableCell>{order.quantity.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-left">{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-left">${(order.charge ?? 0).toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      لا توجد طلبات لعرضها.
                     </TableCell>
-                    <TableCell className="text-left">{order.date}</TableCell>
-                    <TableCell className="text-left">${order.charge.toFixed(2)}</TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
