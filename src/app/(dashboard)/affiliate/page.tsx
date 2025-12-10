@@ -4,7 +4,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, DollarSign, Users, Crown, Loader2 } from "lucide-react";
+import { Copy, DollarSign, Users, Crown, Loader2, GitFork, TrendingUp, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
@@ -13,6 +13,7 @@ import type { User as UserType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 const topMarketers = [
     { rank: 1, name: "محمد علي", earnings: 2500.50 },
@@ -28,6 +29,69 @@ const AFFILIATE_LEVELS = {
     'ذهبي': { commission: 15, nextLevel: 'ماسي', requirement: 200 },
     'ماسي': { commission: 20, nextLevel: null, requirement: Infinity },
 };
+
+
+function AffiliateSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40" />)}
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-64 lg:col-span-1" />
+                <Skeleton className="h-64 lg:col-span-2" />
+            </div>
+        </div>
+    );
+}
+
+function NetworkTree() {
+    // Placeholder data for the tree
+    const treeData = {
+        level: 0,
+        name: "أنت",
+        children: [
+            { level: 1, name: "دعوة مباشرة", count: 5 },
+            { level: 2, name: "المستوى الثاني", count: 12 },
+            { level: 3, name: "المستوى الثالث", count: 28 },
+        ]
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>شجرة شبكتك التسويقية</CardTitle>
+                <CardDescription>نظرة عامة على مستويات شبكة الإحالة الخاصة بك.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center h-48">
+                 <div className="flex items-center gap-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="w-16 h-16 rounded-full bg-primary/20 text-primary flex items-center justify-center border-2 border-primary">
+                            <Target className="h-8 w-8" />
+                        </div>
+                        <p className="text-sm font-bold">{treeData.name}</p>
+                    </div>
+
+                    {treeData.children.map((child, index) => (
+                        <React.Fragment key={index}>
+                            <div className="w-12 h-1 bg-border-muted-foreground/30 hidden md:block"></div>
+                             <div className="flex flex-col items-center gap-2">
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                                    <span className="text-2xl font-bold">{child.count}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{child.name}</p>
+                            </div>
+                        </React.Fragment>
+                    ))}
+                 </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 
 export default function AffiliatePage() {
@@ -61,39 +125,24 @@ export default function AffiliatePage() {
     
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey];
-    const nextLevel = currentLevel.nextLevel ? AFFILIATE_LEVELS[currentLevel.nextLevel as keyof typeof AFFILIATE_LEVELS] : null;
+    const nextLevelKey = currentLevel.nextLevel;
+    const nextLevel = nextLevelKey ? AFFILIATE_LEVELS[nextLevelKey as keyof typeof AFFILIATE_LEVELS] : null;
+
     
     const referralsCount = userData?.referralsCount ?? 0;
-    const progressToNextLevel = nextLevel ? (referralsCount / nextLevel.requirement) * 100 : 100;
+    const progressToNextLevel = nextLevel ? (referralsCount / (nextLevel.requirement || 1)) * 100 : 100;
     
 
     if (isLoading) {
-        return (
-             <div className="space-y-6 pb-8">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight font-headline">نظام الإحالة</h1>
-                    <p className="text-muted-foreground">
-                      اكسب المال عن طريق دعوة أصدقائك للانضمام إلى منصة حاجاتي.
-                    </p>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                   {Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-48" />)}
-                </div>
-                 <div className="grid gap-6 md:grid-cols-2">
-                    <Skeleton className="h-40" />
-                    <Skeleton className="h-64" />
-                </div>
-             </div>
-        );
+        return <AffiliateSkeleton />;
     }
-
 
   return (
     <div className="space-y-6 pb-8">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">نظام الإحالة</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">برنامج الإحالة (Affiliate)</h1>
             <p className="text-muted-foreground">
-              اكسب المال عن طريق دعوة أصدقائك للانضمام إلى منصة حاجاتي.
+              اكسب المال عن طريق دعوة أصدقائك. نظام عمولات هجين يمنحك أرباح مباشرة وشبكية.
             </p>
         </div>
 
@@ -127,16 +176,26 @@ export default function AffiliatePage() {
                     <Crown className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{userData?.affiliateLevel ?? 'برونزي'}</div>
+                    <div className={cn("text-2xl font-bold", 
+                        currentLevelKey === 'ماسي' && "text-primary",
+                        currentLevelKey === 'ذهبي' && "text-yellow-400",
+                        currentLevelKey === 'فضي' && "text-slate-400",
+                    )}>
+                        {userData?.affiliateLevel ?? 'برونزي'}
+                    </div>
                     <p className="text-xs text-muted-foreground">نسبة العمولة: {currentLevel.commission}%</p>
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">الترقية التالية</CardTitle>
-                    <CardDescription>
-                         {nextLevel ? `الوصول إلى ${nextLevel.requirement} دعوة للترقية إلى ${currentLevel.nextLevel}` : 'لقد وصلت إلى أعلى مستوى!'}
-                    </CardDescription>
+                    <CardTitle className="text-sm font-medium">الترقية التالية: {nextLevelKey}</CardTitle>
+                    {nextLevel ? (
+                        <CardDescription>
+                             ادعُ {nextLevel.requirement - referralsCount} شخصًا آخر للوصول للمستوى التالي.
+                        </CardDescription>
+                    ) : (
+                         <CardDescription>لقد وصلت إلى أعلى مستوى!</CardDescription>
+                    )}
                 </CardHeader>
                 <CardContent>
                      {nextLevel ? (
@@ -151,8 +210,8 @@ export default function AffiliatePage() {
             </Card>
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+             <Card className="lg:col-span-1">
                 <CardHeader>
                     <CardTitle>رابط الإحالة الخاص بك</CardTitle>
                     <CardDescription>شاركه مع أصدقائك لتبدأ في كسب العمولات.</CardDescription>
@@ -164,32 +223,38 @@ export default function AffiliatePage() {
                     </Button>
                 </CardContent>
             </Card>
-            <Card>
-                 <CardHeader>
-                    <CardTitle>أفضل 10 مسوقين</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>الترتيب</TableHead>
-                                <TableHead>الاسم</TableHead>
-                                <TableHead className="text-right">الأرباح</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {topMarketers.map((m) => (
-                                <TableRow key={m.rank}>
-                                    <TableCell>{m.rank}</TableCell>
-                                    <TableCell>{m.name}</TableCell>
-                                    <TableCell className="text-right">${m.earnings.toFixed(2)}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            <div className="lg:col-span-2">
+                <NetworkTree />
+            </div>
         </div>
+
+        <Card>
+                <CardHeader>
+                <CardTitle>التحليلات المالية</CardTitle>
+                <CardDescription>نظرة عامة على أفضل المسوقين في المنصة.</CardDescription>
+                </CardHeader>
+            <CardContent>
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>الترتيب</TableHead>
+                            <TableHead>الاسم</TableHead>
+                            <TableHead className="text-right">الأرباح</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {topMarketers.map((m) => (
+                            <TableRow key={m.rank}>
+                                <TableCell>{m.rank}</TableCell>
+                                <TableCell>{m.name}</TableCell>
+                                <TableCell className="text-right">${m.earnings.toFixed(2)}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     </div>
   );
 }
+
