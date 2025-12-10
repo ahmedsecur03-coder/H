@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import AiAssistant from '@/components/ai-assistant';
@@ -19,9 +19,16 @@ const fontPTSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Hajaty Hub - حاجتي',
-  description: 'منصة خدمات رقمية شاملة',
+  title: 'Hajaty Hub - منصة حاجتي للخدمات الرقمية',
+  description: 'منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك.',
+  keywords: ['SMM', 'تسويق رقمي', 'حملات إعلانية', 'زيادة متابعين', 'خدمات رقمية', 'فيسبوك', 'انستغرام', 'تيك توك', 'Hajaty'],
+  manifest: '/manifest.json',
 };
+
+export const viewport: Viewport = {
+  themeColor: '#1A1D21',
+};
+
 
 export default function RootLayout({
   children,
@@ -34,6 +41,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className={cn('font-body antialiased bg-background', fontPoppins.variable, fontPTSans.variable)}>
         <FirebaseClientProvider>
