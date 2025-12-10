@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, addDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -63,7 +63,7 @@ function NewTicketDialog({ userId }: { userId: string }) {
         }],
       };
       
-      addDocumentNonBlocking(ticketsColRef, newTicket);
+      await addDoc(ticketsColRef, newTicket);
 
       toast({
         title: 'تم فتح التذكرة بنجاح',

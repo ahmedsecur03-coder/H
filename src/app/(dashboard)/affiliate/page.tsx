@@ -88,11 +88,11 @@ export default function AffiliatePage() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">$0.00</div>
+                    <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
                     <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
                 </CardContent>
                  <CardFooter>
-                    <Button className="w-full" disabled>طلب سحب الأرباح</Button>
+                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
                 </CardFooter>
             </Card>
              <Card>
@@ -101,7 +101,7 @@ export default function AffiliatePage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">0</div>
+                    <div className="text-2xl font-bold">{userData?.referralsCount ?? 0}</div>
                     <p className="text-xs text-muted-foreground">في جميع مستويات شبكتك</p>
                 </CardContent>
             </Card>
@@ -111,7 +111,7 @@ export default function AffiliatePage() {
                     <Crown className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">برونزي</div>
+                    <div className="text-2xl font-bold">{userData?.affiliateLevel ?? 'برونزي'}</div>
                     <p className="text-xs text-muted-foreground">نسبة العمولة: 10%</p>
                 </CardContent>
             </Card>
