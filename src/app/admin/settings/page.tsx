@@ -1,21 +1,33 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const [isSaving, setIsSaving] = useState(false);
+  const [isCleaning, setIsCleaning] = useState<string|null>(null);
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'settings', 'global') : null),
@@ -34,7 +46,7 @@ export default function AdminSettingsPage() {
     if (settingsData) {
       setVodafoneNumber(settingsData.vodafoneNumber || '');
       setBinanceId(settingsData.binanceId || '');
-      setUsdRate(settingsData.usdRate || '');
+      setUsdRate(settingsData.usdRate?.toString() || '');
       setWhatsappSupport(settingsData.whatsappSupport || '');
       setDealOfTheDay(settingsData.dealOfTheDay || '');
     }
@@ -69,6 +81,52 @@ export default function AdminSettingsPage() {
         setIsSaving(false);
     }
   };
+
+  const handleCleanup = async (type: 'orders' | 'deposits') => {
+      if (!firestore) return;
+      setIsCleaning(type);
+
+      try {
+          const batch = writeBatch(firestore);
+          let collectionRef;
+          let dateThreshold: Date;
+          let count = 0;
+
+          if (type === 'orders') {
+              collectionRef = collectionGroup(firestore, 'orders');
+              dateThreshold = new Date();
+              dateThreshold.setDate(dateThreshold.getDate() - 90);
+              const q = query(collectionRef, where('status', '==', 'مكتمل'), where('orderDate', '<', dateThreshold.toISOString()));
+              const snapshot = await getDocs(q);
+              snapshot.forEach(doc => {
+                  batch.delete(doc.ref);
+                  count++;
+              });
+          } else if (type === 'deposits') {
+              collectionRef = collectionGroup(firestore, 'deposits');
+              dateThreshold = new Date();
+              dateThreshold.setDate(dateThreshold.getDate() - 30);
+              const q = query(collectionRef, where('status', '==', 'مرفوض'), where('depositDate', '<', dateThreshold.toISOString()));
+              const snapshot = await getDocs(q);
+              snapshot.forEach(doc => {
+                  batch.delete(doc.ref);
+                  count++;
+              });
+          }
+
+          if (count > 0) {
+              await batch.commit();
+              toast({ title: "نجاح", description: `تم حذف ${count} سجل بنجاح.` });
+          } else {
+              toast({ title: "لا توجد سجلات", description: "لم يتم العثور على سجلات قديمة للحذف." });
+          }
+
+      } catch (error: any) {
+          toast({ variant: "destructive", title: "خطأ", description: "فشل عملية التنظيف: " + error.message });
+      } finally {
+          setIsCleaning(null);
+      }
+  }
 
   if(isSettingsLoading) {
     return (
@@ -135,7 +193,7 @@ export default function AdminSettingsPage() {
                         <Input id="deal-of-day" value={dealOfTheDay} onChange={e => setDealOfTheDay(e.target.value)} placeholder="أدخل ID الخدمة" />
                     </div>
                 </CardContent>
-            </Card>
+             </Card>
         </div>
 
         <div className="space-y-6">
@@ -148,23 +206,60 @@ export default function AdminSettingsPage() {
                     <p className="text-sm text-muted-foreground">
                         تنظيف السجلات القديمة يمكن أن يساعد في تحسين سرعة استجابة المنصة.
                     </p>
-                    <Button variant="destructive" className="w-full">
-                        حذف الطلبات المكتملة الأقدم من 90 يوم
-                    </Button>
-                     <Button variant="destructive" className="w-full">
-                        حذف الإيداعات المرفوضة الأقدم من 30 يوم
-                    </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button variant="destructive" className="w-full" disabled={isCleaning === 'orders'}>
+                            {isCleaning === 'orders' ? <Loader2 className="animate-spin ml-2" /> : <Trash2 className="ml-2"/>}
+                            حذف الطلبات القديمة
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            سيتم حذف جميع الطلبات المكتملة التي مر عليها أكثر من 90 يومًا. لا يمكن التراجع عن هذا الإجراء.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleCleanup('orders')}>متابعة الحذف</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full" disabled={isCleaning === 'deposits'}>
+                            {isCleaning === 'deposits' ? <Loader2 className="animate-spin ml-2" /> : <Trash2 className="ml-2" />}
+                            حذف الإيداعات المرفوضة
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            سيتم حذف جميع طلبات الإيداع المرفوضة التي مر عليها أكثر من 30 يومًا. لا يمكن التراجع عن هذا الإجراء.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleCleanup('deposits')}>متابعة الحذف</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
                 </CardContent>
             </Card>
         </div>
       </div>
        <Separator className="my-6" />
-        <div className="flex justify-end">
+        <CardFooter className="flex justify-end p-0">
             <Button onClick={handleSaveChanges} disabled={isSaving}>
                 {isSaving && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
                 حفظ التغييرات
             </Button>
-        </div>
+        </CardFooter>
     </div>
   );
 }

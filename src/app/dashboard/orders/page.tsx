@@ -60,7 +60,7 @@ const ITEMS_PER_PAGE = 10;
 
 function OrdersPageSkeleton() {
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-8">
             <div>
                 <Skeleton className="h-8 w-1/4 mb-2" />
                 <Skeleton className="h-5 w-1/2" />
@@ -130,18 +130,26 @@ export default function OrdersPage() {
     );
   }, [allOrders, searchTerm]);
 
+  const totalPages = useMemo(() => {
+    if (!filteredOrders) return 0;
+    return Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  }, [filteredOrders]);
+
+
   const paginatedOrders = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredOrders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredOrders, currentPage]);
-
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   if (isLoading && !allOrders) {
     return <OrdersPageSkeleton />;
@@ -215,6 +223,30 @@ export default function OrdersPage() {
               </TableBody>
             </Table>
           </CardContent>
+           {totalPages > 1 && (
+             <CardFooter className="justify-center border-t pt-4">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} disabled={currentPage === 1}/>
+                    </PaginationItem>
+                    
+                    {/* Simplified Pagination Logic */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) ? (
+                             <PaginationItem key={page}>
+                                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page); }}>{page}</PaginationLink>
+                            </PaginationItem>
+                        ) : (page === currentPage - 2 || page === currentPage + 2) ? <PaginationEllipsis key={page} /> : null
+                    ))}
+
+                    <PaginationItem>
+                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} disabled={currentPage === totalPages} />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+            </CardFooter>
+           )}
         </Card>
       ) : (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
@@ -232,26 +264,7 @@ export default function OrdersPage() {
         </Card>
       )}
 
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <PaginationItem key={page}>
-                    <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page); }}>{page}</PaginationLink>
-                </PaginationItem>
-            ))}
-             {totalPages > 5 && <PaginationEllipsis />}
-            <PaginationItem>
-              <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
     </div>
   );
 }
 
-    

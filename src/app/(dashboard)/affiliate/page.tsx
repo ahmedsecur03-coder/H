@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, DollarSign, Users, Crown, Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import type { User as UserType } from "@/lib/types";
@@ -20,6 +21,14 @@ const topMarketers = [
     { rank: 4, name: "يوسف محمود", earnings: 1850.25 },
     { rank: 5, name: "سارة إبراهيم", earnings: 1700.00 },
 ];
+
+const AFFILIATE_LEVELS = {
+    'برونزي': { commission: 10, nextLevel: 'فضي', requirement: 10 },
+    'فضي': { commission: 12, nextLevel: 'ذهبي', requirement: 50 },
+    'ذهبي': { commission: 15, nextLevel: 'ماسي', requirement: 200 },
+    'ماسي': { commission: 20, nextLevel: null, requirement: Infinity },
+};
+
 
 export default function AffiliatePage() {
     const { user: authUser, isUserLoading: isAuthLoading } = useUser();
@@ -50,14 +59,13 @@ export default function AffiliatePage() {
         });
     };
     
-    const affiliateLevelDetails = {
-        'برونزي': { commission: '10%', nextLevel: 'فضي' },
-        'فضي': { commission: '12%', nextLevel: 'ذهبي' },
-        'ذهبي': { commission: '15%', nextLevel: 'ماسي' },
-        'ماسي': { commission: '20%', nextLevel: null },
-    };
+    const currentLevelKey = userData?.affiliateLevel || 'برونزي';
+    const currentLevel = AFFILIATE_LEVELS[currentLevelKey];
+    const nextLevel = currentLevel.nextLevel ? AFFILIATE_LEVELS[currentLevel.nextLevel as keyof typeof AFFILIATE_LEVELS] : null;
     
-    const currentLevelInfo = affiliateLevelDetails[userData?.affiliateLevel || 'برونزي'];
+    const referralsCount = userData?.referralsCount ?? 0;
+    const progressToNextLevel = nextLevel ? (referralsCount / nextLevel.requirement) * 100 : 100;
+    
 
     if (isLoading) {
         return (
@@ -68,8 +76,8 @@ export default function AffiliatePage() {
                       اكسب المال عن طريق دعوة أصدقائك للانضمام إلى منصة حاجاتي.
                     </p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                   {Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-48" />)}
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                   {Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-48" />)}
                 </div>
                  <div className="grid gap-6 md:grid-cols-2">
                     <Skeleton className="h-40" />
@@ -89,7 +97,7 @@ export default function AffiliatePage() {
             </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">أرباحك القابلة للسحب</CardTitle>
@@ -120,7 +128,25 @@ export default function AffiliatePage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{userData?.affiliateLevel ?? 'برونزي'}</div>
-                    <p className="text-xs text-muted-foreground">نسبة العمولة: {currentLevelInfo.commission}</p>
+                    <p className="text-xs text-muted-foreground">نسبة العمولة: {currentLevel.commission}%</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">الترقية التالية</CardTitle>
+                    <CardDescription>
+                         {nextLevel ? `الوصول إلى ${nextLevel.requirement} دعوة للترقية إلى ${currentLevel.nextLevel}` : 'لقد وصلت إلى أعلى مستوى!'}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                     {nextLevel ? (
+                        <>
+                            <Progress value={progressToNextLevel} className="h-2 my-2" />
+                            <p className="text-xs text-muted-foreground text-center">{referralsCount} / {nextLevel.requirement}</p>
+                        </>
+                     ) : (
+                         <p className="text-sm font-medium text-center text-primary">🎉 أنت في القمة 🎉</p>
+                     )}
                 </CardContent>
             </Card>
         </div>

@@ -9,13 +9,13 @@ import {
   where,
   doc,
   runTransaction,
+  orderBy
 } from 'firebase/firestore';
 import type { Deposit, User } from '@/lib/types';
 
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -32,21 +32,31 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+
+const statusVariant = {
+  'مقبول': 'default',
+  'مرفوض': 'destructive',
+  'معلق': 'secondary',
+} as const;
+type Status = keyof typeof statusVariant;
 
 export default function AdminDepositsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Status>('معلق');
 
-  const pendingDepositsQuery = useMemoFirebase(
+  const depositsQuery = useMemoFirebase(
     () =>
       firestore
-        ? query(collectionGroup(firestore, 'deposits'), where('status', '==', 'معلق'))
+        ? query(collectionGroup(firestore, 'deposits'), where('status', '==', activeTab), orderBy('depositDate', 'desc'))
         : null,
-    [firestore]
+    [firestore, activeTab]
   );
 
-  const { data: deposits, isLoading } = useCollection<Deposit>(pendingDepositsQuery);
+  const { data: deposits, isLoading } = useCollection<Deposit>(depositsQuery);
 
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
     if (!firestore) return;
@@ -56,15 +66,14 @@ export default function AdminDepositsPage() {
       const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
 
       await runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists()) {
-          throw new Error('المستخدم غير موجود.');
-        }
-
         if (newStatus === 'مقبول') {
-          const currentBalance = userDoc.data().balance ?? 0;
-          const newBalance = currentBalance + deposit.amount;
-          transaction.update(userDocRef, { balance: newBalance });
+           const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw new Error('المستخدم غير موجود.');
+            }
+            const currentBalance = userDoc.data().balance ?? 0;
+            const newBalance = currentBalance + deposit.amount;
+            transaction.update(userDocRef, { balance: newBalance });
         }
         
         transaction.update(depositDocRef, { status: newStatus });
@@ -102,7 +111,7 @@ export default function AdminDepositsPage() {
       return (
         <TableRow>
           <TableCell colSpan={6} className="h-24 text-center">
-            لا توجد طلبات إيداع معلقة حالياً.
+            لا توجد طلبات إيداع في هذا القسم.
           </TableCell>
         </TableRow>
       );
@@ -111,8 +120,7 @@ export default function AdminDepositsPage() {
     return deposits.map((deposit) => (
       <TableRow key={deposit.id}>
         <TableCell>
-          <div className="font-medium">{deposit.userId.substring(0, 10)}...</div>
-          {/* We might need to fetch user email separately if needed */}
+          <div className="font-medium font-mono text-xs">{deposit.userId}</div>
         </TableCell>
         <TableCell>${deposit.amount.toFixed(2)}</TableCell>
         <TableCell>{deposit.paymentMethod}</TableCell>
@@ -120,18 +128,20 @@ export default function AdminDepositsPage() {
           {deposit.details?.phoneNumber || deposit.details?.transactionId || 'N/A'}
         </TableCell>
         <TableCell>
-          {new Date(deposit.depositDate).toLocaleDateString('ar-EG')}
+          {new Date(deposit.depositDate).toLocaleString('ar-EG')}
         </TableCell>
         <TableCell className="text-right">
           {loadingAction === deposit.id ? <Loader2 className="animate-spin" /> : (
-            <>
-              <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600" onClick={() => handleDepositAction(deposit, 'مقبول')}>
-                <CheckCircle className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDepositAction(deposit, 'مرفوض')}>
-                <XCircle className="h-5 w-5" />
-              </Button>
-            </>
+            activeTab === 'معلق' && (
+                <>
+                <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600" onClick={() => handleDepositAction(deposit, 'مقبول')}>
+                    <CheckCircle className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDepositAction(deposit, 'مرفوض')}>
+                    <XCircle className="h-5 w-5" />
+                </Button>
+                </>
+            )
           )}
         </TableCell>
       </TableRow>
@@ -148,28 +158,34 @@ export default function AdminDepositsPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>طلبات الإيداع المعلقة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>معرف المستخدم</TableHead>
-                <TableHead>المبلغ</TableHead>
-                <TableHead>طريقة الدفع</TableHead>
-                <TableHead>التفاصيل</TableHead>
-                <TableHead>التاريخ</TableHead>
-                <TableHead className="text-right">إجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {renderContent()}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Status)} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="معلق">معلقة</TabsTrigger>
+                <TabsTrigger value="مقبول">مقبولة</TabsTrigger>
+                <TabsTrigger value="مرفوض">مرفوضة</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab}>
+                 <Card>
+                    <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>معرف المستخدم</TableHead>
+                            <TableHead>المبلغ</TableHead>
+                            <TableHead>طريقة الدفع</TableHead>
+                            <TableHead>التفاصيل</TableHead>
+                            <TableHead>التاريخ</TableHead>
+                            {activeTab === 'معلق' && <TableHead className="text-right">إجراءات</TableHead>}
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {renderContent()}
+                        </TableBody>
+                    </Table>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }

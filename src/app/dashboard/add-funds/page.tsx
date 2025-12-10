@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { addDoc, collection, doc, runTransaction } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -14,10 +14,7 @@ import type { Deposit, User as UserType } from '@/lib/types';
 import { Loader2, ArrowLeftRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Assume a USD to EGP rate fetched from admin settings. Default to 50 for now.
-const USD_TO_EGP_RATE = 50; 
-
-function VodafoneCashTab() {
+function VodafoneCashTab({ settings, isLoading }: { settings: any, isLoading: boolean }) {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -25,7 +22,9 @@ function VodafoneCashTab() {
     const [amountInEGP, setAmountInEGP] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const amountInUSD = parseFloat(amountInEGP) / USD_TO_EGP_RATE;
+    const usdToEgpRate = settings?.usdRate || 50;
+    const vodafoneNumber = settings?.vodafoneNumber || "الرقم غير محدد";
+    const amountInUSD = parseFloat(amountInEGP) / usdToEgpRate;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,13 +64,17 @@ function VodafoneCashTab() {
         }
     };
 
+    if(isLoading) {
+        return <Skeleton className="h-80" />
+    }
+
     return (
         <Card>
             <CardHeader>
                 <CardTitle>فودافون كاش</CardTitle>
                 <CardDescription>
-                    قم بتحويل المبلغ المطلوب إلى الرقم <code>01012345678</code> ثم أدخل رقمك الذي قمت بالتحويل منه والمبلغ.
-                    سعر الصرف الحالي: <strong>1 دولار أمريكي = {USD_TO_EGP_RATE} جنيه مصري</strong>.
+                    قم بتحويل المبلغ المطلوب إلى الرقم <code>{vodafoneNumber}</code> ثم أدخل رقمك الذي قمت بالتحويل منه والمبلغ.
+                    سعر الصرف الحالي: <strong>1 دولار أمريكي = {usdToEgpRate} جنيه مصري</strong>.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -98,13 +101,16 @@ function VodafoneCashTab() {
     );
 }
 
-function BinancePayTab() {
+function BinancePayTab({ settings, isLoading }: { settings: any, isLoading: boolean }) {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [transactionId, setTransactionId] = useState('');
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const binanceId = settings?.binanceId || "المعرف غير محدد";
+
 
      const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -138,13 +144,18 @@ function BinancePayTab() {
             setIsSubmitting(false);
         }
     };
+    
+    if(isLoading) {
+        return <Skeleton className="h-80" />
+    }
+
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Binance Pay (USDT)</CardTitle>
                 <CardDescription>
-                    استخدم معرف Binance Pay التالي لإرسال المبلغ بعملة USDT: <code>USER12345</code>. ثم أدخل معرف العملية (Transaction ID).
+                    استخدم معرف Binance Pay التالي لإرسال المبلغ بعملة USDT: <code>{binanceId}</code>. ثم أدخل معرف العملية (Transaction ID).
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -223,7 +234,7 @@ function TransferToAdBalance() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {isUserLoading ? <Skeleton className="h-24 w-full" /> : (
+                {isUserLoading ? <Skeleton className="h-40 w-full" /> : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="p-3 rounded-md bg-muted text-muted-foreground text-sm space-y-1">
                             <p><strong>الرصيد الأساسي:</strong> {(userData?.balance ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</p>
@@ -246,6 +257,10 @@ function TransferToAdBalance() {
 
 
 export default function AddFundsPage() {
+    const firestore = useFirestore();
+    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
+    const { data: settingsData, isLoading: isSettingsLoading } = useDoc(settingsDocRef);
+
   return (
      <div className="space-y-6 pb-8">
        <div className="flex items-center justify-between">
@@ -265,10 +280,10 @@ export default function AddFundsPage() {
                         <TabsTrigger value="binance">Binance Pay</TabsTrigger>
                     </TabsList>
                     <TabsContent value="vodafone">
-                        <VodafoneCashTab />
+                        <VodafoneCashTab settings={settingsData} isLoading={isSettingsLoading} />
                     </TabsContent>
                     <TabsContent value="binance">
-                        <BinancePayTab />
+                        <BinancePayTab settings={settingsData} isLoading={isSettingsLoading} />
                     </TabsContent>
                 </Tabs>
             </div>
