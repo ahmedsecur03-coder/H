@@ -1,0 +1,230 @@
+/**
+ * This ruleset enforces a security model for the "Hajaty Hub" application,
+ * a platform for SMM and digital services.
+ *
+ * Core Philosophy:
+ * The primary security philosophy is strict user-ownership combined with the
+ * principle of "Authorization Independence." This means that authorization
+ * checks are fast and efficient, relying on data stored directly on the
+ * document being accessed rather than performing costly lookups on related
+ * documents.
+ *
+ * Data Structure:
+ * The data is organized into two main categories:
+ * 1. User-Private Data: All data specific to a user (profiles, orders,
+ *    campaigns, tickets, etc.) is nested within a user-specific document tree
+ *    at `/users/{userId}`. This structure simplifies ownership rules.
+ * 2. Public Data: Collections that are intended for public consumption,
+ *    such as the service catalog (`/services`) and blog posts (`/blogPosts`),
+ *    are placed at the root level for easy, open access.
+ *
+ * Key Security Decisions:
+ * - Default Deny: All operations are denied by default. Access must be
+ *   explicitly granted.
+ * - No User Listing: To protect user privacy, it is not possible to list all
+ *   documents in the top-level `/users` collection.
+ * - Client-Readonly Collections: Collections like `/services` are considered
+ *   publicly readable but are not writable by any client. It is assumed they
+ *   are managed by backend administrative processes.
+ * - Strict Ownership: A user can only access and manage data within their own
+ *   `/users/{userId}` document tree.
+ *
+ * Denormalization for Authorization:
+ * To ensure performant and simple security rules, ownership information is
+ * denormalized. For example, an `Order` document under `/users/{userId}/orders`
+ * also contains a `userId` field. This allows rules to verify ownership
+ * directly from the document data during creation and updates without needing
+ * to reference the path, making the rules robust and clear.
+ *
+ * Structural Segregation:
+ * The ruleset leverages separate collections for data with different access
+ * patterns. Private user data is strictly segregated into subcollections under
+ * `/users/{userId}`, while public data like `/services` and `/blogPosts`
+ * resides in top-level collections, allowing for simple, efficient rules for
+ * public listing.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Checks if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the foundation of the user-ownership model.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if a document exists AND if the authenticated user is the owner.
+     * Used for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+    
+    /**
+     * Validates that the creator of a document is the authenticated user.
+     * Ensures the ownership field (`userId` or `authorId`) is correctly set.
+     */
+    function creatorIsAuthenticatedUser(fieldName) {
+      return isSignedIn() && request.resource.data[fieldName] == request.auth.uid;
+    }
+    
+    /**
+     * Validates that an ownership field in a user-subcollection document
+     * matches the `userId` from the path during creation.
+     */
+    function hasValidOwnerFieldOnCreate(userId, fieldName) {
+      return request.resource.data[fieldName] == userId;
+    }
+    
+    /**
+     * Ensures a critical relational field (like an owner ID) cannot be changed
+     * during an update operation.
+     */
+    function isFieldImmutable(fieldName) {
+      return request.resource.data[fieldName] == resource.data[fieldName];
+    }
+
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    /**
+     * @description Manages user profile data. A user can create their own profile,
+     * read and modify it, but cannot see or list other users' profiles.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user with UID 'user123' creating their own document at `/users/user123`.
+     * @deny  (get) User 'user123' trying to read `/users/user456`.
+     * @deny  (list) Any user trying to list all documents in the `/users` collection.
+     * @principle Restricts access to a user's own data tree and enforces self-creation.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'id');
+      allow update: if isExistingOwner(userId) && isFieldImmutable('id');
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Provides a public, read-only catalog of available services.
+     * No client, authenticated or not, can write to this collection.
+     * @path /services/{serviceId}
+     * @allow (get, list) Any user, including unauthenticated ones, can read services.
+     * @deny  (create, update, delete) Any user trying to modify the service catalog.
+     * @principle Enforces a public read-only data model, assuming data is managed by a backend process.
+     */
+    match /services/{serviceId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    /**
+     * @description Stores blog posts. Blog posts are public for anyone to read.
+     * Only the authenticated author can create, update, or delete their own posts.
+     * @path /blogPosts/{blogPostId}
+     * @allow (get, list) Any user, including unauthenticated ones, can read blog posts.
+     * @allow (create) An authenticated user creating a post where `authorId` matches their UID.
+     * @deny  (update) An authenticated user trying to update a post where they are not the author.
+     * @principle Implements a public-read, owner-only write access pattern.
+     */
+    match /blogPosts/{blogPostId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if creatorIsAuthenticatedUser('authorId');
+      allow update: if isExistingOwner(resource.data.authorId) && isFieldImmutable('authorId');
+      allow delete: if isExistingOwner(resource.data.authorId);
+    }
+
+    /**
+     * @description Manages user orders. A user can only access their own orders.
+     * @path /users/{userId}/orders/{orderId}
+     * @allow (create, get, list, update, delete) A user with UID 'user123' operating on `/users/user123/orders/{orderId}`.
+     * @deny  (get) A user with UID 'user456' trying to access an order under `/users/user123`.
+     * @principle Enforces strict data ownership within a user's private subcollection.
+     */
+    match /users/{userId}/orders/{orderId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
+      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages user advertising campaigns. A user can only access their own campaigns.
+     * @path /users/{userId}/campaigns/{campaignId}
+     * @allow (create, get, list, update, delete) A user with UID 'user123' operating on `/users/user123/campaigns/{campaignId}`.
+     * @deny  (get) A user with UID 'user456' trying to access a campaign under `/users/user123`.
+     * @principle Enforces strict data ownership within a user's private subcollection.
+     */
+    match /users/{userId}/campaigns/{campaignId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
+      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages user deposit requests. A user can only access their own deposits.
+     * @path /users/{userId}/deposits/{depositId}
+     * @allow (create, get, list, update, delete) A user with UID 'user123' operating on `/users/user123/deposits/{depositId}`.
+     * @deny  (get) A user with UID 'user456' trying to access a deposit under `/users/user123`.
+     * @principle Enforces strict data ownership within a user's private subcollection.
+     */
+    match /users/{userId}/deposits/{depositId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
+      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages user affiliate transactions. A user can only access their own transactions.
+     * @path /users/{userId}/affiliateTransactions/{affiliateTransactionId}
+     * @allow (create, get, list, update, delete) A user with UID 'user123' operating on `/users/user123/affiliateTransactions/{transactionId}`.
+     * @deny  (get) A user with UID 'user456' trying to access a transaction under `/users/user123`.
+     * @principle Enforces strict data ownership within a user's private subcollection.
+     */
+    match /users/{userId}/affiliateTransactions/{affiliateTransactionId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
+      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages user support tickets. A user can only access their own tickets.
+     * @path /users/{userId}/tickets/{ticketId}
+     * @allow (create, get, list, update, delete) A user with UID 'user123' operating on `/users/user123/tickets/{ticketId}`.
+     * @deny  (get) A user with UID 'user456' trying to access a ticket under `/users/user123`.
+     * @principle Enforces strict data ownership within a user's private subcollection.
+     */
+    match /users/{userId}/tickets/{ticketId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
+      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}

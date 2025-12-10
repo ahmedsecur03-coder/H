@@ -1,0 +1,494 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the Hajaty platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "balance": {
+          "type": "number",
+          "description": "User's account balance."
+        },
+        "adBalance": {
+          "type": "number",
+          "description": "User's advertising balance."
+        },
+        "rank": {
+          "type": "string",
+          "description": "User's rank in the system (e.g., مستكشف نجمي, قائد صاروخي, سيد المجرة, سيد كوني)."
+        },
+        "referralCode": {
+          "type": "string",
+          "description": "Unique referral code for the user."
+        },
+        "referrerId": {
+          "type": "string",
+          "description": "Reference to the User who referred this user. (Relationship: User 1:N User (referrals))"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "balance",
+        "adBalance",
+        "rank",
+        "referralCode"
+      ]
+    },
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
+      "type": "object",
+      "description": "Represents a service offered on the platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the service entity."
+        },
+        "platform": {
+          "type": "string",
+          "description": "Platform the service is offered on (e.g., Facebook, Instagram)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the service (e.g., SMM, Advertising)."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the service."
+        },
+        "min": {
+          "type": "number",
+          "description": "Minimum quantity for the service."
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum quantity for the service."
+        }
+      },
+      "required": [
+        "id",
+        "platform",
+        "category",
+        "price",
+        "min",
+        "max"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a user's order for a service.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Order)"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Reference to Service. (Relationship: Service 1:N Order)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of the service ordered."
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Date and time the order was placed.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the order (e.g., pending, processing, completed)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "serviceId",
+        "quantity",
+        "orderDate",
+        "status"
+      ]
+    },
+    "Campaign": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Campaign",
+      "type": "object",
+      "description": "Represents an advertising campaign.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the campaign entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Campaign)"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Platform the campaign is running on (e.g., Google Ads, Facebook)."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Date and time the campaign started.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Date and time the campaign ended.",
+          "format": "date-time"
+        },
+        "budget": {
+          "type": "number",
+          "description": "Budget allocated to the campaign."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the campaign (e.g., active, paused, completed)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "platform",
+        "startDate",
+        "endDate",
+        "budget",
+        "status"
+      ]
+    },
+    "Deposit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Deposit",
+      "type": "object",
+      "description": "Represents a user's deposit request.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the deposit entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Deposit)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount deposited."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the deposit (e.g., Vodafone Cash, Binance Pay)."
+        },
+        "depositDate": {
+          "type": "string",
+          "description": "Date and time the deposit was made.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the deposit (e.g., pending, approved, rejected)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "paymentMethod",
+        "depositDate",
+        "status"
+      ]
+    },
+    "AffiliateTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AffiliateTransaction",
+      "type": "object",
+      "description": "Represents a transaction for affiliate commission.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the affiliate transaction entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User who earned the commission. (Relationship: User 1:N AffiliateTransaction)"
+        },
+        "referralId": {
+          "type": "string",
+          "description": "Reference to User who made the purchase that generated the commission. (Relationship: User 1:N AffiliateTransaction)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of commission earned."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "Date and time of the transaction.",
+          "format": "date-time"
+        },
+        "level": {
+          "type": "number",
+          "description": "The referral level this commission was generated from."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "referralId",
+        "amount",
+        "transactionDate"
+      ]
+    },
+    "BlogPost": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BlogPost",
+      "type": "object",
+      "description": "Represents a blog post.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the blog post entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the blog post."
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the blog post."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to User (Author). (Relationship: User 1:N BlogPost)"
+        },
+        "publishDate": {
+          "type": "string",
+          "description": "Date and time the blog post was published.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "content",
+        "authorId",
+        "publishDate"
+      ]
+    },
+    "Ticket": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Ticket",
+      "type": "object",
+      "description": "Represents a support ticket.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ticket entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User who created the ticket. (Relationship: User 1:N Ticket)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject of the ticket."
+        },
+        "message": {
+          "type": "string",
+          "description": "Initial message of the ticket."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the ticket (e.g., open, closed, in progress)."
+        },
+        "createdDate": {
+          "type": "string",
+          "description": "Date and time the ticket was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "subject",
+        "message",
+        "status",
+        "createdDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Uses path-based ownership for private data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores service catalog information. Publicly readable.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "The unique identifier for the service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores orders placed by users. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who placed the order."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/campaigns/{campaignId}",
+        "definition": {
+          "entityName": "Campaign",
+          "schema": {
+            "$ref": "#/backend/entities/Campaign"
+          },
+          "description": "Stores advertising campaigns created by users. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who created the campaign."
+            },
+            {
+              "name": "campaignId",
+              "description": "The unique identifier for the campaign."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/deposits/{depositId}",
+        "definition": {
+          "entityName": "Deposit",
+          "schema": {
+            "$ref": "#/backend/entities/Deposit"
+          },
+          "description": "Stores deposit requests made by users. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who made the deposit."
+            },
+            {
+              "name": "depositId",
+              "description": "The unique identifier for the deposit."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/affiliateTransactions/{affiliateTransactionId}",
+        "definition": {
+          "entityName": "AffiliateTransaction",
+          "schema": {
+            "$ref": "#/backend/entities/AffiliateTransaction"
+          },
+          "description": "Stores affiliate transactions for users. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who earned the commission."
+            },
+            {
+              "name": "affiliateTransactionId",
+              "description": "The unique identifier for the affiliate transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/blogPosts/{blogPostId}",
+        "definition": {
+          "entityName": "BlogPost",
+          "schema": {
+            "$ref": "#/backend/entities/BlogPost"
+          },
+          "description": "Stores blog posts. Publicly readable.",
+          "params": [
+            {
+              "name": "blogPostId",
+              "description": "The unique identifier for the blog post."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/tickets/{ticketId}",
+        "definition": {
+          "entityName": "Ticket",
+          "schema": {
+            "$ref": "#/backend/entities/Ticket"
+          },
+          "description": "Stores support tickets created by users. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who created the ticket."
+            },
+            {
+              "name": "ticketId",
+              "description": "The unique identifier for the ticket."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the \"Hajaty Hub\" application, an SMM panel and digital services hub. It follows the core principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved by denormalizing authorization data where necessary to avoid using `get()` calls in security rules. Hierarchical data is structured to reflect ownership, simplifying security rules. Segregation separates data with different access requirements. Membership maps are employed for collaborative data access. This structure will create simple, robust, and easily debuggable security rules.\n\nSpecifically, for authorization independence, the `Order`, `Campaign`, `Deposit`, `AffiliateTransaction`, `BlogPost`, and `Ticket` collections all include a `userId` field, which allows for secure reads and writes based on the current user's ID without needing to perform additional lookups. This supports QAPs by enabling secure `list` operations based on user ownership.\n\nSegregation is employed by separating user-specific data into subcollections under the `/users/{userId}` path, while global data like `/services` and `/blogPosts` are stored in root-level collections. The use of explicit state modeling through the `status` field in entities like `Order`, `Campaign`, and `Deposit` ensures data clarity and predictability."
+  }
+}
