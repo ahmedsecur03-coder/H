@@ -211,14 +211,16 @@ export default function MassOrderPage() {
                         اتبع التنسيق التالي لكل طلب في سطر منفصل: <code>id_الخدمة|الرابط|الكمية</code>
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                     <Textarea
                         placeholder={`1|https://instagram.com/user1|1000\n2|https://youtube.com/watch?v=abc|5000\n5|https://facebook.com/page|200`}
-                        className="min-h-[250px] text-left ltr"
+                        className="min-h-[250px] text-left ltr bg-input"
                         value={massOrderText}
                         onChange={(e) => setMassOrderText(e.target.value)}
                         disabled={isProcessing}
                     />
+                </CardContent>
+                 <CardFooter>
                     <Button onClick={handleMassOrderSubmit} disabled={isProcessing || servicesLoading}>
                         {isProcessing ? (
                             <Loader2 className="ml-2 h-4 w-4 animate-spin" />
@@ -227,7 +229,7 @@ export default function MassOrderPage() {
                         )}
                         {isProcessing ? 'جاري المعالجة...' : 'إرسال الطلبات'}
                     </Button>
-                </CardContent>
+                </CardFooter>
             </Card>
 
             {batchResult && (

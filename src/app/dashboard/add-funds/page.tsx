@@ -77,8 +77,8 @@ function VodafoneCashTab({ settings, isLoading }: { settings: any, isLoading: bo
                     سعر الصرف الحالي: <strong>1 دولار أمريكي = {usdToEgpRate} جنيه مصري</strong>.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+             <form onSubmit={handleSubmit}>
+                <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="vf-number">رقم هاتفك</Label>
                         <Input id="vf-number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="010xxxxxxxx" required />
@@ -92,11 +92,13 @@ function VodafoneCashTab({ settings, isLoading }: { settings: any, isLoading: bo
                             سيتم إضافة ≈ <span className="font-bold text-primary">{amountInUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span> إلى رصيدك بعد المراجعة.
                         </div>
                     )}
-                    <Button type="submit" disabled={isSubmitting}>
+                </CardContent>
+                <CardFooter>
+                    <Button type="submit" disabled={isSubmitting} className="w-full">
                          {isSubmitting ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
                     </Button>
-                </form>
-            </CardContent>
+                </CardFooter>
+            </form>
         </Card>
     );
 }
@@ -158,8 +160,8 @@ function BinancePayTab({ settings, isLoading }: { settings: any, isLoading: bool
                     استخدم معرف Binance Pay التالي لإرسال المبلغ بعملة USDT: <code>{binanceId}</code>. ثم أدخل معرف العملية (Transaction ID).
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                 <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit}>
+                <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="binance-tx">معرف العملية (Transaction ID)</Label>
                         <Input id="binance-tx" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="123456789123456789" required/>
@@ -168,11 +170,13 @@ function BinancePayTab({ settings, isLoading }: { settings: any, isLoading: bool
                         <Label htmlFor="binance-amount">المبلغ المحول (USDT)</Label>
                         <Input id="binance-amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="50" required />
                     </div>
-                    <Button type="submit" disabled={isSubmitting}>
+                </CardContent>
+                <CardFooter>
+                    <Button type="submit" disabled={isSubmitting} className="w-full">
                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
                     </Button>
-                </form>
-            </CardContent>
+                </CardFooter>
+            </form>
         </Card>
     );
 }
@@ -182,7 +186,7 @@ function TransferToAdBalance() {
     const firestore = useFirestore();
     const { toast } = useToast();
     
-    const [amount, setAmount] = useState('');
+    const [amount, setAmount] = useState('50');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const userDocRef = useMemoFirebase(
@@ -217,7 +221,7 @@ function TransferToAdBalance() {
             });
 
             toast({ title: 'نجاح!', description: `تم تحويل ${transferAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} إلى رصيد الإعلانات بنجاح.` });
-            setAmount('');
+            setAmount('50');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'فشل التحويل', description: error.message });
         } finally {
@@ -233,24 +237,26 @@ function TransferToAdBalance() {
                     انقل الأموال من رصيدك الأساسي إلى رصيد الإعلانات لتمويل حملاتك.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                {isUserLoading ? <Skeleton className="h-40 w-full" /> : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="p-3 rounded-md bg-muted text-muted-foreground text-sm space-y-1">
-                            <p><strong>الرصيد الأساسي:</strong> {(userData?.balance ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</p>
-                            <p><strong>رصيد الإعلانات:</strong> {(userData?.adBalance ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</p>
+            {isUserLoading ? <CardContent><Skeleton className="h-40 w-full" /></CardContent> : (
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="space-y-4">
+                        <div className="text-sm">
+                            <p className="text-muted-foreground">الرصيد الأساسي المتاح: <span className="font-bold text-foreground">${(userData?.balance ?? 0).toFixed(2)}</span></p>
+                            <p className="text-muted-foreground">رصيدك الإعلاني: <span className="font-bold text-foreground">${(userData?.adBalance ?? 0).toFixed(2)}</span></p>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="transfer-amount">المبلغ المراد تحويله</Label>
+                            <Label htmlFor="transfer-amount">المبلغ المراد تحويله ($)</Label>
                             <Input id="transfer-amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="50" required min="1" />
                         </div>
-                        <Button type="submit" disabled={isSubmitting} className="w-full">
+                    </CardContent>
+                    <CardFooter>
+                         <Button type="submit" disabled={isSubmitting} className="w-full">
                              {isSubmitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <ArrowLeftRight className="ml-2 h-4 w-4" />}
                              تنفيذ التحويل
                         </Button>
-                    </form>
-                )}
-            </CardContent>
+                    </CardFooter>
+                </form>
+            )}
         </Card>
     )
 }
@@ -263,16 +269,14 @@ export default function AddFundsPage() {
 
   return (
      <div className="space-y-6 pb-8">
-       <div className="flex items-center justify-between">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">شحن الرصيد</h1>
-                <p className="text-muted-foreground">
-                اختر طريقة الدفع المناسبة لك لإضافة رصيد إلى حسابك.
-                </p>
-            </div>
+       <div>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">شحن الرصيد</h1>
+            <p className="text-muted-foreground">
+            اختر طريقة الدفع المناسبة لك لإضافة رصيد إلى حسابك.
+            </p>
         </div>
       
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-2">
                 <Tabs defaultValue="vodafone" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
@@ -287,7 +291,7 @@ export default function AddFundsPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-            <div>
+            <div className="space-y-6">
                 <TransferToAdBalance />
             </div>
        </div>

@@ -22,28 +22,38 @@ import {
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { useUser } from '@/firebase';
+import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from "firebase/firestore";
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
-import type { NestedNavItem } from '@/lib/types';
+import type { NestedNavItem, User as UserType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 function Header() {
   const { user } = useUser();
+  const firestore = useFirestore();
    const appUser = {
       name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
       email: user?.email || "مستخدم مجهول",
       avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
   };
+  
+   const userDocRef = useMemoFirebase(
+    () => (firestore && user ? doc(firestore, 'users', user.uid) : null),
+    [firestore, user]
+  );
+  const { data: userData } = useDoc<UserType>(userDocRef);
+
+
   return (
     <header className="sticky top-0 z-10 flex h-auto items-start flex-col gap-4 bg-background/80 backdrop-blur-sm px-4 pt-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:pt-6">
       <div className='flex items-center justify-between w-full'>
         <div className='flex items-center gap-4'>
          <SidebarTrigger className="md:hidden" />
           <div>
-            <h1 className='text-2xl font-bold text-foreground'>أهلاً بك، Hagaaty!</h1>
+            <h1 className='text-2xl font-bold text-foreground'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
             <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
           </div>
         </div>
@@ -51,12 +61,12 @@ function Header() {
          <UserNav user={appUser} />
        </div>
       </div>
-       <Card className='w-fit ml-auto border-primary/50'>
+       <Card className='w-fit ml-auto border-primary/50 bg-card/50'>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$809.49</div>
+            <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
           </CardContent>
         </Card>
     </header>
@@ -165,7 +175,9 @@ export default function DashboardLayout({
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
-             <Button variant="outline" size="sm" className='bg-card'>88 الانتقال للوحة المسؤول</Button>
+             <Button variant="outline" size="sm" className='bg-card' asChild>
+                <Link href="/admin/dashboard">الانتقال للوحة المسؤول</Link>
+            </Button>
           </div>
         </SidebarHeader>
         <SidebarContent>

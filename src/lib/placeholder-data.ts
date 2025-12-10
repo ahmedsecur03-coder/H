@@ -11,42 +11,26 @@ import {
   Settings,
   ShieldCheck,
   Banknote,
-  Users2
+  Users2,
+  BookOpen,
+  Info,
+  Code2,
+  HeartPulse
 } from 'lucide-react';
 
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { 
-    label: 'الخدمات', 
-    icon: Package,
-    children: [
-        { href: '/dashboard/services?category=instagram', label: 'انستغرام' },
-        { href: '/dashboard/services?category=tiktok', label: 'تيك توك' },
-        { href: '/dashboard/services?category=facebook', label: 'فيسبوك' },
-        { href: '/dashboard/services?category=youtube', label: 'يوتيوب' },
-        { href: '/dashboard/services?category=telegram', label: 'تليجرام' },
-        { href: '/dashboard/services?category=twitter', label: 'إكس (تويتر)' },
-        { href: '/dashboard/services?category=snapchat', label: 'سناب شات' },
-        { href: '/dashboard/services?category=kwai', label: 'كواي' },
-        { href: '/dashboard/services?category=vk', label: 'VK' },
-        { href: '/dashboard/services?category=kick', label: 'Kick' },
-        { href: '/dashboard/services?category=clubhouse', label: 'كلوب هاوس' },
-        { href: '/dashboard/services?category=website-traffic', label: 'زيارات مواقع' },
-    ]
-  },
-  {
-      label: 'الحملات الإعلانية',
-      icon: Megaphone,
-      children: [
-        { href: '/dashboard/campaigns/new', label: 'حملة جديدة' },
-        { href: '/dashboard/campaigns', label: 'إدارة الحملات' },
-      ]
-  },
+  { href: '/dashboard/services', label: 'الخدمات', icon: Package },
   { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
+  { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
+  { href: '/dashboard/api', label: 'API', icon: Code2 },
+  { href: '/dashboard/blog', label: 'المدونة', icon: BookOpen },
+  { href: '/dashboard/whats-new', label: 'ما الجديد؟', icon: Info },
+  { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
 ];
 
 export const adminNavItems: NestedNavItem[] = [
