@@ -23,7 +23,7 @@ service cloud.firestore {
       allow list, write, delete: if isAdmin();
     }
     
-    // Services: All users can read the services. Only admin can write.
+    // Services: All signed-in users can read the services. Only admin can write.
     match /services/{serviceId} {
         allow read: if isSignedIn();
         allow write: if isAdmin();
@@ -32,27 +32,27 @@ service cloud.firestore {
     // Orders: Users can create, read, and list their own orders. Admin can do anything.
     match /users/{userId}/orders/{orderId} {
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow read, list: if isOwner(userId);
+        allow read, list: if isOwner(userId) || isAdmin();
         allow write, delete, update: if isAdmin(); // Admin can modify/delete any order
     }
 
     // Campaigns: Users can create, read, and list their own campaigns. Admin can do anything.
     match /users/{userId}/campaigns/{campaignId} {
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow read, list: if isOwner(userId);
+        allow read, list: if isOwner(userId) || isAdmin();
         allow write, delete, update: if isAdmin(); // Admin can modify/delete any campaign
     }
 
     // Deposits: Users can create, read, and list their own deposits. Admin can do anything.
     match /users/{userId}/deposits/{depositId} {
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow read, list: if isOwner(userId);
+        allow read, list: if isOwner(userId) || isAdmin();
         allow write, delete, update: if isAdmin(); // Admin can modify/delete any deposit
     }
     
     // Affiliate Transactions: Users can read their own transactions. Admin can do anything.
     match /users/{userId}/affiliateTransactions/{transactionId} {
-        allow read, list: if isOwner(userId);
+        allow read, list: if isOwner(userId) || isAdmin();
         // Transactions are created server-side or via trusted functions
         allow create, write, delete, update: if isAdmin(); 
     }

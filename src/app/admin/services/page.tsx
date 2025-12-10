@@ -177,7 +177,7 @@ export default function AdminServicesPage() {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !filteredServices) {
       return Array.from({length: 10}).map((_, i) => (
         <TableRow key={i}>
           {Array.from({length: 6}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
@@ -188,7 +188,17 @@ export default function AdminServicesPage() {
       return (
         <TableRow>
           <TableCell colSpan={6} className="h-24 text-center">
-            {searchTerm ? "لا توجد خدمات تطابق بحثك." : "لا توجد خدمات حالياً."}
+             <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="mx-auto bg-muted p-4 rounded-full">
+                    <ListFilter className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <h3 className="mt-4 font-headline text-2xl">
+                    {searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    {searchTerm ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة."}
+                </p>
+            </div>
           </TableCell>
         </TableRow>
       );
@@ -209,7 +219,7 @@ export default function AdminServicesPage() {
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-destructive">
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 </AlertDialogTrigger>
@@ -222,7 +232,7 @@ export default function AdminServicesPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                     <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleDeleteService(service.id)}>متابعة الحذف</AlertDialogAction>
+                    <AlertDialogAction onClick={() => handleDeleteService(service.id)} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -264,38 +274,24 @@ export default function AdminServicesPage() {
             />
         </CardHeader>
         <CardContent>
-           {isLoading ? (
+           {isLoading && !services ? (
                <Skeleton className="h-96 w-full"/>
            ) : (
-                filteredServices && filteredServices.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>رقم الخدمة</TableHead>
-                                <TableHead>الاسم</TableHead>
-                                <TableHead>الفئة</TableHead>
-                                <TableHead>السعر لكل 1000</TableHead>
-                                <TableHead>الحدود (أدنى-أقصى)</TableHead>
-                                <TableHead className="text-right">إجراءات</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>رقم الخدمة</TableHead>
+                            <TableHead>الاسم</TableHead>
+                            <TableHead>الفئة</TableHead>
+                            <TableHead>السعر لكل 1000</TableHead>
+                            <TableHead>الحدود (أدنى-أقصى)</TableHead>
+                            <TableHead className="text-right">إجراءات</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
                         {renderContent()}
-                        </TableBody>
-                    </Table>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="mx-auto bg-muted p-4 rounded-full">
-                            <ListFilter className="h-12 w-12 text-muted-foreground" />
-                        </div>
-                        <h3 className="mt-4 font-headline text-2xl">
-                           {searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}
-                        </h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                           {searchTerm ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة."}
-                        </p>
-                    </div>
-                )
+                    </TableBody>
+                </Table>
             )}
         </CardContent>
        </Card>

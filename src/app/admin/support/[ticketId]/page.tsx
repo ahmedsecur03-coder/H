@@ -45,7 +45,7 @@ function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'a
             <div className={`max-w-md p-3 rounded-lg ${isAdmin ? 'bg-muted' : 'bg-primary text-primary-foreground'}`}>
                 <p className="text-sm whitespace-pre-wrap">{message}</p>
             </div>
-             {!isAdmin && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">أنت</div>}
+             {!isAdmin && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">مستخدم</div>}
         </div>
     );
 }
@@ -150,7 +150,7 @@ export default function AdminTicketDetailsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
+        <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowRight className="ml-2 h-4 w-4" />
             العودة إلى كل التذاكر
         </Button>
@@ -210,5 +210,3 @@ export default function AdminTicketDetailsPage() {
     </div>
   );
 }
-
-    

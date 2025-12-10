@@ -11,13 +11,12 @@ import {
   runTransaction,
   orderBy
 } from 'firebase/firestore';
-import type { Deposit, User } from '@/lib/types';
+import type { Deposit } from '@/lib/types';
 
 import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -27,20 +26,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-
-const statusVariant = {
-  'مقبول': 'default',
-  'مرفوض': 'destructive',
-  'معلق': 'secondary',
-} as const;
-type Status = keyof typeof statusVariant;
+type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
 export default function AdminDepositsPage() {
   const firestore = useFirestore();
@@ -134,13 +126,11 @@ export default function AdminDepositsPage() {
           {loadingAction === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
             activeTab === 'معلق' && (
                 <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleDepositAction(deposit, 'مقبول')}>
-                        <CheckCircle className="ml-2 h-4 w-4 text-green-500"/>
-                        قبول
+                    <Button variant="outline" size="icon" onClick={() => handleDepositAction(deposit, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
+                        <Check className="h-4 w-4"/>
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDepositAction(deposit, 'مرفوض')}>
-                        <XCircle className="ml-2 h-4 w-4 text-red-500"/>
-                        رفض
+                    <Button variant="outline" size="icon" onClick={() => handleDepositAction(deposit, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
+                        <X className="h-4 w-4"/>
                     </Button>
                 </div>
             )

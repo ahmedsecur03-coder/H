@@ -7,7 +7,7 @@ import { runTransaction, collection, doc, query } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ListOrdered, Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { ListOrdered, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from '@/hooks/use-toast';
 import type { Service, Order, User } from '@/lib/types';
@@ -105,7 +105,8 @@ export default function MassOrderPage() {
 
             const [serviceId, link, quantityStr] = parts.map(p => p.trim());
             const quantity = parseInt(quantityStr, 10);
-            const service = servicesMap.get(serviceId);
+            const service = servicesData.find(s => s.id.startsWith(serviceId));
+
 
             const pLine: ProcessedLine = { line: index + 1, serviceId, link, quantity, isValid: true };
 
@@ -134,7 +135,7 @@ export default function MassOrderPage() {
 
         if (invalidLines.length > 0) {
             invalidLines.forEach(p => finalErrors.push(`السطر ${p.line}: ${p.error}`));
-            setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: 0, errors: finalErrors });
+            setBatchResult({ successCount: validLines.length, errorCount: invalidLines.length, totalCost: totalFinalCost, errors: finalErrors });
             setIsProcessing(false);
             return;
         }
@@ -171,7 +172,7 @@ export default function MassOrderPage() {
                         const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
                         const newOrder: Omit<Order, 'id'> = {
                             userId: authUser!.uid,
-                            serviceId: pLine.serviceId,
+                            serviceId: pLine.service.id,
                             serviceName: `${pLine.service.platform} - ${pLine.service.category}`,
                             link: pLine.link,
                             quantity: pLine.quantity,
@@ -184,8 +185,8 @@ export default function MassOrderPage() {
                 }
             });
             
-            toast({ title: 'نجاح', description: 'تم إرسال جميع الطلبات بنجاح.' });
-            setBatchResult({ successCount: validLines.length, errorCount: 0, totalCost: totalFinalCost, errors: [] });
+            toast({ title: 'نجاح', description: 'تم إرسال جميع الطلبات الصالحة بنجاح.' });
+            setBatchResult({ successCount: validLines.length, errorCount: invalidLines.length, totalCost: totalFinalCost, errors: finalErrors });
             setMassOrderText('');
 
         } catch (error: any) {

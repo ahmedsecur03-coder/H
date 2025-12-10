@@ -3,10 +3,10 @@
 
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { runTransaction, collection, query, doc, addDoc, where, orderBy } from 'firebase/firestore';
+import { runTransaction, collection, query, doc, addDoc, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, ListFilter, Loader2, ArrowLeftRight, Code, Facebook, Search } from "lucide-react";
+import { PlusCircle, Rocket, Loader2, Code, Facebook, Search } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -16,14 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
 
 const platformIcons = {
     Google: <Search className="w-8 h-8 text-primary" />,
@@ -43,7 +35,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52 2.845-.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52 2.845-.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -126,7 +118,7 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                 transaction.update(userDocRef, { adBalance: currentAdBalance - budgetAmount });
                 
                 const campaignColRef = collection(firestore, `users/${user.uid}/campaigns`);
-                await addDoc(campaignColRef, {
+                const newCampaignData: Omit<Campaign, 'id'> = {
                     userId: user.uid,
                     name,
                     platform,
@@ -134,7 +126,8 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                     budget: budgetAmount,
                     spend: 0,
                     status: 'بانتظار المراجعة'
-                });
+                };
+                transaction.set(doc(campaignColRef), newCampaignData);
             });
 
             toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
@@ -299,7 +292,7 @@ export default function CampaignsPage() {
                                                 <div className='flex flex-col gap-1'>
                                                     <span className='font-mono'>${(campaign.spend ?? 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
                                                     <div className="w-full bg-muted rounded-full h-1.5">
-                                                        <div className="bg-primary h-1.5 rounded-full" style={{width: `${(campaign.spend / campaign.budget) * 100}%`}}></div>
+                                                        <div className="bg-primary h-1.5 rounded-full" style={{width: `${(campaign.spend / (campaign.budget || 1)) * 100}%`}}></div>
                                                     </div>
                                                 </div>
                                             </TableCell>
