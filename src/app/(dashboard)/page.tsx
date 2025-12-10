@@ -41,6 +41,7 @@ import {
   Star,
   Sparkles,
   Diamond,
+  Megaphone,
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -57,6 +58,8 @@ import { performanceData } from '@/lib/placeholder-data';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 const chartConfig = {
   orders: {

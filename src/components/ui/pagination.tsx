@@ -40,7 +40,7 @@ PaginationItem.displayName = "PaginationItem"
 type PaginationLinkProps = {
   isActive?: boolean
 } & Pick<ButtonProps, "size"> &
-  React.ComponentProps<"a">
+  React.ComponentProps<"a"> & { disabled?: boolean }
 
 const PaginationLink = ({
   className,
@@ -64,12 +64,13 @@ PaginationLink.displayName = "PaginationLink"
 
 const PaginationPrevious = ({
   className,
+  disabled,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
     aria-label="اذهب للصفحة السابقة"
     size="default"
-    className={cn("gap-1 pr-2.5", className)}
+    className={cn("gap-1 pr-2.5", className, disabled ? "pointer-events-none opacity-50" : "")}
     {...props}
   >
     <ChevronRight className="h-4 w-4" />
@@ -80,12 +81,13 @@ PaginationPrevious.displayName = "PaginationPrevious"
 
 const PaginationNext = ({
   className,
+  disabled,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
     aria-label="اذهب للصفحة التالية"
     size="default"
-    className={cn("gap-1 pl-2.5", className)}
+    className={cn("gap-1 pl-2.5", className, disabled ? "pointer-events-none opacity-50" : "")}
     {...props}
   >
     <span>التالي</span>
@@ -118,5 +120,3 @@ export {
   PaginationNext,
   PaginationPrevious,
 }
-
-    

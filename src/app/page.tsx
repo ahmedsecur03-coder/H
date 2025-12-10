@@ -6,7 +6,6 @@ import { Rocket, ShieldCheck, Zap, Users, LogIn, UserPlus, Star, Package } from 
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
-import { cn } from '@/lib/utils';
 import React from 'react';
 import {
   Accordion,

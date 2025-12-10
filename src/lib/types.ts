@@ -37,7 +37,7 @@ export type Order = {
 };
 
 export type NavItem = {
-  href?: string;
+  href: string;
   label: string;
   icon: React.ElementType;
 };
@@ -51,7 +51,7 @@ export type Campaign = {
     id: string;
     userId: string;
     name: string;
-    platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
+    platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat' | 'API';
     startDate: string;
     endDate?: string;
     budget: number;

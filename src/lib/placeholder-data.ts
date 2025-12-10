@@ -15,22 +15,28 @@ import {
   BookOpen,
   Info,
   Code2,
-  HeartPulse
+  HeartPulse,
+  Rocket
 } from 'lucide-react';
 
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  {
+    href: '/dashboard/orders',
+    label: 'الطلبات',
+    icon: ShoppingCart,
+    children: [
+      { href: '/dashboard/orders', label: 'سجل الطلبات' },
+      { href: '/dashboard/mass-order', label: 'طلب جماعي' },
+    ],
+  },
   { href: '/dashboard/services', label: 'الخدمات', icon: Package },
-  { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
+  { href: '/dashboard/campaigns', label: 'الحملات', icon: Rocket },
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
   { href: '/dashboard/api', label: 'API', icon: Code2 },
-  { href: '/dashboard/blog', label: 'المدونة', icon: BookOpen },
-  { href: '/dashboard/whats-new', label: 'ما الجديد؟', icon: Info },
-  { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
 ];
 
 export const adminNavItems: NestedNavItem[] = [
