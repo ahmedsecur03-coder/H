@@ -146,6 +146,7 @@ function QuickOrderForm({ user, userData }: { user: any; userData: UserType | nu
 
         // Create the new order
         const newOrder: Omit<Order, 'id'> = {
+          userId: user.uid,
           serviceId: selectedService.id,
           serviceName: `${selectedService.category} - ${selectedService.platform}`,
           quantity: numQuantity,

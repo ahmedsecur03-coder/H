@@ -133,6 +133,7 @@ export default function MassOrderPage() {
                     if (pLine.isValid && pLine.cost && pLine.service) {
                         const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
                         const newOrder: Omit<Order, 'id'> = {
+                            userId: authUser!.uid,
                             serviceId: pLine.serviceId,
                             serviceName: `${pLine.service.category} - ${pLine.service.platform}`,
                             link: pLine.link,

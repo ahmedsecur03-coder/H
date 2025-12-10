@@ -26,6 +26,7 @@ export type Service = {
 
 export type Order = {
   id: string;
+  userId: string;
   serviceId: string;
   serviceName: string;
   link: string;
