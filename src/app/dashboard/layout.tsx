@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import {
   Bell,
-  Search,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -18,14 +17,13 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { UserNav } from './_components/user-nav';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UserNav } from './_components/user-nav';
 
 
 export default function DashboardLayout({
@@ -37,10 +35,8 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // If loading is finished and there's no user, redirect to login.
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
+    // With anonymous auth, we might still want to show a loading state briefly
+    // but we no longer redirect.
   }, [user, isUserLoading, router]);
 
   // While loading, show a skeleton layout to prevent flashing content.
@@ -77,10 +73,9 @@ export default function DashboardLayout({
   }
 
   // Once loading is complete and user is authenticated, render the real layout.
-  // We pass a simplified user object to UserNav for now.
   const appUser = {
-      name: user.displayName || user.email || "مستخدم",
-      email: user.email || "",
+      name: `مستخدم #${user.uid.substring(0, 6)}`,
+      email: "مستخدم مجهول",
       avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
   };
 

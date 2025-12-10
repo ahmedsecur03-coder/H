@@ -9,11 +9,8 @@ function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
         <nav className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-            <Link href="/login">تسجيل الدخول</Link>
-          </Button>
           <Button asChild className="cosmic-glow-primary">
-            <Link href="/signup">إنشاء حساب</Link>
+            <Link href="/dashboard/dashboard">الذهاب إلى لوحة التحكم</Link>
           </Button>
         </nav>
       </div>
@@ -40,7 +37,7 @@ export default function Home() {
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button size="lg" asChild className="cosmic-glow-primary hover:brightness-125 transition-all duration-300">
-                  <Link href="/signup">ابدأ الآن مجاناً</Link>
+                  <Link href="/dashboard/dashboard">ابدأ الآن</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
                   <Link href="/dashboard/services">استكشف الخدمات</Link>

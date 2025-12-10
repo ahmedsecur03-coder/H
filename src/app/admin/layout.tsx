@@ -32,11 +32,8 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-    // Add logic here to check if the user is an admin.
-    // For now, we'll assume the user is an admin if they access this layout.
+    // Since we are using anonymous auth, we don't redirect.
+    // In a real app, you'd check for admin claims here.
   }, [user, isUserLoading, router]);
 
   if (isUserLoading || !user) {
@@ -69,9 +66,9 @@ export default function AdminLayout({
   }
 
   const appUser = {
-    name: user.displayName || user.email || 'Admin',
-    email: user.email || '',
-    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+    name: "مسؤول",
+    email: `admin@${user.uid.substring(0,6)}`,
+    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=admin`,
   };
 
   return (
