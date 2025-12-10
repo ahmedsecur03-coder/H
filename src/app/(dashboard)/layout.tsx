@@ -1,13 +1,10 @@
+"use client";
+
 import Link from 'next/link';
 import {
   Bell,
   Search,
-  Settings,
-  User,
-  LogOut,
-  ChevronDown,
 } from 'lucide-react';
-
 import {
   SidebarProvider,
   Sidebar,
@@ -21,24 +18,71 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { dashboardNavItems, mockUser } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserNav } from './_components/user-nav';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If loading is finished and there's no user, redirect to login.
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  // While loading, show a skeleton layout to prevent flashing content.
+  if (isUserLoading || !user) {
+    return (
+        <div className="flex min-h-screen w-full">
+            <div className="hidden md:block w-64 bg-muted/40 border-r p-4">
+                <div className="flex h-12 items-center justify-center px-4 mb-4">
+                     <Logo />
+                </div>
+                <div className="flex flex-col gap-2">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                    ))}
+                </div>
+            </div>
+            <div className="flex-1">
+                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+                    <Skeleton className="h-8 w-8 md:hidden" />
+                    <div className="relative flex-1 md:grow-0">
+                       <Skeleton className="h-9 w-full md:w-[200px] lg:w-[320px]" />
+                    </div>
+                    <div className="flex items-center gap-2 mr-auto">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                    </div>
+                </header>
+                <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                   <Skeleton className="w-full h-[80vh]" />
+                </main>
+            </div>
+        </div>
+    );
+  }
+
+  // Once loading is complete and user is authenticated, render the real layout.
+  // We pass a simplified user object to UserNav for now.
+  const appUser = {
+      name: user.displayName || user.email || "مستخدم",
+      email: user.email || "",
+      avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+  };
+
   return (
     <SidebarProvider>
       <Sidebar side="right" collapsible="icon">
@@ -85,7 +129,7 @@ export default function DashboardLayout({
               <Bell className="h-5 w-5" />
               <span className="sr-only">Toggle notifications</span>
             </Button>
-            <UserNav user={mockUser} />
+            <UserNav user={appUser} />
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
