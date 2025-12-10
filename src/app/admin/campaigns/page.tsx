@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -25,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,6 +33,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { simulateCampaignSpend } from '@/ai/flows/campaign-simulation-flow';
 
 const statusVariant = {
   'نشط': 'default',
@@ -49,7 +50,9 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+    const [simulating, setSimulating] = useState(false);
     const [open, setOpen] = useState(false);
+    const [dailySpend, setDailySpend] = useState('10'); // Default daily spend for simulation
 
     const handleAction = async (newStatus: 'نشط' | 'متوقف') => {
         if (!firestore) return;
@@ -85,7 +88,7 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
                 const newAdBalance = currentAdBalance + campaign.budget;
                 
                 transaction.update(userDocRef, { adBalance: newAdBalance });
-                transaction.update(campaignDocRef, { status: 'متوقف', spend: campaign.budget }); // Mark as stopped and reflect budget returned
+                transaction.delete(campaignDocRef);
             });
 
             toast({ title: 'نجاح', description: 'تم رفض الحملة وإعادة الميزانية للمستخدم.' });
@@ -95,7 +98,54 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
         } finally {
             setLoading(false);
         }
-    }
+    };
+
+    const handleSimulation = async () => {
+        if (!firestore) return;
+        setSimulating(true);
+
+        const dailySpendAmount = parseFloat(dailySpend);
+        if (isNaN(dailySpendAmount) || dailySpendAmount <= 0) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال قيمة إنفاق يومي صالحة.' });
+            setSimulating(false);
+            return;
+        }
+
+        try {
+            const remainingBudget = campaign.budget - campaign.spend;
+            if(remainingBudget <= 0) {
+                 toast({ variant: 'destructive', title: 'تنبيه', description: 'ميزانية الحملة قد استنفدت بالفعل.' });
+                 // Optionally update status to 'مكتمل'
+                 const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+                 await runTransaction(firestore, async (transaction) => {
+                    transaction.update(campaignDocRef, { status: "مكتمل" });
+                 });
+                 setSimulating(false);
+                 return;
+            }
+
+            const { simulatedSpend } = await simulateCampaignSpend({
+                campaignName: campaign.name,
+                platform: campaign.platform,
+                remainingBudget: remainingBudget,
+                dailySpend: dailySpendAmount,
+            });
+
+            const newSpend = campaign.spend + simulatedSpend;
+            const newStatus = newSpend >= campaign.budget ? 'مكتمل' : campaign.status;
+
+            const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+            await runTransaction(firestore, async (transaction) => {
+                transaction.update(campaignDocRef, { spend: newSpend, status: newStatus });
+            });
+
+            toast({ title: 'محاكاة ناجحة', description: `تم إنفاق ${simulatedSpend.toFixed(2)}$ من الميزانية.`});
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل المحاكاة', description: error.message });
+        } finally {
+            setSimulating(false);
+        }
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -115,23 +165,41 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
                     <p><strong>المنصة:</strong> {campaign.platform}</p>
                     <p><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></p>
                 </div>
-                <DialogFooter className="gap-2">
-                    {loading ? <Loader2 className="animate-spin" /> : (
-                        <>
-                            {campaign.status === 'بانتظار المراجعة' && (
-                                <>
-                                    <Button variant="destructive" onClick={handleReject}>رفض وإعادة الميزانية</Button>
-                                    <Button onClick={() => handleAction('نشط')}>موافقة وتفعيل</Button>
-                                </>
-                            )}
-                             {campaign.status === 'نشط' && (
-                                <Button variant="secondary" onClick={() => handleAction('متوقف')}>إيقاف مؤقت</Button>
-                             )}
-                              {campaign.status === 'متوقف' && (
-                                <Button onClick={() => handleAction('نشط')}>إعادة تفعيل</Button>
-                             )}
-                        </>
-                    )}
+
+                {campaign.status === 'نشط' && (
+                    <div className="rounded-md border p-4 space-y-2">
+                        <h4 className="font-semibold">محاكاة الإنفاق</h4>
+                        <p className="text-sm text-muted-foreground">أدخل مبلغ الإنفاق اليومي لمحاكاة أداء الحملة.</p>
+                        <div className="flex items-center gap-2">
+                            <Label htmlFor="daily-spend" className="sr-only">الإنفاق اليومي</Label>
+                            <Input id="daily-spend" type="number" value={dailySpend} onChange={e => setDailySpend(e.target.value)} />
+                            <Button onClick={handleSimulation} disabled={simulating}>
+                                {simulating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                                <span className="mr-2">تحديث الإنفاق</span>
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                <DialogFooter className="gap-2 sm:justify-between">
+                    <div className="flex gap-2">
+                         {loading ? <Loader2 className="animate-spin" /> : (
+                            <>
+                                {campaign.status === 'بانتظار المراجعة' && (
+                                    <>
+                                        <Button variant="destructive" onClick={handleReject}>رفض الحملة</Button>
+                                        <Button onClick={() => handleAction('نشط')}>موافقة وتفعيل</Button>
+                                    </>
+                                )}
+                                {campaign.status === 'نشط' && (
+                                    <Button variant="secondary" onClick={() => handleAction('متوقف')}>إيقاف مؤقت</Button>
+                                )}
+                                {campaign.status === 'متوقف' && campaign.spend < campaign.budget && (
+                                    <Button onClick={() => handleAction('نشط')}>إعادة تفعيل</Button>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -102,7 +103,7 @@ export default function DashboardLayout({
                     className: 'font-body',
                     side: 'left',
                   }}
-                  isActive={item.href === '/dashboard' && index === 0} // Example active state
+                  isActive={item.href === '/dashboard/dashboard' && index === 0} // Example active state
                 >
                   <Link href={item.href}>
                     <item.icon />

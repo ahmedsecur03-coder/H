@@ -43,7 +43,7 @@ export default function Home() {
                   <Link href="/signup">ابدأ الآن مجاناً</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                  <Link href="/services">استكشف الخدمات</Link>
+                  <Link href="/dashboard/services">استكشف الخدمات</Link>
                 </Button>
               </div>
             </div>

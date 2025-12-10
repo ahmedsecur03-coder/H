@@ -73,7 +73,7 @@ export default function SignupPage() {
 
       setDocumentNonBlocking(userDocRef, newUser, { merge: true });
 
-      router.push('/dashboard');
+      router.push('/dashboard/dashboard');
 
     } catch (error: any) {
       console.error("Signup Error:", error);
