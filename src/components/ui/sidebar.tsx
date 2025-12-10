@@ -572,8 +572,10 @@ const SidebarMenuButton = React.forwardRef<
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
       >
-        {children}
-        {isCollapsible && <span className="sr-only">{typeof tooltip === 'string' ? tooltip : (tooltip as any)?.children}</span>}
+        <React.Fragment>
+            {children}
+            {isCollapsible && <span className="sr-only">{typeof tooltip === 'string' ? tooltip : (tooltip as any)?.children}</span>}
+        </React.Fragment>
       </Comp>
     );
 
