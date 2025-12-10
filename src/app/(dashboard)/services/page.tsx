@@ -322,7 +322,6 @@ export default function ServicesPage() {
       { platform: "يوتيوب", category: "إعجابات يوتيوب", price: 0.216 * profitMargin, min: 10, max: 500000 },
       { platform: "يوتيوب", category: "إعجابات يوتيوب", price: 0.506 * profitMargin, min: 10, max: 50000 },
       { platform: "يوتيوب", category: "إعجابات يوتيوب", price: 0.209 * profitMargin, min: 10, max: 200000 },
-      { platform: "يوتيوب", category: "إعجابات يوتيوب", price: 0.165 * profitMargin, min: 10, max: 80000 },
       { platform: "يوتيوب", category: "إعjابات يوتيوب", price: 0.198 * profitMargin, min: 10, max: 100000 },
       { platform: "يوتيوب", category: "إعجابات يوتيوب", price: 0.121 * profitMargin, min: 10, max: 20000 },
       { platform: "يوتيوب", category: "إعجابات يوتيوب", price: 0.275 * profitMargin, min: 10, max: 80000 },
@@ -607,7 +606,6 @@ export default function ServicesPage() {
       { platform: "حملات إعلانية", category: "إدارة حملة فيسبوك", price: 150 * profitMargin, min: 1, max: 1 },
       { platform: "حملات إعلانية", category: "إدارة حملة جوجل", price: 200 * profitMargin, min: 1, max: 1 },
       { platform: "حسابات إعلانية", category: "بيع حساب إعلاني", price: 100 * profitMargin, min: 1, max: 1 },
-
     ];
     
     const servicesCol = collection(firestore, 'services');
