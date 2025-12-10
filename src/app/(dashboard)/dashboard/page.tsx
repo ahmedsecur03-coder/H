@@ -26,8 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockOrders, mockUser, performanceData } from '@/lib/placeholder-data';
-import { DollarSign, Package, ShoppingCart, Gem, Percent } from 'lucide-react';
+import {
+  DollarSign,
+  Package,
+  ShoppingCart,
+  Gem,
+  Percent,
+  Loader2,
+} from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -35,11 +41,13 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, runTransaction } from '@/firebase';
+import { doc, collection, query, orderBy, limit, where, getDocs, writeBatch } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { User as UserType, Order } from '@/lib/types';
-
+import type { User as UserType, Order, Service } from '@/lib/types';
+import { performanceData } from '@/lib/placeholder-data';
+import { useState, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const chartConfig = {
   orders: {
@@ -51,6 +59,187 @@ const chartConfig = {
     color: 'hsl(var(--accent))',
   },
 } satisfies ChartConfig;
+
+const RANKS = [
+  { name: 'مستكشف نجمي', spend: 0, discount: 0 },
+  { name: 'قائد صاروخي', spend: 500, discount: 2 },
+  { name: 'سيد المجرة', spend: 2500, discount: 5 },
+  { name: 'سيد كوني', spend: 10000, discount: 10 },
+];
+
+function getRankForSpend(spend: number) {
+  let currentRank = RANKS[0];
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (spend >= RANKS[i].spend) {
+      currentRank = RANKS[i];
+      break;
+    }
+  }
+  return currentRank;
+}
+
+function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
+  const [link, setLink] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [cost, setCost] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Queries for services
+  const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
+  const { data: allServices } = useCollection<Service>(servicesQuery);
+
+  const { categories, servicesForCategory, selectedService } = useMemo(() => {
+    if (!allServices) return { categories: [], servicesForCategory: [], selectedService: null };
+    const categories = [...new Set(allServices.map(s => s.category))];
+    const servicesForCategory = selectedCategory ? allServices.filter(s => s.category === selectedCategory) : [];
+    const selectedService = selectedServiceId ? allServices.find(s => s.id === selectedServiceId) : null;
+    return { categories, servicesForCategory, selectedService };
+  }, [allServices, selectedCategory, selectedServiceId]);
+  
+  const rank = getRankForSpend(userData?.totalSpent ?? 0);
+  const discountPercentage = rank.discount / 100;
+
+  // Calculate cost
+  useMemo(() => {
+    if (selectedService && quantity) {
+      const numQuantity = parseInt(quantity, 10);
+      if (!isNaN(numQuantity)) {
+        const baseCost = (numQuantity / 1000) * selectedService.price;
+        const discount = baseCost * discountPercentage;
+        setCost(baseCost - discount);
+      }
+    } else {
+      setCost(0);
+    }
+  }, [selectedService, quantity, discountPercentage]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore || !user || !selectedService || !link || !quantity) {
+      toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء جميع الحقول." });
+      return;
+    }
+    
+    const numQuantity = parseInt(quantity, 10);
+    if (isNaN(numQuantity) || numQuantity <= 0) {
+      toast({ variant: "destructive", title: "خطأ", description: "الكمية يجب أن تكون رقماً صحيحاً." });
+      return;
+    }
+
+    if (numQuantity < selectedService.min || numQuantity > selectedService.max) {
+       toast({ variant: "destructive", title: "خطأ", description: `الكمية خارج الحدود المسموحة (${selectedService.min} - ${selectedService.max}).` });
+      return;
+    }
+
+    if (userData.balance < cost) {
+      toast({ variant: "destructive", title: "خطأ", description: "رصيدك غير كافٍ لإتمام هذا الطلب." });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+        const userDocRef = doc(firestore, "users", user.uid);
+
+        await runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+            
+            const currentData = userDoc.data() as UserType;
+            const currentBalance = currentData.balance;
+
+            if (currentBalance < cost) throw new Error("رصيدك غير كافٍ.");
+
+            const newBalance = currentBalance - cost;
+            const newTotalSpent = currentData.totalSpent + cost;
+            const newRank = getRankForSpend(newTotalSpent).name;
+            
+            transaction.update(userDocRef, {
+                balance: newBalance,
+                totalSpent: newTotalSpent,
+                rank: newRank,
+            });
+
+            const newOrderRef = doc(collection(firestore, `users/${user.uid}/orders`));
+            const newOrder: Omit<Order, 'id'> = {
+                userId: user.uid,
+                serviceName: `${selectedService.category} - ${selectedService.platform}`,
+                link: link,
+                quantity: numQuantity,
+                charge: cost,
+                orderDate: new Date().toISOString(),
+                status: 'قيد التنفيذ',
+            };
+            transaction.set(newOrderRef, newOrder);
+        });
+
+        toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
+        // Reset form
+        setSelectedCategory(undefined);
+        setSelectedServiceId(undefined);
+        setLink('');
+        setQuantity('');
+        setCost(0);
+    } catch (error: any) {
+        console.error("Order submission error:", error);
+        toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-headline">طلب سريع</CardTitle>
+        <CardDescription>ابدأ طلبك الجديد مباشرة من هنا.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="category">الفئة</Label>
+            <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory}>
+              <SelectTrigger id="category"><SelectValue placeholder="اختر فئة" /></SelectTrigger>
+              <SelectContent>
+                {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="service">الخدمة</Label>
+            <Select onValueChange={setSelectedServiceId} value={selectedServiceId} disabled={!selectedCategory}>
+              <SelectTrigger id="service"><SelectValue placeholder="اختر خدمة" /></SelectTrigger>
+              <SelectContent>
+                 {servicesForCategory.map(service => <SelectItem key={service.id} value={service.id}>{service.platform} (سعر الألف: ${service.price})</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="link">الرابط</Label>
+            <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="quantity">الكمية</Label>
+            <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
+            {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
+          </div>
+          <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
+             التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
+          </div>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+             {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال الطلب'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
 
 
 export default function DashboardPage() {
@@ -78,7 +267,7 @@ export default function DashboardPage() {
     جزئي: 'outline',
   } as const;
 
-  if (isLoading) {
+  if (isLoading || !userData || !authUser) {
     return (
       <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
@@ -94,6 +283,8 @@ export default function DashboardPage() {
       </div>
     );
   }
+  
+  const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
@@ -132,7 +323,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
-               <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم 0% على الخدمات</p>
+               <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم {rank.discount}% على الخدمات</p>
             </CardContent>
           </Card>
           <Card>
@@ -217,55 +408,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">طلب سريع</CardTitle>
-            <CardDescription>
-              ابدأ طلبك الجديد مباشرة من هنا.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="category">الفئة</Label>
-                <Select>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="اختر فئة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="followers">متابعين</SelectItem>
-                    <SelectItem value="likes">إعجابات</SelectItem>
-                    <SelectItem value="views">مشاهدات</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="service">الخدمة</Label>
-                <Select>
-                  <SelectTrigger id="service">
-                    <SelectValue placeholder="اختر خدمة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ig-followers">متابعين انستغرام</SelectItem>
-                    <SelectItem value="fb-likes">إعجابات فيسبوك</SelectItem>
-                    <SelectItem value="yt-views">مشاهدات يوتيوب</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="link">الرابط</Label>
-                <Input id="link" placeholder="https://..." />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="quantity">الكمية</Label>
-                <Input id="quantity" type="number" placeholder="1000" />
-              </div>
-              <Button type="submit" className="w-full">
-                إرسال الطلب
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <QuickOrderForm user={authUser} userData={userData} />
       </div>
     </div>
   );

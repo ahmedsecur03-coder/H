@@ -26,6 +26,7 @@ export type Service = {
 
 export type Order = {
   id: string;
+  userId: string;
   serviceName: string;
   link: string;
   quantity: number;
@@ -38,4 +39,50 @@ export type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
+};
+
+export type Campaign = {
+    id: string;
+    userId: string;
+    name: string;
+    platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
+    startDate: string;
+    endDate?: string;
+    budget: number;
+    spend: number;
+    status: 'نشط' | 'متوقف' | 'مكتمل';
+};
+
+export type Deposit = {
+    id: string;
+    userId: string;
+    amount: number;
+    paymentMethod: 'فودافون كاش' | 'Binance Pay';
+    details: Record<string, any>;
+    depositDate: string;
+    status: 'معلق' | 'مقبول' | 'مرفوض';
+};
+
+export type AffiliateTransaction = {
+    id: string;
+    userId: string;
+    referralId: string;
+    orderId: string;
+    amount: number;
+    transactionDate: string;
+    level: number;
+};
+
+export type Ticket = {
+    id: string;
+    userId: string;
+    subject: string;
+    message: string;
+    status: 'مفتوحة' | 'قيد المراجعة' | 'مغلقة';
+    createdDate: string;
+    messages: {
+        sender: 'user' | 'admin';
+        text: string;
+        timestamp: string;
+    }[];
 };
