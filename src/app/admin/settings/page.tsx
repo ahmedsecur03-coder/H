@@ -1,11 +1,40 @@
 'use client';
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminSettingsPage() {
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+
+  // In a real app, you would fetch these values from Firestore
+  const [vodafoneNumber, setVodafoneNumber] = useState('');
+  const [binanceId, setBinanceId] = useState('');
+  const [usdRate, setUsdRate] = useState('');
+  const [whatsappSupport, setWhatsappSupport] = useState('');
+  const [dealOfTheDay, setDealOfTheDay] = useState('');
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    // TODO: Implement logic to save these settings to a 'settings' document in Firestore.
+    // For example: await setDoc(doc(firestore, 'settings', 'global'), { ... });
+    
+    // Simulate saving
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    toast({
+      title: "تم حفظ الإعدادات",
+      description: "تم تحديث إعدادات الموقع بنجاح.",
+    });
+    setIsSaving(false);
+  };
+
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -23,15 +52,15 @@ export default function AdminSettingsPage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="vodafone-number">رقم فودافون كاش</Label>
-                        <Input id="vodafone-number" placeholder="010xxxxxxxx" />
+                        <Input id="vodafone-number" value={vodafoneNumber} onChange={e => setVodafoneNumber(e.target.value)} placeholder="010xxxxxxxx" />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="binance-id">معرف Binance Pay</Label>
-                        <Input id="binance-id" placeholder="USER12345" />
+                        <Input id="binance-id" value={binanceId} onChange={e => setBinanceId(e.target.value)} placeholder="USER12345" />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="usd-rate">سعر صرف الدولار (مقابل الجنيه المصري)</Label>
-                        <Input id="usd-rate" type="number" placeholder="50" />
+                        <Input id="usd-rate" type="number" value={usdRate} onChange={e => setUsdRate(e.target.value)} placeholder="50" />
                     </div>
                 </CardContent>
             </Card>
@@ -43,11 +72,11 @@ export default function AdminSettingsPage() {
                 <CardContent className="space-y-4">
                      <div className="space-y-2">
                         <Label htmlFor="whatsapp-support">رابط دعم واتساب</Label>
-                        <Input id="whatsapp-support" placeholder="https://wa.me/2010xxxxxxxx" />
+                        <Input id="whatsapp-support" value={whatsappSupport} onChange={e => setWhatsappSupport(e.target.value)} placeholder="https://wa.me/2010xxxxxxxx" />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="deal-of-day">معرف خدمة "صفقة اليوم"</Label>
-                        <Input id="deal-of-day" placeholder="أدخل ID الخدمة" />
+                        <Input id="deal-of-day" value={dealOfTheDay} onChange={e => setDealOfTheDay(e.target.value)} placeholder="أدخل ID الخدمة" />
                     </div>
                 </CardContent>
             </Card>
@@ -75,7 +104,10 @@ export default function AdminSettingsPage() {
       </div>
        <Separator className="my-6" />
         <div className="flex justify-end">
-            <Button>حفظ التغييرات</Button>
+            <Button onClick={handleSaveChanges} disabled={isSaving}>
+                {isSaving && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                حفظ التغييرات
+            </Button>
         </div>
     </div>
   );

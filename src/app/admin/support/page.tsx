@@ -1,4 +1,9 @@
 'use client';
+
+import { useMemo } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collectionGroup, query } from 'firebase/firestore';
+import type { Ticket } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -16,6 +21,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -23,32 +30,51 @@ const statusVariant = {
   'قيد المراجعة': 'default',
 } as const;
 
-const dummyTickets = [
-    {
-        id: 'ticket_1',
-        user: 'أحمد المصري',
-        subject: 'تأخر في تنفيذ طلب',
-        status: 'مفتوحة',
-        createdDate: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-        id: 'ticket_2',
-        user: 'سارة خالد',
-        subject: 'مشكلة في الإيداع',
-        status: 'قيد المراجعة',
-        createdDate: new Date().toISOString(),
-    },
-    {
-        id: 'ticket_3',
-        user: 'محمد علي',
-        subject: 'استفسار عن خدمة',
-        status: 'مغلقة',
-        createdDate: new Date(Date.now() - 86400000 * 3).toISOString(),
-    }
-]
-
 export default function AdminSupportPage() {
-  const tickets = dummyTickets;
+  const firestore = useFirestore();
+
+  const ticketsQuery = useMemoFirebase(
+    () => firestore ? query(collectionGroup(firestore, 'tickets')) : null,
+    [firestore]
+  );
+
+  const { data: tickets, isLoading } = useCollection<Ticket>(ticketsQuery);
+  
+  const renderContent = () => {
+    if (isLoading) {
+      return Array.from({length: 5}).map((_, i) => (
+        <TableRow key={i}>
+            {Array.from({length: 5}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+        </TableRow>
+      ));
+    }
+
+    if (!tickets || tickets.length === 0) {
+       return (
+        <TableRow>
+          <TableCell colSpan={5} className="h-24 text-center">
+            لا توجد تذاكر دعم حالياً.
+          </TableCell>
+        </TableRow>
+      );
+    }
+    
+    return tickets.map((ticket) => (
+       <TableRow key={ticket.id}>
+        <TableCell className="font-medium">{ticket.subject}</TableCell>
+        <TableCell className="font-mono text-xs">{ticket.userId.substring(0, 10)}...</TableCell>
+        <TableCell>
+          <Badge variant={statusVariant[ticket.status]}>{ticket.status}</Badge>
+        </TableCell>
+        <TableCell>{new Date(ticket.createdDate).toLocaleDateString()}</TableCell>
+          <TableCell className="text-right">
+          <Button variant="outline" size="sm">عرض و رد</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  }
+
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -72,19 +98,7 @@ export default function AdminSupportPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tickets.map((ticket) => (
-                <TableRow key={ticket.id}>
-                  <TableCell className="font-medium">{ticket.subject}</TableCell>
-                  <TableCell>{ticket.user}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[ticket.status]}>{ticket.status}</Badge>
-                  </TableCell>
-                  <TableCell>{new Date(ticket.createdDate).toLocaleDateString()}</TableCell>
-                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm">عرض و رد</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {renderContent()}
             </TableBody>
           </Table>
         </CardContent>

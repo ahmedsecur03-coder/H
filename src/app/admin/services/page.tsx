@@ -40,7 +40,7 @@ export default function AdminServicesPage() {
     if (!searchTerm) return services;
     const lowerCaseSearch = searchTerm.toLowerCase();
     return services.filter(service => 
-      service.name.toLowerCase().includes(lowerCaseSearch) ||
+      service.platform.toLowerCase().includes(lowerCaseSearch) ||
       service.category.toLowerCase().includes(lowerCaseSearch) ||
       service.id.toLowerCase().includes(lowerCaseSearch)
     );
@@ -66,8 +66,8 @@ export default function AdminServicesPage() {
     return filteredServices.map(service => (
       <TableRow key={service.id}>
           <TableCell className="font-mono">{service.id.substring(0,8)}</TableCell>
-          <TableCell className="font-medium">{service.name}</TableCell>
-          <TableCell>{service.category}</TableCell>
+          <TableCell className="font-medium">{service.category}</TableCell>
+          <TableCell>{service.platform}</TableCell>
           <TableCell>${service.price.toFixed(4)}</TableCell>
           <TableCell>{service.min.toLocaleString()} - {service.max.toLocaleString()}</TableCell>
           <TableCell className="text-right">
