@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser, useFirestore, addDocumentNonBlocking, runTransaction, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
+import { addDoc, collection, doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Deposit, User as UserType } from '@/lib/types';
 import { Loader2, ArrowLeftRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { runTransaction } from 'firebase/firestore';
 
 function VodafoneCashTab() {
     const { user } = useUser();
@@ -21,7 +22,7 @@ function VodafoneCashTab() {
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!firestore || !user || !phoneNumber || !amount) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى ملء جميع الحقول.' });
@@ -38,17 +39,20 @@ function VodafoneCashTab() {
             status: 'معلق',
         };
 
-        const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
-        addDocumentNonBlocking(depositsColRef, depositRequest);
-
-        toast({
-            title: 'تم استلام طلبك',
-            description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
-        });
-
-        setPhoneNumber('');
-        setAmount('');
-        setIsSubmitting(false);
+        try {
+            const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
+            await addDoc(depositsColRef, depositRequest);
+            toast({
+                title: 'تم استلام طلبك',
+                description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
+            });
+            setPhoneNumber('');
+            setAmount('');
+        } catch (error) {
+             toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال طلبك.' });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -86,7 +90,7 @@ function BinancePayTab() {
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-     const handleSubmit = (e: React.FormEvent) => {
+     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!firestore || !user || !transactionId || !amount) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى ملء جميع الحقول.' });
@@ -102,18 +106,21 @@ function BinancePayTab() {
             depositDate: new Date().toISOString(),
             status: 'معلق',
         };
-
-        const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
-        addDocumentNonBlocking(depositsColRef, depositRequest);
-
-        toast({
-            title: 'تم استلام طلبك',
-            description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
-        });
-
-        setTransactionId('');
-        setAmount('');
-        setIsSubmitting(false);
+        
+        try {
+            const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
+            await addDoc(depositsColRef, depositRequest);
+            toast({
+                title: 'تم استلام طلبك',
+                description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
+            });
+            setTransactionId('');
+            setAmount('');
+        } catch(error) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال طلبك.' });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -211,7 +218,7 @@ function TransferToAdBalance() {
                             <Input id="transfer-amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="50" required />
                         </div>
                         <Button type="submit" disabled={isSubmitting}>
-                             {isSubmitting ? <Loader2 className="animate-spin" /> : <ArrowLeftRight className="ml-2 h-4 w-4" />}
+                             {isSubmitting ? <Loader2 className="animate-spin ml-2" /> : <ArrowLeftRight className="ml-2 h-4 w-4" />}
                              تنفيذ التحويل
                         </Button>
                     </form>
@@ -225,12 +232,14 @@ function TransferToAdBalance() {
 export default function AddFundsPage() {
   return (
      <div className="space-y-6 pb-8">
-       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">شحن الرصيد</h1>
-        <p className="text-muted-foreground">
-          اختر طريقة الدفع المناسبة لك لإضافة رصيد إلى حسابك أو قم بالتحويل لرصيد الإعلانات.
-        </p>
-      </div>
+       <div className="flex items-center justify-between">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">شحن الرصيد</h1>
+                <p className="text-muted-foreground">
+                اختر طريقة الدفع المناسبة لك لإضافة رصيد إلى حسابك.
+                </p>
+            </div>
+        </div>
       
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
