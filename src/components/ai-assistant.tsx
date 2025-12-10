@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useFlow, useMessages } from '@genkit-ai/next/client';
+import { useFlow, Flow } from 'genkit/react';
 import {
   Sheet,
   SheetContent,
@@ -13,23 +13,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Bot, User, CornerDownLeft, Loader2, Sparkles } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import type { AISupportUsersOutput, AISupportUsersInput } from '@/ai/flows/ai-support-users';
+import { aiSupportUsers as aiSupportUsersFlow } from '@/ai/flows/ai-support-users';
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const {messages, setMessages} = useMessages<AISupportUsersOutput>();
-  const {run: aiSupportUsers, running: isRunning} = useFlow<AISupportUsersInput, AISupportUsersOutput>('/aiSupportUsers');
+  
+  const [flow, setFlow] = useState<Flow<AISupportUsersInput, AISupportUsersOutput>>();
+
+  const { messages, run, running } = useFlow(flow);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     const userMessage = { query: input };
     setInput('');
-    setMessages(current => [...current, {role: 'user', content: userMessage, id: crypto.randomUUID()}]);
-    aiSupportUsers(userMessage);
+    run(userMessage);
   };
 
   const UserMessage = ({ children }: { children: React.ReactNode }) => (
@@ -54,11 +56,15 @@ export default function AiAssistant() {
     </div>
   );
 
+  const openAssistant = () => {
+    setFlow(() => aiSupportUsersFlow);
+    setOpen(true);
+  }
 
   return (
     <>
       <Button
-        onClick={() => setOpen(true)}
+        onClick={openAssistant}
         className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full shadow-lg"
         size="icon"
       >
@@ -80,9 +86,9 @@ export default function AiAssistant() {
                     مرحباً بك في مركز المساعدة الذكي! كيف يمكنني مساعدتك اليوم في منصة حاجاتي؟
                 </BotMessage>
                  {messages.map((msg: any) => (
-                    <div key={msg.id}>
-                        {msg.role === 'user' && <UserMessage>{msg.content.query}</UserMessage>}
-                        {msg.role === 'model' && <BotMessage>{msg.content.response}</BotMessage>}
+                    <div key={msg.key}>
+                        {msg.role === 'user' && <UserMessage>{(msg.content as AISupportUsersInput).query}</UserMessage>}
+                        {msg.role === 'model' && <BotMessage>{(msg.content as AISupportUsersOutput).response}</BotMessage>}
                     </div>
                 ))}
             </div>
@@ -93,10 +99,10 @@ export default function AiAssistant() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="اسأل عن أي شيء..."
-                disabled={isRunning}
+                disabled={running}
               />
-              <Button type="submit" size="icon" disabled={isRunning}>
-                {isRunning ? <Loader2 className="animate-spin" /> : <CornerDownLeft />}
+              <Button type="submit" size="icon" disabled={running}>
+                {running ? <Loader2 className="animate-spin" /> : <CornerDownLeft />}
                 <span className="sr-only">إرسال</span>
               </Button>
             </form>
