@@ -2,20 +2,30 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   rank: 'مستكشف نجمي' | 'قائد صاروخي' | 'سيد المجرة' | 'سيد كوني';
   balance: number;
   adBalance: number;
   totalSpent: number;
   referralCode: string;
+  referrerId: string | null;
   createdAt: string;
+};
+
+export type Service = {
+  id: string;
+  platform: string;
+  category: string;
+  price: number; // Price per 1000
+  min: number;
+  max: number;
 };
 
 export type Order = {
   id: string;
   serviceId: string;
   serviceName: string;
-  link?: string;
+  link: string;
   quantity: number;
   charge: number;
   orderDate: string;
