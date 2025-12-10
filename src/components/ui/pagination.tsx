@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -66,13 +67,13 @@ const PaginationPrevious = ({
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
-    aria-label="Go to previous page"
+    aria-label="اذهب للصفحة السابقة"
     size="default"
-    className={cn("gap-1 pl-2.5", className)}
+    className={cn("gap-1 pr-2.5", className)}
     {...props}
   >
-    <ChevronLeft className="h-4 w-4" />
-    <span>Previous</span>
+    <ChevronRight className="h-4 w-4" />
+    <span>السابق</span>
   </PaginationLink>
 )
 PaginationPrevious.displayName = "PaginationPrevious"
@@ -82,13 +83,13 @@ const PaginationNext = ({
   ...props
 }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink
-    aria-label="Go to next page"
+    aria-label="اذهب للصفحة التالية"
     size="default"
-    className={cn("gap-1 pr-2.5", className)}
+    className={cn("gap-1 pl-2.5", className)}
     {...props}
   >
-    <span>Next</span>
-    <ChevronRight className="h-4 w-4" />
+    <span>التالي</span>
+    <ChevronLeft className="h-4 w-4" />
   </PaginationLink>
 )
 PaginationNext.displayName = "PaginationNext"
@@ -103,7 +104,7 @@ const PaginationEllipsis = ({
     {...props}
   >
     <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More pages</span>
+    <span className="sr-only">المزيد من الصفحات</span>
   </span>
 )
 PaginationEllipsis.displayName = "PaginationEllipsis"
@@ -117,3 +118,5 @@ export {
   PaginationNext,
   PaginationPrevious,
 }
+
+    

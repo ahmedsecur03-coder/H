@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -38,6 +39,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from '@/components/ui/pagination';
 
 const statusVariant = {
@@ -231,7 +233,7 @@ export default function OrdersPage() {
       )}
 
       {totalPages > 1 && (
-        <Pagination dir="ltr">
+        <Pagination>
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} />
@@ -241,6 +243,7 @@ export default function OrdersPage() {
                     <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page); }}>{page}</PaginationLink>
                 </PaginationItem>
             ))}
+             {totalPages > 5 && <PaginationEllipsis />}
             <PaginationItem>
               <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} />
             </PaginationItem>
@@ -250,3 +253,5 @@ export default function OrdersPage() {
     </div>
   );
 }
+
+    

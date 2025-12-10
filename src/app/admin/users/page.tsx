@@ -35,6 +35,9 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const RANKS: User['rank'][] = ['مستكشف نجمي', 'قائد صاروخي', 'سيد المجرة', 'سيد كوني'];
 
 function EditUserDialog({ user }: { user: User }) {
   const { toast } = useToast();
@@ -44,6 +47,16 @@ function EditUserDialog({ user }: { user: User }) {
   const [adBalance, setAdBalance] = useState(user.adBalance.toString());
   const [rank, setRank] = useState(user.rank);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Reset state when dialog opens
+  React.useEffect(() => {
+    if(open) {
+        setBalance(user.balance.toString());
+        setAdBalance(user.adBalance.toString());
+        setRank(user.rank);
+    }
+  }, [open, user]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +67,8 @@ function EditUserDialog({ user }: { user: User }) {
         const userDocRef = doc(firestore, 'users', user.id);
         await runTransaction(firestore, async (transaction) => {
             transaction.update(userDocRef, {
-                balance: parseFloat(balance),
-                adBalance: parseFloat(adBalance),
+                balance: parseFloat(balance) || 0,
+                adBalance: parseFloat(adBalance) || 0,
                 rank: rank,
             });
         });
@@ -84,15 +97,22 @@ function EditUserDialog({ user }: { user: User }) {
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="balance">الرصيد الأساسي</Label>
-            <Input id="balance" type="number" value={balance} onChange={e => setBalance(e.target.value)} />
+            <Input id="balance" type="number" step="0.01" value={balance} onChange={e => setBalance(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="adBalance">رصيد الإعلانات</Label>
-            <Input id="adBalance" type="number" value={adBalance} onChange={e => setAdBalance(e.target.value)} />
+            <Input id="adBalance" type="number" step="0.01" value={adBalance} onChange={e => setAdBalance(e.target.value)} />
           </div>
            <div className="space-y-2">
             <Label htmlFor="rank">الرتبة</Label>
-            <Input id="rank" value={rank} onChange={e => setRank(e.target.value as User['rank'])} />
+            <Select onValueChange={(value) => setRank(value as User['rank'])} value={rank}>
+                <SelectTrigger id="rank">
+                    <SelectValue placeholder="اختر رتبة" />
+                </SelectTrigger>
+                <SelectContent>
+                    {RANKS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSaving}>
@@ -196,3 +216,5 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+
+    

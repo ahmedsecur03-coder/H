@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -11,6 +12,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   Select,
@@ -26,6 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -40,7 +43,7 @@ function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'a
         <div className={`flex items-end gap-2 ${isAdmin ? 'justify-start' : 'justify-end'}`}>
              {isAdmin && <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs shrink-0">دعم</div>}
             <div className={`max-w-md p-3 rounded-lg ${isAdmin ? 'bg-muted' : 'bg-primary text-primary-foreground'}`}>
-                <p className="text-sm">{message}</p>
+                <p className="text-sm whitespace-pre-wrap">{message}</p>
             </div>
              {!isAdmin && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">أنت</div>}
         </div>
@@ -53,6 +56,7 @@ export default function AdminTicketDetailsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const ticketId = params.ticketId as string;
   const userId = searchParams.get('userId');
@@ -66,13 +70,23 @@ export default function AdminTicketDetailsPage() {
   );
   
   const { data: ticket, isLoading } = useDoc<Ticket>(ticketDocRef);
-  const [newStatus, setNewStatus] = useState<Status | null>(ticket?.status || null);
+  const [newStatus, setNewStatus] = useState<Status | null>(null);
 
   useEffect(() => {
     if(ticket) {
       setNewStatus(ticket.status);
     }
-  }, [ticket])
+  }, [ticket]);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
+        }
+    }
+  }, [ticket?.messages]);
+
 
   const handleReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +156,7 @@ export default function AdminTicketDetailsPage() {
             </Link>
         </Button>
 
-      <Card>
+      <Card className="flex flex-col h-[calc(100vh-14rem)]">
         <CardHeader>
           <div className="flex justify-between items-center">
              <div>
@@ -154,20 +168,23 @@ export default function AdminTicketDetailsPage() {
              <Badge variant={statusVariant[ticket.status] || 'default'} className="text-base px-4 py-1">{ticket.status}</Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-            {ticket.messages.map((msg, index) => (
-                <ChatMessage key={index} message={msg.text} sender={msg.sender} />
-            ))}
-        </CardContent>
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+             <CardContent className="space-y-6">
+                {ticket.messages.map((msg, index) => (
+                    <ChatMessage key={index} message={msg.text} sender={msg.sender} />
+                ))}
+            </CardContent>
+        </ScrollArea>
         {ticket.status !== 'مغلقة' && (
-            <CardContent>
-                <form onSubmit={handleReply} className="flex flex-col gap-4 pt-6 border-t">
+            <CardFooter className="pt-4 border-t">
+                <form onSubmit={handleReply} className="w-full flex flex-col gap-4">
                     <Textarea
                         placeholder="اكتب ردك هنا..."
                         value={replyMessage}
                         onChange={(e) => setReplyMessage(e.target.value)}
                         required
                         className="flex-1"
+                        rows={3}
                     />
                     <div className="flex items-center justify-between">
                          <div className="w-1/3">
@@ -188,9 +205,11 @@ export default function AdminTicketDetailsPage() {
                         </Button>
                     </div>
                 </form>
-            </CardContent>
+            </CardFooter>
         )}
       </Card>
     </div>
   );
 }
+
+    
