@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -8,32 +8,87 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [isSaving, setIsSaving] = useState(false);
 
-  // In a real app, you would fetch these values from Firestore
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'settings', 'global') : null),
+    [firestore]
+  );
+  
+  const { data: settingsData, isLoading: isSettingsLoading } = useDoc<any>(settingsDocRef);
+
   const [vodafoneNumber, setVodafoneNumber] = useState('');
   const [binanceId, setBinanceId] = useState('');
   const [usdRate, setUsdRate] = useState('');
   const [whatsappSupport, setWhatsappSupport] = useState('');
   const [dealOfTheDay, setDealOfTheDay] = useState('');
 
-  const handleSaveChanges = async () => {
-    setIsSaving(true);
-    // TODO: Implement logic to save these settings to a 'settings' document in Firestore.
-    // For example: await setDoc(doc(firestore, 'settings', 'global'), { ... });
-    
-    // Simulate saving
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  useEffect(() => {
+    if (settingsData) {
+      setVodafoneNumber(settingsData.vodafoneNumber || '');
+      setBinanceId(settingsData.binanceId || '');
+      setUsdRate(settingsData.usdRate || '');
+      setWhatsappSupport(settingsData.whatsappSupport || '');
+      setDealOfTheDay(settingsData.dealOfTheDay || '');
+    }
+  }, [settingsData]);
 
-    toast({
-      title: "تم حفظ الإعدادات",
-      description: "تم تحديث إعدادات الموقع بنجاح.",
-    });
-    setIsSaving(false);
+
+  const handleSaveChanges = async () => {
+    if (!firestore) return;
+    setIsSaving(true);
+    
+    const settingsToSave = {
+        vodafoneNumber,
+        binanceId,
+        usdRate: parseFloat(usdRate) || 0,
+        whatsappSupport,
+        dealOfTheDay,
+    };
+
+    try {
+        await setDoc(doc(firestore, 'settings', 'global'), settingsToSave, { merge: true });
+        toast({
+          title: "تم حفظ الإعدادات",
+          description: "تم تحديث إعدادات الموقع بنجاح.",
+        });
+    } catch(error: any) {
+        toast({
+          variant: "destructive",
+          title: "خطأ",
+          description: "فشل حفظ الإعدادات: " + error.message,
+        });
+    } finally {
+        setIsSaving(false);
+    }
   };
+
+  if(isSettingsLoading) {
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-8 w-1/4" />
+                <Skeleton className="h-5 w-1/2 mt-2" />
+            </div>
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-6">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+                <div className="space-y-6">
+                    <Skeleton className="h-64 w-full" />
+                </div>
+            </div>
+        </div>
+    );
+  }
 
 
   return (

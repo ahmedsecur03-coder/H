@@ -56,20 +56,20 @@ export function UserNav({ user }: UserNavProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/profile">
-              <UserIcon className="mr-2 h-4 w-4" />
+              <UserIcon className="ml-2 h-4 w-4" />
               <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/settings">
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className="ml-2 h-4 w-4" />
               <span>الإعدادات</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="ml-2 h-4 w-4" />
           <span>تسجيل الخروج</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

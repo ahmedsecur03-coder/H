@@ -97,7 +97,7 @@ export default function LoginPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             ليس لديك حساب؟{" "}
-            <Link href="/signup" className="text-primary/80 hover:text-primary underline">
+            <Link href="/signup" className="text-primary/80 hover:text-primary underline font-bold">
               إنشاء حساب
             </Link>
           </div>

@@ -117,9 +117,7 @@ export default function AdminDepositsPage() {
         <TableCell>${deposit.amount.toFixed(2)}</TableCell>
         <TableCell>{deposit.paymentMethod}</TableCell>
         <TableCell className="font-mono text-xs">
-          {deposit.paymentMethod === 'فودافون كاش'
-            ? deposit.details.phoneNumber
-            : deposit.details.transactionId}
+          {deposit.details?.phoneNumber || deposit.details?.transactionId || 'N/A'}
         </TableCell>
         <TableCell>
           {new Date(deposit.depositDate).toLocaleDateString('ar-EG')}
@@ -175,4 +173,3 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
-
