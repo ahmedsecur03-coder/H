@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, runTransaction } from '@/firebase';
-import { doc, collection, query, orderBy, limit, where, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, writeBatch } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order, Service } from '@/lib/types';
 import { performanceData } from '@/lib/placeholder-data';
@@ -91,7 +91,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 
   // Queries for services
   const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
-  const { data: allServices } = useCollection<Service>(servicesQuery);
+  const { data: allServices, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
   const { categories, servicesForCategory, selectedService } = useMemo(() => {
     if (!allServices) return { categories: [], servicesForCategory: [], selectedService: null };
@@ -168,6 +168,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             const newOrderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const newOrder: Omit<Order, 'id'> = {
                 userId: user.uid,
+                serviceId: selectedService.id,
                 serviceName: `${selectedService.category} - ${selectedService.platform}`,
                 link: link,
                 quantity: numQuantity,
@@ -201,41 +202,43 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
         <CardDescription>ابدأ طلبك الجديد مباشرة من هنا.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="category">الفئة</Label>
-            <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory}>
-              <SelectTrigger id="category"><SelectValue placeholder="اختر فئة" /></SelectTrigger>
-              <SelectContent>
-                {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="service">الخدمة</Label>
-            <Select onValueChange={setSelectedServiceId} value={selectedServiceId} disabled={!selectedCategory}>
-              <SelectTrigger id="service"><SelectValue placeholder="اختر خدمة" /></SelectTrigger>
-              <SelectContent>
-                 {servicesForCategory.map(service => <SelectItem key={service.id} value={service.id}>{service.platform} (سعر الألف: ${service.price})</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="link">الرابط</Label>
-            <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="quantity">الكمية</Label>
-            <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-            {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
-          </div>
-          <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
-             التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
-          </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-             {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال الطلب'}
-          </Button>
-        </form>
+        {servicesLoading ? <Skeleton className="h-96 w-full" /> : (
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="category">الفئة</Label>
+                <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory}>
+                  <SelectTrigger id="category"><SelectValue placeholder="اختر فئة" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="service">الخدمة</Label>
+                <Select onValueChange={setSelectedServiceId} value={selectedServiceId} disabled={!selectedCategory}>
+                  <SelectTrigger id="service"><SelectValue placeholder="اختر خدمة" /></SelectTrigger>
+                  <SelectContent>
+                    {servicesForCategory.map(service => <SelectItem key={service.id} value={service.id}>{service.platform} (سعر الألف: ${service.price})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="link">الرابط</Label>
+                <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="quantity">الكمية</Label>
+                <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
+                {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
+              </div>
+              <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
+                التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال الطلب'}
+              </Button>
+            </form>
+        )}
       </CardContent>
     </Card>
   );

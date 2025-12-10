@@ -25,12 +25,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Search, DollarSign, ListFilter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useRouter } from 'next/navigation';
 
-function ServiceCard({ service }: { service: Service }) {
+function ServiceCard({ service, onOrderClick }: { service: Service, onOrderClick: () => void }) {
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="flex flex-row items-center gap-4">
-        <div className="bg-primary/10 text-primary p-3 rounded-full">
+    <Card className="flex flex-col border border-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
+      <CardHeader className="flex flex-row items-start gap-4">
+        <div className="bg-primary/10 text-primary p-3 rounded-xl cosmic-glow-primary">
             <Package className="h-6 w-6" />
         </div>
         <div>
@@ -53,7 +54,7 @@ function ServiceCard({ service }: { service: Service }) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">
+        <Button className="w-full cosmic-glow-primary" onClick={onOrderClick}>
           <DollarSign className="ml-2 h-4 w-4" /> طلب الخدمة
         </Button>
       </CardFooter>
@@ -63,9 +64,9 @@ function ServiceCard({ service }: { service: Service }) {
 
 function ServiceGridSkeleton() {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array.from({ length: 12 }).map((_, i) => (
-                <Skeleton key={i} className="h-[260px] w-full" />
+                <Skeleton key={i} className="h-[270px] w-full" />
             ))}
         </div>
     );
@@ -75,6 +76,7 @@ function ServiceGridSkeleton() {
 export default function ServicesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -149,10 +151,10 @@ export default function ServicesPage() {
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="ابحث عن خدمة..."
-                className="pl-10"
+                className="pr-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -199,7 +201,11 @@ export default function ServicesPage() {
         filteredServices.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredServices.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+              <ServiceCard 
+                key={service.id} 
+                service={service} 
+                onOrderClick={() => router.push('/dashboard')}
+              />
             ))}
           </div>
         ) : (
