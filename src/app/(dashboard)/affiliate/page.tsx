@@ -11,6 +11,7 @@ import { doc } from "firebase/firestore";
 import type { User as UserType } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 
 const topMarketers = [
     { rank: 1, name: "محمد علي", earnings: 2500.50 },
@@ -22,6 +23,7 @@ export default function AffiliatePage() {
     const { user: authUser, isUserLoading: isAuthLoading } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const [referralLink, setReferralLink] = useState('');
 
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -29,9 +31,13 @@ export default function AffiliatePage() {
     );
     const { data: userData, isLoading: isUserDocLoading } = useDoc<UserType>(userDocRef);
 
-    const isLoading = isAuthLoading || isUserDocLoading;
+    useEffect(() => {
+        if (typeof window !== 'undefined' && userData?.referralCode) {
+            setReferralLink(`${window.location.origin}/signup?ref=${userData.referralCode}`);
+        }
+    }, [userData?.referralCode]);
 
-    const referralLink = userData?.referralCode ? `${window.location.origin}/signup?ref=${userData.referralCode}` : '';
+    const isLoading = isAuthLoading || isUserDocLoading;
 
     const copyToClipboard = () => {
         if (!referralLink) return;
@@ -49,10 +55,15 @@ export default function AffiliatePage() {
         'ماسي': { commission: 25, nextLevel: null, target: Infinity },
     };
 
-    const currentLevel = userData?.affiliateLevel ?? 'برونزي';
-    const levelInfo = affiliateLevelDetails[currentLevel];
+    const currentLevelName = userData?.affiliateLevel ?? 'برونزي';
+    const currentLevel = affiliateLevelDetails[currentLevelName as keyof typeof affiliateLevelDetails] || affiliateLevelDetails['برونزي'];
     const totalSpent = userData?.totalSpent ?? 0;
-    const progress = levelInfo.target ? (totalSpent / levelInfo.target) * 100 : 100;
+    
+    const progress = currentLevel.target ? Math.min((totalSpent / currentLevel.target) * 100, 100) : 100;
+    const remainingForNextLevel = currentLevel.target ? Math.max(0, currentLevel.target - totalSpent) : 0;
+    const nextLevelName = currentLevel.nextLevel;
+    const nextLevelData = nextLevelName ? affiliateLevelDetails[nextLevelName as keyof typeof affiliateLevelDetails] : null;
+
 
     if (isLoading) {
         return (
@@ -114,8 +125,8 @@ export default function AffiliatePage() {
                     <Crown className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{currentLevel}</div>
-                    <p className="text-xs text-muted-foreground">نسبة العمولة: {levelInfo.commission}%</p>
+                    <div className="text-2xl font-bold">{currentLevelName}</div>
+                    <p className="text-xs text-muted-foreground">نسبة العمولة: {currentLevel.commission}%</p>
                 </CardContent>
             </Card>
             <Card>
@@ -123,10 +134,10 @@ export default function AffiliatePage() {
                     <CardTitle>الترقية التالية</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {levelInfo.nextLevel ? (
+                    {nextLevelName && nextLevelData ? (
                         <>
                         <div className="text-center text-sm text-muted-foreground mb-2">
-                            فاضل لك ${(levelInfo.target - totalSpent).toFixed(2)} للوصول لمستوى {levelInfo.nextLevel} ({affiliateLevelDetails[levelInfo.nextLevel as keyof typeof affiliateLevelDetails].commission}%)
+                            فاضل لك ${remainingForNextLevel.toFixed(2)} للوصول لمستوى {nextLevelName} ({nextLevelData.commission}%)
                         </div>
                         <Progress value={progress} />
                         </>
@@ -181,3 +192,5 @@ export default function AffiliatePage() {
     </div>
   );
 }
+
+    
