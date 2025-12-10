@@ -21,7 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { PlusCircle, Upload, Pencil, Trash2, Loader2, ListFilter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -264,25 +264,41 @@ export default function AdminServicesPage() {
             />
         </CardHeader>
         <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>رقم الخدمة</TableHead>
-                        <TableHead>الاسم</TableHead>
-                        <TableHead>الفئة</TableHead>
-                        <TableHead>السعر لكل 1000</TableHead>
-                        <TableHead>الحدود (أدنى-أقصى)</TableHead>
-                        <TableHead className="text-right">إجراءات</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                   {renderContent()}
-                </TableBody>
-            </Table>
+           {isLoading ? (
+               <Skeleton className="h-96 w-full"/>
+           ) : (
+                filteredServices && filteredServices.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>رقم الخدمة</TableHead>
+                                <TableHead>الاسم</TableHead>
+                                <TableHead>الفئة</TableHead>
+                                <TableHead>السعر لكل 1000</TableHead>
+                                <TableHead>الحدود (أدنى-أقصى)</TableHead>
+                                <TableHead className="text-right">إجراءات</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {renderContent()}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="mx-auto bg-muted p-4 rounded-full">
+                            <ListFilter className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                        <h3 className="mt-4 font-headline text-2xl">
+                           {searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}
+                        </h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                           {searchTerm ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة."}
+                        </p>
+                    </div>
+                )
+            )}
         </CardContent>
        </Card>
     </div>
   );
 }
-
-    

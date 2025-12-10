@@ -12,8 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Settings, User as UserIcon } from 'lucide-react';
+import { Settings, User as UserIcon, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 type UserNavProps = {
   user: {
@@ -25,8 +28,15 @@ type UserNavProps = {
 };
 
 export function UserNav({ user, isAdmin = false }: UserNavProps) {
+  const auth = useAuth();
+  const router = useRouter();
   const profilePath = isAdmin ? '/admin/profile' : '/dashboard/profile';
   const settingsPath = isAdmin ? '/admin/settings' : '/dashboard/settings';
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
 
   return (
     <DropdownMenu>
@@ -62,9 +72,12 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+            <LogOut className="ml-2 h-4 w-4" />
+            <span>تسجيل الخروج</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
-
-    

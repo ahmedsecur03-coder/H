@@ -19,6 +19,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -137,6 +138,7 @@ export default function OrdersPage() {
 
 
   const paginatedOrders = useMemo(() => {
+    if (!filteredOrders) return [];
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredOrders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredOrders, currentPage]);
@@ -191,7 +193,8 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      {paginatedOrders.length > 0 ? (
+      {isLoading && <Skeleton className="h-96 w-full" />}
+      {!isLoading && paginatedOrders && paginatedOrders.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -248,7 +251,7 @@ export default function OrdersPage() {
             </CardFooter>
            )}
         </Card>
-      ) : (
+      ) : !isLoading && (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
             <CardHeader>
                 <div className="mx-auto bg-muted p-4 rounded-full">
@@ -267,4 +270,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-

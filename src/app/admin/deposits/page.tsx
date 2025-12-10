@@ -131,16 +131,18 @@ export default function AdminDepositsPage() {
           {new Date(deposit.depositDate).toLocaleString('ar-EG')}
         </TableCell>
         <TableCell className="text-right">
-          {loadingAction === deposit.id ? <Loader2 className="animate-spin" /> : (
+          {loadingAction === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
             activeTab === 'معلق' && (
-                <>
-                <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600" onClick={() => handleDepositAction(deposit, 'مقبول')}>
-                    <CheckCircle className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDepositAction(deposit, 'مرفوض')}>
-                    <XCircle className="h-5 w-5" />
-                </Button>
-                </>
+                <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleDepositAction(deposit, 'مقبول')}>
+                        <CheckCircle className="ml-2 h-4 w-4 text-green-500"/>
+                        قبول
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDepositAction(deposit, 'مرفوض')}>
+                        <XCircle className="ml-2 h-4 w-4 text-red-500"/>
+                        رفض
+                    </Button>
+                </div>
             )
           )}
         </TableCell>

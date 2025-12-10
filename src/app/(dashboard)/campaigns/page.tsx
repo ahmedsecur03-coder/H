@@ -43,7 +43,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -59,6 +59,35 @@ const platforms: { name: Platform; title: string; description: string; }[] = [
     { name: 'API', title: 'API & Automation', description: 'أتمتة حملاتك برمجياً.' },
 ];
 
+
+function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
+    const statusVariant = {
+        'نشط': 'default',
+        'متوقف': 'secondary',
+        'مكتمل': 'outline',
+        'بانتظار المراجعة': 'destructive',
+    } as const;
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm">عرض التفاصيل</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>تفاصيل الحملة: {campaign.name}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="flex justify-between"><span>الحالة:</span> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></div>
+                    <div className="flex justify-between"><span>المنصة:</span> <span>{campaign.platform}</span></div>
+                    <div className="flex justify-between"><span>الميزانية:</span> <span className="font-mono font-bold">${campaign.budget.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>الإنفاق:</span> <span className="font-mono font-bold">${campaign.spend.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>تاريخ البدء:</span> <span>{new Date(campaign.startDate).toLocaleDateString('ar-EG')}</span></div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: UserType, user: any, onCampaignCreated: () => void }) {
     const firestore = useFirestore();
@@ -274,7 +303,7 @@ export default function CampaignsPage() {
                                             <TableCell>${(campaign.spend ?? 0).toFixed(2)}</TableCell>
                                             <TableCell>{Math.floor(Math.random() * 20000)}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="outline" size="sm">عرض التفاصيل</Button>
+                                                <CampaignDetailsDialog campaign={campaign} />
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -300,5 +329,3 @@ export default function CampaignsPage() {
     </div>
   );
 }
-
-    
