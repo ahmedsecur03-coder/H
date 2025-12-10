@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, addDocumentNonBlocking, runTransaction } from '@/firebase';
-import { collection, query, doc } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { runTransaction, collection, query, doc, addDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle, Rocket, ListFilter, Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -33,11 +32,10 @@ function NewCampaignDialog() {
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
-    const { data: userData } = useDoc<UserType>(userDocRef);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firestore || !authUser || !name || !platform || !budget) {
+        if (!firestore || !authUser || !userDocRef || !name || !platform || !budget) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى ملء جميع الحقول.' });
             return;
         }
@@ -53,7 +51,7 @@ function NewCampaignDialog() {
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef!);
+                const userDoc = await transaction.get(userDocRef);
                 if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
 
                 const currentAdBalance = userDoc.data().adBalance ?? 0;
@@ -62,10 +60,10 @@ function NewCampaignDialog() {
                 }
 
                 const newAdBalance = currentAdBalance - budgetAmount;
-                transaction.update(userDocRef!, { adBalance: newAdBalance });
+                transaction.update(userDocRef, { adBalance: newAdBalance });
 
                 const newCampaignRef = doc(collection(firestore, `users/${authUser.uid}/campaigns`));
-                const newCampaign: Omit<Campaign, 'id'> = {
+                const newCampaignData: Omit<Campaign, 'id'> = {
                     userId: authUser.uid,
                     name,
                     platform: platform as any,
@@ -74,7 +72,7 @@ function NewCampaignDialog() {
                     status: 'نشط',
                     startDate: new Date().toISOString(),
                 };
-                transaction.set(newCampaignRef, newCampaign);
+                transaction.set(newCampaignRef, newCampaignData);
             });
 
             toast({ title: 'نجاح!', description: 'تم إنشاء حملتك الإعلانية بنجاح.' });
@@ -240,3 +238,5 @@ export default function CampaignsPage() {
     </div>
   );
 }
+
+    
