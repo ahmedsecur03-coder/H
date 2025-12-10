@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { performanceData } from '@/lib/placeholder-data';
+import { mockOrders, mockUser, performanceData } from '@/lib/placeholder-data';
 import { DollarSign, Package, ShoppingCart, Gem, Percent } from 'lucide-react';
 import {
   ChartContainer,
@@ -35,12 +35,11 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { doc, collection, query, orderBy, limit, runTransaction, where } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { User as UserType, Order, Service } from '@/lib/types';
-import { useState, useMemo, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import type { User as UserType, Order } from '@/lib/types';
+
 
 const chartConfig = {
   orders: {
@@ -53,256 +52,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const RANKS = [
-  { name: 'مستكشف نجمي', spend: 0, discount: 0 },
-  { name: 'قائد صاروخي', spend: 500, discount: 2 },
-  { name: 'سيد المجرة', spend: 2500, discount: 5 },
-  { name: 'سيد كوني', spend: 10000, discount: 10 },
-];
-
-function getRankForSpend(spend: number) {
-  let currentRank = RANKS[0];
-  for (let i = RANKS.length - 1; i >= 0; i--) {
-    if (spend >= RANKS[i].spend) {
-      currentRank = RANKS[i];
-      break;
-    }
-  }
-  return currentRank;
-}
-
-// Quick Order Form Component
-function QuickOrderForm({ user, userData }: { user: any; userData: UserType | null }) {
-  const firestore = useFirestore();
-  const { toast } = useToast();
-
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [link, setLink] = useState('');
-  const [quantity, setQuantity] = useState<number | string>('');
-
-  // Fetch all services
-  const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services')) : null, [firestore]);
-  const { data: servicesData, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
-
-  // Memoize categories and services
-  const { categories, servicesByCategory } = useMemo(() => {
-    if (!servicesData) return { categories: [], servicesByCategory: {} };
-    const cats = [...new Set(servicesData.map(s => s.category))];
-    const servicesByCat: { [key: string]: Service[] } = {};
-    for (const service of servicesData) {
-      if (!servicesByCat[service.category]) {
-        servicesByCat[service.category] = [];
-      }
-      servicesByCat[service.category].push(service);
-    }
-    return { categories: cats, servicesByCategory: servicesByCat };
-  }, [servicesData]);
-
-  const selectedService = useMemo(() => {
-    return servicesData?.find(s => s.id === selectedServiceId) || null;
-  }, [selectedServiceId, servicesData]);
-  
-  const currentRank = useMemo(() => {
-    if (!userData) return RANKS[0];
-    return getRankForSpend(userData.totalSpent);
-  }, [userData]);
-
-  const { costBeforeDiscount, finalCost } = useMemo(() => {
-    if (selectedService && quantity) {
-      const baseCost = (Number(quantity) / 1000) * selectedService.price;
-      const discountAmount = baseCost * (currentRank.discount / 100);
-      return {
-          costBeforeDiscount: baseCost,
-          finalCost: baseCost - discountAmount,
-      };
-    }
-    return { costBeforeDiscount: 0, finalCost: 0 };
-  }, [selectedService, quantity, currentRank]);
-
-
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    setSelectedServiceId(null); // Reset service selection
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firestore || !user || !userData || !selectedService || !link || !quantity) {
-      toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى ملء جميع الحقول.' });
-      return;
-    }
-
-    const numQuantity = Number(quantity);
-    if (isNaN(numQuantity) || numQuantity <= 0) {
-      toast({ variant: 'destructive', title: 'خطأ', description: 'الكمية يجب أن تكون رقماً أكبر من صفر.' });
-      return;
-    }
-
-    if (numQuantity < selectedService.min || numQuantity > selectedService.max) {
-      toast({ variant: 'destructive', title: 'خطأ', description: `الكمية يجب أن تكون بين ${selectedService.min} و ${selectedService.max}.` });
-      return;
-    }
-
-    if (userData.balance < finalCost) {
-      toast({ variant: 'destructive', title: 'خطأ', description: 'رصيدك غير كافٍ لإتمام هذا الطلب.' });
-      return;
-    }
-
-    try {
-      const userRef = doc(firestore, 'users', user.uid);
-      
-      await runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userRef);
-        if (!userDoc.exists()) {
-          throw "المستخدم غير موجود!";
-        }
-
-        const currentData = userDoc.data();
-        const currentBalance = currentData.balance;
-        const currentTotalSpent = currentData.totalSpent;
-
-        if (currentBalance < finalCost) {
-          throw "رصيدك غير كافٍ.";
-        }
-        
-        const newBalance = currentBalance - finalCost;
-        const newTotalSpent = currentTotalSpent + finalCost;
-        const newRank = getRankForSpend(newTotalSpent).name;
-
-        // Update user's balance, total spent and potentially rank
-        transaction.update(userRef, { 
-            balance: newBalance, 
-            totalSpent: newTotalSpent,
-            rank: newRank,
-        });
-
-        // Create the new order
-        const newOrderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
-        const newOrder: Omit<Order, 'id'> = {
-          userId: user.uid,
-          serviceId: selectedService.id,
-          serviceName: `${selectedService.category} - ${selectedService.platform}`,
-          quantity: numQuantity,
-          charge: finalCost,
-          orderDate: new Date().toISOString(),
-          status: 'قيد التنفيذ', // Or 'pending'
-          link: link,
-        };
-        transaction.set(newOrderRef, newOrder);
-      });
-
-      toast({ title: 'نجاح', description: 'تم إرسال طلبك بنجاح!' });
-      // Reset form
-      setSelectedCategory(null);
-      setSelectedServiceId(null);
-      setLink('');
-      setQuantity('');
-
-    } catch (error: any) {
-      console.error("Order submission error: ", error);
-      toast({ variant: 'destructive', title: 'فشل إرسال الطلب', description: error.toString() });
-    }
-  };
-
-
-  // Function to seed some services for demonstration
-  const seedServices = () => {
-    if (!firestore) return;
-    const servicesToSeed: Omit<Service, 'id'>[] = [
-        { platform: "انستغرام", category: "متابعين", price: 5, min: 100, max: 10000 },
-        { platform: "انستغرام", category: "إعجابات", price: 2, min: 50, max: 5000 },
-        { platform: "فيسبوك", category: "إعجابات صفحة", price: 8, min: 100, max: 2000 },
-        { platform: "يوتيوب", category: "مشاهدات", price: 3, min: 1000, max: 100000 },
-    ];
-    
-    const servicesCol = collection(firestore, 'services');
-    servicesToSeed.forEach(service => {
-        addDocumentNonBlocking(servicesCol, service);
-    });
-
-    toast({ title: "تمت إضافة خدمات تجريبية بنجاح!" });
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-            <div>
-                <CardTitle className="font-headline">طلب سريع</CardTitle>
-                <CardDescription>
-                ابدأ طلبك الجديد مباشرة من هنا.
-                </CardDescription>
-            </div>
-            <Button size="sm" variant="outline" onClick={seedServices}>إضافة خدمات تجريبية</Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {servicesLoading ? <Skeleton className="h-[350px]" /> : (
-        <form className="grid gap-4" onSubmit={handleSubmit}>
-          <div className="grid gap-2">
-            <Label htmlFor="category">الفئة</Label>
-            <Select onValueChange={handleCategoryChange} value={selectedCategory || undefined}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="اختر فئة" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="service">الخدمة</Label>
-            <Select disabled={!selectedCategory} onValueChange={setSelectedServiceId} value={selectedServiceId || undefined}>
-              <SelectTrigger id="service">
-                <SelectValue placeholder="اختر خدمة" />
-              </SelectTrigger>
-              <SelectContent>
-                {selectedCategory && servicesByCategory[selectedCategory]?.map(service => (
-                  <SelectItem key={service.id} value={service.id}>{service.platform} - ${service.price}/1k</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="link">الرابط</Label>
-            <Input id="link" placeholder="https://..." value={link} onChange={e => setLink(e.target.value)} required />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="quantity">الكمية</Label>
-            <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={e => setQuantity(e.target.value)} required />
-          </div>
-          
-          {selectedService && (
-            <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md space-y-1">
-                <p><strong>الوصف:</strong> {selectedService.platform} {selectedService.category}</p>
-                {currentRank.discount > 0 ? (
-                    <>
-                        <p className="line-through"><strong>التكلفة الأساسية:</strong> ${costBeforeDiscount.toFixed(2)}</p>
-                        <p className="text-primary font-semibold"><strong>التكلفة النهائية (بعد خصم {currentRank.discount}%):</strong> ${finalCost.toFixed(2)}</p>
-                    </>
-                ) : (
-                    <p><strong>التكلفة التقديرية:</strong> ${finalCost.toFixed(2)}</p>
-                )}
-                <p><strong>الحد الأدنى:</strong> {selectedService.min.toLocaleString()} | <strong>الحد الأقصى:</strong> {selectedService.max.toLocaleString()}</p>
-            </div>
-          )}
-
-          <Button type="submit" className="w-full" disabled={!selectedService}>
-            إرسال الطلب
-          </Button>
-        </form>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 
 export default function DashboardPage() {
-  const { user: authUser } = useUser();
+  const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
 
   const userDocRef = useMemoFirebase(
@@ -317,6 +69,8 @@ export default function DashboardPage() {
   );
   const { data: ordersData, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
 
+  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
+
   const statusVariant = {
     مكتمل: 'default',
     'قيد التنفيذ': 'secondary',
@@ -324,13 +78,7 @@ export default function DashboardPage() {
     جزئي: 'outline',
   } as const;
 
-  const currentRank = useMemo(() => {
-    if (!userData) return RANKS[0];
-    return getRankForSpend(userData.totalSpent);
-  }, [userData]);
-
-
-  if (isUserLoading || isOrdersLoading) {
+  if (isLoading) {
     return (
       <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
@@ -384,7 +132,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم {currentRank.discount}% على الخدمات</p>
+               <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم 0% على الخدمات</p>
             </CardContent>
           </Card>
           <Card>
@@ -447,12 +195,12 @@ export default function DashboardPage() {
                   ordersData.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.serviceName}</TableCell>
-                      <TableCell>{order.quantity.toLocaleString()}</TableCell>
+                      <TableCell>{order.quantity}</TableCell>
                       <TableCell>
                         <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
                       </TableCell>
                       <TableCell className="text-left">{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-left">${(order.charge ?? 0).toFixed(2)}</TableCell>
+                      <TableCell className="text-left">${order.charge.toFixed(2)}</TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -469,7 +217,55 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-        <QuickOrderForm user={authUser} userData={userData} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">طلب سريع</CardTitle>
+            <CardDescription>
+              ابدأ طلبك الجديد مباشرة من هنا.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="category">الفئة</Label>
+                <Select>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="اختر فئة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="followers">متابعين</SelectItem>
+                    <SelectItem value="likes">إعجابات</SelectItem>
+                    <SelectItem value="views">مشاهدات</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="service">الخدمة</Label>
+                <Select>
+                  <SelectTrigger id="service">
+                    <SelectValue placeholder="اختر خدمة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ig-followers">متابعين انستغرام</SelectItem>
+                    <SelectItem value="fb-likes">إعجابات فيسبوك</SelectItem>
+                    <SelectItem value="yt-views">مشاهدات يوتيوب</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="link">الرابط</Label>
+                <Input id="link" placeholder="https://..." />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="quantity">الكمية</Label>
+                <Input id="quantity" type="number" placeholder="1000" />
+              </div>
+              <Button type="submit" className="w-full">
+                إرسال الطلب
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

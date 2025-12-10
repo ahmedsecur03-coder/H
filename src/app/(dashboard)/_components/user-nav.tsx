@@ -11,20 +11,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/firebase';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
-import type { User } from '@/lib/types';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type UserNavProps = {
-  user: User;
+  user: {
+    name: string;
+    email: string;
+    avatarUrl: string;
+  };
 };
 
 export function UserNav({ user }: UserNavProps) {
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-10 w-10 border-2 border-primary/50">
             <AvatarImage src={user.avatarUrl} alt={user.name} />
             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
           </Avatar>
@@ -55,7 +68,7 @@ export function UserNav({ user }: UserNavProps) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>تسجيل الخروج</span>
         </DropdownMenuItem>
