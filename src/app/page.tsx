@@ -1,17 +1,51 @@
+
+'use client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Rocket, ShieldCheck, Zap, Users } from 'lucide-react';
+import { Rocket, ShieldCheck, Zap, Users, LogIn, UserPlus } from 'lucide-react';
 import Logo from '@/components/logo';
+import { useUser } from '@/firebase';
+import { UserNav } from './(dashboard)/_components/user-nav';
 
 function Header() {
+  const { user, isUserLoading } = useUser();
+
+   const appUser = user ? {
+      name: user.displayName || `مستخدم #${user.uid.substring(0, 6)}`,
+      email: user.email || "مستخدم مسجل",
+      avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+  } : null;
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
         <nav className="flex items-center gap-4">
-          <Button asChild className="cosmic-glow-primary">
-            <Link href="/dashboard/dashboard">الذهاب إلى لوحة التحكم</Link>
-          </Button>
+          {isUserLoading ? (
+            <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
+          ) : user ? (
+            <>
+              <Button asChild>
+                <Link href="/dashboard">الذهاب إلى لوحة التحكم</Link>
+              </Button>
+               {appUser && <UserNav user={appUser} />}
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">
+                  <LogIn className="ml-2" />
+                  تسجيل الدخول
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">
+                  <UserPlus className="ml-2" />
+                  إنشاء حساب
+                </Link>
+              </Button>
+            </>
+          )}
         </nav>
       </div>
     </header>
@@ -37,7 +71,7 @@ export default function Home() {
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button size="lg" asChild className="cosmic-glow-primary hover:brightness-125 transition-all duration-300">
-                  <Link href="/dashboard/dashboard">ابدأ الآن</Link>
+                  <Link href="/dashboard">ابدأ الآن</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
                   <Link href="/dashboard/services">استكشف الخدمات</Link>

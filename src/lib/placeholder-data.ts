@@ -16,7 +16,7 @@ import {
 
 
 export const dashboardNavItems: NavItem[] = [
-  { href: '/dashboard/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
   { href: '/dashboard/services', label: 'جميع الخدمات', icon: Package },
   { href: '/dashboard/orders', label: 'إدارة الطلبات', icon: ShoppingCart },
   { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
