@@ -30,8 +30,8 @@ import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const statusVariant = {
-  مفتوحة: 'secondary',
-  مغلقة: 'destructive',
+  'مفتوحة': 'secondary',
+  'مغلقة': 'destructive',
   'قيد المراجعة': 'default',
 } as const;
 
@@ -63,7 +63,6 @@ function NewTicketDialog({ userId }: { userId: string }) {
         }],
       };
       
-      // We don't await this to keep the UI non-blocking
       addDocumentNonBlocking(ticketsColRef, newTicket);
 
       toast({
