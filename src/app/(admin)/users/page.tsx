@@ -1,5 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, or, and } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -19,40 +23,55 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-
-const dummyUsers = [
-    {
-        id: 'user_1',
-        name: 'أحمد المصري',
-        email: 'ahmed.masry@example.com',
-        rank: 'قائد صاروخي',
-        balance: 150.75,
-        totalSpent: 620.00,
-        joinDate: new Date(Date.now() - 86400000 * 10).toISOString(),
-    },
-    {
-        id: 'user_2',
-        name: 'سارة خالد',
-        email: 'sara.khalid@example.com',
-        rank: 'مستكشف نجمي',
-        balance: 25.00,
-        totalSpent: 85.50,
-        joinDate: new Date(Date.now() - 86400000 * 5).toISOString(),
-    },
-    {
-        id: 'user_3',
-        name: 'محمد عبد الله',
-        email: 'mohamed.abd@example.com',
-        rank: 'سيد المجرة',
-        balance: 1200.00,
-        totalSpent: 2800.00,
-        joinDate: new Date(Date.now() - 86400000 * 30).toISOString(),
-    }
-];
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminUsersPage() {
-  // TODO: Replace with actual Firestore data fetching and state management
-  const users = dummyUsers;
+  const firestore = useFirestore();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const usersQuery = useMemoFirebase(
+    () => (firestore ? collection(firestore, 'users') : null),
+    [firestore]
+  );
+  const { data: allUsers, isLoading } = useCollection<User>(usersQuery);
+
+  const filteredUsers = useMemo(() => {
+    if (!allUsers) return [];
+    if (!searchTerm) return allUsers;
+
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    return allUsers.filter(user => 
+        (user.name && user.name.toLowerCase().includes(lowerCaseSearch)) ||
+        (user.email && user.email.toLowerCase().includes(lowerCaseSearch)) ||
+        user.id.toLowerCase().includes(lowerCaseSearch)
+    );
+  }, [allUsers, searchTerm]);
+  
+  const renderContent = () => {
+     if (isLoading) {
+      return Array.from({length: 5}).map((_, i) => (
+         <TableRow key={i}>
+            {Array.from({length: 6}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+         </TableRow>
+      ));
+    }
+    
+    return filteredUsers.map((user) => (
+      <TableRow key={user.id}>
+        <TableCell>
+          <div className="font-medium">{user.name}</div>
+          <div className="text-sm text-muted-foreground">{user.email}</div>
+        </TableCell>
+        <TableCell><Badge variant="secondary">{user.rank}</Badge></TableCell>
+        <TableCell className="font-medium">${(user.balance ?? 0).toFixed(2)}</TableCell>
+        <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
+        <TableCell>{new Date(user.createdAt).toLocaleDateString('ar-EG')}</TableCell>
+        <TableCell className="text-right">
+          <Button variant="outline" size="sm">تعديل</Button>
+        </TableCell>
+      </TableRow>
+    ));
+  }
 
   return (
     <div className="space-y-6 pb-8">
@@ -70,6 +89,8 @@ export default function AdminUsersPage() {
               <Input
                 placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."
                 className="pr-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
         </CardHeader>
@@ -86,21 +107,7 @@ export default function AdminUsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="font-medium">{user.name}</div>
-                    <div className="text-sm text-muted-foreground">{user.email}</div>
-                  </TableCell>
-                  <TableCell><Badge variant="secondary">{user.rank}</Badge></TableCell>
-                  <TableCell className="font-medium">${user.balance.toFixed(2)}</TableCell>
-                  <TableCell>${user.totalSpent.toFixed(2)}</TableCell>
-                  <TableCell>{new Date(user.joinDate).toLocaleDateString('ar-EG')}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm">تعديل</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {renderContent()}
             </TableBody>
           </Table>
         </CardContent>
