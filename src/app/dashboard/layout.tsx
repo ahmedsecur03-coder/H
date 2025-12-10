@@ -1,7 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { Bell } from 'lucide-react';
+import {
+  Bell,
+  Search,
+} from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -14,15 +17,17 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { adminNavItems } from '@/lib/placeholder-data';
+import { Input } from '@/components/ui/input';
+import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { UserNav } from '@/app/dashboard/_components/user-nav';
+import { UserNav } from './_components/user-nav';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function AdminLayout({
+
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -31,46 +36,51 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
+    // If loading is finished and there's no user, redirect to login.
     if (!isUserLoading && !user) {
       router.push('/login');
     }
-    // Add logic here to check if the user is an admin.
-    // For now, we'll assume the user is an admin if they access this layout.
   }, [user, isUserLoading, router]);
 
+  // While loading, show a skeleton layout to prevent flashing content.
   if (isUserLoading || !user) {
     return (
-      <div className="flex min-h-screen w-full">
-        <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
-          <div className="flex h-12 items-center justify-center px-4 mb-4">
-            <Logo />
-          </div>
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        </div>
-        <div className="flex-1">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-            <Skeleton className="h-8 w-8 md:hidden" />
-            <div className="flex items-center gap-2 mr-auto">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="flex min-h-screen w-full">
+            <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
+                <div className="flex h-12 items-center justify-center px-4 mb-4">
+                     <Logo />
+                </div>
+                <div className="flex flex-col gap-2">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                    ))}
+                </div>
             </div>
-          </header>
-          <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <Skeleton className="w-full h-[80vh]" />
-          </main>
+            <div className="flex-1">
+                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+                    <Skeleton className="h-8 w-8 md:hidden" />
+                    <div className="relative flex-1 md:grow-0">
+                       <Skeleton className="h-9 w-full md:w-[200px] lg:w-[320px]" />
+                    </div>
+                    <div className="flex items-center gap-2 mr-auto">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                    </div>
+                </header>
+                <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+                   <Skeleton className="w-full h-[80vh]" />
+                </main>
+            </div>
         </div>
-      </div>
     );
   }
 
+  // Once loading is complete and user is authenticated, render the real layout.
+  // We pass a simplified user object to UserNav for now.
   const appUser = {
-    name: user.displayName || user.email || 'Admin',
-    email: user.email || '',
-    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+      name: user.displayName || user.email || "مستخدم",
+      email: user.email || "",
+      avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
   };
 
   return (
@@ -78,12 +88,12 @@ export default function AdminLayout({
       <Sidebar side="right" collapsible="icon">
         <SidebarHeader>
           <div className="flex h-16 items-center justify-center px-4 group-data-[collapsible=icon]:hidden">
-            <Logo />
+             <Logo />
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {adminNavItems.map((item) => (
+            {dashboardNavItems.map((item, index) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
@@ -92,6 +102,7 @@ export default function AdminLayout({
                     className: 'font-body',
                     side: 'left',
                   }}
+                  isActive={item.href === '/dashboard' && index === 0} // Example active state
                 >
                   <Link href={item.href}>
                     <item.icon />
@@ -106,7 +117,7 @@ export default function AdminLayout({
       <SidebarInset className="bg-transparent">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <SidebarTrigger className="md:hidden" />
-          <div className="flex items-center gap-4 ml-auto">
+           <div className="flex items-center gap-4 ml-auto">
             <Button variant="ghost" size="icon" className="rounded-full">
               <Bell className="h-5 w-5" />
               <span className="sr-only">Toggle notifications</span>
@@ -115,7 +126,7 @@ export default function AdminLayout({
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          {children}
+            {children}
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -1,15 +1,14 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, or, and } from 'firebase/firestore';
+import { collection, query, doc, runTransaction } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -22,8 +21,89 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+
+function EditUserDialog({ user }: { user: User }) {
+  const { toast } = useToast();
+  const firestore = useFirestore();
+  const [open, setOpen] = useState(false);
+  const [balance, setBalance] = useState(user.balance.toString());
+  const [adBalance, setAdBalance] = useState(user.adBalance.toString());
+  const [rank, setRank] = useState(user.rank);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore) return;
+
+    setIsSaving(true);
+    try {
+        const userDocRef = doc(firestore, 'users', user.id);
+        await runTransaction(firestore, async (transaction) => {
+            transaction.update(userDocRef, {
+                balance: parseFloat(balance),
+                adBalance: parseFloat(adBalance),
+                rank: rank,
+            });
+        });
+        toast({ title: 'نجاح', description: 'تم تحديث بيانات المستخدم بنجاح.' });
+        setOpen(false);
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">تعديل</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>تعديل المستخدم: {user.name}</DialogTitle>
+          <DialogDescription>
+            تغيير الرصيد والرتبة للمستخدم. كن حذراً عند إجراء التعديلات.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="balance">الرصيد الأساسي</Label>
+            <Input id="balance" type="number" value={balance} onChange={e => setBalance(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="adBalance">رصيد الإعلانات</Label>
+            <Input id="adBalance" type="number" value={adBalance} onChange={e => setAdBalance(e.target.value)} />
+          </div>
+           <div className="space-y-2">
+            <Label htmlFor="rank">الرتبة</Label>
+            <Input id="rank" value={rank} onChange={e => setRank(e.target.value as User['rank'])} />
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? <Loader2 className="animate-spin" /> : 'حفظ التغييرات'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export default function AdminUsersPage() {
   const firestore = useFirestore();
@@ -67,7 +147,7 @@ export default function AdminUsersPage() {
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
         <TableCell>{new Date(user.createdAt).toLocaleDateString('ar-EG')}</TableCell>
         <TableCell className="text-right">
-          <Button variant="outline" size="sm">تعديل</Button>
+          <EditUserDialog user={user} />
         </TableCell>
       </TableRow>
     ));

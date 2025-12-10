@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -88,7 +89,7 @@ export default function AdminOrdersPage() {
                 <TableCell className="font-medium">{order.serviceName}</TableCell>
                 <TableCell><a href={order.link} className="text-primary hover:underline" target="_blank">{order.link}</a></TableCell>
                 <TableCell>
-                    <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                    <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
                 </TableCell>
                 <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
             </TableRow>
