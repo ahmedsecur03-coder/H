@@ -13,28 +13,37 @@ import type { Deposit, User as UserType } from '@/lib/types';
 import { Loader2, ArrowLeftRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Assume a USD to EGP rate fetched from admin settings. Default to 50 for now.
+const USD_TO_EGP_RATE = 50; 
 
 function VodafoneCashTab() {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [amount, setAmount] = useState('');
+    const [amountInEGP, setAmountInEGP] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const amountInUSD = parseFloat(amountInEGP) / USD_TO_EGP_RATE;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firestore || !user || !phoneNumber || !amount) {
+        if (!firestore || !user || !phoneNumber || !amountInEGP) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى ملء جميع الحقول.' });
             return;
         }
+        if (isNaN(amountInUSD) || amountInUSD <= 0) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى إدخال مبلغ صحيح.' });
+            return;
+        }
+
         setIsSubmitting(true);
 
         const depositRequest: Omit<Deposit, 'id'> = {
             userId: user.uid,
-            amount: parseFloat(amount),
+            amount: amountInUSD, // Store the amount in USD
             paymentMethod: 'فودافون كاش',
-            details: { phoneNumber },
+            details: { phoneNumber, amountInEGP: parseFloat(amountInEGP) },
             depositDate: new Date().toISOString(),
             status: 'معلق',
         };
@@ -47,7 +56,7 @@ function VodafoneCashTab() {
                 description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
             });
             setPhoneNumber('');
-            setAmount('');
+            setAmountInEGP('');
         } catch (error) {
              toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال طلبك.' });
         } finally {
@@ -61,6 +70,7 @@ function VodafoneCashTab() {
                 <CardTitle>فودافون كاش</CardTitle>
                 <CardDescription>
                     قم بتحويل المبلغ المطلوب إلى الرقم <code>01012345678</code> ثم أدخل رقمك الذي قمت بالتحويل منه والمبلغ.
+                    سعر الصرف الحالي: <strong>1 دولار أمريكي = {USD_TO_EGP_RATE} جنيه مصري</strong>.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -71,8 +81,13 @@ function VodafoneCashTab() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="vf-amount">المبلغ المحول (بالجنيه المصري)</Label>
-                        <Input id="vf-amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="100" required />
+                        <Input id="vf-amount" value={amountInEGP} onChange={(e) => setAmountInEGP(e.target.value)} type="number" placeholder="1000" required />
                     </div>
+                    {!isNaN(amountInUSD) && amountInUSD > 0 && (
+                        <div className="text-sm text-muted-foreground p-2 bg-muted rounded-md text-center">
+                            سيتم إضافة ≈ <span className="font-bold text-primary">{amountInUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span> إلى رصيدك بعد المراجعة.
+                        </div>
+                    )}
                     <Button type="submit" disabled={isSubmitting}>
                          {isSubmitting ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
                     </Button>
@@ -126,9 +141,9 @@ function BinancePayTab() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Binance Pay</CardTitle>
+                <CardTitle>Binance Pay (USDT)</CardTitle>
                 <CardDescription>
-                    استخدم معرف Binance Pay التالي لإرسال المبلغ (USDT): <code>USER12345</code>. ثم أدخل معرف العملية (Transaction ID).
+                    استخدم معرف Binance Pay التالي لإرسال المبلغ بعملة USDT: <code>USER12345</code>. ثم أدخل معرف العملية (Transaction ID).
                 </CardDescription>
             </CardHeader>
             <CardContent>
