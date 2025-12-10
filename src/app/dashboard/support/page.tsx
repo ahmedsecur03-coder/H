@@ -28,6 +28,7 @@ import { PlusCircle, MessageSquare, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -174,20 +175,22 @@ export default function SupportPage() {
           ) : tickets && tickets.length > 0 ? (
             <div className="space-y-4">
               {tickets.map((ticket) => (
-                <Card key={ticket.id} className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-4">
-                    <MessageSquare className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="font-semibold">{ticket.subject}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleDateString()}
-                      </p>
+                <Link key={ticket.id} href={`/dashboard/support/${ticket.id}`} className="block">
+                  <Card className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <MessageSquare className="h-8 w-8 text-primary" />
+                      <div>
+                        <h3 className="font-semibold">{ticket.subject}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant={statusVariant[ticket.status] || 'default'}>
-                    {ticket.status}
-                  </Badge>
-                </Card>
+                    <Badge variant={statusVariant[ticket.status] || 'default'}>
+                      {ticket.status}
+                    </Badge>
+                  </Card>
+                </Link>
               ))}
             </div>
           ) : (

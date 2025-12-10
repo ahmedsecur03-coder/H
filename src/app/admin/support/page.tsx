@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query } from 'firebase/firestore';
+import { collectionGroup, query, orderBy } from 'firebase/firestore';
 import type { Ticket } from '@/lib/types';
 import {
   Card,
@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 
 const statusVariant = {
@@ -35,7 +36,7 @@ export default function AdminSupportPage() {
   const firestore = useFirestore();
 
   const ticketsQuery = useMemoFirebase(
-    () => firestore ? query(collectionGroup(firestore, 'tickets')) : null,
+    () => firestore ? query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc')) : null,
     [firestore]
   );
 
@@ -69,7 +70,11 @@ export default function AdminSupportPage() {
         </TableCell>
         <TableCell>{new Date(ticket.createdDate).toLocaleDateString()}</TableCell>
           <TableCell className="text-right">
-          <Button variant="outline" size="sm">عرض و رد</Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/admin/support/${ticket.id}?userId=${ticket.userId}`}>
+              عرض و رد
+            </Link>
+          </Button>
         </TableCell>
       </TableRow>
     ));
