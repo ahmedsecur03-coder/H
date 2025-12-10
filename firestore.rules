@@ -116,7 +116,7 @@ service cloud.firestore {
       allow list: if false;
       allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'id');
       allow update: if isExistingOwner(userId) && isFieldImmutable('id');
-      allow delete: if isExistingOwner(userId);
+      allow delete: if false; // Users cannot delete their own profile.
     }
 
     /**
@@ -193,23 +193,24 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
-      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
-      allow delete: if isExistingOwner(userId);
+      // Only admins should be able to update status, not the user.
+      allow update: if false; 
+      allow delete: if false;
     }
 
     /**
      * @description Manages user affiliate transactions. A user can only access their own transactions.
      * @path /users/{userId}/affiliateTransactions/{affiliateTransactionId}
-     * @allow (create, get, list, update, delete) A user with UID 'user123' operating on `/users/user123/affiliateTransactions/{transactionId}`.
-     * @deny  (get) A user with UID 'user456' trying to access a transaction under `/users/user123`.
-     * @principle Enforces strict data ownership within a user's private subcollection.
+     * @allow (get, list) A user with UID 'user123' operating on `/users/user123/affiliateTransactions/{transactionId}`.
+     * @deny (create, update, delete) All client-side modifications are disallowed. Transactions should be created by a trusted server environment.
+     * @principle Enforces strict data ownership for reads and prevents client-side tampering with financial records.
      */
     match /users/{userId}/affiliateTransactions/{affiliateTransactionId} {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId, 'userId');
-      allow update: if isExistingOwner(userId) && isFieldImmutable('userId');
-      allow delete: if isExistingOwner(userId);
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**

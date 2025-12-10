@@ -51,6 +51,18 @@
           "type": "string",
           "description": "Date and time the user was created.",
           "format": "date-time"
+        },
+        "affiliateEarnings": {
+          "type": "number",
+          "description": "Total earnings from the affiliate program."
+        },
+        "referralsCount": {
+          "type": "number",
+          "description": "Total number of users referred."
+        },
+        "affiliateLevel": {
+          "type": "string",
+          "description": "User's marketing level in the affiliate system (e.g., برونزي, فضي, ذهبي, ماسي)."
         }
       },
       "required": [
@@ -262,6 +274,10 @@
           "type": "string",
           "description": "Reference to User who made the purchase that generated the commission. (Relationship: User 1:N AffiliateTransaction)"
         },
+        "orderId": {
+          "type": "string",
+          "description": "The order that generated this commission."
+        },
         "amount": {
           "type": "number",
           "description": "Amount of commission earned."
@@ -280,6 +296,7 @@
         "id",
         "userId",
         "referralId",
+        "orderId",
         "amount",
         "transactionDate"
       ]

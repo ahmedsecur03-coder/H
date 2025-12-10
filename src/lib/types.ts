@@ -10,6 +10,9 @@ export type User = {
   referralCode: string;
   referrerId: string | null;
   createdAt: string;
+  affiliateEarnings?: number;
+  referralsCount?: number;
+  affiliateLevel?: 'برونزي' | 'فضي' | 'ذهبي' | 'ماسي';
 };
 
 export type Service = {
@@ -64,6 +67,16 @@ export type Deposit = {
   details: { [key: string]: string }; // e.g., { "phoneNumber": "010..." } or { "transactionId": "..." }
   depositDate: string;
   status: 'معلق' | 'مقبول' | 'مرفوض';
+};
+
+export type AffiliateTransaction = {
+    id: string;
+    userId: string; // User who earned the commission
+    referralId: string; // User who made the purchase
+    orderId: string;
+    amount: number;
+    level: number; // 1, 2, 3, 4, 5
+    transactionDate: string;
 };
 
 
