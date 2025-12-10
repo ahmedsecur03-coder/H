@@ -103,10 +103,10 @@ export default function AffiliatePage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
+                    <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $1.00</p>
                 </CardContent>
                  <CardFooter>
-                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
+                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 1}>طلب سحب الأرباح</Button>
                 </CardFooter>
             </Card>
              <Card>
@@ -192,5 +192,3 @@ export default function AffiliatePage() {
     </div>
   );
 }
-
-    
