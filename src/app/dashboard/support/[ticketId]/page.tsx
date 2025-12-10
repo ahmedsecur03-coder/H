@@ -29,12 +29,12 @@ const statusVariant = {
 function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'admin' }) {
     const isUser = sender === 'user';
     return (
-        <div className={`flex items-end gap-2 ${isUser ? 'justify-end' : ''}`}>
-             {!isUser && <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">دعم</div>}
+        <div className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+             {!isUser && <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs shrink-0">دعم</div>}
             <div className={`max-w-md p-3 rounded-lg ${isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                 <p className="text-sm">{message}</p>
             </div>
-             {isUser && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs">أنت</div>}
+             {isUser && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">أنت</div>}
         </div>
     );
 }

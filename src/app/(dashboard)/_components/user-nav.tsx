@@ -22,9 +22,10 @@ type UserNavProps = {
     email: string;
     avatarUrl: string;
   };
+  isAdmin?: boolean;
 };
 
-export function UserNav({ user }: UserNavProps) {
+export function UserNav({ user, isAdmin = false }: UserNavProps) {
   const auth = useAuth();
   const router = useRouter();
 
@@ -32,6 +33,10 @@ export function UserNav({ user }: UserNavProps) {
     await auth.signOut();
     router.push('/login');
   };
+
+  const profilePath = isAdmin ? '/admin/profile' : '/dashboard/profile';
+  const settingsPath = isAdmin ? '/admin/settings' : '/dashboard/settings';
+
 
   return (
     <DropdownMenu>
@@ -55,13 +60,13 @@ export function UserNav({ user }: UserNavProps) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/profile">
+            <Link href={profilePath}>
               <UserIcon className="mr-2 h-4 w-4" />
               <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/settings">
+            <Link href={settingsPath}>
               <Settings className="mr-2 h-4 w-4" />
               <span>الإعدادات</span>
             </Link>

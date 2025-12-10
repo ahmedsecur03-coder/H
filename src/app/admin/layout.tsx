@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { UserNav } from '@/app/dashboard/_components/user-nav';
+import { UserNav } from '@/app/(dashboard)/_components/user-nav';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -112,7 +112,7 @@ export default function AdminLayout({
               <Bell className="h-5 w-5" />
               <span className="sr-only">Toggle notifications</span>
             </Button>
-            <UserNav user={appUser} />
+            <UserNav user={appUser} isAdmin={true} />
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">

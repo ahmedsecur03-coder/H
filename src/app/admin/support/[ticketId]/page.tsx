@@ -37,12 +37,12 @@ type Status = keyof typeof statusVariant;
 function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'admin' }) {
     const isAdmin = sender === 'admin';
     return (
-        <div className={`flex items-end gap-2 ${isAdmin ? 'justify-end' : ''}`}>
-             {!isAdmin && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs">مستخدم</div>}
-            <div className={`max-w-md p-3 rounded-lg ${isAdmin ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+        <div className={`flex items-end gap-2 ${isAdmin ? 'justify-start' : 'justify-end'}`}>
+             {isAdmin && <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs shrink-0">دعم</div>}
+            <div className={`max-w-md p-3 rounded-lg ${isAdmin ? 'bg-muted' : 'bg-primary text-primary-foreground'}`}>
                 <p className="text-sm">{message}</p>
             </div>
-             {isAdmin && <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">أنت</div>}
+             {!isAdmin && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">أنت</div>}
         </div>
     );
 }
@@ -59,14 +59,20 @@ export default function AdminTicketDetailsPage() {
 
   const [replyMessage, setReplyMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newStatus, setNewStatus] = useState<Status | null>(null);
-
+  
   const ticketDocRef = useMemoFirebase(
     () => (firestore && userId && ticketId ? doc(firestore, `users/${userId}/tickets`, ticketId) : null),
     [firestore, userId, ticketId]
   );
   
   const { data: ticket, isLoading } = useDoc<Ticket>(ticketDocRef);
+  const [newStatus, setNewStatus] = useState<Status | null>(ticket?.status || null);
+
+  useEffect(() => {
+    if(ticket) {
+      setNewStatus(ticket.status);
+    }
+  }, [ticket])
 
   const handleReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +171,7 @@ export default function AdminTicketDetailsPage() {
                     />
                     <div className="flex items-center justify-between">
                          <div className="w-1/3">
-                            <Select onValueChange={(v) => setNewStatus(v as Status)} defaultValue={ticket.status}>
+                            <Select onValueChange={(v) => setNewStatus(v as Status)} value={newStatus || ticket.status}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="تغيير الحالة" />
                                 </SelectTrigger>
