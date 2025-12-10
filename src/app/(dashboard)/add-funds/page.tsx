@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { addDoc, collection, doc } from 'firebase/firestore';
+import { addDoc, collection, doc, runTransaction } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Deposit, User as UserType } from '@/lib/types';
 import { Loader2, ArrowLeftRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { runTransaction } from 'firebase/firestore';
+
 
 function VodafoneCashTab() {
     const { user } = useUser();
@@ -263,3 +263,5 @@ export default function AddFundsPage() {
     </div>
   );
 }
+
+    

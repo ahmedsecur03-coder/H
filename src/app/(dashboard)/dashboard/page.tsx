@@ -41,8 +41,8 @@ import {
   ChartConfig,
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, runTransaction } from '@/firebase';
-import { doc, collection, query, orderBy, limit, writeBatch } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, orderBy, limit, writeBatch, runTransaction } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order, Service } from '@/lib/types';
 import { performanceData } from '@/lib/placeholder-data';
@@ -416,3 +416,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
