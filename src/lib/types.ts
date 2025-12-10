@@ -42,6 +42,20 @@ export type Campaign = {
   startDate: string;
 };
 
+export type Ticket = {
+  id: string;
+  userId: string;
+  subject: string;
+  message: string;
+  status: 'مفتوحة' | 'مغلقة' | 'قيد المراجعة';
+  createdDate: string;
+  messages: {
+    sender: 'user' | 'admin';
+    text: string;
+    timestamp: string;
+  }[];
+};
+
 export type NavItem = {
   href: string;
   label: string;
