@@ -17,6 +17,7 @@ import Logo from "@/components/logo";
 import { useAuth } from "@/firebase";
 import { initiateEmailSignIn } from "@/firebase/non-blocking-login";
 import { useToast } from "@/hooks/use-toast";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,35 +26,35 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
 
-    // We are not handling the promise here to allow for optimistic UI updates.
-    // Error handling will be managed by the global onAuthStateChanged listener
-    // or a dedicated error handling mechanism if implemented.
-    initiateEmailSignIn(auth, email, password);
-
-    // For now, we'll optimistically redirect. A better approach would be
-    // to wait for the onAuthStateChanged listener to redirect.
-    toast({
-      title: "جاري تسجيل الدخول...",
-      description: "يتم التحقق من بياناتك.",
-    });
-
-    // In a real app, you'd wait for an auth state change to redirect.
-    // For this prototype, we'll redirect and let the layout handle non-auth users.
-    router.push('/dashboard');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({
+        title: "تم تسجيل الدخول بنجاح",
+        description: "جاري توجيهك إلى لوحة التحكم.",
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "فشل تسجيل الدخول",
+        description: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      });
+      console.error("Login error:", error);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted">
-      <Card className="mx-auto max-w-sm w-full">
+    <div className="flex items-center justify-center min-h-screen">
+      <Card className="mx-auto max-w-sm w-full bg-card/80 backdrop-blur-sm border-primary/20">
         <CardHeader className="space-y-4">
           <div className="mx-auto">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-headline text-center">تسجيل الدخول</CardTitle>
+          <CardTitle className="text-2xl font-headline text-center cosmic-glow-primary">تسجيل الدخول</CardTitle>
           <CardDescription className="text-center">
             أدخل بريدك الإلكتروني أدناه للدخول إلى حسابك
           </CardDescription>
@@ -77,7 +78,7 @@ export default function LoginPage() {
                   <Label htmlFor="password">كلمة المرور</Label>
                   <Link
                     href="#"
-                    className="ms-auto inline-block text-sm underline"
+                    className="ms-auto inline-block text-sm text-primary/80 hover:text-primary underline"
                   >
                     نسيت كلمة المرور؟
                   </Link>
@@ -93,14 +94,14 @@ export default function LoginPage() {
               <Button type="submit" className="w-full">
                 تسجيل الدخول
               </Button>
-              <Button variant="outline" className="w-full" type="button">
+              <Button variant="secondary" className="w-full" type="button">
                 الدخول بواسطة Google
               </Button>
             </div>
           </form>
           <div className="mt-4 text-center text-sm">
             ليس لديك حساب؟{" "}
-            <Link href="/signup" className="underline">
+            <Link href="/signup" className="text-primary/80 hover:text-primary underline">
               إنشاء حساب
             </Link>
           </div>

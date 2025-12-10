@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +18,7 @@ import { useAuth, useFirestore, setDocumentNonBlocking } from "@/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
+import type { User } from '@/lib/types';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
@@ -28,7 +29,15 @@ export default function SignupPage() {
   const auth = useAuth();
   const firestore = useFirestore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const refFromUrl = searchParams.get('ref');
+    if (refFromUrl) {
+      setReferralCode(refFromUrl);
+    }
+  }, [searchParams]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,18 +54,21 @@ export default function SignupPage() {
       
       const ownReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-      // Create user document in Firestore
       const userDocRef = doc(firestore, "users", user.uid);
-      const newUser = {
-        id: user.uid,
-        email: user.email,
+      const newUser: Omit<User, 'id'> = {
         name: fullName,
+        email: user.email!,
+        avatarUrl: `https://i.pravatar.cc/150?u=${user.uid}`,
         balance: 0,
         adBalance: 0,
+        totalSpent: 0,
         rank: 'مستكشف نجمي',
         referralCode: ownReferralCode,
-        referrerId: referralCode || null, // The code they used to sign up
+        referrerId: referralCode || null,
         createdAt: new Date().toISOString(),
+        affiliateEarnings: 0,
+        referralsCount: 0,
+        affiliateLevel: 'برونزي'
       };
 
       setDocumentNonBlocking(userDocRef, newUser, { merge: true });
@@ -68,22 +80,24 @@ export default function SignupPage() {
       toast({
         variant: "destructive",
         title: "حدث خطأ ما!",
-        description: error.message || "لم نتمكن من إنشاء حسابك. يرجى المحاولة مرة أخرى.",
+        description: error.message === 'Firebase: Error (auth/email-already-in-use).' 
+          ? 'هذا البريد الإلكتروني مستخدم بالفعل.'
+          : 'لم نتمكن من إنشاء حسابك. يرجى المحاولة مرة أخرى.',
       });
     }
   };
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted py-12">
-      <Card className="mx-auto max-w-sm w-full">
+    <div className="flex items-center justify-center min-h-screen py-12">
+      <Card className="mx-auto max-w-sm w-full bg-card/80 backdrop-blur-sm border-primary/20">
         <CardHeader className="space-y-4">
           <div className="mx-auto">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-headline text-center">إنشاء حساب جديد</CardTitle>
+          <CardTitle className="text-2xl font-headline text-center cosmic-glow-primary">إنشاء حساب جديد</CardTitle>
           <CardDescription className="text-center">
-            أدخل معلوماتك لإنشاء حساب والبدء في استخدام المنصة
+            أدخل معلوماتك لإنشاء حساب والبدء في رحلتك الكونية
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -119,7 +133,7 @@ export default function SignupPage() {
           </form>
           <div className="mt-4 text-center text-sm">
             لديك حساب بالفعل؟{" "}
-            <Link href="/login" className="underline">
+            <Link href="/login" className="text-primary/80 hover:text-primary underline">
               تسجيل الدخول
             </Link>
           </div>
