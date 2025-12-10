@@ -66,11 +66,11 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        if (userData) {
-            profileForm.setValue('name', userData.name);
-            profileForm.setValue('avatarUrl', userData.avatarUrl || '');
+        if (user && userData) {
+            profileForm.setValue('name', user.displayName || userData.name);
+            profileForm.setValue('avatarUrl', user.photoURL || userData.avatarUrl || '');
         }
-    }, [userData, profileForm]);
+    }, [user, userData, profileForm]);
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         if (!user || !firestore) return;
