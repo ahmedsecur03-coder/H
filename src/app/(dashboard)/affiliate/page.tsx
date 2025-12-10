@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import React from 'react';
 
 const topMarketers = [
     { rank: 1, name: "محمد علي", earnings: 2500.50 },
@@ -124,7 +125,7 @@ export default function AffiliatePage() {
     };
     
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
-    const currentLevel = AFFILIATE_LEVELS[currentLevelKey];
+    const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
     const nextLevelKey = currentLevel.nextLevel;
     const nextLevel = nextLevelKey ? AFFILIATE_LEVELS[nextLevelKey as keyof typeof AFFILIATE_LEVELS] : null;
 
