@@ -23,6 +23,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const ADMIN_EMAIL = 'hagaaty@gmail.com';
+
 export default function AdminLayout({
   children,
 }: {
@@ -32,11 +34,19 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Since we are using anonymous auth, we don't redirect.
-    // In a real app, you'd check for admin claims here.
+    if (!isUserLoading) {
+      if (!user) {
+        // If not logged in, redirect to login page
+        router.push('/login');
+      } else if (user.email !== ADMIN_EMAIL) {
+        // If logged in but not an admin, redirect to user dashboard
+        router.push('/dashboard');
+      }
+    }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !user) {
+  // Show a loading skeleton while checking auth and permissions
+  if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
@@ -65,10 +75,11 @@ export default function AdminLayout({
     );
   }
 
-  const appUser = {
-    name: "مسؤول",
-    email: `admin@${user.uid.substring(0,6)}`,
-    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=admin`,
+  // If loading is complete and user is the admin, render the layout
+  const adminUser = {
+    name: user.displayName || "مسؤول",
+    email: user.email || ADMIN_EMAIL,
+    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
   };
 
   return (
@@ -109,7 +120,7 @@ export default function AdminLayout({
               <Bell className="h-5 w-5" />
               <span className="sr-only">Toggle notifications</span>
             </Button>
-            <UserNav user={appUser} isAdmin={true} />
+            <UserNav user={adminUser} isAdmin={true} />
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
