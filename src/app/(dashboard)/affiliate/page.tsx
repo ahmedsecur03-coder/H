@@ -50,24 +50,6 @@ export default function AffiliatePage() {
         });
     };
     
-    const affiliateLevelDetails = {
-        'برونزي': { commission: 10, nextLevel: 'فضي', target: 500 },
-        'فضي': { commission: 15, nextLevel: 'ذهبي', target: 2000 },
-        'ذهبي': { commission: 20, nextLevel: 'ماسي', target: 5000 },
-        'ماسي': { commission: 25, nextLevel: null, target: Infinity },
-    };
-
-    const currentLevelName = userData?.affiliateLevel ?? 'برونزي';
-    const currentLevel = affiliateLevelDetails[currentLevelName as keyof typeof affiliateLevelDetails] || affiliateLevelDetails['برونزي'];
-    
-    // Using referralsCount for progress, defaulting to 0 if not present
-    const referralsCount = userData?.referralsCount ?? 0;
-    
-    const progress = currentLevel.target ? Math.min((referralsCount / currentLevel.target) * 100, 100) : 100;
-    const remainingForNextLevel = currentLevel.target ? Math.max(0, currentLevel.target - referralsCount) : 0;
-    const nextLevelName = currentLevel.nextLevel;
-    const nextLevelData = nextLevelName ? affiliateLevelDetails[nextLevelName as keyof typeof affiliateLevelDetails] : null;
-
 
     if (isLoading) {
         return (
@@ -78,8 +60,8 @@ export default function AffiliatePage() {
                       اكسب المال عن طريق دعوة أصدقائك للانضمام إلى منصة حاجاتي.
                     </p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                   {Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-48" />)}
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                   {Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-48" />)}
                 </div>
                  <div className="grid gap-6 md:grid-cols-2">
                     <Skeleton className="h-40" />
@@ -99,18 +81,18 @@ export default function AffiliatePage() {
             </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">أرباحك القابلة للسحب</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
+                    <div className="text-2xl font-bold">$0.00</div>
                     <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
                 </CardContent>
                  <CardFooter>
-                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
+                    <Button className="w-full" disabled>طلب سحب الأرباح</Button>
                 </CardFooter>
             </Card>
              <Card>
@@ -119,7 +101,7 @@ export default function AffiliatePage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{userData?.referralsCount ?? 0}</div>
+                    <div className="text-2xl font-bold">0</div>
                     <p className="text-xs text-muted-foreground">في جميع مستويات شبكتك</p>
                 </CardContent>
             </Card>
@@ -129,27 +111,8 @@ export default function AffiliatePage() {
                     <Crown className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{currentLevelName}</div>
-                    <p className="text-xs text-muted-foreground">نسبة العمولة: {currentLevel.commission}%</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>الترقية التالية</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {nextLevelName && nextLevelData ? (
-                        <>
-                        <div className="text-center text-sm text-muted-foreground mb-2">
-                            باقي لك {remainingForNextLevel} إحالة للوصول لمستوى {nextLevelName} ({nextLevelData.commission}%)
-                        </div>
-                        <Progress value={progress} />
-                        </>
-                    ) : (
-                        <div className="text-center text-sm font-medium">
-                            أنت في أعلى مستوى تسويقي!
-                        </div>
-                    )}
+                    <div className="text-2xl font-bold">برونزي</div>
+                    <p className="text-xs text-muted-foreground">نسبة العمولة: 10%</p>
                 </CardContent>
             </Card>
         </div>
