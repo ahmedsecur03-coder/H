@@ -17,6 +17,8 @@ const topMarketers = [
     { rank: 1, name: "محمد علي", earnings: 2500.50 },
     { rank: 2, name: "فاطمة الزهراء", earnings: 2210.75 },
     { rank: 3, name: "أحمد خالد", earnings: 1980.00 },
+    { rank: 4, name: "يوسف محمود", earnings: 1850.25 },
+    { rank: 5, name: "سارة إبراهيم", earnings: 1700.00 },
 ];
 
 export default function AffiliatePage() {
@@ -49,18 +51,20 @@ export default function AffiliatePage() {
     };
     
     const affiliateLevelDetails = {
-        'برونزي': { commission: 10, nextLevel: 'فضي', target: 1000 },
-        'فضي': { commission: 15, nextLevel: 'ذهبي', target: 5000 },
-        'ذهبي': { commission: 20, nextLevel: 'ماسي', target: 10000 },
+        'برونزي': { commission: 10, nextLevel: 'فضي', target: 500 },
+        'فضي': { commission: 15, nextLevel: 'ذهبي', target: 2000 },
+        'ذهبي': { commission: 20, nextLevel: 'ماسي', target: 5000 },
         'ماسي': { commission: 25, nextLevel: null, target: Infinity },
     };
 
     const currentLevelName = userData?.affiliateLevel ?? 'برونزي';
     const currentLevel = affiliateLevelDetails[currentLevelName as keyof typeof affiliateLevelDetails] || affiliateLevelDetails['برونزي'];
-    const totalSpent = userData?.totalSpent ?? 0;
     
-    const progress = currentLevel.target ? Math.min((totalSpent / currentLevel.target) * 100, 100) : 100;
-    const remainingForNextLevel = currentLevel.target ? Math.max(0, currentLevel.target - totalSpent) : 0;
+    // Using referralsCount for progress, defaulting to 0 if not present
+    const referralsCount = userData?.referralsCount ?? 0;
+    
+    const progress = currentLevel.target ? Math.min((referralsCount / currentLevel.target) * 100, 100) : 100;
+    const remainingForNextLevel = currentLevel.target ? Math.max(0, currentLevel.target - referralsCount) : 0;
     const nextLevelName = currentLevel.nextLevel;
     const nextLevelData = nextLevelName ? affiliateLevelDetails[nextLevelName as keyof typeof affiliateLevelDetails] : null;
 
@@ -98,15 +102,15 @@ export default function AffiliatePage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">أرباحك الحالية</CardTitle>
+                    <CardTitle className="text-sm font-medium">أرباحك القابلة للسحب</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $1.00</p>
+                    <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
                 </CardContent>
                  <CardFooter>
-                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 1}>طلب سحب الأرباح</Button>
+                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
                 </CardFooter>
             </Card>
              <Card>
@@ -137,13 +141,13 @@ export default function AffiliatePage() {
                     {nextLevelName && nextLevelData ? (
                         <>
                         <div className="text-center text-sm text-muted-foreground mb-2">
-                            فاضل لك ${remainingForNextLevel.toFixed(2)} للوصول لمستوى {nextLevelName} ({nextLevelData.commission}%)
+                            باقي لك {remainingForNextLevel} إحالة للوصول لمستوى {nextLevelName} ({nextLevelData.commission}%)
                         </div>
                         <Progress value={progress} />
                         </>
                     ) : (
                         <div className="text-center text-sm font-medium">
-                            أنت في أعلى مستوى!
+                            أنت في أعلى مستوى تسويقي!
                         </div>
                     )}
                 </CardContent>
