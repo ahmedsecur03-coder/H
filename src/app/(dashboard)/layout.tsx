@@ -61,14 +61,24 @@ function Header() {
          <UserNav user={appUser} />
        </div>
       </div>
-       <Card className='w-fit ml-auto border-primary/50 bg-card/50'>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
-          </CardContent>
+       <div className="grid grid-cols-2 gap-4 ml-auto w-fit">
+        <Card className='w-fit border-primary/50 bg-card/50'>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
+            </CardContent>
         </Card>
+        <Card className='w-fit border-accent/50 bg-card/50'>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</div>
+            </CardContent>
+        </Card>
+       </div>
     </header>
   );
 }

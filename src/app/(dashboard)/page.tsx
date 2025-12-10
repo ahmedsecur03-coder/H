@@ -54,11 +54,12 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { doc, collection, query, orderBy, limit, runTransaction, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order, Service } from '@/lib/types';
-import { performanceData } from '@/lib/placeholder-data';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 const chartConfig = {
@@ -66,7 +67,7 @@ const chartConfig = {
     label: 'الطلبات',
     color: 'hsl(var(--primary))',
   },
-  spend: {
+  charge: {
     label: 'الإنفاق',
     color: 'hsl(var(--accent))',
   },
@@ -117,6 +118,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const [quantity, setQuantity] = useState('');
   const [cost, setCost] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [open, setOpen] = useState(false)
 
   // Queries for services
   const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
@@ -261,12 +263,43 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="service">الخدمة</Label>
-                <Select onValueChange={setSelectedServiceId} value={selectedServiceId} disabled={!selectedCategory}>
-                  <SelectTrigger id="service"><SelectValue placeholder="اختر خدمة" /></SelectTrigger>
-                  <SelectContent>
-                    {servicesForCategory.map(service => <SelectItem key={service.id} value={service.id}>{service.platform} (سعر الألف: ${service.price})</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                 <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-full justify-between"
+                            disabled={!selectedCategory}
+                        >
+                            {selectedServiceId
+                                ? servicesForCategory.find((s) => s.id === selectedServiceId)?.platform
+                                : "اختر خدمة..."}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                         <Command>
+                            <CommandInput placeholder="ابحث عن خدمة..." />
+                            <CommandList>
+                                <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
+                                <CommandGroup>
+                                    {servicesForCategory.map((s) => (
+                                        <CommandItem
+                                            key={s.id}
+                                            value={s.id}
+                                            onSelect={(currentValue) => {
+                                                setSelectedServiceId(currentValue === selectedServiceId ? "" : currentValue)
+                                                setOpen(false)
+                                            }}
+                                        >
+                                            {s.platform} (سعر الألف: ${s.price})
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
               </div>
               
               {selectedServiceId && (
@@ -307,39 +340,51 @@ export default function DashboardPage() {
   const { data: userData, isLoading: isUserLoading } = useDoc<UserType>(userDocRef);
 
   const ordersQuery = useMemoFirebase(
-    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
+    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc')) : null),
     [firestore, authUser]
   );
   const { data: ordersData, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+
+  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
   
-  const completedOrdersQuery = useMemoFirebase(
-    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), where('status', '==', 'مكتمل')) : null),
-    [firestore, authUser]
-  );
-  const { data: completedOrdersData, isLoading: isCompletedOrdersLoading } = useCollection<Order>(completedOrdersQuery);
+  const performanceData = useMemo(() => {
+    if (!ordersData) return [];
+    const dataByDate: Record<string, { date: string, charge: number, orders: number }> = {};
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        dataByDate[dateStr] = { date: dateStr, charge: 0, orders: 0 };
+    }
 
+    ordersData.forEach(order => {
+        const orderDate = new Date(order.orderDate);
+        const dateStr = orderDate.toISOString().split('T')[0];
+        if (dataByDate[dateStr]) {
+            dataByDate[dateStr].charge += order.charge;
+            dataByDate[dateStr].orders += 1;
+        }
+    });
 
-  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading || isCompletedOrdersLoading;
+    return Object.values(dataByDate);
+  }, [ordersData]);
 
-  const statusVariant = {
-    مكتمل: 'default',
-    'قيد التنفيذ': 'secondary',
-    ملغي: 'destructive',
-    جزئي: 'outline',
-  } as const;
 
   if (isLoading || !userData || !authUser) {
     return (
       <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
           </div>
-          <Skeleton className="h-[350px]" />
+          <QuickOrderFormSkeleton />
           <Skeleton className="h-[300px]" />
         </div>
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-          <Skeleton className="h-[550px]" />
+          <Skeleton className="h-[150px]" />
+          <Skeleton className="h-[250px]" />
         </div>
       </div>
     );
@@ -354,14 +399,41 @@ export default function DashboardPage() {
   }[userData?.affiliateLevel || 'برونزي'];
 
   const achievements = [
-    { icon: Rocket, title: "المنطلق الصاروخي", completed: true },
-    { icon: Shield, title: "المستخدم الموثوق", completed: true },
-    { icon: ShoppingCart, title: "سيد الطلبات", completed: true },
-    { icon: Star, title: "النجم الصاعد", completed: false },
-    { icon: DollarSign, title: "ملك الإنفاق", completed: false },
-    { icon: Sparkles, title: "العميل المميز", completed: false },
-    { icon: Diamond, title: "الأسطورة الكونية", completed: false },
+    { icon: Rocket, title: "المنطلق الصاروخي", completed: (userData.totalSpent || 0) > 1 },
+    { icon: Shield, title: "المستخدم الموثوق", completed: (ordersData?.length || 0) >= 10 },
+    { icon: ShoppingCart, title: "سيد الطلبات", completed: (ordersData?.length || 0) >= 50 },
+    { icon: Star, title: "النجم الصاعد", completed: (userData.totalSpent || 0) >= 100 },
+    { icon: DollarSign, title: "ملك الإنفاق", completed: (userData.totalSpent || 0) >= 1000 },
+    { icon: Sparkles, title: "العميل المميز", completed: (userData.rank) === 'سيد المجرة' },
+    { icon: Diamond, title: "الأسطورة الكونية", completed: (userData.rank) === 'سيد كوني' },
   ];
+
+  function QuickOrderFormSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent>
+                <div className="grid gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+  }
+
+  const recentOrders = ordersData?.slice(0, 5);
+  const statusVariant = {
+    مكتمل: 'default',
+    'قيد التنفيذ': 'secondary',
+    ملغي: 'destructive',
+    جزئي: 'outline',
+  } as const;
+
 
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
@@ -401,8 +473,33 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">أداء الحساب</CardTitle>
+                <CardDescription>نظرة عامة على إنفاقك وطلباتك خلال آخر 7 أيام.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                  <BarChart accessibilityLayer data={performanceData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      tickMargin={10}
+                      axisLine={false}
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
+                    />
+                    <YAxis yAxisId="left" orientation="right" stroke="hsl(var(--primary))" hide />
+                    <YAxis yAxisId="right" orientation="left" stroke="hsl(var(--accent))" hide />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} yAxisId="left" />
+                    <Bar dataKey="charge" fill="var(--color-charge)" radius={4} yAxisId="right" />
+                  </BarChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
 
-        <QuickOrderForm user={authUser} userData={userData} />
 
         <Card>
           <CardHeader>
@@ -418,8 +515,8 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ordersData && ordersData.length > 0 ? (
-                  ordersData.map((order) => (
+                {recentOrders && recentOrders.length > 0 ? (
+                  recentOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">{order.serviceName}</TableCell>
                       <TableCell>
@@ -477,7 +574,9 @@ export default function DashboardPage() {
                 ))}
             </CardContent>
         </Card>
+        <QuickOrderForm user={authUser} userData={userData} />
       </div>
     </div>
   );
 }
+
