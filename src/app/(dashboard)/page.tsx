@@ -73,12 +73,13 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const RANKS = [
-  { name: 'مستكشف نجمي', spend: 0, discount: 0 },
-  { name: 'قائد صاروخي', spend: 500, discount: 2 },
-  { name: 'سيد المجرة', spend: 2500, discount: 5 },
-  { name: 'سيد كوني', spend: 10000, discount: 10 },
+const RANKS: { name: UserType['rank']; spend: number; discount: number, reward: number }[] = [
+  { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
+  { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 5 },
+  { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 20 },
+  { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50 },
 ];
+
 
 function getRankForSpend(spend: number) {
   let currentRank = RANKS[0];
@@ -186,18 +187,31 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             
             const currentData = userDoc.data() as UserType;
             const currentBalance = currentData.balance;
+            const currentRankInfo = getRankForSpend(currentData.totalSpent);
 
             if (currentBalance < cost) throw new Error("رصيدك غير كافٍ.");
 
             const newBalance = currentBalance - cost;
             const newTotalSpent = currentData.totalSpent + cost;
-            const newRank = getRankForSpend(newTotalSpent).name;
+            const newRankInfo = getRankForSpend(newTotalSpent);
             
-            transaction.update(userDocRef, {
+            const updates: Partial<UserType> = {
                 balance: newBalance,
                 totalSpent: newTotalSpent,
-                rank: newRank,
-            });
+            };
+
+            let promotionToast = {};
+
+            if (newRankInfo.name !== currentRankInfo.name) {
+                updates.rank = newRankInfo.name;
+                updates.adBalance = (currentData.adBalance || 0) + newRankInfo.reward;
+                 promotionToast = {
+                    title: `🎉 ترقية! أهلاً بك في رتبة ${newRankInfo.name}`,
+                    description: `لقد حصلت على مكافأة ${newRankInfo.reward}$ في رصيد إعلاناتك!`,
+                };
+            }
+
+            transaction.update(userDocRef, updates);
 
             const newOrderRef = doc(collection(firestore, `users/${user.uid}/orders`));
             const newOrder: Omit<Order, 'id'> = {
@@ -211,9 +225,15 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                 status: 'قيد التنفيذ',
             };
             transaction.set(newOrderRef, newOrder);
+            return promotionToast;
+        }).then((promotionToast) => {
+            toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
+            if(Object.keys(promotionToast).length > 0) {
+                 setTimeout(() => toast(promotionToast), 1000);
+            }
         });
 
-        toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
+        
         // Reset form
         setSelectedPlatform(undefined);
         setSelectedCategory(undefined);
@@ -580,3 +600,4 @@ export default function DashboardPage() {
   );
 }
 
+    
