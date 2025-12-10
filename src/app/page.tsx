@@ -6,6 +6,8 @@ import { Rocket, ShieldCheck, Zap, Users, LogIn, UserPlus } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
+import { cn } from '@/lib/utils';
+import React from 'react';
 
 function Header() {
   const { user, isUserLoading } = useUser();
@@ -52,13 +54,21 @@ function Header() {
   );
 }
 
+const CosmicBackground = () => (
+    <div className="absolute inset-0 -z-10 h-full w-full bg-background">
+        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+        <div className="absolute left-0 right-0 top-[-10%] h-[1000px] w-[1000px] rounded-full bg-[radial-gradient(circle_400px_at_50%_300px,#fbfbfb36,#000)]"></div>
+    </div>
+);
+
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1">
         <section className="relative w-full pt-24 pb-12 md:pt-40 md:pb-24 lg:pt-48 lg:pb-32 overflow-hidden">
-          
+          <CosmicBackground />
           <div className="container mx-auto px-4 md:px-6 text-center">
             <div className="flex flex-col justify-center items-center space-y-6">
               <div className="space-y-4">
@@ -70,7 +80,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <Button size="lg" asChild className="cosmic-glow-primary hover:brightness-125 transition-all duration-300">
+                <Button size="lg" asChild className="shadow-lg shadow-primary/20 hover:brightness-125 transition-all duration-300">
                   <Link href="/dashboard">ابدأ الآن</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
@@ -92,42 +102,22 @@ export default function Home() {
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 py-12 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-4">
-              <div className="grid gap-2 text-center p-4 rounded-lg hover:bg-card transition-colors">
-                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary cosmic-glow-primary transition-all duration-300">
-                    <Zap className="h-8 w-8" />
-                 </div>
-                <h3 className="text-xl font-bold font-headline">خدمات فورية</h3>
-                <p className="text-muted-foreground">
-                  تنفيذ سريع لخدمات SMM لتعزيز تواجدك على وسائل التواصل الاجتماعي.
-                </p>
-              </div>
-              <div className="grid gap-2 text-center p-4 rounded-lg hover:bg-card transition-colors">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary cosmic-glow-primary transition-all duration-300">
-                    <Rocket className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-bold font-headline">حملات إعلانية قوية</h3>
-                <p className="text-muted-foreground">
-                  إدارة حملاتك الإعلانية على Google, Facebook, TikTok, و Snapchat من مكان واحد.
-                </p>
-              </div>
-              <div className="grid gap-2 text-center p-4 rounded-lg hover:bg-card transition-colors">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary cosmic-glow-primary transition-all duration-300">
-                    <Users className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-bold font-headline">نظام إحالة مربح</h3>
-                <p className="text-muted-foreground">
-                  اكسب عمولات من خلال دعوة الآخرين للانضمام إلى شبكتك التسويقية.
-                </p>
-              </div>
-              <div className="grid gap-2 text-center p-4 rounded-lg hover:bg-card transition-colors">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary cosmic-glow-primary transition-all duration-300">
-                    <ShieldCheck className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-bold font-headline">دعم فني موثوق</h3>
-                <p className="text-muted-foreground">
-                  فريق دعم متخصص ومساعد ذكي لمساعدتك في كل خطوة.
-                </p>
-              </div>
+              {[
+                { icon: Zap, title: "خدمات فورية", description: "تنفيذ سريع لخدمات SMM لتعزيز تواجدك على وسائل التواصل الاجتماعي." },
+                { icon: Rocket, title: "حملات إعلانية قوية", description: "إدارة حملاتك الإعلانية على Google, Facebook, TikTok, و Snapchat من مكان واحد." },
+                { icon: Users, title: "نظام إحالة مربح", description: "اكسب عمولات من خلال دعوة الآخرين للانضمام إلى شبكتك التسويقية." },
+                { icon: ShieldCheck, title: "دعم فني موثوق", description: "فريق دعم متخصص ومساعد ذكي لمساعدتك في كل خطوة." }
+              ].map((feature, i) => (
+                  <div key={i} className="group grid gap-2 text-center p-4 rounded-lg hover:bg-card transition-colors duration-300">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20">
+                        <feature.icon className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-xl font-bold font-headline">{feature.title}</h3>
+                    <p className="text-muted-foreground">
+                        {feature.description}
+                    </p>
+                  </div>
+              ))}
             </div>
           </div>
         </section>

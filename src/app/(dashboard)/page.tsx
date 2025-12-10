@@ -34,6 +34,7 @@ import {
   Gem,
   Percent,
   Loader2,
+  Users,
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -43,15 +44,12 @@ import {
 } from '@/components/ui/chart';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, runTransaction, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order, Service } from '@/lib/types';
 import { performanceData } from '@/lib/placeholder-data';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
-import Logo from '@/components/logo';
-import { UserNav } from './_components/user-nav';
 
 const chartConfig = {
   orders: {
@@ -264,8 +262,15 @@ export default function DashboardPage() {
     [firestore, authUser]
   );
   const { data: ordersData, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+  
+  const completedOrdersQuery = useMemoFirebase(
+    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), where('status', '==', 'مكتمل')) : null),
+    [firestore, authUser]
+  );
+  const { data: completedOrdersData, isLoading: isCompletedOrdersLoading } = useCollection<Order>(completedOrdersQuery);
 
-  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
+
+  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading || isCompletedOrdersLoading;
 
   const statusVariant = {
     مكتمل: 'default',
@@ -276,22 +281,28 @@ export default function DashboardPage() {
 
   if (isLoading || !userData || !authUser) {
     return (
-        <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
-            <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
-            </div>
-            <Skeleton className="h-[350px]" />
-            <Skeleton className="h-[300px]" />
-            </div>
-            <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-            <Skeleton className="h-[550px]" />
-            </div>
+      <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
+          </div>
+          <Skeleton className="h-[350px]" />
+          <Skeleton className="h-[300px]" />
         </div>
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
+          <Skeleton className="h-[550px]" />
+        </div>
+      </div>
     );
   }
   
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
+  const affiliateLevelInfo = {
+    'برونزي': { commission: '10%' },
+    'فضي': { commission: '12%' },
+    'ذهبي': { commission: '15%' },
+    'ماسي': { commission: '20%' },
+  }[userData?.affiliateLevel || 'برونزي'];
 
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
@@ -333,16 +344,40 @@ export default function DashboardPage() {
                <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم {rank.discount}% على الخدمات</p>
             </CardContent>
           </Card>
-          <Card>
+           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>إجمالي الطلبات</span>
+                <span>الطلبات المكتملة</span>
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{ordersData?.length ?? 0}</div>
-               <p className="text-xs text-muted-foreground">آخر 5 طلبات</p>
+              <div className="text-2xl font-bold">{completedOrdersData?.length ?? 0}</div>
+               <p className="text-xs text-muted-foreground">إجمالي الطلبات المكتملة</p>
+            </CardContent>
+          </Card>
+           <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex justify-between items-center">
+                <span>أرباح الإحالة</span>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
+               <p className="text-xs text-muted-foreground">إجمالي الأرباح</p>
+            </CardContent>
+          </Card>
+           <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex justify-between items-center">
+                <span>المسوق بالعمولة</span>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userData?.affiliateLevel ?? 'برونزي'}</div>
+              <p className="text-xs text-muted-foreground">العمولة: {affiliateLevelInfo.commission}</p>
             </CardContent>
           </Card>
         </div>
