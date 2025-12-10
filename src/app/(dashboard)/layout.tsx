@@ -46,7 +46,7 @@ export default function DashboardLayout({
   if (isUserLoading || !user) {
     return (
         <div className="flex min-h-screen w-full">
-            <div className="hidden md:block w-64 bg-muted/40 border-r p-4">
+            <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
                 <div className="flex h-12 items-center justify-center px-4 mb-4">
                      <Logo />
                 </div>
@@ -87,21 +87,22 @@ export default function DashboardLayout({
     <SidebarProvider>
       <Sidebar side="right" collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-12 items-center justify-center px-4 group-data-[collapsible=icon]:hidden">
+          <div className="flex h-16 items-center justify-center px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {dashboardNavItems.map((item) => (
+            {dashboardNavItems.map((item, index) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
                   tooltip={{
                     children: item.label,
                     className: 'font-body',
+                    side: 'left',
                   }}
-                  isActive={item.href === '/dashboard'}
+                  isActive={item.href === '/dashboard' && index === 0} // Example active state
                 >
                   <Link href={item.href}>
                     <item.icon />
@@ -116,15 +117,7 @@ export default function DashboardLayout({
       <SidebarInset className="bg-transparent">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <SidebarTrigger className="md:hidden" />
-          <div className="relative flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="بحث..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-            />
-          </div>
-          <div className="flex items-center gap-2 mr-auto">
+           <div className="flex items-center gap-4 ml-auto">
             <Button variant="ghost" size="icon" className="rounded-full">
               <Bell className="h-5 w-5" />
               <span className="sr-only">Toggle notifications</span>

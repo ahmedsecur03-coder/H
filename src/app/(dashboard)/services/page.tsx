@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -27,47 +27,32 @@ import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useRouter } from 'next/navigation';
 
-function ServiceCard({ service, onOrderClick }: { service: Service, onOrderClick: () => void }) {
-  return (
-    <Card className="flex flex-col border border-primary/10 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
-      <CardHeader className="flex flex-row items-start gap-4">
-        <div className="bg-primary/10 text-primary p-3 rounded-xl cosmic-glow-primary">
-            <Package className="h-6 w-6" />
-        </div>
-        <div>
-            <CardTitle className="text-lg font-headline">{service.category}</CardTitle>
-            <CardDescription>{service.platform}</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow space-y-2 text-sm">
-        <div className="flex justify-between">
-            <span className="text-muted-foreground">السعر لكل 1000:</span>
-            <span className="font-semibold text-primary">${service.price.toFixed(2)}</span>
-        </div>
-         <div className="flex justify-between">
-            <span className="text-muted-foreground">الحد الأدنى:</span>
-            <span>{service.min.toLocaleString()}</span>
-        </div>
-         <div className="flex justify-between">
-            <span className="text-muted-foreground">الحد الأقصى:</span>
-            <span>{service.max.toLocaleString()}</span>
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button className="w-full cosmic-glow-primary" onClick={onOrderClick}>
-          <DollarSign className="ml-2 h-4 w-4" /> طلب الخدمة
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-}
-
-function ServiceGridSkeleton() {
+function ServicesPageSkeleton() {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-                <Skeleton key={i} className="h-[270px] w-full" />
-            ))}
+        <div className="space-y-6">
+            <Card>
+                 <CardHeader>
+                    <Skeleton className="h-8 w-1/4" />
+                    <Skeleton className="h-5 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-10 w-full mb-4" />
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                {Array.from({ length: 6 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    {Array.from({ length: 6 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
         </div>
     );
 }
@@ -79,8 +64,7 @@ export default function ServicesPage() {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedPlatform, setSelectedPlatform] = useState('all');
+  const [activePlatform, setActivePlatform] = useState('الكل');
 
   const servicesQuery = useMemoFirebase(
     () => (firestore ? query(collection(firestore, 'services')) : null),
@@ -88,42 +72,33 @@ export default function ServicesPage() {
   );
   const { data: services, isLoading } = useCollection<Service>(servicesQuery);
 
-  const { categories, platforms } = useMemo(() => {
-    if (!services) return { categories: [], platforms: [] };
-    const uniqueCategories = [...new Set(services.map((s) => s.category))];
+  const platforms = useMemo(() => {
+    if (!services) return ['الكل'];
     const uniquePlatforms = [...new Set(services.map((s) => s.platform))];
-    return { categories: uniqueCategories, platforms: uniquePlatforms };
+    return ['الكل', ...uniquePlatforms];
   }, [services]);
 
   const filteredServices = useMemo(() => {
     if (!services) return [];
     return services.filter((service) => {
-      const matchesSearch =
-        service.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.platform.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === 'all' || service.category === selectedCategory;
-      const matchesPlatform =
-        selectedPlatform === 'all' || service.platform === selectedPlatform;
-      return matchesSearch && matchesCategory && matchesPlatform;
+      const serviceName = `${service.id} ${service.category} ${service.platform}`.toLowerCase();
+      const matchesSearch = serviceName.includes(searchTerm.toLowerCase());
+      const matchesPlatform = activePlatform === 'الكل' || service.platform === activePlatform;
+      return matchesSearch && matchesPlatform;
     });
-  }, [services, searchTerm, selectedCategory, selectedPlatform]);
+  }, [services, searchTerm, activePlatform]);
 
   const seedServices = () => {
     if (!firestore) return;
     const servicesToSeed: Omit<Service, 'id'>[] = [
-      { platform: "انستغرام", category: "متابعين", price: 5, min: 100, max: 10000 },
-      { platform: "انستغرام", category: "إعجابات", price: 2, min: 50, max: 5000 },
-      { platform: "انستغرام", category: "مشاهدات فيديو", price: 1.5, min: 100, max: 100000 },
+      { platform: "انستغرام", category: "متابعين مضمون", price: 5, min: 100, max: 10000 },
+      { platform: "انستغرام", category: "إعجابات سريعة", price: 2, min: 50, max: 5000 },
       { platform: "فيسبوك", category: "إعجابات صفحة", price: 8, min: 100, max: 2000 },
-      { platform: "فيسبوك", category: "مشاهدات فيديو", price: 2.5, min: 100, max: 50000 },
-      { platform: "فيسبوك", category: "مشاركات", price: 10, min: 10, max: 1000 },
       { platform: "يوتيوب", category: "مشاهدات", price: 3, min: 1000, max: 100000 },
-      { platform: "يوتيوب", category: "مشتركين", price: 25, min: 50, max: 1000 },
-      { platform: "تيك توك", category: "متابعين", price: 4, min: 100, max: 20000 },
-      { platform: "تيك توك", category: "مشاهدات", price: 0.5, min: 1000, max: 1000000 },
+      { platform: "تيك توك", category: "متابعين عرب", price: 6, min: 100, max: 20000 },
       { platform: "تويتر", category: "متابعين", price: 6, min: 100, max: 5000 },
       { platform: "تصميم مواقع", category: "موقع تعريفي", price: 250, min: 1, max: 1 },
+      { platform: "حملات إعلانية", category: "إدارة حملة فيسبوك", price: 150, min: 1, max: 1 },
     ];
     
     const servicesCol = collection(firestore, 'services');
@@ -135,104 +110,83 @@ export default function ServicesPage() {
   };
 
 
+  if (isLoading) {
+    return <ServicesPageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 pb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">جميع الخدمات</h1>
-                <p className="text-muted-foreground">
-                    استعرض، ابحث، وفلتر جميع الخدمات المتاحة في منصة حاجاتي.
-                </p>
-            </div>
-             <Button size="sm" variant="outline" onClick={seedServices}>إضافة خدمات تجريبية</Button>
-        </div>
-
       <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl">قائمة الخدمات</CardTitle>
+            <CardDescription>
+                استعرض، ابحث، وفلتر جميع الخدمات المتاحة في منصة حاجاتي.
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+             <div className="flex flex-wrap items-center gap-2">
+                {platforms.map(platform => (
+                    <Button 
+                        key={platform}
+                        variant={activePlatform === platform ? 'default' : 'outline'}
+                        onClick={() => setActivePlatform(platform)}
+                    >
+                        {platform}
+                    </Button>
+                ))}
+             </div>
+             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث عن خدمة..."
+                placeholder="ابحث بالرقم أو اسم الخدمة..."
                 className="pr-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="فلترة حسب الفئة" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">جميع الفئات</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
+        </CardContent>
+        <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">رقم الخدمة</TableHead>
+                  <TableHead>الخدمة</TableHead>
+                  <TableHead className="text-center">السعر لكل 1000</TableHead>
+                  <TableHead className="text-center">الحد الأدنى</TableHead>
+                  <TableHead className="text-center">الحد الأقصى</TableHead>
+                  <TableHead className="text-right"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredServices.map((service) => (
+                  <TableRow key={service.id}>
+                    <TableCell className="font-mono text-xs">{service.id.substring(0,6)}</TableCell>
+                    <TableCell className="font-medium">{`${service.platform} - ${service.category}`}</TableCell>
+                    <TableCell className="text-center font-medium text-primary">${service.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-center">{service.min.toLocaleString()}</TableCell>
+                    <TableCell className="text-center">{service.max.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                       <Button size="sm" onClick={() => router.push('/dashboard')}>
+                          طلب
+                       </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={selectedPlatform}
-              onValueChange={setSelectedPlatform}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="فلترة حسب المنصة" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">جميع المنصات</SelectItem>
-                {platforms.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </TableBody>
+            </Table>
+             {filteredServices.length === 0 && (
+                 <div className="text-center py-20">
+                    <ListFilter className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-medium">لا توجد خدمات تطابق بحثك</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        حاول تغيير كلمات البحث أو الفلتر.
+                    </p>
+                </div>
+            )}
         </CardContent>
       </Card>
-
-      {isLoading ? (
-        <ServiceGridSkeleton />
-      ) : (
-        filteredServices.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredServices.map((service) => (
-              <ServiceCard 
-                key={service.id} 
-                service={service} 
-                onOrderClick={() => router.push('/dashboard')}
-              />
-            ))}
-          </div>
-        ) : (
-            <Card className="flex flex-col items-center justify-center py-20 text-center">
-                <CardHeader>
-                    <div className="mx-auto bg-muted p-4 rounded-full">
-                        <ListFilter className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                    <CardTitle className="mt-4 font-headline text-2xl">لا توجد خدمات تطابق بحثك</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">
-                        حاول تغيير كلمات البحث أو إزالة الفلاتر لعرض المزيد من النتائج.
-                    </p>
-                </CardContent>
-                <CardFooter>
-                    <Button variant="outline" onClick={() => {
-                        setSearchTerm('');
-                        setSelectedCategory('all');
-                        setSelectedPlatform('all');
-                    }}>
-                        إزالة جميع الفلاتر
-                    </Button>
-                </CardFooter>
-            </Card>
-        )
-      )}
+      
+       <Button size="sm" variant="ghost" onClick={seedServices}>إضافة خدمات تجريبية</Button>
     </div>
   );
 }

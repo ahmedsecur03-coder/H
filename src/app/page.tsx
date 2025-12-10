@@ -12,7 +12,7 @@ function Header() {
           <Button variant="ghost" asChild>
             <Link href="/login">تسجيل الدخول</Link>
           </Button>
-          <Button asChild className="cosmic-glow-primary hover:shadow-lg hover:shadow-primary/50 transition-shadow duration-300">
+          <Button asChild className="cosmic-glow-primary">
             <Link href="/signup">إنشاء حساب</Link>
           </Button>
         </nav>
@@ -27,14 +27,11 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <section className="relative w-full pt-24 pb-12 md:pt-40 md:pb-24 lg:pt-48 lg:pb-32 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern opacity-10 -z-10"></div>
-          <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-primary/20 rounded-full blur-3xl -z-20 animate-pulse"></div>
-          <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-accent/20 rounded-full blur-3xl -z-20 animate-pulse delay-500"></div>
-
+          
           <div className="container mx-auto px-4 md:px-6 text-center">
             <div className="flex flex-col justify-center items-center space-y-6">
               <div className="space-y-4">
-                <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl text-transparent bg-clip-text bg-gradient-to-br from-primary-foreground to-primary">
+                 <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-br from-primary-foreground to-primary">
                   منصة <span className="text-primary brightness-125">حاجاتي</span>
                 </h1>
                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">

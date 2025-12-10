@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import Logo from "@/components/logo";
 import { useAuth } from "@/firebase";
-import { initiateEmailSignIn } from "@/firebase/non-blocking-login";
 import { useToast } from "@/hooks/use-toast";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
@@ -49,12 +48,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <Card className="mx-auto max-w-sm w-full bg-card/80 backdrop-blur-sm border-primary/20">
+      <Card className="mx-auto max-w-sm w-full bg-card/80 backdrop-blur-sm">
         <CardHeader className="space-y-4">
           <div className="mx-auto">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-headline text-center cosmic-glow-primary">تسجيل الدخول</CardTitle>
+          <CardTitle className="text-2xl font-headline text-center text-primary">تسجيل الدخول</CardTitle>
           <CardDescription className="text-center">
             أدخل بريدك الإلكتروني أدناه للدخول إلى حسابك
           </CardDescription>
@@ -93,9 +92,6 @@ export default function LoginPage() {
               </div>
               <Button type="submit" className="w-full">
                 تسجيل الدخول
-              </Button>
-              <Button variant="secondary" className="w-full" type="button">
-                الدخول بواسطة Google
               </Button>
             </div>
           </form>
