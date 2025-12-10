@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useFlow, Flow } from 'genkit/react';
+// import { useFlow, type Flow } from '@genkit-ai/react-runtime';
 import {
   Sheet,
   SheetContent,
@@ -22,16 +22,16 @@ export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   
-  const [flow, setFlow] = useState<Flow<AISupportUsersInput, AISupportUsersOutput>>();
+  // const [flow, setFlow] = useState<Flow<AISupportUsersInput, AISupportUsersOutput>>();
 
-  const { messages, run, running } = useFlow(flow);
+  // const { messages, run, running } = useFlow(flow);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     const userMessage = { query: input };
     setInput('');
-    run(userMessage);
+    // run(userMessage);
   };
 
   const UserMessage = ({ children }: { children: React.ReactNode }) => (
@@ -57,9 +57,12 @@ export default function AiAssistant() {
   );
 
   const openAssistant = () => {
-    setFlow(() => aiSupportUsersFlow);
+    // setFlow(() => aiSupportUsersFlow);
     setOpen(true);
   }
+
+  const running = false;
+  const messages: any[] = [];
 
   return (
     <>

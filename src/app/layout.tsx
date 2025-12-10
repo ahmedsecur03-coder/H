@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import AiAssistant from '@/components/ai-assistant';
+// import AiAssistant from '@/components/ai-assistant';
 import { Poppins, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +36,7 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased', fontPoppins.variable, fontPTSans.variable)}>
         {children}
-        <AiAssistant />
+        {/* <AiAssistant /> */}
         <Toaster />
       </body>
     </html>
