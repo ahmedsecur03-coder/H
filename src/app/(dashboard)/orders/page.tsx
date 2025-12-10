@@ -34,7 +34,6 @@ import { Search, ListFilter } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -60,8 +59,10 @@ const ITEMS_PER_PAGE = 10;
 function OrdersPageSkeleton() {
     return (
         <div className="space-y-6">
-            <Skeleton className="h-10 w-1/4" />
-            <Skeleton className="h-6 w-1/2" />
+            <div>
+                <Skeleton className="h-8 w-1/4 mb-2" />
+                <Skeleton className="h-5 w-1/2" />
+            </div>
             <Card>
                 <CardContent className="p-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,17 +72,17 @@ function OrdersPageSkeleton() {
                 </CardContent>
             </Card>
             <Card>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                {Array.from({ length: 6 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                                {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                                 <TableRow key={i}>
-                                    {Array.from({ length: 6 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -157,10 +158,10 @@ export default function OrdersPage() {
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="ابحث بالمعرف، الخدمة، أو الرابط..."
-                className="pl-10"
+                className="pr-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
