@@ -6,20 +6,20 @@ import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import Logo from '@/components/logo';
+import AuthLogo from '../_components/auth-logo';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+
+const CosmicBackground = () => (
+    <div className="absolute inset-0 -z-10 h-full w-full bg-background">
+        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle_400px_at_50%_300px,#fbfbfb1a,transparent)] opacity-50"></div>
+    </div>
+);
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -53,20 +53,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="flex justify-center">
-            <Logo />
-        </div>
-        <Card>
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-headline">تسجيل الدخول</CardTitle>
-            <CardDescription>
-              أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 overflow-hidden">
+        <CosmicBackground />
+        <div className="w-full max-w-sm space-y-8 z-10">
+            <div className="flex justify-center">
+                <AuthLogo />
+            </div>
+            <div className="text-center">
+                 <h1 className="text-2xl font-headline font-bold text-primary-foreground">تسجيل الدخول</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك
+                </p>
+            </div>
+            <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">البريد الإلكتروني</Label>
                 <Input
@@ -79,7 +78,10 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور</Label>
+                 <div className="flex items-center justify-between">
+                    <Label htmlFor="password">كلمة المرور</Label>
+                    <Link href="#" className="text-xs text-primary/80 hover:text-primary">نسيت كلمة المرور؟</Link>
+                 </div>
                 <Input 
                   id="password" 
                   type="password" 
@@ -88,21 +90,19 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={loading}>
-                 {loading ? <Loader2 className="animate-spin" /> : 'تسجيل الدخول'}
-              </Button>
-               <p className="text-center text-sm text-muted-foreground">
+               <div>
+                  <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/70 text-primary-foreground hover:brightness-110 transition-all duration-300" disabled={loading}>
+                     {loading ? <Loader2 className="animate-spin" /> : 'تسجيل الدخول'}
+                  </Button>
+               </div>
+            </form>
+             <p className="text-center text-sm text-muted-foreground">
                 ليس لديك حساب؟{' '}
                 <Link href="/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
                     إنشاء حساب جديد
                 </Link>
             </p>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
+        </div>
     </div>
   );
 }
