@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { runTransaction, collection, query, doc, addDoc } from 'firebase/firestore';
+import { runTransaction, collection, query, doc, addDoc, where } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Rocket, ListFilter, Loader2 } from "lucide-react";

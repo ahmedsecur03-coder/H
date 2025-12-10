@@ -16,14 +16,14 @@ import {
 
 
 export const dashboardNavItems: NavItem[] = [
-  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { href: '/services', label: 'جميع الخدمات', icon: Package },
-  { href: '/orders', label: 'إدارة الطلبات', icon: ShoppingCart },
-  { href: '/mass-order', label: 'طلب جماعي', icon: ListOrdered },
-  { href: '/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/affiliate', label: 'نظام الإحالة', icon: Users },
-  { href: '/campaigns', label: 'مركز الحملات', icon: Megaphone },
-  { href: '/support', label: 'الدعم الفني', icon: MessageSquare },
+  { href: '/dashboard/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard/services', label: 'جميع الخدمات', icon: Package },
+  { href: '/dashboard/orders', label: 'إدارة الطلبات', icon: ShoppingCart },
+  { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
+  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
+  { href: '/dashboard/affiliate', label: 'نظام الإحالة', icon: Users },
+  { href: '/dashboard/campaigns', label: 'مركز الحملات', icon: Megaphone },
+  { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
 ];
 
 export const adminNavItems: NavItem[] = [
@@ -38,11 +38,11 @@ export const adminNavItems: NavItem[] = [
 ];
 
 export const performanceData = [
-    { date: '2024-05-01', orders: 10, spend: 50, revenue: 75 },
-    { date: '2024-05-02', orders: 12, spend: 65, revenue: 90 },
-    { date: '2024-05-03', orders: 8, spend: 40, revenue: 60 },
-    { date: '2024-05-04', orders: 15, spend: 80, revenue: 120 },
-    { date: '2024-05-05', orders: 18, spend: 95, revenue: 140 },
-    { date: '2024-05-06', orders: 14, spend: 70, revenue: 105 },
-    { date: '2024-05-07', orders: 20, spend: 110, revenue: 165 },
+    { date: '2024-05-01', orders: 10, spend: 50, revenue: 75, users: 5 },
+    { date: '2024-05-02', orders: 12, spend: 65, revenue: 90, users: 2 },
+    { date: '2024-05-03', orders: 8, spend: 40, revenue: 60, users: 8 },
+    { date: '2024-05-04', orders: 15, spend: 80, revenue: 120, users: 3 },
+    { date: '2024-05-05', orders: 18, spend: 95, revenue: 140, users: 10 },
+    { date: '2024-05-06', orders: 14, spend: 70, revenue: 105, users: 7 },
+    { date: '2024-05-07', orders: 20, spend: 110, revenue: 165, users: 12 },
 ];
