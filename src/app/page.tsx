@@ -13,7 +13,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import CosmicBackground from '@/components/cosmic-background';
 
 function Header() {
   const { user, isUserLoading } = useUser();
@@ -36,7 +37,7 @@ function Header() {
               <Button asChild>
                 <Link href="/dashboard">لوحة التحكم</Link>
               </Button>
-               {appUser && <UserNav user={appUser} />}
+               {appUser && <UserNav user={appUser} isAdmin={false}/>}
             </>
           ) : (
             <>
@@ -59,14 +60,6 @@ function Header() {
     </header>
   );
 }
-
-const CosmicBackground = () => (
-    <div className="absolute inset-0 -z-10 h-full w-full bg-background">
-        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle_400px_at_50%_300px,#fbfbfb1a,transparent)] opacity-50"></div>
-    </div>
-);
-
 
 export default function Home() {
   return (
