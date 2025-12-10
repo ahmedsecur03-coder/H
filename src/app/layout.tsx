@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import App from '@genkit-ai/next/client';
+import { App } from '@genkit-ai/next/client';
 import AiAssistant from '@/components/ai-assistant';
 import { Poppins, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';

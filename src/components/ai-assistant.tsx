@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useFlow, useUIState } from '@genkit-ai/next/client';
+import { useFlow, useMessages } from '@genkit-ai/next/client';
 import {
   Sheet,
   SheetContent,
@@ -20,47 +20,16 @@ import type { AISupportUsersOutput, AISupportUsersInput } from '@/ai/flows/ai-su
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useUIState<AISupportUsersInput, AISupportUsersOutput>();
-  const [aiSupportUsers, isRunning] = useFlow(
-    (input) => {
-        setMessages(currentMessages => [
-            ...currentMessages,
-            {
-                role: 'user',
-                content: input,
-            }
-        ]);
-        return { query: input.query };
-    },
-    {
-      onSuccess: (output) => {
-          setMessages(currentMessages => [
-            ...currentMessages,
-            {
-                role: 'model',
-                content: output,
-            }
-        ]);
-      },
-      onError: (error) => {
-        setMessages(currentMessages => [
-            ...currentMessages,
-            {
-                role: 'model',
-                content: { response: 'عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى.' },
-            }
-        ]);
-        console.error("AI support error:", error);
-      }
-    }
-  );
+  const {messages, setMessages} = useMessages<AISupportUsersOutput>();
+  const {run: aiSupportUsers, running: isRunning} = useFlow<AISupportUsersInput, AISupportUsersOutput>('/aiSupportUsers');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    const userMessage = input;
+    const userMessage = { query: input };
     setInput('');
-    aiSupportUsers({ query: userMessage });
+    setMessages(current => [...current, {role: 'user', content: userMessage, id: crypto.randomUUID()}]);
+    aiSupportUsers(userMessage);
   };
 
   const UserMessage = ({ children }: { children: React.ReactNode }) => (
@@ -110,8 +79,8 @@ export default function AiAssistant() {
                 <BotMessage>
                     مرحباً بك في مركز المساعدة الذكي! كيف يمكنني مساعدتك اليوم في منصة حاجاتي؟
                 </BotMessage>
-                 {messages.map((msg: any, index) => (
-                    <div key={index}>
+                 {messages.map((msg: any) => (
+                    <div key={msg.id}>
                         {msg.role === 'user' && <UserMessage>{msg.content.query}</UserMessage>}
                         {msg.role === 'model' && <BotMessage>{msg.content.response}</BotMessage>}
                     </div>
