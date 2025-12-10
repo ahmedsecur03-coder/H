@@ -25,6 +25,23 @@ import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
 
+function Header() {
+  const { user } = useUser();
+   const appUser = {
+      name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
+      email: user?.email || "مستخدم مجهول",
+      avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
+  };
+  return (
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <SidebarTrigger className="md:hidden" />
+       <div className="flex items-center gap-4 ml-auto">
+         <UserNav user={appUser} />
+       </div>
+    </header>
+  );
+}
+
 
 export default function DashboardLayout({
   children,
@@ -111,6 +128,7 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-transparent">
+        <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
             {children}
         </main>

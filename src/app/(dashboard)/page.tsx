@@ -53,23 +53,6 @@ import Link from 'next/link';
 import Logo from '@/components/logo';
 import { UserNav } from './_components/user-nav';
 
-
-function Header() {
-  const { user } = useUser();
-   const appUser = {
-      name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
-      email: user?.email || "مستخدم مجهول",
-      avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
-  };
-  return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-       <div className="flex items-center gap-4 ml-auto">
-         <UserNav user={appUser} />
-       </div>
-    </header>
-  );
-}
-
 const chartConfig = {
   orders: {
     label: 'الطلبات',
@@ -293,8 +276,6 @@ export default function DashboardPage() {
 
   if (isLoading || !userData || !authUser) {
     return (
-        <>
-        <Header />
         <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
@@ -307,15 +288,12 @@ export default function DashboardPage() {
             <Skeleton className="h-[550px]" />
             </div>
         </div>
-      </>
     );
   }
   
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
   return (
-    <>
-    <Header />
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
@@ -440,6 +418,5 @@ export default function DashboardPage() {
         <QuickOrderForm user={authUser} userData={userData} />
       </div>
     </div>
-    </>
   );
 }

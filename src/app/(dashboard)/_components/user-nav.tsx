@@ -50,13 +50,13 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href={profilePath}>
-              <UserIcon className="mr-2 h-4 w-4" />
+              <UserIcon className="ml-2 h-4 w-4" />
               <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href={settingsPath}>
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className="ml-2 h-4 w-4" />
               <span>الإعدادات</span>
             </Link>
           </DropdownMenuItem>

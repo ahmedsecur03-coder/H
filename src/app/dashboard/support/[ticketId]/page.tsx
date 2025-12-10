@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -11,6 +11,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -32,7 +34,7 @@ function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'a
         <div className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
              {!isUser && <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs shrink-0">دعم</div>}
             <div className={`max-w-md p-3 rounded-lg ${isUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                <p className="text-sm">{message}</p>
+                <p className="text-sm whitespace-pre-wrap">{message}</p>
             </div>
              {isUser && <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs shrink-0">أنت</div>}
         </div>
@@ -44,6 +46,7 @@ export default function TicketDetailsPage() {
   const firestore = useFirestore();
   const params = useParams();
   const { toast } = useToast();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const ticketId = params.ticketId as string;
   const [replyMessage, setReplyMessage] = useState('');
@@ -55,6 +58,17 @@ export default function TicketDetailsPage() {
   );
   
   const { data: ticket, isLoading } = useDoc<Ticket>(ticketDocRef);
+
+  useEffect(() => {
+    // Scroll to bottom when messages change
+    if (scrollAreaRef.current) {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
+        }
+    }
+  }, [ticket?.messages]);
+
 
   const handleReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +107,7 @@ export default function TicketDetailsPage() {
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
           </CardContent>
-          <CardContent><Skeleton className="h-24 w-full" /></CardContent>
+          <CardFooter><Skeleton className="h-24 w-full" /></CardFooter>
         </Card>
       </div>
     );
@@ -120,7 +134,7 @@ export default function TicketDetailsPage() {
             </Link>
         </Button>
 
-      <Card>
+      <Card className="flex flex-col h-[calc(100vh-12rem)]">
         <CardHeader>
           <div className="flex justify-between items-center">
              <div>
@@ -132,27 +146,30 @@ export default function TicketDetailsPage() {
              <Badge variant={statusVariant[ticket.status] || 'default'} className="text-base px-4 py-1">{ticket.status}</Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-            {ticket.messages.map((msg, index) => (
-                <ChatMessage key={index} message={msg.text} sender={msg.sender} />
-            ))}
-        </CardContent>
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+            <CardContent className="space-y-6">
+                {ticket.messages.map((msg, index) => (
+                    <ChatMessage key={index} message={msg.text} sender={msg.sender} />
+                ))}
+            </CardContent>
+        </ScrollArea>
         {ticket.status !== 'مغلقة' && (
-            <CardContent>
-                <form onSubmit={handleReply} className="flex items-start gap-2 pt-6 border-t">
+            <CardFooter className="pt-4 border-t">
+                <form onSubmit={handleReply} className="w-full flex items-start gap-2">
                     <Textarea
                         placeholder="اكتب ردك هنا..."
                         value={replyMessage}
                         onChange={(e) => setReplyMessage(e.target.value)}
                         required
                         className="flex-1"
+                        rows={1}
                     />
                     <Button type="submit" size="icon" disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : <Send />}
                         <span className="sr-only">إرسال</span>
                     </Button>
                 </form>
-            </CardContent>
+            </CardFooter>
         )}
       </Card>
     </div>

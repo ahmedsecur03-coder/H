@@ -182,7 +182,7 @@ export default function SupportPage() {
                       <div>
                         <h3 className="font-semibold">{ticket.subject}</h3>
                         <p className="text-sm text-muted-foreground">
-                          تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleDateString()}
+                          آخر تحديث: {new Date(ticket.messages[ticket.messages.length - 1].timestamp).toLocaleString('ar-EG')}
                         </p>
                       </div>
                     </div>
