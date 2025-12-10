@@ -43,7 +43,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543 1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -58,6 +58,116 @@ const platforms: { name: Platform; title: string; description: string; }[] = [
     { name: 'Snapchat', title: 'Snapchat Ads', description: 'تواصل مع جيل الشباب بإعلانات إبداعية.' },
     { name: 'API', title: 'API & Automation', description: 'أتمتة حملاتك برمجياً.' },
 ];
+
+
+function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: UserType, user: any, onCampaignCreated: () => void }) {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [open, setOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [platform, setPlatform] = useState<Platform | undefined>();
+    const [budget, setBudget] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const budgetAmount = parseFloat(budget);
+
+        if (!firestore || !user || !name || !platform || !budgetAmount || budgetAmount <= 0) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول بشكل صحيح.' });
+            return;
+        }
+
+        if ((userData.adBalance ?? 0) < budgetAmount) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'رصيدك الإعلاني غير كافٍ لهذه الميزانية.' });
+            return;
+        }
+
+        setLoading(true);
+
+        const newCampaign: Omit<Campaign, 'id' | 'spend' | 'status'> = {
+            userId: user.uid,
+            name,
+            platform,
+            startDate: new Date().toISOString(),
+            budget: budgetAmount,
+        };
+
+        try {
+            const userDocRef = doc(firestore, 'users', user.uid);
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+
+                const currentAdBalance = userDoc.data().adBalance ?? 0;
+                if (currentAdBalance < budgetAmount) throw new Error("رصيد الإعلانات غير كاف.");
+
+                transaction.update(userDocRef, { adBalance: currentAdBalance - budgetAmount });
+                
+                const campaignColRef = collection(firestore, `users/${user.uid}/campaigns`);
+                addDoc(campaignColRef, {
+                    ...newCampaign,
+                    spend: 0,
+                    status: 'بانتظار المراجعة'
+                });
+            });
+
+            toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
+            onCampaignCreated();
+            setOpen(false);
+            setName('');
+            setPlatform(undefined);
+            setBudget('');
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button className="w-full">
+                    <PlusCircle className="ml-2 h-4 w-4" />
+                    إنشاء حملة إعلانية جديدة
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>حملة إعلانية جديدة</DialogTitle>
+                    <DialogDescription>
+                        اختر المنصة وحدد ميزانية حملتك للبدء. سيتم خصم الميزانية من رصيد الإعلانات.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="campaign-name">اسم الحملة</Label>
+                        <Input id="campaign-name" value={name} onChange={(e) => setName(e.target.value)} required />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="platform">المنصة</Label>
+                         <Select onValueChange={(value) => setPlatform(value as Platform)} value={platform}>
+                            <SelectTrigger id="platform"><SelectValue placeholder="اختر منصة إعلانية" /></SelectTrigger>
+                            <SelectContent>
+                                {platforms.map(p => <SelectItem key={p.name} value={p.name}>{p.title}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="budget">الميزانية ($)</Label>
+                        <Input id="budget" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} required min="5" />
+                    </div>
+                    <DialogFooter>
+                        <Button type="submit" disabled={loading} className="w-full">
+                            {loading ? <Loader2 className="animate-spin" /> : 'إنشاء ومراجعة'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 
 function CampaignsSkeleton() {
@@ -90,7 +200,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: campaigns, isLoading: campaignsLoading } = useCollection<Campaign>(campaignsQuery);
+    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -101,7 +211,7 @@ export default function CampaignsPage() {
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
 
-    if (isLoading) {
+    if (isLoading || !userData || !authUser) {
         return <CampaignsSkeleton />;
     }
     
@@ -183,30 +293,12 @@ export default function CampaignsPage() {
                 </Card>
              </div>
              <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>تحويل إلى الرصيد الإعلاني</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="text-sm">
-                            <p className="text-muted-foreground">رصيدك الإعلاني: <span className="font-bold text-foreground">${(userData?.adBalance ?? 0).toFixed(2)}</span></p>
-                            <p className="text-muted-foreground">الرصيد الأساسي المتاح: <span className="font-bold text-foreground">${(userData?.balance ?? 0).toFixed(2)}</span></p>
-                        </div>
-                        <div className="space-y-1">
-                             <Label htmlFor="transfer-amount">المبلغ المراد تحويله ($)</Label>
-                             <Input id="transfer-amount" defaultValue="50.00" />
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                         <Button className="w-full">
-                            <ArrowLeftRight className="ml-2 h-4 w-4" />
-                            تحويل الرصيد
-                        </Button>
-                    </CardFooter>
-                </Card>
-            </div>
+                <NewCampaignDialog userData={userData} user={authUser} onCampaignCreated={forceCollectionUpdate}/>
+             </div>
         </div>
 
     </div>
   );
 }
+
+    
