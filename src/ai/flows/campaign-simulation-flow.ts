@@ -59,6 +59,11 @@ const campaignSimulationFlow = ai.defineFlow(
     outputSchema: CampaignSimulationOutputSchema,
   },
   async (input) => {
+    // If the target daily spend is greater than the budget, just spend the rest of the budget.
+    if (input.dailySpend >= input.remainingBudget) {
+      return { simulatedSpend: input.remainingBudget };
+    }
+    
     const { output } = await prompt(input);
 
     // Ensure the simulated spend does not exceed the remaining budget, as a final safeguard.

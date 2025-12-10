@@ -43,7 +43,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52 2.845-.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -114,14 +114,6 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
 
         setLoading(true);
 
-        const newCampaign: Omit<Campaign, 'id' | 'spend' | 'status'> = {
-            userId: user.uid,
-            name,
-            platform,
-            startDate: new Date().toISOString(),
-            budget: budgetAmount,
-        };
-
         try {
             const userDocRef = doc(firestore, 'users', user.uid);
             await runTransaction(firestore, async (transaction) => {
@@ -134,8 +126,12 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                 transaction.update(userDocRef, { adBalance: currentAdBalance - budgetAmount });
                 
                 const campaignColRef = collection(firestore, `users/${user.uid}/campaigns`);
-                addDoc(campaignColRef, {
-                    ...newCampaign,
+                await addDoc(campaignColRef, {
+                    userId: user.uid,
+                    name,
+                    platform,
+                    startDate: new Date().toISOString(),
+                    budget: budgetAmount,
                     spend: 0,
                     status: 'بانتظار المراجعة'
                 });
@@ -290,8 +286,7 @@ export default function CampaignsPage() {
                                     <TableRow>
                                         <TableHead>اسم الحملة</TableHead>
                                         <TableHead>الحالة</TableHead>
-                                        <TableHead>الإنفاق</TableHead>
-                                        <TableHead>النتائج</TableHead>
+                                        <TableHead>الإنفاق / الميزانية</TableHead>
                                         <TableHead className="text-right">الإجراءات</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -300,8 +295,14 @@ export default function CampaignsPage() {
                                         <TableRow key={campaign.id}>
                                             <TableCell className="font-medium">{campaign.name}</TableCell>
                                             <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
-                                            <TableCell>${(campaign.spend ?? 0).toFixed(2)}</TableCell>
-                                            <TableCell>{Math.floor(Math.random() * 20000)}</TableCell>
+                                            <TableCell>
+                                                <div className='flex flex-col gap-1'>
+                                                    <span className='font-mono'>${(campaign.spend ?? 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
+                                                    <div className="w-full bg-muted rounded-full h-1.5">
+                                                        <div className="bg-primary h-1.5 rounded-full" style={{width: `${(campaign.spend / campaign.budget) * 100}%`}}></div>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="text-right">
                                                 <CampaignDetailsDialog campaign={campaign} />
                                             </TableCell>
@@ -314,7 +315,7 @@ export default function CampaignsPage() {
                                 <Rocket className="mx-auto h-12 w-12 text-muted-foreground" />
                                 <h3 className="mt-4 text-lg font-medium">ابدأ حملتك الإعلانية الأولى</h3>
                                 <p className="mt-2 text-sm text-muted-foreground">
-                                    ليس لديك أي حملات إعلانية حتى الآن. اختر منصة لتبدأ.
+                                    ليس لديك أي حملات إعلانية حتى الآن. أنشئ حملة جديدة لتبدأ.
                                 </p>
                             </div>
                         )}

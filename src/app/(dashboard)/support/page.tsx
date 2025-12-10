@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, addDoc } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -28,6 +28,8 @@ import { PlusCircle, MessageSquare, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -35,7 +37,7 @@ const statusVariant = {
   'قيد المراجعة': 'default',
 } as const;
 
-function NewTicketDialog({ userId }: { userId: string }) {
+function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicketCreated: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -63,7 +65,7 @@ function NewTicketDialog({ userId }: { userId: string }) {
         }],
       };
       
-      await addDoc(ticketsColRef, newTicket);
+      const docRef = await addDoc(ticketsColRef, newTicket);
 
       toast({
         title: 'تم فتح التذكرة بنجاح',
@@ -72,6 +74,7 @@ function NewTicketDialog({ userId }: { userId: string }) {
       setSubject('');
       setMessage('');
       setOpen(false);
+      onTicketCreated(docRef.id);
     } catch (error) {
       console.error('Error creating ticket:', error);
       toast({
@@ -136,6 +139,7 @@ function NewTicketDialog({ userId }: { userId: string }) {
 export default function SupportPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
 
   const ticketsQuery = useMemoFirebase(
     () =>
@@ -147,6 +151,10 @@ export default function SupportPage() {
 
   const { data: tickets, isLoading } = useCollection<Ticket>(ticketsQuery);
 
+  const handleTicketCreated = (ticketId: string) => {
+    router.push(`/dashboard/support/${ticketId}`);
+  };
+
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -156,7 +164,7 @@ export default function SupportPage() {
             تواصل مع فريق الدعم لدينا. نحن هنا لمساعدتك.
           </p>
         </div>
-        {user && <NewTicketDialog userId={user.uid} />}
+        {user && <NewTicketDialog userId={user.uid} onTicketCreated={handleTicketCreated} />}
       </div>
 
       <Card>
@@ -174,20 +182,22 @@ export default function SupportPage() {
           ) : tickets && tickets.length > 0 ? (
             <div className="space-y-4">
               {tickets.map((ticket) => (
-                <Card key={ticket.id} className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-4">
-                    <MessageSquare className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="font-semibold">{ticket.subject}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleDateString()}
-                      </p>
+                <Link key={ticket.id} href={`/dashboard/support/${ticket.id}`} className="block">
+                  <Card className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <MessageSquare className="h-8 w-8 text-primary" />
+                      <div>
+                        <h3 className="font-semibold">{ticket.subject}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          آخر تحديث: {new Date(ticket.messages[ticket.messages.length - 1].timestamp).toLocaleString('ar-EG')}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant={statusVariant[ticket.status] || 'default'}>
-                    {ticket.status}
-                  </Badge>
-                </Card>
+                    <Badge variant={statusVariant[ticket.status] || 'default'}>
+                      {ticket.status}
+                    </Badge>
+                  </Card>
+                </Link>
               ))}
             </div>
           ) : (

@@ -101,13 +101,13 @@ export default function TicketDetailsPage() {
     return (
       <div className="space-y-6 pb-8">
         <Skeleton className="h-8 w-1/4" />
-        <Card>
+        <Card className="flex flex-col h-[calc(100vh-12rem)]">
           <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
-          <CardContent className="space-y-4">
+           <CardContent className="flex-1 space-y-4">
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
           </CardContent>
-          <CardFooter><Skeleton className="h-24 w-full" /></CardFooter>
+          <CardFooter><Skeleton className="h-10 w-full" /></CardFooter>
         </Card>
       </div>
     );
@@ -134,7 +134,7 @@ export default function TicketDetailsPage() {
             </Link>
         </Button>
 
-      <Card className="flex flex-col h-[calc(100vh-12rem)]">
+      <Card className="flex flex-col h-[calc(100vh-14rem)]">
         <CardHeader>
           <div className="flex justify-between items-center">
              <div>

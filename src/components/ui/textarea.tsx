@@ -16,11 +16,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'tex
                 textarea.style.height = `${textarea.scrollHeight}px`;
             };
             textarea.addEventListener('input', handleInput);
-            // Initial resize
+            
+            // Initial resize on mount and when props.value changes
             handleInput();
+            
             return () => textarea.removeEventListener('input', handleInput);
         }
-    }, []);
+    }, [props.value]); // Re-run effect if external value changes
 
 
     return (
