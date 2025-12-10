@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useActions, useUIState } from '@genkit-ai/next/rsc';
+import { useFlow, useUIState } from '@genkit-ai/next/client';
 import {
   Sheet,
   SheetContent,
@@ -15,42 +15,52 @@ import { Bot, User, CornerDownLeft, Loader2, Sparkles } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
+import type { AISupportUsersOutput, AISupportUsersInput } from '@/ai/flows/ai-support-users';
 
 export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useUIState();
-  const { aiSupportUsers } = useActions();
-  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useUIState<AISupportUsersInput, AISupportUsersOutput>();
+  const [aiSupportUsers, isRunning] = useFlow(
+    (input) => {
+        setMessages(currentMessages => [
+            ...currentMessages,
+            {
+                role: 'user',
+                content: input,
+            }
+        ]);
+        return { query: input.query };
+    },
+    {
+      onSuccess: (output) => {
+          setMessages(currentMessages => [
+            ...currentMessages,
+            {
+                role: 'model',
+                content: output,
+            }
+        ]);
+      },
+      onError: (error) => {
+        setMessages(currentMessages => [
+            ...currentMessages,
+            {
+                role: 'model',
+                content: { response: 'عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى.' },
+            }
+        ]);
+        console.error("AI support error:", error);
+      }
+    }
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-
-    setIsLoading(true);
-    setMessages((currentMessages: any) => [
-      ...currentMessages,
-      { id: Date.now(), role: 'user', display: <UserMessage>{input}</UserMessage> },
-    ]);
-
     const userMessage = input;
     setInput('');
-
-    try {
-        const response = await aiSupportUsers({ query: userMessage });
-        setMessages((currentMessages: any) => [
-            ...currentMessages,
-            { id: Date.now() + 1, role: 'assistant', display: <BotMessage>{response.response}</BotMessage> },
-        ]);
-    } catch (error) {
-        console.error("AI support error:", error);
-        setMessages((currentMessages: any) => [
-            ...currentMessages,
-            { id: Date.now() + 1, role: 'assistant', display: <BotMessage>عذراً، حدث خطأ ما. يرجى المحاولة مرة أخرى.</BotMessage> },
-        ]);
-    } finally {
-        setIsLoading(false);
-    }
+    aiSupportUsers({ query: userMessage });
   };
 
   const UserMessage = ({ children }: { children: React.ReactNode }) => (
@@ -100,8 +110,11 @@ export default function AiAssistant() {
                 <BotMessage>
                     مرحباً بك في مركز المساعدة الذكي! كيف يمكنني مساعدتك اليوم في منصة حاجاتي؟
                 </BotMessage>
-                {messages.map((msg: any) => (
-                    <div key={msg.id}>{msg.display}</div>
+                 {messages.map((msg: any, index) => (
+                    <div key={index}>
+                        {msg.role === 'user' && <UserMessage>{msg.content.query}</UserMessage>}
+                        {msg.role === 'model' && <BotMessage>{msg.content.response}</BotMessage>}
+                    </div>
                 ))}
             </div>
           </ScrollArea>
@@ -111,10 +124,10 @@ export default function AiAssistant() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="اسأل عن أي شيء..."
-                disabled={isLoading}
+                disabled={isRunning}
               />
-              <Button type="submit" size="icon" disabled={isLoading}>
-                {isLoading ? <Loader2 className="animate-spin" /> : <CornerDownLeft />}
+              <Button type="submit" size="icon" disabled={isRunning}>
+                {isRunning ? <Loader2 className="animate-spin" /> : <CornerDownLeft />}
                 <span className="sr-only">إرسال</span>
               </Button>
             </form>
