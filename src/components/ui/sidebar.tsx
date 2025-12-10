@@ -564,7 +564,7 @@ const SidebarMenuButton = React.forwardRef<
     const isCollapsible = state === "collapsed"
 
     const button = (
-       <Comp
+      <Comp
         ref={ref}
         data-sidebar="menu-button"
         data-size={size}
@@ -572,12 +572,10 @@ const SidebarMenuButton = React.forwardRef<
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
       >
-        <React.Fragment>
-            {children}
-            {isCollapsible && <span className="sr-only">{typeof tooltip === 'string' ? tooltip : (tooltip as any)?.children}</span>}
-        </React.Fragment>
+        {children}
+        {isCollapsible && <span className="sr-only">{typeof tooltip === 'string' ? tooltip : (tooltip as any)?.children}</span>}
       </Comp>
-    )
+    );
 
     if (!tooltip) {
       return button
