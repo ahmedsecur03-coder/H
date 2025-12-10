@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Rocket, ShieldCheck, Zap, Users } from 'lucide-react';
 import Image from 'next/image';
 import Logo from '@/components/logo';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function Header() {
   return (
@@ -24,7 +24,7 @@ function Header() {
 }
 
 export default function Home() {
-  const heroImage = placeholderImages.find(p => p.id === 'hero');
+  const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
 
   return (
     <div className="flex flex-col min-h-screen">
