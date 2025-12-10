@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { performanceData } from '@/lib/placeholder-data';
-import { DollarSign, Package, ShoppingCart, Gem } from 'lucide-react';
+import { DollarSign, Package, ShoppingCart, Gem, Percent } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -52,6 +52,24 @@ const chartConfig = {
     color: 'hsl(var(--accent))',
   },
 } satisfies ChartConfig;
+
+const RANKS = [
+  { name: 'مستكشف نجمي', spend: 0, discount: 0 },
+  { name: 'قائد صاروخي', spend: 500, discount: 2 },
+  { name: 'سيد المجرة', spend: 2500, discount: 5 },
+  { name: 'سيد كوني', spend: 10000, discount: 10 },
+];
+
+function getRankForSpend(spend: number) {
+  let currentRank = RANKS[0];
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (spend >= RANKS[i].spend) {
+      currentRank = RANKS[i];
+      break;
+    }
+  }
+  return currentRank;
+}
 
 // Quick Order Form Component
 function QuickOrderForm({ user, userData }: { user: any; userData: UserType | null }) {
@@ -85,12 +103,23 @@ function QuickOrderForm({ user, userData }: { user: any; userData: UserType | nu
     return servicesData?.find(s => s.id === selectedServiceId) || null;
   }, [selectedServiceId, servicesData]);
   
-  const estimatedCost = useMemo(() => {
+  const currentRank = useMemo(() => {
+    if (!userData) return RANKS[0];
+    return getRankForSpend(userData.totalSpent);
+  }, [userData]);
+
+  const { costBeforeDiscount, finalCost } = useMemo(() => {
     if (selectedService && quantity) {
-      return (Number(quantity) / 1000) * selectedService.price;
+      const baseCost = (Number(quantity) / 1000) * selectedService.price;
+      const discountAmount = baseCost * (currentRank.discount / 100);
+      return {
+          costBeforeDiscount: baseCost,
+          finalCost: baseCost - discountAmount,
+      };
     }
-    return 0;
-  }, [selectedService, quantity]);
+    return { costBeforeDiscount: 0, finalCost: 0 };
+  }, [selectedService, quantity, currentRank]);
+
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
@@ -115,47 +144,52 @@ function QuickOrderForm({ user, userData }: { user: any; userData: UserType | nu
       return;
     }
 
-    if (userData.balance < estimatedCost) {
+    if (userData.balance < finalCost) {
       toast({ variant: 'destructive', title: 'خطأ', description: 'رصيدك غير كافٍ لإتمام هذا الطلب.' });
       return;
     }
 
     try {
       const userRef = doc(firestore, 'users', user.uid);
-      const ordersRef = collection(firestore, 'users', user.uid, 'orders');
-
-      // Use a transaction to ensure atomicity
+      
       await runTransaction(firestore, async (transaction) => {
         const userDoc = await transaction.get(userRef);
         if (!userDoc.exists()) {
           throw "المستخدم غير موجود!";
         }
 
-        const currentBalance = userDoc.data().balance;
-        const currentTotalSpent = userDoc.data().totalSpent;
+        const currentData = userDoc.data();
+        const currentBalance = currentData.balance;
+        const currentTotalSpent = currentData.totalSpent;
 
-        if (currentBalance < estimatedCost) {
+        if (currentBalance < finalCost) {
           throw "رصيدك غير كافٍ.";
         }
+        
+        const newBalance = currentBalance - finalCost;
+        const newTotalSpent = currentTotalSpent + finalCost;
+        const newRank = getRankForSpend(newTotalSpent).name;
 
-        const newBalance = currentBalance - estimatedCost;
-        const newTotalSpent = currentTotalSpent + estimatedCost;
-
-        // Update user's balance and total spent
-        transaction.update(userRef, { balance: newBalance, totalSpent: newTotalSpent });
+        // Update user's balance, total spent and potentially rank
+        transaction.update(userRef, { 
+            balance: newBalance, 
+            totalSpent: newTotalSpent,
+            rank: newRank,
+        });
 
         // Create the new order
+        const newOrderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
         const newOrder: Omit<Order, 'id'> = {
           userId: user.uid,
           serviceId: selectedService.id,
           serviceName: `${selectedService.category} - ${selectedService.platform}`,
           quantity: numQuantity,
-          charge: estimatedCost,
+          charge: finalCost,
           orderDate: new Date().toISOString(),
           status: 'قيد التنفيذ', // Or 'pending'
           link: link,
         };
-        transaction.set(doc(ordersRef), newOrder);
+        transaction.set(newOrderRef, newOrder);
       });
 
       toast({ title: 'نجاح', description: 'تم إرسال طلبك بنجاح!' });
@@ -244,7 +278,14 @@ function QuickOrderForm({ user, userData }: { user: any; userData: UserType | nu
           {selectedService && (
             <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md space-y-1">
                 <p><strong>الوصف:</strong> {selectedService.platform} {selectedService.category}</p>
-                <p><strong>التكلفة التقديرية:</strong> ${estimatedCost.toFixed(2)}</p>
+                {currentRank.discount > 0 ? (
+                    <>
+                        <p className="line-through"><strong>التكلفة الأساسية:</strong> ${costBeforeDiscount.toFixed(2)}</p>
+                        <p className="text-primary font-semibold"><strong>التكلفة النهائية (بعد خصم {currentRank.discount}%):</strong> ${finalCost.toFixed(2)}</p>
+                    </>
+                ) : (
+                    <p><strong>التكلفة التقديرية:</strong> ${finalCost.toFixed(2)}</p>
+                )}
                 <p><strong>الحد الأدنى:</strong> {selectedService.min.toLocaleString()} | <strong>الحد الأقصى:</strong> {selectedService.max.toLocaleString()}</p>
             </div>
           )}
@@ -282,6 +323,12 @@ export default function DashboardPage() {
     ملغي: 'destructive',
     جزئي: 'outline',
   } as const;
+
+  const currentRank = useMemo(() => {
+    if (!userData) return RANKS[0];
+    return getRankForSpend(userData.totalSpent);
+  }, [userData]);
+
 
   if (isUserLoading || isOrdersLoading) {
     return (
@@ -337,7 +384,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
-              <p className="text-xs text-muted-foreground">خصم 0% على الخدمات</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1"><Percent size={12} /> خصم {currentRank.discount}% على الخدمات</p>
             </CardContent>
           </Card>
           <Card>

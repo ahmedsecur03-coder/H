@@ -20,6 +20,7 @@ type ProcessedLine = {
     isValid: boolean;
     error?: string;
     cost?: number;
+    finalCost?: number;
     service?: Service;
 };
 
@@ -29,6 +30,25 @@ type BatchResult = {
     totalCost: number;
     errors: string[];
 };
+
+const RANKS = [
+  { name: 'مستكشف نجمي', spend: 0, discount: 0 },
+  { name: 'قائد صاروخي', spend: 500, discount: 2 },
+  { name: 'سيد المجرة', spend: 2500, discount: 5 },
+  { name: 'سيد كوني', spend: 10000, discount: 10 },
+];
+
+function getRankForSpend(spend: number) {
+  let currentRank = RANKS[0];
+  for (let i = RANKS.length - 1; i >= 0; i--) {
+    if (spend >= RANKS[i].spend) {
+      currentRank = RANKS[i];
+      break;
+    }
+  }
+  return currentRank;
+}
+
 
 export default function MassOrderPage() {
     const { user: authUser } = useUser();
@@ -66,8 +86,11 @@ export default function MassOrderPage() {
         setIsProcessing(true);
         setBatchResult(null);
 
+        const currentRank = getRankForSpend(userData.totalSpent);
+        const discountPercentage = currentRank.discount / 100;
+        
         const lines = massOrderText.trim().split('\n');
-        let totalCost = 0;
+        let totalFinalCost = 0;
         const processedLines: ProcessedLine[] = [];
         const finalErrors: string[] = [];
 
@@ -95,9 +118,12 @@ export default function MassOrderPage() {
                 pLine.isValid = false;
                 pLine.error = `الكمية خارج الحدود (${service.min} - ${service.max}).`;
             } else {
-                pLine.cost = (quantity / 1000) * service.price;
+                const baseCost = (quantity / 1000) * service.price;
+                const discount = baseCost * discountPercentage;
+                pLine.cost = baseCost;
+                pLine.finalCost = baseCost - discount;
                 pLine.service = service;
-                totalCost += pLine.cost;
+                totalFinalCost += pLine.finalCost;
             }
             processedLines.push(pLine);
         });
@@ -110,9 +136,9 @@ export default function MassOrderPage() {
             return;
         }
         
-        if (userData.balance < totalCost) {
-            finalErrors.push(`رصيدك غير كافٍ. التكلفة الإجمالية: $${totalCost.toFixed(2)}، رصيدك: $${userData.balance.toFixed(2)}.`);
-            setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: totalCost, errors: finalErrors });
+        if (userData.balance < totalFinalCost) {
+            finalErrors.push(`رصيدك غير كافٍ. التكلفة الإجمالية: $${totalFinalCost.toFixed(2)}، رصيدك: $${userData.balance.toFixed(2)}.`);
+            setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: totalFinalCost, errors: finalErrors });
             setIsProcessing(false);
             return;
         }
@@ -124,13 +150,21 @@ export default function MassOrderPage() {
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
                 
-                const currentBalance = userDoc.data().balance;
-                if (currentBalance < totalCost) throw new Error("رصيدك غير كافٍ.");
+                const currentData = userDoc.data();
+                const currentBalance = currentData.balance;
+                if (currentBalance < totalFinalCost) throw new Error("رصيدك غير كافٍ.");
 
-                transaction.update(userRef, { balance: currentBalance - totalCost });
+                const newTotalSpent = currentData.totalSpent + totalFinalCost;
+                const newRank = getRankForSpend(newTotalSpent).name;
+
+                transaction.update(userRef, { 
+                    balance: currentBalance - totalFinalCost,
+                    totalSpent: newTotalSpent,
+                    rank: newRank,
+                });
 
                 for (const pLine of processedLines) {
-                    if (pLine.isValid && pLine.cost && pLine.service) {
+                    if (pLine.isValid && pLine.finalCost && pLine.service) {
                         const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
                         const newOrder: Omit<Order, 'id'> = {
                             userId: authUser!.uid,
@@ -138,7 +172,7 @@ export default function MassOrderPage() {
                             serviceName: `${pLine.service.category} - ${pLine.service.platform}`,
                             link: pLine.link,
                             quantity: pLine.quantity,
-                            charge: pLine.cost,
+                            charge: pLine.finalCost,
                             orderDate: new Date().toISOString(),
                             status: 'قيد التنفيذ',
                         };
@@ -148,7 +182,7 @@ export default function MassOrderPage() {
             });
             
             toast({ title: 'نجاح', description: 'تم إرسال جميع الطلبات بنجاح.' });
-            setBatchResult({ successCount: processedLines.length, errorCount: 0, totalCost: totalCost, errors: [] });
+            setBatchResult({ successCount: processedLines.length, errorCount: 0, totalCost: totalFinalCost, errors: [] });
             setMassOrderText('');
 
         } catch (error: any) {
