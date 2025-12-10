@@ -51,7 +51,7 @@ export type Campaign = {
     endDate?: string;
     budget: number;
     spend: number;
-    status: 'نشط' | 'متوقف' | 'مكتمل';
+    status: 'نشط' | 'متوقف' | 'مكتمل' | 'بانتظار المراجعة';
 };
 
 export type Deposit = {
