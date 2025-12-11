@@ -28,6 +28,12 @@ export type Service = {
   price: number; // Price per 1000
   min: number;
   max: number;
+  description?: string;
+  avgTime?: string;
+  guarantee?: boolean;
+  speed?: string;
+  dripFeed?: boolean;
+  refill?: boolean;
 };
 
 export type Order = {
@@ -49,7 +55,7 @@ export type NavItem = {
 };
 
 export type NestedNavItem = NavItem & {
-  children?: NavItem[];
+  children?: (NavItem | NestedNavItem)[];
 }
 
 
