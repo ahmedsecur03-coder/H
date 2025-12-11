@@ -225,7 +225,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             const newOrder: Omit<Order, 'id'> = {
                 userId: user.uid,
                 serviceId: selectedService.id,
-                serviceName: `${selectedService.category} (${selectedService.platform})`,
+                serviceName: `${selectedService.platform} - ${selectedService.category}`,
                 link: link,
                 quantity: numQuantity,
                 charge: cost,
@@ -557,7 +557,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">الطلبات الأخيرة</CardTitle>
-          </Header>
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -623,3 +623,6 @@ export default function DashboardPage() {
   );
 }
 
+
+
+    

@@ -32,7 +32,7 @@ type BatchResult = {
     errors: string[];
 };
 
-const RANKS = [
+const RANKS: { name: User['rank']; spend: number; discount: number, reward: number }[] = [
   { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
   { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 5 },
   { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 20 },
@@ -218,7 +218,7 @@ export default function MassOrderPage() {
                             const referrerData = referrerDoc.data() as User;
                             const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
                             const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS].commission || 10) / 100;
-                            const commissionAmount = pLine.charge * commissionRate;
+                            const commissionAmount = pLine.finalCost * commissionRate;
                             
                             referrerUpdates.affiliateEarnings! += commissionAmount;
                             
@@ -348,5 +348,7 @@ export default function MassOrderPage() {
         </div>
     );
 }
+
+    
 
     
