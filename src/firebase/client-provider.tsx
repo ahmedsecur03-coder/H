@@ -10,6 +10,7 @@ import type { User as UserType } from '@/lib/types';
 
 
 // This component now handles creating the user document if it doesn't exist
+// This is a fallback and the primary creation logic is now in the signup page transaction.
 function UserInitializer() {
   const { user, isUserLoading } = useUser();
   const { firestore } = initializeFirebase(); // Get firestore instance
@@ -22,6 +23,8 @@ function UserInitializer() {
         const userDoc = await getDoc(userDocRef);
         if (!userDoc.exists()) {
           // User document doesn't exist, create it.
+          // This serves as a fallback for social logins or if the signup transaction fails.
+          console.warn("User document not found for user:", user.uid, ". Creating a fallback document.");
           const newUser: Omit<UserType, 'id'> = {
             name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
             email: user.email || 'N/A',
@@ -37,10 +40,11 @@ function UserInitializer() {
             affiliateLevel: 'برونزي',
           };
           try {
-            await setDoc(userDocRef, newUser);
-            console.log("Created user document for new user:", user.uid);
+            // Using setDoc with merge:true is safer here as a fallback
+            await setDoc(userDocRef, newUser, { merge: true });
+            console.log("Created fallback user document for user:", user.uid);
           } catch (error) {
-            console.error("Error creating user document:", error);
+            console.error("Error creating fallback user document:", error);
           }
         }
       };
