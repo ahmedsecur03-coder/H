@@ -1,141 +1,107 @@
-
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, doc, runTransaction } from 'firebase/firestore';
+import { useState, useMemo, useCallback } from 'react';
+import { useFirestore, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
+import { collection, query, doc, runTransaction, updateDoc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React from 'react';
 
 const RANKS: User['rank'][] = ['مستكشف نجمي', 'قائد صاروخي', 'سيد المجرة', 'سيد كوني'];
 
-function EditUserDialog({ user, onUserUpdate }: { user: User, onUserUpdate: () => void }) {
-  const { toast } = useToast();
-  const firestore = useFirestore();
-  const [open, setOpen] = useState(false);
-  const [balance, setBalance] = useState(user.balance.toString());
-  const [adBalance, setAdBalance] = useState(user.adBalance.toString());
-  const [rank, setRank] = useState(user.rank);
-  const [isSaving, setIsSaving] = useState(false);
-  
-  // Reset state when dialog opens or the user prop changes
-  useEffect(() => {
-    if(open) {
-        setBalance(user.balance.toString());
-        setAdBalance(user.adBalance.toString());
-        setRank(user.rank);
+// A reusable component for inline editing
+function EditableCell({ value, onSave, type = 'text', options }: { value: string | number, onSave: (newValue: string) => Promise<void>, type?: 'text' | 'number' | 'select', options?: readonly string[] }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentValue, setCurrentValue] = useState(String(value));
+    const [isSaving, setIsSaving] = useState(false);
+    const { toast } = useToast();
+
+    const handleSave = async () => {
+        if (String(value) === currentValue) {
+            setIsEditing(false);
+            return;
+        }
+        setIsSaving(true);
+        try {
+            await onSave(currentValue);
+            setIsEditing(false);
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل التحديث', description: error.message });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (isEditing) {
+        return (
+            <div className="flex items-center gap-2">
+                {type === 'select' && options ? (
+                    <Select value={currentValue} onValueChange={setCurrentValue}>
+                        <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            {options.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                ) : (
+                    <Input
+                        type={type}
+                        value={currentValue}
+                        onChange={(e) => setCurrentValue(e.target.value)}
+                        onBlur={handleSave}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                        autoFocus
+                        className="h-8"
+                    />
+                )}
+                 {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
+            </div>
+        );
     }
-  }, [open, user]);
-
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firestore) return;
-
-    setIsSaving(true);
-    try {
-        const userDocRef = doc(firestore, 'users', user.id);
-        await runTransaction(firestore, async (transaction) => {
-            transaction.update(userDocRef, {
-                balance: parseFloat(balance) || 0,
-                adBalance: parseFloat(adBalance) || 0,
-                rank: rank,
-            });
-        });
-        toast({ title: 'نجاح', description: 'تم تحديث بيانات المستخدم بنجاح.' });
-        onUserUpdate();
-        setOpen(false);
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-    } finally {
-        setIsSaving(false);
-    }
-  };
-
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">تعديل</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>تعديل المستخدم: {user.name}</DialogTitle>
-          <DialogDescription>
-            تغيير الرصيد والرتبة للمستخدم. كن حذراً عند إجراء التعديلات.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="balance">الرصيد الأساسي</Label>
-            <Input id="balance" type="number" step="0.01" value={balance} onChange={e => setBalance(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="adBalance">رصيد الإعلانات</Label>
-            <Input id="adBalance" type="number" step="0.01" value={adBalance} onChange={e => setAdBalance(e.target.value)} />
-          </div>
-           <div className="space-y-2">
-            <Label htmlFor="rank">الرتبة</Label>
-            <Select onValueChange={(value) => setRank(value as User['rank'])} value={rank}>
-                <SelectTrigger id="rank">
-                    <SelectValue placeholder="اختر رتبة" />
-                </SelectTrigger>
-                <SelectContent>
-                    {RANKS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? <Loader2 className="animate-spin" /> : 'حفظ التغييرات'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+    
+    return (
+        <div onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-muted/50 p-1 rounded-md min-h-[2rem] flex items-center">
+            {type === 'select' ? <Badge variant="secondary">{value}</Badge> : value}
+        </div>
+    );
 }
 
 
 export default function AdminUsersPage() {
   const firestore = useFirestore();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const usersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users')) : null),
-    [firestore]
-  );
+  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users')) : null), [firestore]);
   const { data: allUsers, isLoading, forceCollectionUpdate } = useCollection<User>(usersQuery);
+
+  const handleFieldUpdate = useCallback(async (userId: string, field: keyof User, value: string | number) => {
+    if (!firestore) return;
+    const userDocRef = doc(firestore, 'users', userId);
+
+    const updateData = { [field]: value };
+
+    return updateDoc(userDocRef, updateData)
+        .then(() => {
+            toast({ title: 'نجاح', description: `تم تحديث ${field} للمستخدم.` });
+            forceCollectionUpdate(); // Refresh the data in the table
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw new Error('فشل التحديث بسبب الصلاحيات.');
+        });
+  }, [firestore, toast, forceCollectionUpdate]);
+
 
   const filteredUsers = useMemo(() => {
     if (!allUsers) return [];
@@ -164,13 +130,44 @@ export default function AdminUsersPage() {
           <div className="font-medium">{user.name}</div>
           <div className="text-sm text-muted-foreground">{user.email}</div>
         </TableCell>
-        <TableCell><Badge variant="secondary">{user.rank}</Badge></TableCell>
-        <TableCell className="font-medium">${(user.balance ?? 0).toFixed(2)}</TableCell>
+        <TableCell>
+            <EditableCell 
+                value={user.rank}
+                type="select"
+                options={RANKS}
+                onSave={(newValue) => handleFieldUpdate(user.id, 'rank', newValue)}
+            />
+        </TableCell>
+        <TableCell>
+             <EditableCell 
+                value={`$${(user.balance ?? 0).toFixed(2)}`}
+                type="number"
+                onSave={async (newValue) => {
+                    const numericValue = parseFloat(newValue.replace('$', ''));
+                    if (!isNaN(numericValue)) {
+                        await handleFieldUpdate(user.id, 'balance', numericValue);
+                    } else {
+                        toast({ variant: 'destructive', title: 'قيمة غير صالحة'});
+                    }
+                }}
+            />
+        </TableCell>
+        <TableCell>
+             <EditableCell 
+                value={`$${(user.adBalance ?? 0).toFixed(2)}`}
+                type="number"
+                onSave={async (newValue) => {
+                    const numericValue = parseFloat(newValue.replace('$', ''));
+                    if (!isNaN(numericValue)) {
+                        await handleFieldUpdate(user.id, 'adBalance', numericValue);
+                    } else {
+                        toast({ variant: 'destructive', title: 'قيمة غير صالحة'});
+                    }
+                }}
+            />
+        </TableCell>
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
         <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-        <TableCell className="text-right">
-          <EditUserDialog user={user} onUserUpdate={forceCollectionUpdate} />
-        </TableCell>
       </TableRow>
     ));
   }
@@ -203,9 +200,9 @@ export default function AdminUsersPage() {
                 <TableHead>المستخدم</TableHead>
                 <TableHead>الرتبة</TableHead>
                 <TableHead>الرصيد</TableHead>
+                <TableHead>رصيد الإعلانات</TableHead>
                 <TableHead>إجمالي الإنفاق</TableHead>
                 <TableHead>تاريخ الانضمام</TableHead>
-                <TableHead className="text-right">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
