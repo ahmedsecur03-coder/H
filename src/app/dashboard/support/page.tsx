@@ -69,7 +69,7 @@ function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicket
 
       toast({
         title: 'تم فتح التذكرة بنجاح',
-        description: 'سيتم توجيهك إلى صفحة التذكرة الآن.',
+        description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
       });
       setSubject('');
       setMessage('');

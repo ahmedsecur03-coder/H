@@ -63,7 +63,7 @@ export default function AdminSupportPage() {
     return tickets.map((ticket) => (
        <TableRow key={ticket.id}>
         <TableCell className="font-medium">{ticket.subject}</TableCell>
-        <TableCell className="font-mono text-xs">{ticket.userId.substring(0, 10)}...</TableCell>
+        <TableCell className="font-mono text-xs">{ticket.userId}</TableCell>
         <TableCell>
           <Badge variant={statusVariant[ticket.status]}>{ticket.status}</Badge>
         </TableCell>

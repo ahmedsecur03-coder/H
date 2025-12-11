@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,7 @@ export default function TicketDetailsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const params = useParams();
+  const router = useRouter();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
@@ -127,11 +128,11 @@ export default function TicketDetailsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-        <Button variant="ghost" asChild>
-            <Link href="/dashboard/support">
-                <ArrowRight className="ml-2 h-4 w-4" />
-                العودة إلى كل التذاكر
-            </Link>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard/support">
+            <ArrowRight className="ml-2 h-4 w-4" />
+            العودة إلى كل التذاكر
+          </Link>
         </Button>
 
       <Card className="flex flex-col h-[calc(100vh-14rem)]">
