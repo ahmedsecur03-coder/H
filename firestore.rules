@@ -11,26 +11,31 @@ service cloud.firestore {
     
     // Helper function to check if the user is an admin
     function isAdmin() {
+      // In a real app, use custom claims for roles: request.auth.token.admin == true
       return request.auth != null && request.auth.token.email == 'hagaaty@gmail.com';
     }
 
+    // Helper function to check which fields are being updated
+    function isUpdatingAllowedFields() {
+      // List of fields that CANNOT be updated directly by the user.
+      let protectedFields = ['balance', 'adBalance', 'totalSpent', 'rank', 'affiliateEarnings', 'referralsCount', 'affiliateLevel', 'apiKey', 'referralCode', 'referrerId', 'createdAt'];
+      // Check if any of the incoming data keys are in the protected list.
+      return !request.resource.data.keys().hasAny(protectedFields);
+    }
+    
     // Users can read their own profile. Writes are more restricted.
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
       // Allow creation of own user document (during signup fallback)
-      allow create: if isOwner(userId); 
+      allow create: if isOwner(userId);
       // Allow updates to non-sensitive fields by the user directly.
-      // Sensitive fields like balance, adBalance, totalSpent, rank, and affiliateEarnings
-      // can only be updated via transactions (which don't have a direct request.resource in the same way).
-      // The logic within the transaction is the source of truth, and this rule prevents direct user manipulation.
-      allow update: if isOwner(userId) && 
-                      !(request.resource.data.balance != resource.data.balance) && 
-                      !(request.resource.data.adBalance != resource.data.adBalance) &&
-                      !(request.resource.data.totalSpent != resource.data.totalSpent) &&
-                      !(request.resource.data.rank != resource.data.rank) &&
-                      !(request.resource.data.affiliateEarnings != resource.data.affiliateEarnings) &&
-                      !(request.resource.data.referralsCount != resource.data.referralsCount) &&
-                      !(request.resource.data.affiliateLevel != resource.data.affiliateLevel);
+      // Sensitive fields must only be updated via server-side logic (transactions).
+      allow update: if isOwner(userId) && isUpdatingAllowedFields();
+    }
+    
+    // Admins can manage all user documents
+    match /users/{userId} {
+        allow read, write: if isAdmin();
     }
 
     // Services are publicly readable, but only admins can write.
@@ -39,30 +44,31 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Users can manage their own orders.
+    // Users can manage their own orders. Admins have full access.
     match /users/{userId}/orders/{orderId} {
-      allow read, create, update, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId) || isAdmin();
     }
 
-    // Users can manage their own campaigns.
+    // Users can manage their own campaigns. Admins have full access.
     match /users/{userId}/campaigns/{campaignId} {
-      allow read, create, update, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId) || isAdmin();
     }
 
-    // Users can manage their own deposits.
+    // Users can manage their own deposits. Admins have full access.
     match /users/{userId}/deposits/{depositId} {
-      allow read, create, update, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId) || isAdmin();
     }
 
     // Users can read their own affiliate transactions. Writes are server-side.
     match /users/{userId}/affiliateTransactions/{transactionId} {
       allow read, create: if isOwner(userId);
       allow update, delete: if false; // Transactions are immutable
+      allow read, write: if isAdmin(); // Admin override
     }
 
-    // Users can manage their own support tickets.
+    // Users can manage their own support tickets. Admins have full access.
     match /users/{userId}/tickets/{ticketId} {
-      allow read, create, update, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId) || isAdmin();
     }
 
     // Blog posts are publicly readable. Writes are restricted to admins.
@@ -75,11 +81,6 @@ service cloud.firestore {
     match /settings/global {
       allow read: if request.auth != null;
       allow write: if isAdmin();
-    }
-    
-    // Fallback rule to deny all other access
-    match /{document=**} {
-      allow read, write: if false;
     }
   }
 }

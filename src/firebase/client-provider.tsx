@@ -20,38 +20,39 @@ function UserInitializer() {
       const userDocRef = doc(firestore, 'users', user.uid);
       
       const checkAndCreateUserDoc = async () => {
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-          // User document doesn't exist, create it.
-          // This serves as a fallback for social logins or if the signup transaction fails.
-          console.warn("User document not found for user:", user.uid, ". Creating a fallback document.");
-          const newUser: Omit<UserType, 'id'> = {
-            name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
-            email: user.email || 'N/A',
-            avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
-            rank: 'مستكشف نجمي',
-            balance: 0,
-            adBalance: 0,
-            totalSpent: 0,
-            apiKey: `hy_${crypto.randomUUID()}`,
-            referralCode: user.uid.substring(0, 8).toUpperCase(),
-            referrerId: null,
-            createdAt: new Date().toISOString(),
-            affiliateEarnings: 0,
-            referralsCount: 0,
-            affiliateLevel: 'برونزي',
-            notificationPreferences: {
-                newsletter: false,
-                orderUpdates: true,
+        try {
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
+              // User document doesn't exist, create it.
+              // This serves as a fallback for social logins or if the signup transaction fails.
+              console.warn("User document not found for user:", user.uid, ". Creating a fallback document.");
+              const newUser: Omit<UserType, 'id'> = {
+                name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
+                email: user.email || 'N/A',
+                avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+                rank: 'مستكشف نجمي',
+                balance: 0,
+                adBalance: 0,
+                totalSpent: 0,
+                apiKey: `hy_${crypto.randomUUID()}`,
+                referralCode: user.uid.substring(0, 8).toUpperCase(),
+                referrerId: null,
+                createdAt: new Date().toISOString(),
+                affiliateEarnings: 0,
+                referralsCount: 0,
+                affiliateLevel: 'برونزي',
+                notificationPreferences: {
+                    newsletter: false,
+                    orderUpdates: true,
+                }
+              };
+              
+              // Using setDoc with merge:true is safer here as a fallback
+              await setDoc(userDocRef, newUser, { merge: true });
+              console.log("Created fallback user document for user:", user.uid);
             }
-          };
-          try {
-            // Using setDoc with merge:true is safer here as a fallback
-            await setDoc(userDocRef, newUser, { merge: true });
-            console.log("Created fallback user document for user:", user.uid);
-          } catch (error) {
-            console.error("Error creating fallback user document:", error);
-          }
+        } catch (error) {
+             console.error("Error in checkAndCreateUserDoc:", error);
         }
       };
 
