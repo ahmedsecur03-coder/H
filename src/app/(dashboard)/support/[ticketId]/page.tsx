@@ -129,9 +129,11 @@ export default function TicketDetailsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/dashboard/support">
             <ArrowRight className="ml-2 h-4 w-4" />
             العودة إلى كل التذاكر
+          </Link>
         </Button>
 
       <Card className="flex flex-col h-[calc(100vh-14rem)]">
@@ -175,3 +177,4 @@ export default function TicketDetailsPage() {
     </div>
   );
 }
+
