@@ -17,6 +17,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PLATFORM_ICONS } from '@/lib/placeholder-data';
+import { PLATFORM_ICONS } from '@/lib/placeholder-data.tsx';
 
 
 function ServicesPageSkeleton() {

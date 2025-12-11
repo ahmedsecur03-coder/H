@@ -1,4 +1,5 @@
 
+
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -29,6 +30,7 @@ import {
   Palette,
   Briefcase
 } from 'lucide-react';
+import React from 'react';
 
 
 export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
