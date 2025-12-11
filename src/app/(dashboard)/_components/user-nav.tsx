@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 type UserNavProps = {
   user: {
@@ -29,10 +30,16 @@ type UserNavProps = {
 export function UserNav({ user, isAdmin = false }: UserNavProps) {
   const auth = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/login');
+    try {
+        await signOut(auth);
+        toast({ title: 'تم تسجيل الخروج', description: 'نراك قريباً!' });
+        router.push('/login');
+    } catch(error) {
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل تسجيل الخروج.' });
+    }
   };
 
   return (
@@ -46,7 +53,14 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 font-body" align="end" forceMount>
-        <DropdownMenuLabel>حسابي</DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+                </p>
+            </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
