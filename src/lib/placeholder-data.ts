@@ -17,7 +17,8 @@ import {
   Info,
   Code2,
   HeartPulse,
-  Rocket
+  Rocket,
+  PenSquare,
 } from 'lucide-react';
 
 
@@ -48,6 +49,7 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/services', label: 'الخدمات', icon: Package },
     { href: '/admin/campaigns', label: 'الحملات', icon: Megaphone },
     { href: '/admin/support', label: 'الدعم الفني', icon: MessageSquare },
+    { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ];
 

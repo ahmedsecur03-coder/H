@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -42,6 +43,8 @@ import {
   Sparkles,
   Diamond,
   Megaphone,
+  BookOpen,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -53,13 +56,14 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit, runTransaction, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { User as UserType, Order, Service } from '@/lib/types';
-import { useState, useMemo } from 'react';
+import type { User as UserType, Order, Service, BlogPost } from '@/lib/types';
+import { useState, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import Link from 'next/link';
 
 
 const chartConfig = {
@@ -289,7 +293,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
         <CardDescription>اختر المنصة، ثم الفئة، ثم الخدمة لبدء طلبك.</CardDescription>
       </CardHeader>
       <CardContent>
-        {servicesLoading ? <Skeleton className="h-96 w-full" /> : (
+        {servicesLoading ? <QuickOrderFormSkeleton /> : (
             <form onSubmit={handleSubmit} className="grid gap-4">
               
               <div className="grid gap-2">
@@ -387,6 +391,100 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 }
 
 
+function DealOfTheDay() {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
+    const { data: settingsData, isLoading: isSettingsLoading } = useDoc<any>(settingsDocRef);
+    
+    const dealOfTheDayId = settingsData?.dealOfTheDay;
+
+    const serviceDocRef = useMemoFirebase(() => (firestore && dealOfTheDayId) ? doc(firestore, 'services', dealOfTheDayId) : null, [firestore, dealOfTheDayId]);
+    const { data: serviceData, isLoading: isServiceLoading } = useDoc<Service>(serviceDocRef);
+    
+    const isLoading = isSettingsLoading || isServiceLoading;
+
+    if (isLoading) {
+        return <Skeleton className="h-28 w-full" />
+    }
+
+    if (!dealOfTheDayId || !serviceData) {
+        return null; // Don't render if no deal is set or service not found
+    }
+
+    return (
+        <Card className="bg-gradient-to-tr from-card to-accent border-primary/50">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="text-primary" />
+                    <span>صفقة اليوم</span>
+                </CardTitle>
+                <CardDescription>عرض خاص لفترة محدودة!</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <h3 className="font-bold text-lg">{serviceData.platform} - {serviceData.category}</h3>
+                <p className="text-muted-foreground">السعر: <span className="text-primary font-bold">${serviceData.price.toFixed(2)}</span> لكل 1000</p>
+            </CardContent>
+            <CardFooter>
+                 <Button className="w-full" asChild>
+                    <Link href="/dashboard/mass-order">اطلب الآن</Link>
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
+
+function Announcements() {
+    const firestore = useFirestore();
+    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'), limit(3)) : null, [firestore]);
+    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
+
+    if (isLoading) {
+        return <Skeleton className="h-64 w-full" />
+    }
+
+    if (!posts || posts.length === 0) {
+        return null;
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>آخر الأخبار والإعلانات</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {posts.map(post => (
+                    <div key={post.id} className="p-3 bg-muted/50 rounded-lg">
+                        <h4 className="font-semibold">{post.title}</h4>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{post.content}</p>
+                         <p className="text-xs text-muted-foreground/50 mt-1">{new Date(post.publishDate).toLocaleDateString('ar-EG')}</p>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+    );
+}
+
+
+function QuickOrderFormSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent>
+                <div className="grid gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function DashboardPage() {
   const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
@@ -434,6 +532,7 @@ export default function DashboardPage() {
     return (
       <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+          <Skeleton className="h-28 w-full" />
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
           </div>
@@ -460,25 +559,7 @@ export default function DashboardPage() {
     { icon: Diamond, title: "الأسطورة الكونية", completed: (userData.rank) === 'سيد كوني' },
     { icon: Users, title: "المسوق الشبكي", completed: (userData.referralsCount || 0) >= 5 },
   ];
-
-  function QuickOrderFormSkeleton() {
-    return (
-        <Card>
-            <CardHeader>
-                <Skeleton className="h-6 w-1/2" />
-                <Skeleton className="h-4 w-3/4" />
-            </CardHeader>
-            <CardContent>
-                <div className="grid gap-4">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-            </CardContent>
-        </Card>
-    );
-  }
-
+  
   const recentOrders = ordersData?.slice(0, 5);
   const statusVariant = {
     'مكتمل': 'default',
@@ -491,42 +572,10 @@ export default function DashboardPage() {
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>إجمالي الإنفاق</span>
-                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-               <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>الرتبة الكونية</span>
-                <Gem className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>خصم الخدمات</span>
-                 <Percent className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{rank.discount}%</div>
-            </CardContent>
-          </Card>
-        </div>
         
+        <DealOfTheDay />
+        <Announcements />
+
         <Card>
             <CardHeader>
                 <CardTitle className="font-headline">أداء الحساب</CardTitle>
@@ -594,7 +643,10 @@ export default function DashboardPage() {
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
          <Card>
             <CardHeader>
-                <CardTitle>الإنجازات الكونية</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                    <span>الإنجازات الكونية</span>
+                    <Trophy className="text-primary"/>
+                </CardTitle>
                  <CardDescription>أكملت {achievements.filter(a => a.completed).length} من {achievements.length} إنجازات</CardDescription>
             </CardHeader>
             <CardContent className='grid grid-cols-4 gap-4'>
@@ -622,5 +674,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

@@ -73,6 +73,10 @@ export default function SignupPage() {
             affiliateEarnings: 0,
             referralsCount: 0,
             affiliateLevel: 'برونزي',
+            notificationPreferences: {
+                newsletter: false,
+                orderUpdates: true
+            }
         };
         transaction.set(newUserDocRef, newUserProfile);
       });

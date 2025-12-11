@@ -3,7 +3,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   rank: 'مستكشف نجمي' | 'قائد صاروخي' | 'سيد المجرة' | 'سيد كوني';
   balance: number;
   adBalance: number;
@@ -14,6 +14,10 @@ export type User = {
   affiliateEarnings?: number;
   referralsCount?: number;
   affiliateLevel?: 'برونزي' | 'فضي' | 'ذهبي' | 'ماسي';
+  notificationPreferences?: {
+    newsletter?: boolean;
+    orderUpdates?: boolean;
+  };
 };
 
 export type Service = {
@@ -92,4 +96,12 @@ export type Ticket = {
         text: string;
         timestamp: string;
     }[];
+};
+
+export type BlogPost = {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  publishDate: string;
 };

@@ -38,6 +38,10 @@ function UserInitializer() {
             affiliateEarnings: 0,
             referralsCount: 0,
             affiliateLevel: 'برونزي',
+            notificationPreferences: {
+                newsletter: false,
+                orderUpdates: true,
+            }
           };
           try {
             // Using setDoc with merge:true is safer here as a fallback
