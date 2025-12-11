@@ -33,8 +33,11 @@ import {
   Diamond,
   Check,
   ShoppingCart,
+  Megaphone,
+  Briefcase,
+  Palette
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
 import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order, Service } from '@/lib/types';
@@ -46,6 +49,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getRankForSpend, RANKS, AFFILIATE_LEVELS } from '@/lib/service';
+import Link from 'next/link';
 
 function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
@@ -106,95 +110,104 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 
     setIsSubmitting(true);
 
-    try {
-        let promotionToast: { title: string; description: string } | null = null;
-        await runTransaction(firestore, async (transaction) => {
-            const userDocRef = doc(firestore, "users", user.uid);
-            const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-            
-            const currentData = userDoc.data() as UserType;
-            const currentBalance = currentData.balance;
+    let promotionToast: { title: string; description: string } | null = null;
+    const userDocRef = doc(firestore, "users", user.uid);
+    
+    runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+        
+        const currentData = userDoc.data() as UserType;
+        const currentBalance = currentData.balance;
 
-            if (currentBalance < cost) throw new Error("رصيدك غير كافٍ.");
+        if (currentBalance < cost) throw new Error("رصيدك غير كافٍ.");
 
-            const newBalance = currentBalance - cost;
-            const newTotalSpent = currentData.totalSpent + cost;
-            const oldRank = getRankForSpend(currentData.totalSpent);
-            const newRank = getRankForSpend(newTotalSpent);
-            
-            const updates: Partial<UserType> = {
-                balance: newBalance,
-                totalSpent: newTotalSpent,
-            };
+        const newBalance = currentBalance - cost;
+        const newTotalSpent = currentData.totalSpent + cost;
+        const oldRank = getRankForSpend(currentData.totalSpent);
+        const newRank = getRankForSpend(newTotalSpent);
+        
+        const updates: Partial<UserType> = {
+            balance: newBalance,
+            totalSpent: newTotalSpent,
+        };
 
-            if (newRank.name !== oldRank.name) {
-                updates.rank = newRank.name;
-                if (newRank.reward > 0) {
-                    updates.adBalance = (currentData.adBalance || 0) + newRank.reward;
-                    promotionToast = {
-                        title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
-                        description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
-                    };
-                }
+        if (newRank.name !== oldRank.name) {
+            updates.rank = newRank.name;
+            if (newRank.reward > 0) {
+                updates.adBalance = (currentData.adBalance || 0) + newRank.reward;
+                promotionToast = {
+                    title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
+                    description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
+                };
             }
+        }
 
-            transaction.update(userDocRef, updates);
+        transaction.update(userDocRef, updates);
 
-            const newOrderRef = doc(collection(firestore, `users/${user.uid}/orders`));
-            const newOrder: Omit<Order, 'id'> = {
-                userId: user.uid,
-                serviceId: selectedService.id,
-                serviceName: `${selectedService.platform} - ${selectedService.category}`,
-                link: link,
-                quantity: numQuantity,
-                charge: cost,
-                orderDate: new Date().toISOString(),
-                status: 'قيد التنفيذ',
-            };
-            transaction.set(newOrderRef, newOrder);
+        const newOrderRef = doc(collection(firestore, `users/${user.uid}/orders`));
+        const newOrder: Omit<Order, 'id'> = {
+            userId: user.uid,
+            serviceId: selectedService.id,
+            serviceName: `${selectedService.platform} - ${selectedService.category}`,
+            link: link,
+            quantity: numQuantity,
+            charge: cost,
+            orderDate: new Date().toISOString(),
+            status: 'قيد التنفيذ',
+        };
+        transaction.set(newOrderRef, newOrder);
 
-             if (currentData.referrerId) {
-                const referrerRef = doc(firestore, 'users', currentData.referrerId);
-                const referrerDoc = await transaction.get(referrerRef);
-                if (referrerDoc.exists()) {
-                    const referrerData = referrerDoc.data() as UserType;
-                    const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
-                    const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
-                    const commissionAmount = cost * commissionRate;
+         if (currentData.referrerId) {
+            const referrerRef = doc(firestore, 'users', currentData.referrerId);
+            const referrerDoc = await transaction.get(referrerRef);
+            if (referrerDoc.exists()) {
+                const referrerData = referrerDoc.data() as UserType;
+                const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
+                const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
+                const commissionAmount = cost * commissionRate;
 
-                    transaction.update(referrerRef, {
-                        affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
-                    });
+                transaction.update(referrerRef, {
+                    affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
+                });
 
-                    const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
-                    transaction.set(newTransactionRef, {
-                        userId: referrerData.id,
-                        referralId: user.uid,
-                        orderId: newOrderRef.id,
-                        amount: commissionAmount,
-                        transactionDate: new Date().toISOString(),
-                        level: 1 
-                    });
-                }
+                const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
+                transaction.set(newTransactionRef, {
+                    userId: referrerData.id,
+                    referralId: user.uid,
+                    orderId: newOrderRef.id,
+                    amount: commissionAmount,
+                    transactionDate: new Date().toISOString(),
+                    level: 1 
+                });
             }
-        });
-
+        }
+    })
+    .then(() => {
         toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
         if(promotionToast) {
             setTimeout(() => toast(promotionToast), 1000);
         }
-
         setSelectedServiceId(undefined);
         setLink('');
         setQuantity('');
         setCost(0);
-    } catch (error: any) {
+    })
+    .catch((error: any) => {
+        if(error.message.includes("رصيدك")) {
+            toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
+        } else {
+             const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+             });
+             errorEmitter.emit('permission-error', permissionError);
+        }
         console.error("Order submission error:", error);
-        toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
-    } finally {
+    })
+    .finally(() => {
         setIsSubmitting(false);
-    }
+    });
   };
 
 
@@ -345,6 +358,29 @@ function QuickOrderFormSkeleton() {
     );
 }
 
+const advancedServices = [
+  {
+    title: 'الحملات الإعلانية',
+    description: 'أدر حملاتك على جوجل، فيسبوك، وتيك توك.',
+    icon: Megaphone,
+    href: '/dashboard/campaigns',
+  },
+  {
+    title: 'حسابات إعلانية (وكالة)',
+    description: 'حسابات موثوقة بحدود إنفاق عالية واستقرار.',
+    icon: Briefcase,
+    href: '/dashboard/agency-accounts',
+  },
+  {
+    title: 'تصميم المواقع',
+    description: 'احصل على موقع احترافي لعلامتك التجارية (قريباً).',
+    icon: Palette,
+    href: '#',
+    disabled: true,
+  },
+];
+
+
 export default function DashboardPage() {
   const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
@@ -413,43 +449,64 @@ export default function DashboardPage() {
                 <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
             </div>
         
-        <QuickOrderForm user={authUser} userData={userData} />
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">الخدمات المتقدمة</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {advancedServices.map((service) => (
+                        <Link key={service.title} href={service.disabled ? '#' : service.href} className={cn("block", service.disabled && "pointer-events-none")}>
+                            <Card className={cn("h-full hover:bg-muted/50 transition-colors", service.disabled && "opacity-50")}>
+                                <CardHeader className="flex flex-col items-center justify-center text-center p-4">
+                                     <div className="bg-muted rounded-full p-3 mb-2">
+                                        <service.icon className="h-6 w-6 text-primary" />
+                                     </div>
+                                    <h3 className="font-semibold text-sm">{service.title}</h3>
+                                    <p className="text-xs text-muted-foreground">{service.description}</p>
+                                </CardHeader>
+                            </Card>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">آخر 5 طلبات</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الخدمة</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="text-left">التكلفة</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders && recentOrders.length > 0 ? (
-                  recentOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.serviceName}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-left">${order.charge.toFixed(2)}</TableCell>
+            <QuickOrderForm user={authUser} userData={userData} />
+
+            <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">آخر 5 طلبات</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>الخدمة</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-left">التكلفة</TableHead>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center h-24">
-                      لا توجد طلبات لعرضها.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                    {recentOrders && recentOrders.length > 0 ? (
+                    recentOrders.map((order) => (
+                        <TableRow key={order.id}>
+                        <TableCell className="font-medium">{order.serviceName}</TableCell>
+                        <TableCell>
+                            <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-left">${order.charge.toFixed(2)}</TableCell>
+                        </TableRow>
+                    ))
+                    ) : (
+                    <TableRow>
+                        <TableCell colSpan={3} className="text-center h-24">
+                        لا توجد طلبات لعرضها.
+                        </TableCell>
+                    </TableRow>
+                    )}
+                </TableBody>
+                </Table>
+            </CardContent>
+            </Card>
       </div>
 
       <div className="grid auto-rows-max items-start gap-4 md:gap-8">
