@@ -31,10 +31,11 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !auth) return;
     setLoading(true);
     
     try {
+      // Create user in Auth first to get the UID
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
       const avatarUrl = `https://i.pravatar.cc/150?u=${newUser.uid}`;
@@ -42,6 +43,23 @@ export default function SignupPage() {
       // Now, handle the creation of the user document and referral logic in a transaction
       await runTransaction(firestore, async (transaction) => {
         let referrerId: string | null = null;
+        
+        // 1. Find the referrer if a referral code is present
+        if (referralCode) {
+            const usersRef = collection(firestore, 'users');
+            const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
+            const querySnapshot = await getDocs(q); // Use getDocs for transactions, not from transaction object
+            if (!querySnapshot.empty) {
+                const referrerDoc = querySnapshot.docs[0];
+                referrerId = referrerDoc.id;
+                
+                // 2. Update the referrer's referralsCount
+                const newReferralsCount = (referrerDoc.data().referralsCount || 0) + 1;
+                transaction.update(referrerDoc.ref, { referralsCount: newReferralsCount });
+            }
+        }
+        
+        // 3. Create the new user's document
         const newUserProfile: Omit<User, 'id'> = {
             name: name,
             email: newUser.email || 'N/A',
@@ -52,7 +70,7 @@ export default function SignupPage() {
             totalSpent: 0,
             apiKey: `hy_${crypto.randomUUID()}`,
             referralCode: newUser.uid.substring(0, 8).toUpperCase(),
-            referrerId: referrerId,
+            referrerId: referrerId, // Set the referrerId here
             createdAt: new Date().toISOString(),
             affiliateEarnings: 0,
             referralsCount: 0,
@@ -62,27 +80,12 @@ export default function SignupPage() {
                 orderUpdates: true
             }
         };
-
-        // 1. Find the referrer if a referral code is present
-        if (referralCode) {
-            const usersRef = collection(firestore, 'users');
-            const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-                const referrerDoc = querySnapshot.docs[0];
-                referrerId = referrerDoc.id;
-                newUserProfile.referrerId = referrerId;
-                
-                // 2. Update the referrer's referralsCount
-                const newReferralsCount = (referrerDoc.data().referralsCount || 0) + 1;
-                transaction.update(referrerDoc.ref, { referralsCount: newReferralsCount });
-            }
-        }
         
-        // 3. Create the new user's document
         const newUserDocRef = doc(firestore, 'users', newUser.uid);
         transaction.set(newUserDocRef, newUserProfile);
       }).catch(serverError => {
+          // This will catch transaction-specific errors (e.g., contention)
+          // or permission errors if the rules are violated during the transaction.
           const permissionError = new FirestorePermissionError({
             path: `users/${newUser.uid}`,
             operation: 'create',
@@ -91,7 +94,7 @@ export default function SignupPage() {
           throw permissionError; // Re-throw to be caught by outer catch
       });
 
-      // 4. Update the user's auth profile (displayName, photoURL)
+      // 4. Update the user's auth profile (displayName, photoURL) - can be done outside transaction
       await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
       
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
@@ -104,13 +107,16 @@ export default function SignupPage() {
         return;
       }
 
-      console.error(error);
+      console.error("Signup Error:", error);
       let description = 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
       if (error.code === 'auth/email-already-in-use') {
           description = 'هذا البريد الإلكتروني مستخدم بالفعل.';
       } else if (error.code === 'auth/weak-password') {
           description = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
+      } else if (error.code === 'auth/invalid-email') {
+          description = 'البريد الإلكتروني الذي أدخلته غير صالح.';
       }
+      
       toast({
         variant: 'destructive',
         title: 'فشل إنشاء الحساب',
@@ -142,6 +148,7 @@ export default function SignupPage() {
                         required 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        disabled={loading}
                     />
                 </div>
                 <div className="space-y-2">
@@ -153,6 +160,7 @@ export default function SignupPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
                     />
                 </div>
                 <div className="space-y-2">
@@ -163,6 +171,7 @@ export default function SignupPage() {
                         required 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        disabled={loading}
                         />
                 </div>
                  <div>
