@@ -454,10 +454,10 @@ export default function DashboardPage() {
 
   const recentOrders = ordersData?.slice(0, 5);
   const statusVariant = {
-    مكتمل: 'default',
+    'مكتمل': 'default',
     'قيد التنفيذ': 'secondary',
-    ملغي: 'destructive',
-    جزئي: 'outline',
+    'ملغي': 'destructive',
+    'جزئي': 'outline',
   } as const;
 
 
@@ -530,7 +530,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">الطلبات الأخيرة</CardTitle>
-          </CardHeader>
+          </Header>
           <CardContent>
             <Table>
               <TableHeader>
