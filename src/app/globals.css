@@ -102,12 +102,18 @@ body {
 
 @layer utilities {
     @keyframes move-background {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+        0% {
+            transform: rotate(0deg) scale(1.5);
+        }
+        50% {
+            transform: rotate(180deg) scale(1.6);
+        }
+        100% {
+            transform: rotate(360deg) scale(1.5);
+        }
     }
     .animate-move-background {
-      animation: move-background 15s ease-in-out infinite;
+      animation: move-background 40s linear infinite;
     }
 
     @keyframes stars-pulse {
@@ -128,5 +134,18 @@ body {
         background-size: 200px 200px;
         opacity: 0.2;
         animation: stars-pulse 10s infinite;
+    }
+    
+    @keyframes animated-gradient-text {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .animated-gradient-text {
+        animation: animated-gradient-text 8s ease-in-out infinite;
+        background-size: 200% 200%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 }

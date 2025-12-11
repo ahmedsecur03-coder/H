@@ -69,7 +69,7 @@ export default function Home() {
           <div className="container mx-auto px-4 md:px-6 text-center">
             <div className="flex flex-col justify-center items-center space-y-6">
               <div className="space-y-4">
-                 <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-br from-primary-foreground to-muted-foreground">
+                 <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl animated-gradient-text bg-gradient-to-r from-primary via-fuchsia-500 to-orange-500">
                   بوابتك إلى الكون الرقمي
                 </h1>
                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
@@ -132,7 +132,7 @@ export default function Home() {
                         <p className="text-muted-foreground mb-4">
                             عزز تواجدك على وسائل التواصل الاجتماعي مع باقات المتابعين، الإعجابات، والمشاهدات لجميع المنصات. أسعار تنافسية وجودة لا تضاهى.
                         </p>
-                        <Button variant="link" asChild><Link href="/dashboard/services">اعرف المزيد</Link></Button>
+                        <Button variant="link" asChild><Link href="/services">اعرف المزيد</Link></Button>
                     </div>
                      <div className="bg-card p-8 rounded-lg">
                         <Zap className="h-8 w-8 text-primary mb-4" />
