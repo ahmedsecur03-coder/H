@@ -37,28 +37,16 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 
 function Header() {
   const { user } = useUser();
-  const firestore = useFirestore();
    const appUser = {
       name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
       email: user?.email || "مستخدم مجهول",
       avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
   };
-  
-   const userDocRef = useMemoFirebase(
-    () => (firestore && user ? doc(firestore, 'users', user.uid) : null),
-    [firestore, user]
-  );
-  const { data: userData } = useDoc<UserType>(userDocRef);
-
 
   return (
     <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <SidebarTrigger className="md:hidden" />
         <div className="flex items-center gap-2 font-body ml-auto">
-            <div className='text-left'>
-                <p className='text-sm font-bold'>{(user?.displayName || 'مستخدم')}</p>
-                <p className='text-xs text-muted-foreground'>الرصيد: <span className='text-primary font-bold'>${(userData?.balance || 0).toFixed(2)}</span></p>
-            </div>
             <UserNav user={appUser} isAdmin={user?.email === 'hagaaty@gmail.com'} />
         </div>
     </header>
@@ -180,4 +168,10 @@ export default function DashboardLayout({
       </Sidebar>
       <SidebarInset className="bg-transparent">
         <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-
+        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}

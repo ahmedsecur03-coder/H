@@ -24,6 +24,7 @@ import {
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard/services', label: 'الخدمات', icon: Package },
   {
     label: 'الطلبات',
     icon: ShoppingCart,
@@ -32,13 +33,20 @@ export const dashboardNavItems: NestedNavItem[] = [
       { href: '/dashboard/mass-order', label: 'طلب جماعي' },
     ],
   },
-  { href: '/dashboard/services', label: 'الخدمات', icon: Package },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/dashboard/campaigns', label: 'الحملات', icon: Rocket },
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
-  { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
+  { href: '/dashboard/campaigns', label: 'الحملات', icon: Rocket },
+  {
+    label: 'الدعم الفني',
+    icon: MessageSquare,
+    children: [
+      { href: '/dashboard/support', label: 'تذاكر الدعم' },
+      { href: '/dashboard/support/new', label: 'فتح تذكرة جديدة' },
+    ],
+  },
   { href: '/dashboard/api', label: 'API', icon: Code2 },
   { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
+  { href: '/dashboard/blog', label: 'المدونة', icon: BookOpen },
 ];
 
 export const adminNavItems: NestedNavItem[] = [
@@ -52,3 +60,4 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ];
+
