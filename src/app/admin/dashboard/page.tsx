@@ -56,6 +56,7 @@ function processPerformanceData(orders: Order[], users: User[]) {
     });
 
     users.forEach(user => {
+        if(!user.createdAt) return;
         const joinDate = new Date(user.createdAt);
         const dateStr = joinDate.toISOString().split('T')[0];
         if (dataByDate[dateStr]) {
@@ -201,3 +202,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    

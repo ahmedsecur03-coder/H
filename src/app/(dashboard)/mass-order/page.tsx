@@ -201,7 +201,7 @@ export default function MassOrderPage() {
 
                 for (const pLine of validLines) {
                     if (pLine.isValid && pLine.finalCost && pLine.service) {
-                        const newOrderRef = doc(collection(firestore, `users/${authUser!.uid}/orders`));
+                        const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
                         const newOrder: Omit<Order, 'id'> = {
                             userId: authUser!.uid,
                             serviceId: pLine.service.id,
@@ -217,7 +217,7 @@ export default function MassOrderPage() {
                         if(referrerDoc?.exists()) {
                             const referrerData = referrerDoc.data() as User;
                             const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
-                            const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS].commission || 10) / 100;
+                            const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
                             const commissionAmount = pLine.finalCost * commissionRate;
                             
                             referrerUpdates.affiliateEarnings! += commissionAmount;
@@ -235,7 +235,7 @@ export default function MassOrderPage() {
                     }
                 }
 
-                if (referrerDoc?.exists()) {
+                if (referrerDoc?.exists() && Object.keys(referrerUpdates).length > 0) {
                     transaction.update(referrerDoc.ref, referrerUpdates);
                 }
             });
@@ -348,7 +348,5 @@ export default function MassOrderPage() {
         </div>
     );
 }
-
-    
 
     
