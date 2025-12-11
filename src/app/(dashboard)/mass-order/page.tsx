@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -61,6 +60,9 @@ export default function MassOrderPage() {
 
     const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services')) : null, [firestore]);
     const { data: servicesData, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+    
+    const rank = getRankForSpend(userData?.totalSpent ?? 0);
+    const discountPercentage = rank.discount / 100;
 
     const handleMassOrderSubmit = async () => {
         if (!massOrderText.trim()) {
@@ -74,9 +76,6 @@ export default function MassOrderPage() {
 
         setIsProcessing(true);
         setBatchResult(null);
-
-        const currentRank = getRankForSpend(userData.totalSpent);
-        const discountPercentage = currentRank.discount / 100;
         
         const lines = massOrderText.trim().split('\n');
         let totalFinalCost = 0;
@@ -188,7 +187,7 @@ export default function MassOrderPage() {
         .then(() => {
             toast({ title: 'نجاح', description: `تم إرسال ${validLines.length} طلب بنجاح.` });
              if (promotionToast) {
-                setTimeout(() => toast(promotionToast), 1000);
+                setTimeout(() => toast(promotionToast!), 1000);
             }
             setBatchResult({ successCount: validLines.length, errorCount: invalidLines.length, totalCost: totalFinalCost, errors: finalErrors });
             setMassOrderText('');
@@ -204,6 +203,7 @@ export default function MassOrderPage() {
                     requestResourceData: { balance: '...', totalSpent: '...' }
                  });
                  errorEmitter.emit('permission-error', permissionError);
+                 toast({ variant: 'destructive', title: 'فشل العملية', description: 'حدث خطأ في الصلاحيات أثناء معالجة الطلبات.' });
             }
              finalErrors.push(error.message);
              setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: 0, errors: finalErrors });
@@ -226,7 +226,8 @@ export default function MassOrderPage() {
                 <CardHeader>
                     <CardTitle>إدخال الطلبات</CardTitle>
                     <CardDescription>
-                        اتبع التنسيق التالي لكل طلب في سطر منفصل: <code>id_الخدمة|الرابط|الكمية</code>
+                        اتبع التنسيق التالي لكل طلب في سطر منفصل: <code>id_الخدمة|الرابط|الكمية</code><br/>
+                        ستحصل على خصم <span className="font-bold text-primary">{rank.discount}%</span> على جميع الطلبات لرتبتك الحالية ({rank.name}).
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

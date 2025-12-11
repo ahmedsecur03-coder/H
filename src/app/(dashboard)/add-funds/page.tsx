@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -72,7 +71,7 @@ function VodafoneCashTab({ settings, isLoading }: { settings: any, isLoading: bo
     };
 
     if(isLoading) {
-        return <Skeleton className="h-80" />
+        return <Card><CardContent><Skeleton className="h-80" /></CardContent></Card>
     }
 
     return (
@@ -162,7 +161,7 @@ function BinancePayTab({ settings, isLoading }: { settings: any, isLoading: bool
     };
     
     if(isLoading) {
-        return <Skeleton className="h-80" />
+        return <Card><CardContent><Skeleton className="h-80" /></CardContent></Card>
     }
 
 
@@ -216,6 +215,11 @@ function TransferToAdBalance() {
             toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى إدخال مبلغ صحيح للتحويل.' });
             return;
         }
+        
+        if (userData.balance < transferAmount) {
+            toast({ variant: 'destructive', title: 'فشل التحويل', description: 'رصيدك الأساسي غير كافٍ لإتمام عملية التحويل.' });
+            return;
+        }
 
         setIsSubmitting(true);
         runTransaction(firestore, async (transaction) => {
@@ -246,6 +250,7 @@ function TransferToAdBalance() {
                     requestResourceData: { balance: '...', adBalance: '...' }
                  });
                  errorEmitter.emit('permission-error', permissionError);
+                 toast({ variant: "destructive", title: "فشل التحويل", description: "فشلت العملية بسبب خطأ في الصلاحيات." });
              }
         })
         .finally(() => {

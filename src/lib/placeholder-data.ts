@@ -18,6 +18,7 @@ import {
   PenSquare,
   Briefcase,
   Palette,
+  Shield,
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -54,4 +55,5 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/support', label: 'الدعم الفني', icon: MessageSquare },
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
+    { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];

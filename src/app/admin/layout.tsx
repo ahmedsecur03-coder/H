@@ -1,8 +1,7 @@
-
 "use client";
 
 import Link from 'next/link';
-import { Bell } from 'lucide-react';
+import { Bell, Shield } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -39,10 +38,6 @@ function AdminHeader() {
      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <SidebarTrigger className="md:hidden" />
         <div className="flex items-center gap-4 ml-auto">
-            <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Toggle notifications</span>
-            </Button>
             <UserNav user={adminUser} isAdmin={true} />
         </div>
     </header>
@@ -136,9 +131,6 @@ export default function AdminLayout({
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
             <Logo />
-            <Button variant="outline" size="sm" className='bg-card' asChild>
-                <Link href="/dashboard">العودة للوحة المستخدم</Link>
-            </Button>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -156,4 +148,3 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
-

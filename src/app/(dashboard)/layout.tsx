@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -29,7 +28,7 @@ import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BottomNavBar } from './_components/bottom-nav';
 import { MobileHeader } from './_components/mobile-header';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Shield } from 'lucide-react';
 
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
@@ -42,6 +41,11 @@ function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="flex items-center gap-2 font-body ml-auto">
+             {isAdmin && (
+                <Button variant="outline" size="sm" asChild>
+                    <Link href="/admin/dashboard"><Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول</Link>
+                </Button>
+             )}
             <UserNav user={appUser} isAdmin={isAdmin} />
         </div>
     </header>
@@ -151,11 +155,6 @@ export default function DashboardLayout({
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
-             {isAdmin && (
-                <Button variant="outline" size="sm" className='bg-card' asChild>
-                    <Link href="/admin/dashboard">الانتقال للوحة المسؤول</Link>
-                </Button>
-             )}
           </div>
         </SidebarHeader>
         <SidebarContent>

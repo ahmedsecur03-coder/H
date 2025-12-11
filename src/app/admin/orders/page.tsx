@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -66,7 +65,7 @@ export default function AdminOrdersPage() {
     }, [allOrders, statusFilter, searchTerm]);
 
     const renderContent = () => {
-         if (isLoading) {
+         if (isLoading && !filteredOrders) {
             return Array.from({length: 10}).map((_, i) => (
                 <TableRow key={i}>
                     {Array.from({length: 6}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
