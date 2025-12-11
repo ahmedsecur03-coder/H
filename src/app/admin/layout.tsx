@@ -13,6 +13,7 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
@@ -22,8 +23,60 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ADMIN_EMAIL = 'hagaaty@gmail.com';
+
+function AdminHeader() {
+  const { user } = useUser();
+  const adminUser = {
+    name: user?.displayName || "مسؤول",
+    email: user?.email || ADMIN_EMAIL,
+    avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
+  };
+
+  return (
+     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <SidebarTrigger className="md:hidden" />
+        <div className="flex items-center gap-4 ml-auto">
+            <Button variant="ghost" size="icon" className="rounded-full">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Toggle notifications</span>
+            </Button>
+            <UserNav user={adminUser} isAdmin={true} />
+        </div>
+    </header>
+  );
+}
+
+
+function AdminNavItems() {
+  const { state } = useSidebar();
+  const isCollapsible = state === "collapsed";
+
+  return (
+    <>
+        {adminNavItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <SidebarMenuButton asChild>
+                                <Link href={item.href}>
+                                    <item.icon />
+                                    <span>{item.label}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </TooltipTrigger>
+                        {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
+                    </Tooltip>
+                </TooltipProvider>
+            </SidebarMenuItem>
+        ))}
+    </>
+  )
+}
+
 
 export default function AdminLayout({
   children,
@@ -76,53 +129,26 @@ export default function AdminLayout({
   }
 
   // If loading is complete and user is the admin, render the layout
-  const adminUser = {
-    name: user.displayName || "مسؤول",
-    email: user.email || ADMIN_EMAIL,
-    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
-  };
-
+  
   return (
     <SidebarProvider>
       <Sidebar side="right" collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-16 items-center justify-center px-4 group-data-[collapsible=icon]:hidden">
+          <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
             <Logo />
+            <Button variant="outline" size="sm" className='bg-card' asChild>
+                <Link href="/dashboard">العودة للوحة المستخدم</Link>
+            </Button>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {adminNavItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={{
-                    children: item.label,
-                    className: 'font-body',
-                    side: 'left',
-                  }}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+             <AdminNavItems />
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-transparent">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <div className="flex items-center gap-4 ml-auto">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Bell className="h-5 w-5" />
-              <span className="sr-only">Toggle notifications</span>
-            </Button>
-            <UserNav user={adminUser} isAdmin={true} />
-          </div>
-        </header>
+        <AdminHeader />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
         </main>
@@ -130,3 +156,4 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
+
