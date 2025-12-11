@@ -39,6 +39,13 @@ const RANKS = [
   { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50 },
 ];
 
+const AFFILIATE_LEVELS = {
+    'برونزي': { commission: 10 },
+    'فضي': { commission: 12 },
+    'ذهبي': { commission: 15 },
+    'ماسي': { commission: 20 },
+};
+
 
 function getRankForSpend(spend: number) {
   let currentRank = RANKS[0];
@@ -75,7 +82,7 @@ export default function MassOrderPage() {
             toast({ variant: 'destructive', title: 'خطأ', description: 'حقل الطلبات فارغ.' });
             return;
         }
-        if (!userData || !servicesData) {
+        if (!userData || !servicesData || !firestore || !authUser) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'لا يمكن معالجة الطلب، جاري تحميل البيانات.' });
             return;
         }
@@ -149,8 +156,8 @@ export default function MassOrderPage() {
         // 3. Execute transaction
         try {
             let promotionToast: { title: string; description: string } | null = null;
-            await runTransaction(firestore!, async (transaction) => {
-                const userRef = doc(firestore!, 'users', authUser!.uid);
+            await runTransaction(firestore, async (transaction) => {
+                const userRef = doc(firestore, 'users', authUser.uid);
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
                 
@@ -179,10 +186,22 @@ export default function MassOrderPage() {
                 }
                 
                 transaction.update(userRef, updates);
+                
+                let referrerDoc: any = null;
+                let referrerUpdates: Partial<User> = {};
+
+                if (currentData.referrerId) {
+                    const referrerRef = doc(firestore, 'users', currentData.referrerId);
+                    referrerDoc = await transaction.get(referrerRef);
+                    if (referrerDoc.exists()) {
+                        referrerUpdates.affiliateEarnings = referrerDoc.data().affiliateEarnings || 0;
+                    }
+                }
+
 
                 for (const pLine of validLines) {
                     if (pLine.isValid && pLine.finalCost && pLine.service) {
-                        const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
+                        const newOrderRef = doc(collection(firestore, `users/${authUser!.uid}/orders`));
                         const newOrder: Omit<Order, 'id'> = {
                             userId: authUser!.uid,
                             serviceId: pLine.service.id,
@@ -194,7 +213,30 @@ export default function MassOrderPage() {
                             status: 'قيد التنفيذ',
                         };
                         transaction.set(newOrderRef, newOrder);
+
+                        if(referrerDoc?.exists()) {
+                            const referrerData = referrerDoc.data() as User;
+                            const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
+                            const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS].commission || 10) / 100;
+                            const commissionAmount = pLine.charge * commissionRate;
+                            
+                            referrerUpdates.affiliateEarnings! += commissionAmount;
+                            
+                            const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
+                            transaction.set(newTransactionRef, {
+                                userId: referrerData.id,
+                                referralId: authUser.uid,
+                                orderId: newOrderRef.id,
+                                amount: commissionAmount,
+                                transactionDate: new Date().toISOString(),
+                                level: 1 // Assuming direct referral for now
+                            });
+                        }
                     }
+                }
+
+                if (referrerDoc?.exists()) {
+                    transaction.update(referrerDoc.ref, referrerUpdates);
                 }
             });
             

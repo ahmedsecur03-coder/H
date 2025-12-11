@@ -80,6 +80,13 @@ const RANKS: { name: UserType['rank']; spend: number; discount: number, reward: 
   { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50 },
 ];
 
+const AFFILIATE_LEVELS = {
+    'برونزي': { commission: 10 },
+    'فضي': { commission: 12 },
+    'ذهبي': { commission: 15 },
+    'ماسي': { commission: 20 },
+};
+
 
 function getRankForSpend(spend: number) {
   let currentRank = RANKS[0];
@@ -180,38 +187,34 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     setIsSubmitting(true);
 
     try {
-        const userDocRef = doc(firestore, "users", user.uid);
-
+        let promotionToast: { title: string; description: string } | null = null;
         await runTransaction(firestore, async (transaction) => {
+            const userDocRef = doc(firestore, "users", user.uid);
             const userDoc = await transaction.get(userDocRef);
             if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
             
             const currentData = userDoc.data() as UserType;
             const currentBalance = currentData.balance;
-            const currentRankInfo = getRankForSpend(currentData.totalSpent);
 
             if (currentBalance < cost) throw new Error("رصيدك غير كافٍ.");
 
             const newBalance = currentBalance - cost;
             const newTotalSpent = currentData.totalSpent + cost;
-            const newRankInfo = getRankForSpend(newTotalSpent);
+            const oldRank = getRankForSpend(currentData.totalSpent);
+            const newRank = getRankForSpend(newTotalSpent);
             
             const updates: Partial<UserType> = {
                 balance: newBalance,
                 totalSpent: newTotalSpent,
             };
 
-            let promotionToast: { title: string; description: string } | null = null;
-
-
-            if (newRankInfo.name !== currentRankInfo.name) {
-                updates.rank = newRankInfo.name;
-                // Only add reward if there is one
-                if (newRankInfo.reward > 0) {
-                    updates.adBalance = (currentData.adBalance || 0) + newRankInfo.reward;
+            if (newRank.name !== oldRank.name) {
+                updates.rank = newRank.name;
+                if (newRank.reward > 0) {
+                    updates.adBalance = (currentData.adBalance || 0) + newRank.reward;
                     promotionToast = {
-                        title: `🎉 ترقية! أهلاً بك في رتبة ${newRankInfo.name}`,
-                        description: `لقد حصلت على مكافأة ${newRankInfo.reward}$ في رصيد إعلاناتك!`,
+                        title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
+                        description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
                     };
                 }
             }
@@ -230,15 +233,39 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                 status: 'قيد التنفيذ',
             };
             transaction.set(newOrderRef, newOrder);
-            return promotionToast;
-        }).then((promotionToast) => {
-            toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
-            if(promotionToast) {
-                 setTimeout(() => toast(promotionToast), 1000);
+
+             // Affiliate Commission Logic
+            if (currentData.referrerId) {
+                const referrerRef = doc(firestore, 'users', currentData.referrerId);
+                const referrerDoc = await transaction.get(referrerRef);
+                if (referrerDoc.exists()) {
+                    const referrerData = referrerDoc.data() as UserType;
+                    const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
+                    const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
+                    const commissionAmount = cost * commissionRate;
+
+                    transaction.update(referrerRef, {
+                        affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
+                    });
+
+                    const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
+                    transaction.set(newTransactionRef, {
+                        userId: referrerData.id,
+                        referralId: user.uid,
+                        orderId: newOrderRef.id,
+                        amount: commissionAmount,
+                        transactionDate: new Date().toISOString(),
+                        level: 1 // Assuming direct referral for now
+                    });
+                }
             }
         });
 
-        
+        toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
+        if(promotionToast) {
+            setTimeout(() => toast(promotionToast), 1000);
+        }
+
         // Reset form
         setSelectedPlatform(undefined);
         setSelectedCategory(undefined);
@@ -595,3 +622,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

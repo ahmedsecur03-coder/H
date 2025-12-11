@@ -317,7 +317,8 @@
         "referralId",
         "orderId",
         "amount",
-        "transactionDate"
+        "transactionDate",
+        "level"
       ]
     },
     "BlogPost": {
