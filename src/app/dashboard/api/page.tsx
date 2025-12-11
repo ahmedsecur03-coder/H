@@ -21,12 +21,13 @@ const ApiKeyCard = () => {
     const apiKey = user ? `hy_${user.uid.slice(0, 16)}...` : '';
 
     const copyApiKey = () => {
+        if (!apiKey) return;
         navigator.clipboard.writeText(apiKey);
         toast({ title: "تم نسخ مفتاح API!" });
     };
     
     if (isUserLoading) {
-        return <Skeleton className="h-48 w-full" />
+        return <Skeleton className="h-40 w-full" />
     }
 
     return (
@@ -130,6 +131,3 @@ export default function ApiPage() {
         </div>
     );
 }
-
-// You might need to install react-syntax-highlighter and its types
-// npm install react-syntax-highlighter @types/react-syntax-highlighter

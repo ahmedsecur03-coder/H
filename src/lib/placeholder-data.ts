@@ -44,8 +44,8 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
     { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
     { href: '/admin/orders', label: 'الطلبات', icon: ShoppingCart },
-    { href: '/admin/campaigns', label: 'الحملات', icon: Megaphone },
     { href: '/admin/services', label: 'الخدمات', icon: Package },
+    { href: '/admin/campaigns', label: 'الحملات', icon: Megaphone },
     { href: '/admin/support', label: 'الدعم الفني', icon: MessageSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ];
@@ -59,5 +59,3 @@ export const performanceData = [
     { date: '2024-05-06', orders: 14, spend: 70, revenue: 105, users: 7 },
     { date: '2024-05-07', orders: 20, spend: 110, revenue: 165, users: 12 },
 ];
-
-    
