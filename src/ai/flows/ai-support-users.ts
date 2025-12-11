@@ -10,6 +10,62 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
+import type { Service } from '@/lib/types';
+
+// Tool to get available services from Firestore
+const getAvailableServices = ai.defineTool(
+    {
+        name: 'getAvailableServices',
+        description: 'Get a list of available services based on a search query. Use this to answer user questions about specific services.',
+        inputSchema: z.object({
+            query: z.string().describe('A search term to filter services, like "instagram followers" or "youtube views".'),
+        }),
+        outputSchema: z.array(z.object({
+            id: z.string(),
+            category: z.string(),
+            platform: z.string(),
+            price: z.number(),
+        })),
+    },
+    async (input) => {
+        console.log(`Tool getAvailableServices called with query: ${input.query}`);
+        const { firestore } = initializeFirebase();
+        if (!firestore) {
+            console.error("Firestore not initialized");
+            return [];
+        }
+
+        try {
+            // A simple text search simulation by checking for keywords.
+            // For a real app, a more sophisticated search like Algolia or Typesense is recommended.
+            const servicesRef = collection(firestore, 'services');
+            const querySnapshot = await getDocs(servicesRef);
+            
+            const allServices: Service[] = [];
+            querySnapshot.forEach(doc => {
+                allServices.push({ id: doc.id, ...doc.data() } as Service);
+            });
+            
+            const searchTerms = input.query.toLowerCase().split(' ');
+            
+            const filteredServices = allServices.filter(service => {
+                const serviceText = `${service.platform} ${service.category}`.toLowerCase();
+                return searchTerms.every(term => serviceText.includes(term));
+            }).slice(0, 5); // Limit to 5 results to keep the response concise
+            
+            console.log(`Found ${filteredServices.length} services matching query.`);
+
+            return filteredServices.map(({ id, category, platform, price }) => ({ id, category, platform, price }));
+
+        } catch (error) {
+            console.error("Error fetching services in tool:", error);
+            return [];
+        }
+    }
+);
+
 
 const AISupportUsersInputSchema = z.object({
   query: z.string().describe('The user query for AI support.'),
@@ -29,9 +85,13 @@ const prompt = ai.definePrompt({
   name: 'aiSupportUsersPrompt',
   input: {schema: AISupportUsersInputSchema},
   output: {schema: AISupportUsersOutputSchema},
+  tools: [getAvailableServices],
   prompt: `You are an AI assistant designed to help users with the Hajaty Hub platform.
-  Your responses should be in Arabic, and you should be able to answer question about SMM, ad campaigns, affiliate programs, and user accounts.
+  Your responses should be in Arabic, and you should be able to answer questions about SMM, ad campaigns, affiliate programs, and user accounts.
   
+  If the user asks about specific services, use the 'getAvailableServices' tool to find relevant services.
+  When presenting services, always mention the service ID and its price per 1000. Be friendly and helpful.
+
   User Query: {{{query}}}`,
 });
 
