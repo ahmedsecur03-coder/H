@@ -141,30 +141,37 @@ body {
     }
 
     .stars-small {
-      animation: animStar 150s linear infinite;
+      animation: animStar 120s linear infinite;
       box-shadow: 
         /* A large number of small, faint stars */
         1839px 749px hsl(0, 0%, 100%), 124px 1746px hsl(0, 0%, 100%), 1435px 1450px hsl(0, 0%, 100%),
         805px 1530px hsl(0, 0%, 100%), 409px 1308px hsl(0, 0%, 100%), 129px 1083px hsl(0, 0%, 100%),
         1098px 1238px hsl(0, 0%, 100%), 1054px 147px hsl(0, 0%, 100%), 1095px 1845px hsl(0, 0%, 100%),
         108px 1368px hsl(0, 0%, 100%), 1459px 1205px hsl(0, 0%, 100%), 138px 1032px hsl(0, 0%, 100%),
-        1108px 634px hsl(0, 0%, 100%), 1334px 103px hsl(0, 0%, 100%), 1445px 338px hsl(0, 0%, 100%);
+        1108px 634px hsl(0, 0%, 100%), 1334px 103px hsl(0, 0%, 100%), 1445px 338px hsl(0, 0%, 100%),
+        238px 1230px hsl(0, 0%, 100%), 1233px 1842px hsl(0, 0%, 100%), 1913px 1198px hsl(0, 0%, 100%),
+        1536px 1833px hsl(0, 0%, 100%), 127px 1152px hsl(0, 0%, 100%), 1402px 260px hsl(0, 0%, 100%),
+        1708px 903px hsl(0, 0%, 100%), 592px 282px hsl(0, 0%, 100%), 1768px 1658px hsl(0, 0%, 100%),
+        632px 1492px hsl(0, 0%, 100%), 132px 1970px hsl(0, 0%, 100%), 1990px 1344px hsl(0, 0%, 100%);
     }
 
     .stars-medium {
-      animation: animStar 100s linear infinite;
+      animation: animStar 80s linear infinite;
       box-shadow: 
         /* A smaller number of medium-sized, brighter stars */
         279px 1833px 2px hsla(240, 80%, 95%, 0.8), 1260px 101px 2px hsla(220, 80%, 95%, 0.8),
         1960px 1091px 2px hsla(230, 80%, 95%, 0.8), 284px 1395px 2px hsla(210, 80%, 95%, 0.8),
-        1432px 140px 2px hsla(250, 80%, 95%, 0.8);
+        1432px 140px 2px hsla(250, 80%, 95%, 0.8), 557px 1233px 2px hsla(240, 80%, 95%, 0.8),
+        1558px 1901px 2px hsla(220, 80%, 95%, 0.8), 260px 1391px 2px hsla(230, 80%, 95%, 0.8),
+        1884px 395px 2px hsla(210, 80%, 95%, 0.8), 432px 1440px 2px hsla(250, 80%, 95%, 0.8);
     }
     
     .stars-large {
-      animation: animStar 50s linear infinite;
+      animation: animStar 40s linear infinite;
       box-shadow: 
         /* A few large, very bright stars */
-        669px 929px 3px hsla(210, 100%, 98%, 1), 1916px 1421px 3px hsla(200, 100%, 98%, 1);
+        669px 929px 3px hsla(210, 100%, 98%, 1), 1916px 1421px 3px hsla(200, 100%, 98%, 1),
+        999px 129px 3px hsla(210, 100%, 98%, 1), 16px 421px 3px hsla(200, 100%, 98%, 1);
     }
     
     @keyframes animStar {
