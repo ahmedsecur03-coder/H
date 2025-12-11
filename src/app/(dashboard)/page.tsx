@@ -325,7 +325,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                             <div>
                                 <h4 className="font-semibold mb-2">تفاصيل:</h4>
                                 <ul className="list-inside list-disc space-y-1 text-muted-foreground text-xs">
-                                   {selectedService.description?.split('\n').map((line, i) => <li key={i}>{line}</li>)}
+                                   {selectedService.description?.split('\\n').map((line, i) => <li key={i}>{line}</li>)}
                                     <li>إذا تم تغيير اسم الحساب، يعتبر الطلب مكتملاً.</li>
                                     <li>تأكد من صحة الرابط قبل الطلب. إذا أدخلت رابطًا غير صحيح، فلن يكون هناك استرداد للمبلغ.</li>
                                     <li>لا تطلب من مصدر آخر أثناء عملنا على طلبك.</li>
