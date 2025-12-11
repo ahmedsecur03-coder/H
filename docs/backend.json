@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -34,6 +35,10 @@
         "totalSpent": {
           "type": "number",
           "description": "Total amount of money spent by the user."
+        },
+        "apiKey": {
+            "type": "string",
+            "description": "The user's unique API key for programmatic access."
         },
         "rank": {
           "type": "string",
@@ -80,6 +85,7 @@
         "balance",
         "adBalance",
         "totalSpent",
+        "apiKey",
         "rank",
         "referralCode",
         "createdAt"

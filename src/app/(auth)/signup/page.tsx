@@ -67,6 +67,7 @@ export default function SignupPage() {
             balance: 0,
             adBalance: 0,
             totalSpent: 0,
+            apiKey: `hy_${crypto.randomUUID()}`,
             referralCode: newUser.uid.substring(0, 8).toUpperCase(),
             referrerId: referrerId,
             createdAt: new Date().toISOString(),
