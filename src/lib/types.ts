@@ -31,7 +31,7 @@ export type Service = {
   description?: string;
   avgTime?: string;
   guarantee?: boolean;
-  speed?: string;
+  speed?: 'فوري' | 'سريع' | 'بطيء';
   dripFeed?: boolean;
   refill?: boolean;
 };
@@ -119,3 +119,5 @@ export type BlogPost = {
   authorId: string;
   publishDate: string;
 };
+
+    
