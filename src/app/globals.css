@@ -18,8 +18,8 @@ body {
     --popover: 222 84% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 198 93% 60%; /* Bright Cyan/Blue */
-    --primary-foreground: 222 84% 5%;
+    --primary: 28 80% 55%; /* Golden Orange */
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -28,17 +28,17 @@ body {
     --muted-foreground: 215 20% 65%;
 
     --accent: 217 33% 17%; 
-    --accent-foreground: 198 93% 60%;
+    --accent-foreground: 28 80% 55%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 17%;
     --input: 222 84% 10%;
-    --ring: 198 93% 60%;
+    --ring: 28 80% 55%;
     
-    --chart-1: 198 93% 60%;
-    --chart-2: 28 80% 55%;
+    --chart-1: 28 80% 55%;
+    --chart-2: 198 93% 60%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
@@ -47,12 +47,12 @@ body {
     
     --sidebar-background: 222 84% 5%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 198 93% 60%;
-    --sidebar-primary-foreground: 222 84% 5%;
+    --sidebar-primary: 28 80% 55%;
+    --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 222 84% 10%;
-    --sidebar-accent-foreground: 198 93% 60%;
+    --sidebar-accent-foreground: 28 80% 55%;
     --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 198 93% 60%;
+    --sidebar-ring: 28 80% 55%;
   }
 
   .dark {
@@ -65,8 +65,8 @@ body {
     --popover: 222 84% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 198 93% 60%; /* Bright Cyan/Blue */
-    --primary-foreground: 222 84% 5%;
+    --primary: 28 80% 55%; /* Golden Orange */
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -75,17 +75,17 @@ body {
     --muted-foreground: 215 20% 65%;
 
     --accent: 217 33% 17%; 
-    --accent-foreground: 198 93% 60%;
+    --accent-foreground: 28 80% 55%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 17%;
     --input: 222 84% 10%;
-    --ring: 198 93% 60%;
+    --ring: 28 80% 55%;
     
-    --chart-1: 198 93% 60%;
-    --chart-2: 28 80% 55%;
+    --chart-1: 28 80% 55%;
+    --chart-2: 198 93% 60%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
@@ -171,3 +171,5 @@ body {
       100% { transform: translateX(400px); }
     }
 }
+
+    

@@ -70,7 +70,7 @@ export default function Home() {
           <div className="container mx-auto px-4 md:px-6 text-center z-10 relative">
             <div className="flex flex-col justify-center items-center space-y-6">
               <div className="space-y-4">
-                 <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl animated-gradient-text bg-gradient-to-r from-primary via-fuchsia-500 to-orange-500">
+                 <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl animated-gradient-text bg-gradient-to-r from-orange-400 via-amber-300 to-fuchsia-500">
                   بوابتك إلى الكون الرقمي
                 </h1>
                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
@@ -190,3 +190,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
