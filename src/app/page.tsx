@@ -1,7 +1,8 @@
+
 'use client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Rocket, ShieldCheck, Zap, Users, LogIn, UserPlus, Star, Package } from 'lucide-react';
+import { Rocket, ShieldCheck, Zap, LogIn, UserPlus, Star, Package } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
@@ -66,7 +67,7 @@ export default function Home() {
       <main className="flex-1">
         <section className="relative w-full pt-24 pb-12 md:pt-40 md:pb-24 lg:pt-48 lg:pb-32 overflow-hidden">
           <CosmicBackground />
-          <div className="container mx-auto px-4 md:px-6 text-center">
+          <div className="container mx-auto px-4 md:px-6 text-center z-10 relative">
             <div className="flex flex-col justify-center items-center space-y-6">
               <div className="space-y-4">
                  <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl animated-gradient-text bg-gradient-to-r from-primary via-fuchsia-500 to-orange-500">
@@ -85,7 +86,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-background/50">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-background/50 z-10 relative">
           <div className="container mx-auto px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -115,7 +116,7 @@ export default function Home() {
           </div>
         </section>
         
-        <section className="w-full py-12 md:py-24 lg:py-32">
+        <section className="w-full py-12 md:py-24 lg:py-32 z-10 relative">
             <div className="container mx-auto px-4 md:px-6">
                  <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                   <div className="space-y-2">
@@ -146,7 +147,7 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-background/50">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-background/50 z-10 relative">
             <div className="container mx-auto px-4 md:px-6 max-w-3xl">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                   <div className="space-y-2">
@@ -177,7 +178,7 @@ export default function Home() {
         </section>
 
       </main>
-      <footer className="bg-card border-t border-border">
+      <footer className="bg-card border-t border-border z-10 relative">
         <div className="container mx-auto py-6 px-4 md:px-6 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>
             <nav className="flex gap-4 sm:gap-6">
