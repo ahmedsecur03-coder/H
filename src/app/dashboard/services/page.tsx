@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PLATFORM_ICONS } from '@/lib/placeholder-data';
+import { PLATFORM_ICONS } from '@/lib/icon-data';
 
 
 function ServicesPageSkeleton() {
@@ -133,7 +133,7 @@ export default function ServicesPage() {
     <div className="space-y-6 pb-8">
         <div>
             <div className="flex items-center gap-3 mb-2">
-                 {PlatformIcon()}
+                 {PlatformIcon && React.createElement(PlatformIcon, { className: "w-8 h-8 text-primary" })}
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
                     خدمات {activePlatform}
                 </h1>
@@ -191,7 +191,7 @@ export default function ServicesPage() {
                                     <TableCell className="w-auto md:w-32 text-center font-mono text-sm">${service.price.toFixed(4)}</TableCell>
                                     <TableCell className="w-auto md:w-48 text-center text-muted-foreground text-sm">{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
                                     <TableCell className="w-auto md:w-28 text-left">
-                                        <Button variant="default" size="sm" className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => handleOrderNow(service.id)}>
+                                        <Button variant="default" size="sm" className="bg-primary hover:bg-primary/80" onClick={() => handleOrderNow(service.id)}>
                                             اطلب الآن
                                         </Button>
                                     </TableCell>
