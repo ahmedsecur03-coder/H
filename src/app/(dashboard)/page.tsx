@@ -23,10 +23,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   DollarSign,
-  Package,
-  ShoppingCart,
-  Gem,
-  Percent,
   Loader2,
   Users,
   Trophy,
@@ -35,27 +31,16 @@ import {
   Star,
   Sparkles,
   Diamond,
-  Megaphone,
-  BookOpen,
-  ArrowLeft,
   Check,
-  Zap,
-  Palette,
-  Briefcase,
-  Gamepad2,
-  MapPin,
-  Clapperboard,
-  Bot
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, orderBy, limit, runTransaction, where, addDoc } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { User as UserType, Order, Service, BlogPost } from '@/lib/types';
+import type { User as UserType, Order, Service } from '@/lib/types';
 import { useState, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import Link from 'next/link';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -453,32 +438,6 @@ export default function DashboardPage() {
                 <h1 className='text-3xl font-bold'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
                 <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>الرصيد الأساسي</CardDescription>
-                        <CardTitle className="text-3xl">${(userData?.balance ?? 0).toFixed(2)}</CardTitle>
-                    </CardHeader>
-                </Card>
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>الرصيد الإعلاني</CardDescription>
-                        <CardTitle className="text-3xl">${(userData?.adBalance ?? 0).toFixed(2)}</CardTitle>
-                    </CardHeader>
-                </Card>
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>إجمالي الإنفاق</CardDescription>
-                        <CardTitle className="text-3xl">${(userData?.totalSpent ?? 0).toFixed(2)}</CardTitle>
-                    </CardHeader>
-                </Card>
-                 <Card>
-                    <CardHeader className="pb-2">
-                        <CardDescription>رتبتك الكونية</CardDescription>
-                        <CardTitle className="text-3xl text-primary">{rank.name}</CardTitle>
-                    </CardHeader>
-                </Card>
-            </div>
         
         <QuickOrderForm user={authUser} userData={userData} />
 
@@ -519,7 +478,33 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
+      <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>الرصيد الأساسي</CardDescription>
+                    <CardTitle className="text-3xl">${(userData?.balance ?? 0).toFixed(2)}</CardTitle>
+                </CardHeader>
+            </Card>
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>الرصيد الإعلاني</CardDescription>
+                    <CardTitle className="text-3xl">${(userData?.adBalance ?? 0).toFixed(2)}</CardTitle>
+                </CardHeader>
+            </Card>
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>إجمالي الإنفاق</CardDescription>
+                    <CardTitle className="text-3xl">${(userData?.totalSpent ?? 0).toFixed(2)}</CardTitle>
+                </CardHeader>
+            </Card>
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>رتبتك الكونية</CardDescription>
+                    <CardTitle className="text-xl text-primary">{rank.name}</CardTitle>
+                </CardHeader>
+            </Card>
+        </div>
          <Card>
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -552,7 +537,5 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-
 
     
