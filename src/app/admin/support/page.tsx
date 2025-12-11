@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -68,7 +67,7 @@ export default function AdminSupportPage() {
         <TableCell>
           <Badge variant={statusVariant[ticket.status]}>{ticket.status}</Badge>
         </TableCell>
-        <TableCell>{new Date(ticket.createdDate).toLocaleDateString()}</TableCell>
+        <TableCell>{new Date(ticket.createdDate).toLocaleDateString('ar-EG')}</TableCell>
           <TableCell className="text-right">
           <Button asChild variant="outline" size="sm">
             <Link href={`/admin/support/${ticket.id}?userId=${ticket.userId}`}>
@@ -84,7 +83,7 @@ export default function AdminSupportPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">إدارة الدعم الفني</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الدعم الفني</h1>
         <p className="text-muted-foreground">عرض والرد على تذاكر الدعم من المستخدمين.</p>
       </div>
 
