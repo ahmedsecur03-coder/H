@@ -63,6 +63,14 @@
         "affiliateLevel": {
           "type": "string",
           "description": "User's marketing level in the affiliate system (e.g., برونزي, فضي, ذهبي, ماسي)."
+        },
+        "notificationPreferences": {
+            "type": "object",
+            "description": "User's notification preferences.",
+            "properties": {
+                "newsletter": { "type": "boolean" },
+                "orderUpdates": { "type": "boolean" }
+            }
         }
       },
       "required": [
