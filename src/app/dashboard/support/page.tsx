@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, addDoc } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -36,7 +37,7 @@ const statusVariant = {
   'قيد المراجعة': 'default',
 } as const;
 
-function NewTicketDialog({ userId }: { userId: string }) {
+function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicketCreated: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -64,15 +65,16 @@ function NewTicketDialog({ userId }: { userId: string }) {
         }],
       };
       
-      await addDoc(ticketsColRef, newTicket);
+      const docRef = await addDoc(ticketsColRef, newTicket);
 
       toast({
         title: 'تم فتح التذكرة بنجاح',
-        description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
+        description: 'سيتم توجيهك إلى صفحة التذكرة الآن.',
       });
       setSubject('');
       setMessage('');
       setOpen(false);
+      onTicketCreated(docRef.id);
     } catch (error) {
       console.error('Error creating ticket:', error);
       toast({
@@ -137,6 +139,7 @@ function NewTicketDialog({ userId }: { userId: string }) {
 export default function SupportPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
 
   const ticketsQuery = useMemoFirebase(
     () =>
@@ -148,6 +151,10 @@ export default function SupportPage() {
 
   const { data: tickets, isLoading } = useCollection<Ticket>(ticketsQuery);
 
+  const handleTicketCreated = (ticketId: string) => {
+    router.push(`/dashboard/support/${ticketId}`);
+  };
+
   return (
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -157,7 +164,7 @@ export default function SupportPage() {
             تواصل مع فريق الدعم لدينا. نحن هنا لمساعدتك.
           </p>
         </div>
-        {user && <NewTicketDialog userId={user.uid} />}
+        {user && <NewTicketDialog userId={user.uid} onTicketCreated={handleTicketCreated} />}
       </div>
 
       <Card>
