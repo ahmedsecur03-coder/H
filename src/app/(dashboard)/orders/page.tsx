@@ -165,34 +165,32 @@ export default function OrdersPage() {
   const renderPaginationItems = () => {
     if (totalPages <= 1) return null;
     
-    const items = [];
     const pageNumbers: (number | 'ellipsis')[] = [];
-    const pageRange = 2; // How many pages to show around current page
+    const visiblePages = 2; // Pages around current page
 
     pageNumbers.push(1);
 
-    if (currentPage > pageRange + 1) {
-        pageNumbers.push('ellipsis');
+    if (currentPage > visiblePages + 1) {
+      pageNumbers.push('ellipsis');
     }
 
-    for (let i = Math.max(2, currentPage - pageRange); i <= Math.min(totalPages - 1, currentPage + pageRange); i++) {
-        pageNumbers.push(i);
+    for (let i = Math.max(2, currentPage - visiblePages); i <= Math.min(totalPages - 1, currentPage + visiblePages); i++) {
+      pageNumbers.push(i);
     }
 
-    if (currentPage < totalPages - pageRange) {
-        pageNumbers.push('ellipsis');
+    if (currentPage < totalPages - visiblePages) {
+      pageNumbers.push('ellipsis');
     }
     
     if (totalPages > 1) {
-        pageNumbers.push(totalPages);
+      pageNumbers.push(totalPages);
     }
 
     const uniquePageNumbers = [...new Set(pageNumbers)];
 
-
     return uniquePageNumbers.map((page, index) => {
         if (page === 'ellipsis') {
-            return <PaginationEllipsis key={`ellipsis-${index}`} />;
+            return <PaginationItem key={`ellipsis-${index}`}><PaginationEllipsis /></PaginationItem>;
         }
         return (
             <PaginationItem key={page}>
