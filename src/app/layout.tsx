@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import './globals.css';
+import './globals.scss';
 import { Toaster } from '@/components/ui/toaster';
 import AiAssistant from '@/components/ai-assistant';
 import { PT_Sans } from 'next/font/google';

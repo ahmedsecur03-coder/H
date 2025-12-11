@@ -1,0 +1,195 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'PT Sans', sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 222 84% 5%; /* Very Dark Blue */
+    --foreground: 210 40% 98%;
+
+    --card: 222 84% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 28 80% 55%; /* Golden Orange */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 222 84% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%; 
+    --accent-foreground: 28 80% 55%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 222 84% 10%;
+    --ring: 28 80% 55%;
+    
+    --chart-1: 28 80% 55%;
+    --chart-2: 198 93% 60%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --radius: 0.5rem;
+    
+    --sidebar-background: 222 84% 5%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 28 80% 55%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 222 84% 10%;
+    --sidebar-accent-foreground: 28 80% 55%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 28 80% 55%;
+  }
+
+  .dark {
+    --background: 222 84% 5%; /* Very Dark Blue */
+    --foreground: 210 40% 98%;
+
+    --card: 222 84% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 28 80% 55%; /* Golden Orange */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 222 84% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%; 
+    --accent-foreground: 28 80% 55%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 222 84% 10%;
+    --ring: 28 80% 55%;
+    
+    --chart-1: 28 80% 55%;
+    --chart-2: 198 93% 60%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground bg-background;
+  }
+}
+
+
+/* Helper function to generate random stars using Sass */
+@function random_stars($n, $max-size) {
+  $value: '#{random(2000)}px #{random(2000)}px hsl(0, 0%, 100%)';
+  @for $i from 2 through $n {
+    $size: random($max-size) * 0.1;
+    $color-saturation: 40% + random(60);
+    $color-hue: 200 + random(60);
+    $value: '#{$value} , #{random(2000)}px #{random(2000)}px hsla(#{$color-hue}, #{$color-saturation}, 90%, #{random(100) * 0.01})';
+  }
+  @return unquote($value);
+}
+
+@layer utilities {
+    @keyframes animated-gradient-text {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .animated-gradient-text {
+        animation: animated-gradient-text 8s ease-in-out infinite;
+        background-size: 200% 200%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Starry background using pure CSS box-shadows */
+    .stars-small, .stars-medium, .stars-large {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      background: transparent;
+      z-index: -10;
+    }
+
+    .stars-small {
+      animation: animStar 120s linear infinite;
+      box-shadow: random_stars(700, 1);
+    }
+
+    .stars-medium {
+      animation: animStar 80s linear infinite;
+      box-shadow: random_stars(200, 2);
+    }
+    
+    .stars-large {
+      animation: animStar 40s linear infinite;
+      box-shadow: random_stars(100, 3);
+    }
+    
+    @keyframes animStar {
+      from { transform: translateX(0px); }
+      to { transform: translateX(-2000px); }
+    }
+
+    /* Aurora/Nebula Background */
+    .aurora-background {
+      z-index: -10;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 40%, hsla(210, 50%, 8%, 0.4), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 60%, hsla(280, 40%, 10%, 0.3), transparent),
+        radial-gradient(circle at 50% 50%, hsl(var(--background)), hsl(var(--background)) 80%);
+    }
+
+    /* Shooting Stars */
+    .shooting-star {
+        position: absolute;
+        height: 2px;
+        background: linear-gradient(-45deg, hsl(var(--primary)), rgba(0, 0, 255, 0));
+        border-radius: 999px;
+        filter: drop-shadow(0 0 6px hsl(var(--primary)));
+        animation: tail 3s ease-in-out infinite, shooting 3s ease-in-out infinite;
+        z-index: -9;
+    }
+    .shooting-star:nth-of-type(1) { top: calc(50% - 200px); left: calc(50% - 250px); animation-delay: 4.8s; }
+    .shooting-star:nth-of-type(2) { top: calc(50% - 0px); left: calc(50% - 50px); animation-delay: 8.2s; }
+    .shooting-star:nth-of-type(3) { top: calc(50% - -150px); left: calc(50% - 50px); animation-delay: 2.2s; }
+    .shooting-star:nth-of-type(4) { top: calc(50% - -50px); left: calc(50% - 150px); animation-delay: 0.2s; }
+
+    @keyframes tail {
+      0% { width: 0; }
+      30% { width: 100px; }
+      100% { width: 0; }
+    }
+    @keyframes shooting {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(400px); }
+    }
+}
