@@ -32,7 +32,7 @@ import { UserNav } from './_components/user-nav';
 import type { NestedNavItem, User as UserType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 
 function Header() {
@@ -52,12 +52,13 @@ function Header() {
 
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <SidebarTrigger className="md:hidden" />
-        <div className="flex items-center gap-4 ml-auto">
-            <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/add-funds">شحن الرصيد</Link>
-            </Button>
+        <div className="flex items-center gap-2 font-body ml-auto">
+            <div className='text-left'>
+                <p className='text-sm font-bold'>{(user?.displayName || 'مستخدم')}</p>
+                <p className='text-xs text-muted-foreground'>الرصيد: <span className='text-primary font-bold'>${(userData?.balance || 0).toFixed(2)}</span></p>
+            </div>
             <UserNav user={appUser} isAdmin={user?.email === 'hagaaty@gmail.com'} />
         </div>
     </header>
@@ -93,28 +94,19 @@ function NavItems() {
             </SidebarMenuSubContent>
           </SidebarMenuSub>
         ) : (
-          isCollapsible ? (
+           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                 <Link href={item.href || '#'}>
-                    <SidebarMenuButton>
+                <SidebarMenuButton asChild>
+                    <Link href={item.href || '#'}>
                         {item.icon && <item.icon />}
-                        <span className="sr-only">{item.label}</span>
-                    </SidebarMenuButton>
-                </Link>
+                        <span>{item.label}</span>
+                    </Link>
+                </SidebarMenuButton>
               </TooltipTrigger>
-              <TooltipContent side="left" align="center" className='font-body'>
-                {item.label}
-              </TooltipContent>
+               {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
             </Tooltip>
-          ) : (
-            <SidebarMenuButton asChild>
-              <Link href={item.href || '#'}>
-                {item.icon && <item.icon />}
-                <span>{item.label}</span>
-              </Link>
-            </SidebarMenuButton>
-          )
+           </TooltipProvider>
         )}
       </SidebarMenuItem>
     ));
@@ -154,11 +146,8 @@ export default function DashboardLayout({
             <div className="flex-1">
                 <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
                     <Skeleton className="h-8 w-8 md:hidden" />
-                    <div className="relative flex-1 md:grow-0">
-                       <Skeleton className="h-9 w-full md:w-[200px] lg:w-[320px]" />
-                    </div>
-                    <div className="flex items-center gap-2 mr-auto">
-                        <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex items-center gap-2 ml-auto">
+                        <Skeleton className="h-10 w-24" />
                         <Skeleton className="h-10 w-10 rounded-full" />
                     </div>
                 </header>
@@ -191,10 +180,4 @@ export default function DashboardLayout({
       </Sidebar>
       <SidebarInset className="bg-transparent">
         <Header />
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-}
+        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-
