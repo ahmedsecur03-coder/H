@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Settings, User as UserIcon, LogOut } from 'lucide-react';
+import { Settings, User as UserIcon, LogOut, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -30,8 +30,6 @@ type UserNavProps = {
 export function UserNav({ user, isAdmin = false }: UserNavProps) {
   const auth = useAuth();
   const router = useRouter();
-  const profilePath = isAdmin ? '/admin/profile' : '/dashboard/profile';
-  const settingsPath = isAdmin ? '/admin/settings' : '/dashboard/settings';
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -49,31 +47,32 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 font-body" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>حسابي</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href={profilePath}>
+            <Link href="/dashboard/profile">
               <UserIcon className="ml-2 h-4 w-4" />
               <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={settingsPath}>
+            <Link href="/dashboard/settings">
               <Settings className="ml-2 h-4 w-4" />
               <span>الإعدادات</span>
             </Link>
           </DropdownMenuItem>
+           {isAdmin && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin/dashboard">
+                <Shield className="ml-2 h-4 w-4" />
+                <span>لوحة تحكم المسؤول</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive focus:bg-destructive/10">
             <LogOut className="ml-2 h-4 w-4" />
             <span>تسجيل الخروج</span>
         </DropdownMenuItem>

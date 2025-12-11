@@ -35,7 +35,7 @@ import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 
-function Header() {
+function Header({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
    const appUser = {
       name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
@@ -47,7 +47,7 @@ function Header() {
     <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <SidebarTrigger className="md:hidden" />
         <div className="flex items-center gap-2 font-body ml-auto">
-            <UserNav user={appUser} isAdmin={user?.email === 'hagaaty@gmail.com'} />
+            <UserNav user={appUser} isAdmin={isAdmin} />
         </div>
     </header>
   );
@@ -146,6 +146,8 @@ export default function DashboardLayout({
         </div>
     );
   }
+  
+  const isAdmin = user.email === 'hagaaty@gmail.com';
 
   return (
     <SidebarProvider>
@@ -153,7 +155,7 @@ export default function DashboardLayout({
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
-             {user.email === 'hagaaty@gmail.com' && (
+             {isAdmin && (
                 <Button variant="outline" size="sm" className='bg-card' asChild>
                     <Link href="/admin/dashboard">الانتقال للوحة المسؤول</Link>
                 </Button>
@@ -167,7 +169,7 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-transparent">
-        <Header />
+        <Header isAdmin={isAdmin} />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
         </main>
