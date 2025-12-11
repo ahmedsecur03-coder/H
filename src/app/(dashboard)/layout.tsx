@@ -30,6 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
 import type { NestedNavItem, User as UserType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 
 function Header() {
   const { user } = useUser();
@@ -205,3 +206,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    

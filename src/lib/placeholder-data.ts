@@ -23,7 +23,6 @@ import {
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
   {
-    href: '/dashboard/orders',
     label: 'الطلبات',
     icon: ShoppingCart,
     children: [
@@ -60,3 +59,5 @@ export const performanceData = [
     { date: '2024-05-06', orders: 14, spend: 70, revenue: 105, users: 7 },
     { date: '2024-05-07', orders: 20, spend: 110, revenue: 165, users: 12 },
 ];
+
+    

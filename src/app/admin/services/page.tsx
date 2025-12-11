@@ -46,6 +46,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import React from 'react';
 
 function ServiceDialog({ service, onSave, children }: { service?: Service, onSave: (data: Omit<Service, 'id'>) => Promise<void>, children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
@@ -55,17 +56,27 @@ function ServiceDialog({ service, onSave, children }: { service?: Service, onSav
     const [min, setMin] = useState(service?.min.toString() || '');
     const [max, setMax] = useState(service?.max.toString() || '');
     const [isSaving, setIsSaving] = useState(false);
+    const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const priceValue = parseFloat(price);
+        const minValue = parseInt(min, 10);
+        const maxValue = parseInt(max, 10);
+
+        if (isNaN(priceValue) || isNaN(minValue) || isNaN(maxValue)) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال قيم رقمية صالحة للأسعار والحدود.' });
+            return;
+        }
+
         setIsSaving(true);
         try {
             await onSave({
                 platform,
                 category,
-                price: parseFloat(price),
-                min: parseInt(min, 10),
-                max: parseInt(max, 10),
+                price: priceValue,
+                min: minValue,
+                max: maxValue,
             });
             setOpen(false);
         } finally {
@@ -205,7 +216,7 @@ export default function AdminServicesPage() {
     }
     return filteredServices.map(service => (
       <TableRow key={service.id}>
-          <TableCell className="font-mono">{service.id.substring(0,8)}</TableCell>
+          <TableCell className="font-mono">{service.id}</TableCell>
           <TableCell className="font-medium">{service.category}</TableCell>
           <TableCell>{service.platform}</TableCell>
           <TableCell>${service.price.toFixed(4)}</TableCell>
@@ -298,3 +309,5 @@ export default function AdminServicesPage() {
     </div>
   );
 }
+
+    
