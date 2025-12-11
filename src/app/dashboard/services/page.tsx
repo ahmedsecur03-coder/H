@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PLATFORM_ICONS } from '@/lib/placeholder-data.tsx';
+import { PLATFORM_ICONS } from '@/lib/placeholder-data';
 
 
 function ServicesPageSkeleton() {
@@ -133,7 +133,7 @@ export default function ServicesPage() {
     <div className="space-y-6 pb-8">
         <div>
             <div className="flex items-center gap-3 mb-2">
-                 <PlatformIcon className="w-8 h-8 text-primary" />
+                 {PlatformIcon()}
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
                     خدمات {activePlatform}
                 </h1>
