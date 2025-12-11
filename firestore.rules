@@ -8,54 +8,73 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
+    
+    // Helper function to check if the user is an admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'hagaaty@gmail.com';
+    }
 
-    // Users can read their own profile, but cannot write to sensitive fields.
-    // Writes are handled by server-side logic (transactions).
+    // Users can read their own profile. Writes are more restricted.
     match /users/{userId} {
       allow read: if isOwner(userId);
       // Allow creation of own user document (during signup fallback)
       allow create: if isOwner(userId); 
-      // Allow updates only to non-sensitive fields
-      allow update: if isOwner(userId) && !(request.resource.data.balance != resource.data.balance) && !(request.resource.data.adBalance != resource.data.adBalance) && !(request.resource.data.totalSpent != resource.data.totalSpent) && !(request.resource.data.rank != resource.data.rank) && !(request.resource.data.affiliateEarnings != resource.data.affiliateEarnings);
+      // Allow updates to non-sensitive fields by the user directly.
+      // Sensitive fields like balance, adBalance, totalSpent, rank, and affiliateEarnings
+      // can only be updated via transactions (which don't have a direct request.resource in the same way).
+      // The logic within the transaction is the source of truth, and this rule prevents direct user manipulation.
+      allow update: if isOwner(userId) && 
+                      !(request.resource.data.balance != resource.data.balance) && 
+                      !(request.resource.data.adBalance != resource.data.adBalance) &&
+                      !(request.resource.data.totalSpent != resource.data.totalSpent) &&
+                      !(request.resource.data.rank != resource.data.rank) &&
+                      !(request.resource.data.affiliateEarnings != resource.data.affiliateEarnings) &&
+                      !(request.resource.data.referralsCount != resource.data.referralsCount) &&
+                      !(request.resource.data.affiliateLevel != resource.data.affiliateLevel);
     }
 
     // Services are publicly readable, but only admins can write.
-    // For now, we disallow all writes until admin logic is fully implemented.
     match /services/{serviceId} {
       allow read: if request.auth != null;
-      allow write: if false; // To be replaced with admin check
+      allow write: if isAdmin();
     }
 
     // Users can manage their own orders.
     match /users/{userId}/orders/{orderId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId);
     }
 
     // Users can manage their own campaigns.
     match /users/{userId}/campaigns/{campaignId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId);
     }
 
     // Users can manage their own deposits.
     match /users/{userId}/deposits/{depositId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId);
     }
 
     // Users can read their own affiliate transactions. Writes are server-side.
     match /users/{userId}/affiliateTransactions/{transactionId} {
-      allow read: if isOwner(userId);
-      allow write: if false; // Transactions are created by the system
+      allow read, create: if isOwner(userId);
+      allow update, delete: if false; // Transactions are immutable
     }
 
     // Users can manage their own support tickets.
     match /users/{userId}/tickets/{ticketId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, create, update, delete: if isOwner(userId);
     }
 
-    // Blog posts are publicly readable. Writes are restricted.
+    // Blog posts are publicly readable. Writes are restricted to admins.
     match /blogPosts/{blogPostId} {
       allow read: if request.auth != null;
-      allow write: if false; // To be replaced with admin check
+      allow write: if isAdmin();
+    }
+    
+    // Admins can manage global settings
+    match /settings/global {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
     }
     
     // Fallback rule to deny all other access
