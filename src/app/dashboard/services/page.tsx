@@ -25,7 +25,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Search, DollarSign, ListFilter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useRouter } from 'next/navigation';
 
 function ServicesPageSkeleton() {
@@ -142,9 +141,9 @@ export default function ServicesPage() {
               <TableBody>
                 {filteredServices.map((service) => (
                   <TableRow key={service.id}>
-                    <TableCell className="font-mono text-xs">{service.id.substring(0,6)}</TableCell>
+                    <TableCell className="font-mono text-xs">{service.id}</TableCell>
                     <TableCell className="font-medium">{`${service.platform} - ${service.category}`}</TableCell>
-                    <TableCell className="text-center font-medium text-primary">${service.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-center font-medium text-primary">${service.price.toFixed(4)}</TableCell>
                     <TableCell className="text-center">{service.min.toLocaleString()}</TableCell>
                     <TableCell className="text-center">{service.max.toLocaleString()}</TableCell>
                   </TableRow>
