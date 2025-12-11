@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where, Query } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -22,8 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Flame, ShieldCheck } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -31,9 +30,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import React from 'react';
 
+const PLATFORMS = [
+  'Instagram',
+  'TikTok',
+  'Facebook',
+  'YouTube',
+  'Telegram',
+  'X (Twitter)',
+  'Google',
+];
 
 function ServicesPageSkeleton() {
     return (
@@ -67,44 +76,27 @@ function ServicesPageSkeleton() {
 
 export default function ServicesPage() {
   const firestore = useFirestore();
-  const { toast } = useToast();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('default');
-  
-  const platform = searchParams.get('platform');
-  const [activePlatform, setActivePlatform] = useState(platform || 'Instagram');
-
-   useEffect(() => {
-    if (platform) {
-      setActivePlatform(platform);
-    }
-  }, [platform]);
+  const [activePlatform, setActivePlatform] = useState('Instagram');
 
   const servicesQuery = useMemoFirebase(
-    () => {
-        if (!firestore) return null;
-        let q: Query = query(collection(firestore, 'services'));
-        if (activePlatform !== 'الكل') {
-             q = query(q, where('platform', '==', activePlatform));
-        }
-        return q;
-    },
-    [firestore, activePlatform]
+    () => firestore ? query(collection(firestore, 'services')) : null,
+    [firestore]
   );
   
-  const { data: services, isLoading } = useCollection<Service>(servicesQuery);
+  const { data: allServices, isLoading } = useCollection<Service>(servicesQuery);
 
   const filteredAndSortedServices = useMemo(() => {
-    if (!services) return [];
+    if (!allServices) return [];
     
-    let filtered = services;
+    let filtered = allServices.filter(service => service.platform === activePlatform);
 
     if (searchTerm) {
       filtered = filtered.filter((service) => {
-        const serviceName = `${service.id} ${service.category} ${service.platform}`.toLowerCase();
+        const serviceName = `${service.id} ${service.category}`.toLowerCase();
         return serviceName.includes(searchTerm.toLowerCase());
       });
     }
@@ -115,25 +107,28 @@ export default function ServicesPage() {
     
     return filtered;
 
-  }, [services, searchTerm, sortOrder]);
+  }, [allServices, searchTerm, sortOrder, activePlatform]);
 
 
   const handleOrderNow = (serviceId: string) => {
     const orderText = `${serviceId}|ضع الرابط هنا|1000`;
     router.push(`/dashboard/mass-order?prefill=${encodeURIComponent(orderText)}`);
   };
+  
+  const handlePlatformChange = useCallback((platform: string) => {
+    setActivePlatform(platform);
+    setSearchTerm('');
+    setSortOrder('default');
+  }, []);
 
-  const PlatformIcon = PLATFORM_ICONS[activePlatform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
 
-  if (isLoading && !services) {
-    return <ServicesPageSkeleton />;
-  }
+  const ActivePlatformIcon = PLATFORM_ICONS[activePlatform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
 
   return (
     <div className="space-y-6 pb-8">
         <div>
             <div className="flex items-center gap-3 mb-2">
-                 {PlatformIcon && <PlatformIcon className="w-8 h-8 text-primary" />}
+                 {ActivePlatformIcon && <ActivePlatformIcon className="w-8 h-8 text-primary" />}
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
                     خدمات {activePlatform}
                 </h1>
@@ -142,6 +137,14 @@ export default function ServicesPage() {
                 كل ما تحتاجه للنمو على {activePlatform}. تصفح القائمة أدناه للعثور على الخدمة المثالية لك.
             </p>
         </div>
+        
+        <Tabs value={activePlatform} onValueChange={handlePlatformChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+                {PLATFORMS.map(p => (
+                    <TabsTrigger key={p} value={p}>{p}</TabsTrigger>
+                ))}
+            </TabsList>
+        </Tabs>
 
         <Card>
             <CardHeader>
@@ -173,8 +176,8 @@ export default function ServicesPage() {
                     <TableBody>
                         {isLoading ? (
                             Array.from({length: 5}).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell><Skeleton className="h-10 w-full" /></TableCell>
+                                <TableRow key={i} className="flex-wrap">
+                                    <TableCell colSpan={4}><Skeleton className="h-10 w-full" /></TableCell>
                                 </TableRow>
                             ))
                         ) : filteredAndSortedServices.length > 0 ? (
@@ -182,7 +185,7 @@ export default function ServicesPage() {
                                 <TableRow key={service.id} className="flex-wrap">
                                     <TableCell className="flex-1">
                                         <div className="font-medium flex items-center gap-2">
-                                             <span>{service.platform} - {service.category}</span>
+                                             <span>{service.category}</span>
                                              {service.guarantee && <ShieldCheck className="h-4 w-4 text-green-400" />}
                                              {service.speed === 'فوري' && <Flame className="h-4 w-4 text-orange-400" />}
                                         </div>
@@ -199,7 +202,7 @@ export default function ServicesPage() {
                             ))
                         ) : (
                              <TableRow>
-                                <TableCell className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                                     لا توجد خدمات تطابق بحثك في هذه الفئة.
                                 </TableCell>
                             </TableRow>
