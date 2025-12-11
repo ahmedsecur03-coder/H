@@ -107,7 +107,11 @@ export default function ProfilePage() {
     if(isLoading) {
         return (
              <div className="space-y-6 pb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div>
+                    <Skeleton className="h-8 w-1/4" />
+                    <Skeleton className="h-5 w-1/2 mt-2" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-1">
                         <Skeleton className="h-48 w-full" />
                     </div>
@@ -140,7 +144,7 @@ export default function ProfilePage() {
                             <AvatarImage src={profileForm.watch('avatarUrl') || user.photoURL || undefined} alt={userData.name} />
                             <AvatarFallback><UserIcon size={40} /></AvatarFallback>
                         </Avatar>
-                        <h2 className="text-xl font-bold">{userData.name}</h2>
+                        <h2 className="text-xl font-bold">{profileForm.watch('name')}</h2>
                         <p className="text-muted-foreground">{userData.email}</p>
                         <Badge variant="secondary" className="mt-2">{userData.rank}</Badge>
                     </CardContent>
