@@ -102,19 +102,6 @@ body {
 }
 
 
-/* Helper function to generate random stars */
-@function random_stars($n, $max-size) {
-  $value: '#{random(2000)}px #{random(2000)}px hsl(0, 0%, 100%)';
-  @for $i from 2 through $n {
-    $size: random($max-size) * 0.1;
-    $color-saturation: 40% + random(60);
-    $color-hue: 200 + random(60);
-    $value: '#{$value} , #{random(2000)}px #{random(2000)}px hsla(#{$color-hue}, #{$color-saturation}, 90%, #{random(100) * 0.01})';
-  }
-  @return unquote($value);
-}
-
-
 @layer utilities {
     @keyframes animated-gradient-text {
         0% { background-position: 0% 50%; }
@@ -129,65 +116,37 @@ body {
         -webkit-text-fill-color: transparent;
     }
 
-    /* Starry background using pure CSS box-shadows */
-    .stars-small, .stars-medium, .stars-large {
+    /* Starry background */
+    @keyframes move-background {
+      from { transform: translate(0, 0); }
+      to { transform: translate(10000px, 0); }
+    }
+    @keyframes move-background2 {
+      from { transform: translate(0, 0); }
+      to { transform: translate(-10000px, 0); }
+    }
+
+    #stars, #stars2, #stars3 {
       position: absolute;
       top: 0;
       left: 0;
-      width: 1px;
-      height: 1px;
-      background: transparent;
+      width: 100%;
+      height: 100%;
       z-index: -10;
     }
-
-    .stars-small {
-      animation: animStar 120s linear infinite;
-      box-shadow: 
-        /* A large number of small, faint stars */
-        1839px 749px hsl(0, 0%, 100%), 124px 1746px hsl(0, 0%, 100%), 1435px 1450px hsl(0, 0%, 100%),
-        805px 1530px hsl(0, 0%, 100%), 409px 1308px hsl(0, 0%, 100%), 129px 1083px hsl(0, 0%, 100%),
-        1098px 1238px hsl(0, 0%, 100%), 1054px 147px hsl(0, 0%, 100%), 1095px 1845px hsl(0, 0%, 100%),
-        108px 1368px hsl(0, 0%, 100%), 1459px 1205px hsl(0, 0%, 100%), 138px 1032px hsl(0, 0%, 100%),
-        1108px 634px hsl(0, 0%, 100%), 1334px 103px hsl(0, 0%, 100%), 1445px 338px hsl(0, 0%, 100%),
-        238px 1230px hsl(0, 0%, 100%), 1233px 1842px hsl(0, 0%, 100%), 1913px 1198px hsl(0, 0%, 100%),
-        1536px 1833px hsl(0, 0%, 100%), 127px 1152px hsl(0, 0%, 100%), 1402px 260px hsl(0, 0%, 100%),
-        1708px 903px hsl(0, 0%, 100%), 592px 282px hsl(0, 0%, 100%), 1768px 1658px hsl(0, 0%, 100%),
-        632px 1492px hsl(0, 0%, 100%), 132px 1970px hsl(0, 0%, 100%), 1990px 1344px hsl(0, 0%, 100%);
+    #stars {
+      background: transparent url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjEwMHB4IiBoZWlnaHQ9IjEwMHB4IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMTAwIDEwMCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+ICA8Y2lyY2xlIGZpbGw9IiNGRkYiIGN4PSIyNy4zIiBjeT0iMjUuMyIgcj0iMS4yNSIvPjwvZXZnPg==') repeat;
+      animation: move-background 300s linear infinite;
     }
-
-    .stars-medium {
-      animation: animStar 80s linear infinite;
-      box-shadow: 
-        /* A smaller number of medium-sized, brighter stars */
-        279px 1833px 2px hsla(240, 80%, 95%, 0.8), 1260px 101px 2px hsla(220, 80%, 95%, 0.8),
-        1960px 1091px 2px hsla(230, 80%, 95%, 0.8), 284px 1395px 2px hsla(210, 80%, 95%, 0.8),
-        1432px 140px 2px hsla(250, 80%, 95%, 0.8), 557px 1233px 2px hsla(240, 80%, 95%, 0.8),
-        1558px 1901px 2px hsla(220, 80%, 95%, 0.8), 260px 1391px 2px hsla(230, 80%, 95%, 0.8),
-        1884px 395px 2px hsla(210, 80%, 95%, 0.8), 432px 1440px 2px hsla(250, 80%, 95%, 0.8);
+    #stars2 {
+      background: transparent url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8yIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjI1MHB4IiBoZWlnaHQ9IjI1MHB4IiB2aWV3Qm94PSIwIDAgMjUwIDI1MCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMjUwIDI1MCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+ICA8Y2lyY2xlIGZpbGw9IiNGRkYiIGN4PSI0NC43IiBjeT0iNDUuNyIgcj0iMi41Ii8+PC9zdmc+') repeat;
+      animation: move-background2 200s linear infinite;
+    }
+    #stars3 {
+      background: transparent url('data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8zIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIgd2lkdGg9IjM1MHB4IiBoZWlnaHQ9IjM1MHB4IiB2aWV3Qm94PSIwIDAgMzUwIDM1MCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMzUwIDM1MCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+ICA8Y2lyY2xlIGZpbGw9IiNGRkYiIGN4PSIxNzUiIGN5PSIxNzUiIHI9IjMuNSIvPjwvc3ZnPg==') repeat;
+      animation: move-background 100s linear infinite;
     }
     
-    .stars-large {
-      animation: animStar 40s linear infinite;
-      box-shadow: 
-        /* A few large, very bright stars */
-        669px 929px 3px hsla(210, 100%, 98%, 1), 1916px 1421px 3px hsla(200, 100%, 98%, 1),
-        999px 129px 3px hsla(210, 100%, 98%, 1), 16px 421px 3px hsla(200, 100%, 98%, 1);
-    }
-    
-    @keyframes animStar {
-      from { transform: translateX(0px); }
-      to { transform: translateX(-2000px); }
-    }
-
-    /* Aurora/Nebula Background */
-    .aurora-background {
-      z-index: -10;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% 40%, hsla(210, 50%, 8%, 0.4), transparent),
-        radial-gradient(ellipse 60% 40% at 80% 60%, hsla(280, 40%, 10%, 0.3), transparent),
-        radial-gradient(circle at 50% 50%, hsl(var(--background)), hsl(var(--background)) 80%);
-    }
-
     /* Shooting Stars */
     .shooting-star {
         position: absolute;
@@ -212,4 +171,99 @@ body {
       0% { transform: translateX(0); }
       100% { transform: translateX(400px); }
     }
+    
+    /* Solar System */
+    .solar-system {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -8;
+    }
+    
+    #sun {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffd700, #ff8c00, #ff4500);
+      box-shadow: 0 0 60px #ff8c00, 0 0 90px #ff4500;
+      transform: translate(-50%, -50%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 60px #ff8c00, 0 0 90px #ff4500; }
+      50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 70px #ff8c00, 0 0 100px #ff4500; }
+    }
+
+    #earth-orbit, #mars-orbit, #moon-orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border: 1px solid rgba(100, 149, 237, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #earth-orbit {
+      width: 300px;
+      height: 300px;
+      animation: orbit 20s linear infinite;
+    }
+
+    #mars-orbit {
+      width: 450px;
+      height: 450px;
+      animation: orbit 35s linear infinite;
+    }
+
+    #earth, #mars, #moon {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    #earth {
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #6b93d6, #446ba3);
+      top: -10px;
+      left: 140px;
+      box-shadow: 0 0 10px #6b93d6;
+    }
+    
+    #mars {
+      width: 16px;
+      height: 16px;
+      background: radial-gradient(circle, #e57373, #c62828);
+      top: -8px;
+      left: 217px;
+      box-shadow: 0 0 8px #e57373;
+    }
+
+    #moon-orbit {
+      width: 50px;
+      height: 50px;
+      top: 50%;
+      left: 50%;
+      border-style: dotted;
+      border-color: rgba(255, 255, 255, 0.2);
+      animation: orbit 5s linear infinite;
+    }
+    
+    #moon {
+      width: 6px;
+      height: 6px;
+      background: #f5f5f5;
+      top: -3px;
+      left: 22px;
+      box-shadow: 0 0 5px #f5f5f5;
+    }
+
+    @keyframes orbit {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
 }
+
+    
