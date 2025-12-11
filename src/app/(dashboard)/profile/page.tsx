@@ -66,22 +66,20 @@ export default function ProfilePage() {
         
         const updateData = { name: values.name, avatarUrl: values.avatarUrl };
 
-        updateDoc(userDocRef, updateData)
-            .then(async () => {
-                await updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl });
-                toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                profileForm.formState.isSubmitting = false;
+        try {
+            await updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl });
+            await updateDoc(userDocRef, updateData);
+            toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
+        } catch(serverError: any) {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData
             });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+             profileForm.formState.isSubmitting = false;
+        }
     };
     
     const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
