@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import {
   Bell,
+  ChevronDown
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -149,6 +150,7 @@ export default function DashboardLayout({
                 {item.icon && <item.icon />}
                 <span>{item.label}</span>
               </div>
+               <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
             </SidebarMenuButton>
             <SidebarMenuSubContent>
               {item.children.map((child) => (

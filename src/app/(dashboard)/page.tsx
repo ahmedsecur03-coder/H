@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -45,6 +44,7 @@ import {
   Megaphone,
   BookOpen,
   ArrowLeft,
+  Check,
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -103,56 +103,31 @@ function getRankForSpend(spend: number) {
   return currentRank;
 }
 
-const servicePlatforms = [
-    { name: "انستغرام", icon: Users },
-    { name: "تيك توك", icon: Users },
-    { name: "فيسبوك", icon: Users },
-    { name: "يوتيوب", icon: Users },
-    { name: "تليجرام", icon: Users },
-    { name: "إكس (تويتر)", icon: Users },
-    { name: "سناب شات", icon: Users },
-    { name: "كواي", icon: Users },
-    { name: "VK", icon: Users },
-    { name: "Kick", icon: Users },
-    { name: "كلوب هاوس", icon: Users },
-    { name: "زيارات مواقع", icon: Users },
-];
-
 
 function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>();
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
   const [link, setLink] = useState('');
   const [quantity, setQuantity] = useState('');
   const [cost, setCost] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [open, setOpen] = useState(false)
+  const [openServiceSelector, setOpenServiceSelector] = useState(false)
 
   // Queries for services
   const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
   const { data: allServices, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
-  const { categories, servicesForCategory, selectedService } = useMemo(() => {
-    if (!allServices) return { categories: [], servicesForCategory: [], selectedService: null };
-    
-    const platformServices = allServices.filter(s => s.platform === selectedPlatform);
-    const categories = selectedPlatform ? [...new Set(platformServices.map(s => s.category))] : [];
-    
-    const servicesForCategory = selectedCategory ? platformServices.filter(s => s.category === selectedCategory) : [];
-
-    const selectedService = selectedServiceId ? allServices.find(s => s.id === selectedServiceId) : null;
-    return { categories, servicesForCategory, selectedService };
-  }, [allServices, selectedPlatform, selectedCategory, selectedServiceId]);
+  const selectedService = useMemo(() => {
+    return selectedServiceId ? allServices?.find(s => s.id === selectedServiceId) : null;
+  }, [allServices, selectedServiceId]);
   
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
   const discountPercentage = rank.discount / 100;
 
   // Calculate cost
-  useMemo(() => {
+  useEffect(() => {
     if (selectedService && quantity) {
       const numQuantity = parseInt(quantity, 10);
       if (!isNaN(numQuantity)) {
@@ -271,8 +246,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
         }
 
         // Reset form
-        setSelectedPlatform(undefined);
-        setSelectedCategory(undefined);
         setSelectedServiceId(undefined);
         setLink('');
         setQuantity('');
@@ -290,79 +263,56 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">تقديم طلب جديد</CardTitle>
-        <CardDescription>اختر المنصة، ثم الفئة، ثم الخدمة لبدء طلبك.</CardDescription>
+        <CardDescription>ابحث عن الخدمة المطلوبة وقدم طلبك مباشرة.</CardDescription>
       </CardHeader>
       <CardContent>
         {servicesLoading ? <QuickOrderFormSkeleton /> : (
             <form onSubmit={handleSubmit} className="grid gap-4">
               
               <div className="grid gap-2">
-                <Label>المنصة</Label>
-                <div className='flex flex-wrap gap-2'>
-                    {servicePlatforms.map(p => (
-                        <Button key={p.name} type="button" variant={selectedPlatform === p.name ? "default" : "outline"} className="flex-grow" onClick={() => {setSelectedPlatform(p.name); setSelectedCategory(undefined); setSelectedServiceId(undefined);}}>
-                            {/* <p.icon className="ml-2" /> */}
-                            {p.name}
-                        </Button>
-                    ))}
-                </div>
+                 <Label>الخدمة</Label>
+                  <Popover open={openServiceSelector} onOpenChange={setOpenServiceSelector}>
+                      <PopoverTrigger asChild>
+                          <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openServiceSelector}
+                              className="w-full justify-between"
+                              disabled={servicesLoading}
+                          >
+                              {selectedService
+                                  ? `${selectedService.platform} - ${selectedService.category}`
+                                  : "ابحث عن خدمة بالاسم أو الرقم..."}
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                              <CommandInput placeholder="ابحث عن خدمة..." />
+                              <CommandList>
+                                  <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
+                                  <CommandGroup>
+                                      {allServices?.map((s) => (
+                                          <CommandItem
+                                              key={s.id}
+                                              value={`${s.id} ${s.platform} ${s.category}`}
+                                              onSelect={() => {
+                                                  setSelectedServiceId(s.id)
+                                                  setOpenServiceSelector(false)
+                                              }}
+                                          >
+                                            <Check className={cn("ml-2 h-4 w-4", selectedServiceId === s.id ? "opacity-100" : "opacity-0")}/>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{s.platform} - {s.category}</span>
+                                                <span className="text-xs text-muted-foreground">ID: {s.id} | ${s.price}/1k</span>
+                                            </div>
+                                          </CommandItem>
+                                      ))}
+                                  </CommandGroup>
+                              </CommandList>
+                          </Command>
+                      </PopoverContent>
+                  </Popover>
               </div>
-
-              {selectedPlatform && (
-                <div className="grid gap-2">
-                    <Label htmlFor="category">الفئة</Label>
-                    <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory} disabled={!selectedPlatform || categories.length === 0}>
-                    <SelectTrigger id="category"><SelectValue placeholder={categories.length > 0 ? "اختر فئة" : "لا توجد فئات لهذه المنصة"} /></SelectTrigger>
-                    <SelectContent>
-                        {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                    </SelectContent>
-                    </Select>
-                </div>
-              )}
-              
-              {selectedCategory && (
-                <div className="grid gap-2">
-                    <Label htmlFor="service">الخدمة</Label>
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={open}
-                                className="w-full justify-between"
-                                disabled={!selectedCategory || servicesForCategory.length === 0}
-                            >
-                                {selectedService
-                                    ? `${selectedService.id} - ${selectedService.category}`
-                                    : "اختر خدمة..."}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                            <Command>
-                                <CommandInput placeholder="ابحث عن خدمة..." />
-                                <CommandList>
-                                    <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
-                                    <CommandGroup>
-                                        {servicesForCategory.map((s) => (
-                                            <CommandItem
-                                                key={s.id}
-                                                value={s.id}
-                                                onSelect={(currentValue) => {
-                                                    setSelectedServiceId(currentValue === selectedServiceId ? "" : currentValue)
-                                                    setOpen(false)
-                                                }}
-                                            >
-                                                {s.id} - {s.category} (${s.price}/1k)
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
-                </div>
-              )}
-              
               
               {selectedServiceId && (
                 <>
