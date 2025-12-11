@@ -7,7 +7,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -33,9 +32,6 @@ import {
   Diamond,
   Check,
   ShoppingCart,
-  Megaphone,
-  Briefcase,
-  Palette
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
 import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
@@ -358,29 +354,6 @@ function QuickOrderFormSkeleton() {
     );
 }
 
-const advancedServices = [
-  {
-    title: 'الحملات الإعلانية',
-    description: 'أدر حملاتك على جوجل، فيسبوك، وتيك توك.',
-    icon: Megaphone,
-    href: '/dashboard/campaigns',
-  },
-  {
-    title: 'حسابات إعلانية (وكالة)',
-    description: 'حسابات موثوقة بحدود إنفاق عالية واستقرار.',
-    icon: Briefcase,
-    href: '/dashboard/agency-accounts',
-  },
-  {
-    title: 'تصميم المواقع',
-    description: 'احصل على موقع احترافي لعلامتك التجارية (قريباً).',
-    icon: Palette,
-    href: '#',
-    disabled: true,
-  },
-];
-
-
 export default function DashboardPage() {
   const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
@@ -449,27 +422,6 @@ export default function DashboardPage() {
                 <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
             </div>
         
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">الخدمات المتقدمة</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {advancedServices.map((service) => (
-                        <Link key={service.title} href={service.disabled ? '#' : service.href} className={cn("block", service.disabled && "pointer-events-none")}>
-                            <Card className={cn("h-full hover:bg-muted/50 transition-colors", service.disabled && "opacity-50")}>
-                                <CardHeader className="flex flex-col items-center justify-center text-center p-4">
-                                     <div className="bg-muted rounded-full p-3 mb-2">
-                                        <service.icon className="h-6 w-6 text-primary" />
-                                     </div>
-                                    <h3 className="font-semibold text-sm">{service.title}</h3>
-                                    <p className="text-xs text-muted-foreground">{service.description}</p>
-                                </CardHeader>
-                            </Card>
-                        </Link>
-                    ))}
-                </CardContent>
-            </Card>
-
             <QuickOrderForm user={authUser} userData={userData} />
 
             <Card>
@@ -516,12 +468,22 @@ export default function DashboardPage() {
                     <CardDescription>الرصيد الأساسي</CardDescription>
                     <CardTitle className="text-3xl">${(userData?.balance ?? 0).toFixed(2)}</CardTitle>
                 </CardHeader>
+                 <CardContent>
+                    <Button size="sm" className="w-full" asChild>
+                        <Link href="/dashboard/add-funds">شحن الرصيد</Link>
+                    </Button>
+                </CardContent>
             </Card>
              <Card>
                 <CardHeader className="pb-2">
                     <CardDescription>الرصيد الإعلاني</CardDescription>
                     <CardTitle className="text-3xl">${(userData?.adBalance ?? 0).toFixed(2)}</CardTitle>
                 </CardHeader>
+                  <CardContent>
+                    <Button size="sm" variant="outline" className="w-full" asChild>
+                        <Link href="/dashboard/add-funds">تحويل رصيد</Link>
+                    </Button>
+                </CardContent>
             </Card>
              <Card>
                 <CardHeader className="pb-2">
@@ -568,3 +530,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
