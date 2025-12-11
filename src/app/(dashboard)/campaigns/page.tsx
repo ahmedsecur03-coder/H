@@ -36,7 +36,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543 1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543 1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -132,7 +132,7 @@ function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
     );
 }
 
-function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: UserType, user: any, onCampaignCreated: () => void }) {
+function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { userData: UserType, user: any, onCampaignCreated: () => void, children: React.ReactNode }) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
@@ -187,7 +187,8 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                     ctr: 0,
                     cpc: 0,
                 };
-                const newCampaignDoc = doc(campaignColRef);
+                // Firestore automatically generates an ID when using addDoc in a transaction context
+                const newCampaignDoc = doc(campaignColRef); 
                 transaction.set(newCampaignDoc, newCampaignData);
             });
 
@@ -206,10 +207,7 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="w-full">
-                    <PlusCircle className="ml-2 h-4 w-4" />
-                    إنشاء حملة إعلانية جديدة
-                </Button>
+                {children}
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
@@ -270,16 +268,18 @@ function CampaignsSkeleton() {
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+                <Skeleton className="h-28" />
+                 <Skeleton className="h-28" />
+                 <Skeleton className="h-28" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                    <Skeleton className="h-64" />
-                </div>
-                <div className="lg:col-span-1">
-                    <Skeleton className="h-48" />
-                </div>
-            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-40 w-full" />
+                </CardContent>
+            </Card>
         </div>
     );
 }
@@ -325,23 +325,13 @@ export default function CampaignsPage() {
             </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-             {platforms.map(platform => (
-                 <NewCampaignDialog userData={userData} user={authUser} onCampaignCreated={forceCollectionUpdate} key={platform.name}>
-                     <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-                         <CardHeader className="flex flex-row items-center justify-between">
-                             <div className="space-y-1">
-                                <CardTitle>{platform.title}</CardTitle>
-                                <CardDescription>{platform.description}</CardDescription>
-                             </div>
-                             {platformIcons[platform.name]}
-                         </CardHeader>
-                     </Card>
-                 </NewCampaignDialog>
-             ))}
-        </div>
+        <NewCampaignDialog userData={userData} user={authUser} onCampaignCreated={forceCollectionUpdate}>
+            <Button className="w-full text-lg py-6">
+                <PlusCircle className="ml-2 h-5 w-5" />
+                إنشاء حملة إعلانية جديدة
+            </Button>
+        </NewCampaignDialog>
         
-
         <Card>
             <CardHeader>
                 <CardTitle>سجل الحملات الأخيرة</CardTitle>
