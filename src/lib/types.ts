@@ -31,7 +31,7 @@ export type Service = {
   description?: string;
   avgTime?: string;
   guarantee?: boolean;
-  speed?: string; // Changed to string to support values like '+40k/day'
+  speed?: string;
   dripFeed?: boolean;
   refill?: boolean;
   startTime?: string;
@@ -121,8 +121,3 @@ export type BlogPost = {
   authorId: string;
   publishDate: string;
 };
-
-    
-
-    
-

@@ -45,34 +45,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-
-const RANKS: { name: UserType['rank']; spend: number; discount: number, reward: number }[] = [
-  { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
-  { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 5 },
-  { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 20 },
-  { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50 },
-];
-
-const AFFILIATE_LEVELS = {
-    'برونزي': { commission: 10 },
-    'فضي': { commission: 12 },
-    'ذهبي': { commission: 15 },
-    'ماسي': { commission: 20 },
-};
-
-
-function getRankForSpend(spend: number) {
-  let currentRank = RANKS[0];
-  for (let i = RANKS.length - 1; i >= 0; i--) {
-    if (spend >= RANKS[i].spend) {
-      currentRank = RANKS[i];
-      break;
-    }
-  }
-  return currentRank;
-}
-
+import { getRankForSpend, RANKS, AFFILIATE_LEVELS } from '@/lib/service';
 
 function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
@@ -436,7 +409,7 @@ export default function DashboardPage() {
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
             <div className='mb-4'>
-                <h1 className='text-3xl font-bold'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
+                <h1 className='text-3xl font-bold font-headline'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
                 <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
             </div>
         
