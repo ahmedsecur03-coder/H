@@ -21,31 +21,38 @@ import {
   Briefcase,
   Palette,
   Shield,
-  History
+  History,
+  Home
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
 
+export const publicNavItems: NestedNavItem[] = [
+    { href: '/home', label: 'الرئيسية', icon: Home },
+    { href: '/services', label: 'الخدمات', icon: Package },
+    { href: '/blog', label: 'المدونة', icon: BookOpen },
+    { href: '/agency-accounts', label: 'حسابات وكالة', icon: Briefcase },
+];
+
 export const dashboardNavItems: NestedNavItem[] = [
-  { href: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
   { href: '/services', label: 'الخدمات', icon: Package },
-  { href: '/orders', label: 'الطلبات', icon: ShoppingCart },
-  { href: '/mass-order', label: 'طلب جماعي', icon: ListOrdered },
-  { href: '/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/affiliate', label: 'برنامج الإحالة', icon: Users },
+  { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
+  { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
+  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
+  { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   {
     label: 'الخدمات المتقدمة',
     icon: Rocket,
-    href: '#',
     children: [
-        { href: '/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
         { href: '/agency-accounts', label: 'حسابات إعلانية وكالة', icon: Briefcase },
     ]
   },
   { href: '/blog', label: 'المدونة', icon: BookOpen },
-  { href: '/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/api', label: 'API', icon: Code2 },
-  { href: '/system-status', label: 'حالة النظام', icon: HeartPulse },
+  { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
+  { href: '/dashboard/api', label: 'API', icon: Code2 },
+  { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
 ];
 
 export const adminNavItems: NestedNavItem[] = [
@@ -59,5 +66,5 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
     { href: '/admin/system-log', label: 'سجل النظام', icon: History },
-    { href: '/', label: 'لوحة المستخدم', icon: Shield },
+    { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];

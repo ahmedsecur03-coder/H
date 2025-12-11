@@ -67,13 +67,13 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/profile">
+            <Link href="/dashboard/profile">
               <UserIcon className="ml-2 h-4 w-4" />
               <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings">
+            <Link href="/dashboard/settings">
               <Settings className="ml-2 h-4 w-4" />
               <span>الإعدادات</span>
             </Link>

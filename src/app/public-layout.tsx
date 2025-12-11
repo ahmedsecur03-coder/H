@@ -9,9 +9,13 @@ import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
 import React from 'react';
 import CosmicBackground from '@/components/cosmic-background';
+import { publicNavItems } from '@/lib/placeholder-data';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 function Header() {
   const { user, isUserLoading } = useUser();
+  const pathname = usePathname();
 
    const appUser = user ? {
       name: user.displayName || `مستخدم`,
@@ -29,9 +33,18 @@ function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
         <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">الخدمات</Link>
-            <Link href="/blog" className="text-sm font-medium hover:text-primary transition-colors">المدونة</Link>
-            <Link href="/agency-accounts" className="text-sm font-medium hover:text-primary transition-colors">حسابات وكالة</Link>
+            {publicNavItems.map((item) => (
+               <Link 
+                key={item.label}
+                href={item.href} 
+                className={cn(
+                    "text-sm font-medium transition-colors hover:text-primary",
+                    pathname === item.href ? "text-primary" : "text-muted-foreground"
+                )}
+               >
+                 {item.label}
+               </Link>
+            ))}
         </nav>
         <div className="flex items-center gap-4">
           {isUserLoading ? (
@@ -74,18 +87,19 @@ export default function PublicLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
+       <CosmicBackground />
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 z-10">
         <div className="container mx-auto px-4 md:px-6 py-8">
             {children}
         </div>
       </main>
-      <footer className="bg-card border-t border-border">
+      <footer className="bg-card/50 border-t border-border z-10">
         <div className="container mx-auto py-6 px-4 md:px-6 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>
             <nav className="flex gap-4 sm:gap-6">
-                <Link href="#" className="text-sm hover:text-primary underline-offset-4">شروط الخدمة</Link>
-                <Link href="#" className="text-sm hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
             </nav>
         </div>
       </footer>
