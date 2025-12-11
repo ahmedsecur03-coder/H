@@ -24,6 +24,9 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      if (!auth) {
+        throw new Error("Authentication service is not available.");
+      }
       await sendPasswordResetEmail(auth, email);
       setSubmitted(true);
     } catch (error: any) {
