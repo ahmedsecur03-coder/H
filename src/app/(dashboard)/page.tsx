@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -46,13 +47,6 @@ import {
   ArrowLeft,
   Check,
 } from 'lucide-react';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartConfig,
-} from '@/components/ui/chart';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit, runTransaction, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -61,21 +55,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Link from 'next/link';
 
-
-const chartConfig = {
-  orders: {
-    label: 'الطلبات',
-    color: 'hsl(var(--primary))',
-  },
-  charge: {
-    label: 'الإنفاق',
-    color: 'hsl(var(--accent))',
-  },
-} satisfies ChartConfig;
 
 const RANKS: { name: UserType['rank']; spend: number; discount: number, reward: number }[] = [
   { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
@@ -113,11 +94,20 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const [quantity, setQuantity] = useState('');
   const [cost, setCost] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [openServiceSelector, setOpenServiceSelector] = useState(false)
+  const [activePlatform, setActivePlatform] = useState<string | null>(null);
 
-  // Queries for services
   const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
   const { data: allServices, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+
+  const platforms = useMemo(() => {
+    if (!allServices) return [];
+    return [...new Set(allServices.map(s => s.platform))];
+  }, [allServices]);
+
+  const filteredServices = useMemo(() => {
+    if (!allServices || !activePlatform) return [];
+    return allServices.filter(s => s.platform === activePlatform);
+  }, [allServices, activePlatform]);
 
   const selectedService = useMemo(() => {
     return selectedServiceId ? allServices?.find(s => s.id === selectedServiceId) : null;
@@ -126,7 +116,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
   const discountPercentage = rank.discount / 100;
 
-  // Calculate cost
   useEffect(() => {
     if (selectedService && quantity) {
       const numQuantity = parseInt(quantity, 10);
@@ -139,6 +128,11 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
       setCost(0);
     }
   }, [selectedService, quantity, discountPercentage]);
+  
+  useEffect(() => {
+    setSelectedServiceId(undefined);
+  }, [activePlatform]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,7 +228,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                         orderId: newOrderRef.id,
                         amount: commissionAmount,
                         transactionDate: new Date().toISOString(),
-                        level: 1 // Assuming direct referral for now
+                        level: 1 
                     });
                 }
             }
@@ -245,11 +239,11 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             setTimeout(() => toast(promotionToast), 1000);
         }
 
-        // Reset form
         setSelectedServiceId(undefined);
         setLink('');
         setQuantity('');
         setCost(0);
+        setActivePlatform(null);
     } catch (error: any) {
         console.error("Order submission error:", error);
         toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
@@ -263,59 +257,37 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">تقديم طلب جديد</CardTitle>
-        <CardDescription>ابحث عن الخدمة المطلوبة وقدم طلبك مباشرة.</CardDescription>
+        <CardDescription>اختر المنصة، ثم الفئة، ثم الخدمة لبدء طلبك.</CardDescription>
       </CardHeader>
       <CardContent>
         {servicesLoading ? <QuickOrderFormSkeleton /> : (
             <form onSubmit={handleSubmit} className="grid gap-4">
-              
-              <div className="grid gap-2">
-                 <Label>الخدمة</Label>
-                  <Popover open={openServiceSelector} onOpenChange={setOpenServiceSelector}>
-                      <PopoverTrigger asChild>
-                          <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={openServiceSelector}
-                              className="w-full justify-between"
-                              disabled={servicesLoading}
-                          >
-                              {selectedService
-                                  ? `${selectedService.platform} - ${selectedService.category}`
-                                  : "ابحث عن خدمة بالاسم أو الرقم..."}
-                          </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <Command>
-                              <CommandInput placeholder="ابحث عن خدمة..." />
-                              <CommandList>
-                                  <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
-                                  <CommandGroup>
-                                      {allServices?.map((s) => (
-                                          <CommandItem
-                                              key={s.id}
-                                              value={`${s.id} ${s.platform} ${s.category}`}
-                                              onSelect={() => {
-                                                  setSelectedServiceId(s.id)
-                                                  setOpenServiceSelector(false)
-                                              }}
-                                          >
-                                            <Check className={cn("ml-2 h-4 w-4", selectedServiceId === s.id ? "opacity-100" : "opacity-0")}/>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{s.platform} - {s.category}</span>
-                                                <span className="text-xs text-muted-foreground">ID: {s.id} | ${s.price}/1k</span>
-                                            </div>
-                                          </CommandItem>
-                                      ))}
-                                  </CommandGroup>
-                              </CommandList>
-                          </Command>
-                      </PopoverContent>
-                  </Popover>
+               <div className="grid gap-2">
+                <Label>المنصة</Label>
+                <div className="flex flex-wrap gap-2">
+                    {platforms.map(p => (
+                        <Button key={p} type="button" variant={activePlatform === p ? 'default' : 'outline'} size="sm" onClick={() => setActivePlatform(p)}>{p}</Button>
+                    ))}
+                </div>
               </div>
               
-              {selectedServiceId && (
+              {activePlatform && (
                 <>
+                 <div className="grid gap-2">
+                    <Label>الخدمة</Label>
+                    <Select onValueChange={setSelectedServiceId} value={selectedServiceId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر خدمة..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredServices.map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.category} - ${s.price}/1k
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                     <div className="grid gap-2">
                         <Label htmlFor="link">الرابط</Label>
                         <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
@@ -323,12 +295,12 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                     <div className="grid gap-2">
                         <Label htmlFor="quantity">الكمية</Label>
                         <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-                        {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - ${selectedService.max}</p>}
+                        {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
                     </div>
                     <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
                         التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
                     </div>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button type="submit" className="w-full" disabled={isSubmitting || !selectedServiceId}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال الطلب'}
                     </Button>
                 </>
@@ -341,97 +313,16 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 }
 
 
-function DealOfTheDay() {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-
-    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
-    const { data: settingsData, isLoading: isSettingsLoading } = useDoc<any>(settingsDocRef);
-    
-    const dealOfTheDayId = settingsData?.dealOfTheDay;
-
-    const serviceDocRef = useMemoFirebase(() => (firestore && dealOfTheDayId) ? doc(firestore, 'services', dealOfTheDayId) : null, [firestore, dealOfTheDayId]);
-    const { data: serviceData, isLoading: isServiceLoading } = useDoc<Service>(serviceDocRef);
-    
-    const isLoading = isSettingsLoading || isServiceLoading;
-
-    if (isLoading) {
-        return <Skeleton className="h-28 w-full" />
-    }
-
-    if (!dealOfTheDayId || !serviceData) {
-        return null; // Don't render if no deal is set or service not found
-    }
-
-    return (
-        <Card className="bg-gradient-to-tr from-card to-accent border-primary/50">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="text-primary" />
-                    <span>صفقة اليوم</span>
-                </CardTitle>
-                <CardDescription>عرض خاص لفترة محدودة!</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <h3 className="font-bold text-lg">{serviceData.platform} - {serviceData.category}</h3>
-                <p className="text-muted-foreground">السعر: <span className="text-primary font-bold">${serviceData.price.toFixed(2)}</span> لكل 1000</p>
-            </CardContent>
-            <CardFooter>
-                 <Button className="w-full" asChild>
-                    <Link href="/dashboard/mass-order">اطلب الآن</Link>
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-}
-
-function Announcements() {
-    const firestore = useFirestore();
-    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'), limit(3)) : null, [firestore]);
-    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
-
-    if (isLoading) {
-        return <Skeleton className="h-64 w-full" />
-    }
-
-    if (!posts || posts.length === 0) {
-        return null;
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>آخر الأخبار والإعلانات</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {posts.map(post => (
-                    <div key={post.id} className="p-3 bg-muted/50 rounded-lg">
-                        <h4 className="font-semibold">{post.title}</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{post.content}</p>
-                         <p className="text-xs text-muted-foreground/50 mt-1">{new Date(post.publishDate).toLocaleDateString('ar-EG')}</p>
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
-    );
-}
-
-
 function QuickOrderFormSkeleton() {
     return (
-        <Card>
-            <CardHeader>
-                <Skeleton className="h-6 w-1/2" />
-                <Skeleton className="h-4 w-3/4" />
-            </CardHeader>
-            <CardContent>
-                <div className="grid gap-4">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-            </CardContent>
-        </Card>
+      <div className="grid gap-4">
+        <div className="flex flex-wrap gap-2">
+            {Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-9 w-20" />)}
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
     );
 }
 
@@ -446,52 +337,26 @@ export default function DashboardPage() {
   const { data: userData, isLoading: isUserLoading } = useDoc<UserType>(userDocRef);
 
   const ordersQuery = useMemoFirebase(
-    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc')) : null),
+    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
     [firestore, authUser]
   );
-  const { data: ordersData, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
 
   const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
   
-  const performanceData = useMemo(() => {
-    if (!ordersData) return [];
-    const dataByDate: Record<string, { date: string, charge: number, orders: number }> = {};
-    const today = new Date();
-    
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
-        dataByDate[dateStr] = { date: dateStr, charge: 0, orders: 0 };
-    }
-
-    ordersData.forEach(order => {
-        const orderDate = new Date(order.orderDate);
-        const dateStr = orderDate.toISOString().split('T')[0];
-        if (dataByDate[dateStr]) {
-            dataByDate[dateStr].charge += order.charge;
-            dataByDate[dateStr].orders += 1;
-        }
-    });
-
-    return Object.values(dataByDate);
-  }, [ordersData]);
-
-
   if (isLoading || !userData || !authUser) {
     return (
       <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-          <Skeleton className="h-28 w-full" />
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
           </div>
-          <QuickOrderFormSkeleton />
-          <Skeleton className="h-[300px]" />
+           <Skeleton className="h-[450px]" />
+           <Skeleton className="h-[300px]" />
         </div>
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-          <Skeleton className="h-[150px]" />
           <Skeleton className="h-[250px]" />
+          <Skeleton className="h-[150px]" />
         </div>
       </div>
     );
@@ -500,9 +365,9 @@ export default function DashboardPage() {
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
   
   const achievements = [
-    { icon: Rocket, title: "المنطلق الصاروخي", completed: (ordersData?.length || 0) > 0 },
-    { icon: Shield, title: "المستخدم الموثوق", completed: (ordersData?.length || 0) >= 10 },
-    { icon: ShoppingCart, title: "سيد الطلبات", completed: (ordersData?.length || 0) >= 50 },
+    { icon: Rocket, title: "المنطلق الصاروخي", completed: (recentOrders?.length || 0) > 0 },
+    { icon: Shield, title: "المستخدم الموثوق", completed: (recentOrders?.length || 0) >= 10 },
+    { icon: ShoppingCart, title: "سيد الطلبات", completed: (recentOrders?.length || 0) >= 50 },
     { icon: Star, title: "النجم الصاعد", completed: (userData.totalSpent || 0) >= 100 },
     { icon: DollarSign, title: "ملك الإنفاق", completed: (userData.totalSpent || 0) >= 1000 },
     { icon: Sparkles, title: "العميل المميز", completed: (userData.rank) === 'سيد المجرة' },
@@ -510,7 +375,6 @@ export default function DashboardPage() {
     { icon: Users, title: "المسوق الشبكي", completed: (userData.referralsCount || 0) >= 5 },
   ];
   
-  const recentOrders = ordersData?.slice(0, 5);
   const statusVariant = {
     'مكتمل': 'default',
     'قيد التنفيذ': 'secondary',
@@ -520,42 +384,93 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
-      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-        
-        <DealOfTheDay />
-        <Announcements />
+    <div className="space-y-6">
+        <div className="space-y-2">
+             <h1 className="text-3xl font-bold tracking-tight font-headline">أهلاً بك، {userData.name}!</h1>
+            <p className="text-muted-foreground">
+              هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.
+            </p>
+        </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">أداء الحساب</CardTitle>
-                <CardDescription>نظرة عامة على إنفاقك وطلباتك خلال آخر 7 أيام.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                  <BarChart accessibilityLayer data={performanceData}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
-                    />
-                    <YAxis yAxisId="left" orientation="right" stroke="hsl(var(--primary))" hide />
-                    <YAxis yAxisId="right" orientation="left" stroke="hsl(var(--accent))" hide />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} yAxisId="left" name="الطلبات" />
-                    <Bar dataKey="charge" fill="var(--color-charge)" radius={4} yAxisId="right" name="الإنفاق" />
-                  </BarChart>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${userData.balance.toFixed(2)}</div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
+                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${userData.totalSpent.toFixed(2)}</div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
+                    <Megaphone className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${userData.adBalance.toFixed(2)}</div>
+                </CardContent>
+            </Card>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div className="md:col-span-2">
+                <QuickOrderForm user={authUser} userData={userData} />
+           </div>
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>رتبتك الكونية</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                        <Gem className="h-16 w-16 mx-auto text-primary" />
+                        <h3 className="text-2xl font-bold mt-2">{userData.rank}</h3>
+                        <p className="text-muted-foreground">خصم {rank.discount}% على الطلبات</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <span>الإنجازات الكونية</span>
+                            <Trophy className="text-primary"/>
+                        </CardTitle>
+                         <CardDescription>أكملت {achievements.filter(a => a.completed).length} من {achievements.length} إنجازات</CardDescription>
+                    </CardHeader>
+                    <CardContent className='grid grid-cols-4 gap-4'>
+                         {achievements.map((ach, i) => (
+                            <TooltipProvider key={i}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className={cn(
+                                            'flex flex-col items-center justify-center gap-1 p-2 rounded-lg aspect-square border-2 transition-all',
+                                            ach.completed ? 'border-primary/50 bg-primary/20 text-primary' : 'border-transparent bg-muted text-muted-foreground'
+                                        )}>
+                                            <ach.icon className="h-6 w-6" />
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{ach.title}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ))}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">الطلبات الأخيرة</CardTitle>
+            <CardTitle className="font-headline">آخر 5 طلبات</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -588,39 +503,6 @@ export default function DashboardPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                    <span>الإنجازات الكونية</span>
-                    <Trophy className="text-primary"/>
-                </CardTitle>
-                 <CardDescription>أكملت {achievements.filter(a => a.completed).length} من {achievements.length} إنجازات</CardDescription>
-            </CardHeader>
-            <CardContent className='grid grid-cols-4 gap-4'>
-                 {achievements.map((ach, i) => (
-                    <TooltipProvider key={i}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className={cn(
-                                    'flex flex-col items-center justify-center gap-1 p-2 rounded-lg aspect-square border-2 transition-all',
-                                    ach.completed ? 'border-primary/50 bg-primary/20 text-primary' : 'border-transparent bg-muted text-muted-foreground'
-                                )}>
-                                    <ach.icon className="h-6 w-6" />
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>{ach.title}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                ))}
-            </CardContent>
-        </Card>
-        <QuickOrderForm user={authUser} userData={userData} />
-      </div>
     </div>
   );
 }

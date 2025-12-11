@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import {
-  Bell,
   ChevronDown
 } from 'lucide-react';
 import {
@@ -53,37 +52,14 @@ function Header() {
 
 
   return (
-    <header className="sticky top-0 z-10 flex h-auto items-start flex-col gap-4 bg-background/80 backdrop-blur-sm px-4 pt-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:pt-6">
-      <div className='flex items-center justify-between w-full'>
-        <div className='flex items-center gap-4'>
-         <SidebarTrigger className="md:hidden" />
-          <div>
-            <h1 className='text-2xl font-bold text-foreground'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
-            <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
-          </div>
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <SidebarTrigger className="md:hidden" />
+        <div className="flex items-center gap-4 ml-auto">
+            <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/add-funds">شحن الرصيد</Link>
+            </Button>
+            <UserNav user={appUser} isAdmin={user?.email === 'hagaaty@gmail.com'} />
         </div>
-       <div className="flex items-center gap-4 ml-auto">
-         <UserNav user={appUser} isAdmin={user?.email === 'hagaaty@gmail.com'} />
-       </div>
-      </div>
-       <div className="grid grid-cols-2 gap-4 ml-auto w-fit">
-        <Card className='w-fit border-primary/50 bg-card/50'>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
-            </CardContent>
-        </Card>
-        <Card className='w-fit border-accent/50 bg-card/50'>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</div>
-            </CardContent>
-        </Card>
-       </div>
     </header>
   );
 }
@@ -120,14 +96,14 @@ function NavItems() {
           isCollapsible ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarMenuButton asChild>
-                  <Link href={item.href || '#'}>
-                    {item.icon && <item.icon />}
-                    <span className="sr-only">{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
+                 <Link href={item.href || '#'}>
+                    <SidebarMenuButton>
+                        {item.icon && <item.icon />}
+                        <span className="sr-only">{item.label}</span>
+                    </SidebarMenuButton>
+                </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" align="center" className='font-body'>
+              <TooltipContent side="left" align="center" className='font-body'>
                 {item.label}
               </TooltipContent>
             </Tooltip>
