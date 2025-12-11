@@ -7,22 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Copy, DollarSign, Users, Crown, Loader2, GitFork, TrendingUp, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
-import type { User as UserType } from "@/lib/types";
+import { useUser, useDoc, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { doc, collection, query, orderBy, limit } from "firebase/firestore";
+import type { User as UserType, AffiliateTransaction } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import React from 'react';
-
-const topMarketers = [
-    { rank: 1, name: "محمد علي", earnings: 2500.50 },
-    { rank: 2, name: "فاطمة الزهراء", earnings: 2210.75 },
-    { rank: 3, name: "أحمد خالد", earnings: 1980.00 },
-    { rank: 4, name: "يوسف محمود", earnings: 1850.25 },
-    { rank: 5, name: "سارة إبراهيم", earnings: 1700.00 },
-];
 
 const AFFILIATE_LEVELS = {
     'برونزي': { commission: 10, nextLevel: 'فضي', requirement: 10 },
@@ -46,19 +38,28 @@ function AffiliateSkeleton() {
                 <Skeleton className="h-64 lg:col-span-1" />
                 <Skeleton className="h-64 lg:col-span-2" />
             </div>
+             <Skeleton className="h-64 w-full" />
         </div>
     );
 }
 
 function NetworkTree() {
-    // Placeholder data for the tree
+    const { user: authUser } = useUser();
+    const firestore = useFirestore();
+    const userDocRef = useMemoFirebase(
+        () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
+        [firestore, authUser]
+    );
+    const { data: userData } = useDoc<UserType>(userDocRef);
+    
+    // Placeholder data for the tree until multi-level tracking is implemented
     const treeData = {
         level: 0,
         name: "أنت",
         children: [
-            { level: 1, name: "دعوة مباشرة", count: 5 },
-            { level: 2, name: "المستوى الثاني", count: 12 },
-            { level: 3, name: "المستوى الثالث", count: 28 },
+            { level: 1, name: "دعوة مباشرة", count: userData?.referralsCount || 0 },
+            { level: 2, name: "المستوى الثاني", count: 0 },
+            { level: 3, name: "المستوى الثالث", count: 0 },
         ]
     };
 
@@ -94,6 +95,62 @@ function NetworkTree() {
     );
 }
 
+function TransactionHistoryTable({ userId }: { userId: string }) {
+    const firestore = useFirestore();
+    const transactionsQuery = useMemoFirebase(
+        () => firestore ? query(collection(firestore, `users/${userId}/affiliateTransactions`), orderBy('transactionDate', 'desc'), limit(10)) : null,
+        [firestore, userId]
+    );
+
+    const { data: transactions, isLoading } = useCollection<AffiliateTransaction>(transactionsQuery);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>سجل معاملات العمولة</CardTitle>
+                <CardDescription>آخر 10 عمولات حصلت عليها من شبكتك.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>تاريخ المعاملة</TableHead>
+                            <TableHead>معرف الطلب</TableHead>
+                             <TableHead>المدعو</TableHead>
+                            <TableHead className="text-right">مبلغ العمولة</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
+                                </TableRow>
+                            ))
+                        ) : transactions && transactions.length > 0 ? (
+                            transactions.map((tx) => (
+                                <TableRow key={tx.id}>
+                                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString('ar-EG')}</TableCell>
+                                    <TableCell className="font-mono text-xs">{tx.orderId.substring(0,10)}...</TableCell>
+                                    <TableCell className="font-mono text-xs">{tx.referralId.substring(0,10)}...</TableCell>
+                                    <TableCell className="text-right font-medium text-green-400">+${tx.amount.toFixed(2)}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center h-24">لا توجد معاملات لعرضها.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 export default function AffiliatePage() {
     const { user: authUser, isUserLoading: isAuthLoading } = useUser();
@@ -124,6 +181,10 @@ export default function AffiliatePage() {
         });
     };
     
+    if (isLoading || !authUser) {
+        return <AffiliateSkeleton />;
+    }
+    
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
     const nextLevelKey = currentLevel.nextLevel;
@@ -132,11 +193,6 @@ export default function AffiliatePage() {
     
     const referralsCount = userData?.referralsCount ?? 0;
     const progressToNextLevel = nextLevel ? (referralsCount / (nextLevel.requirement || 1)) * 100 : 100;
-    
-
-    if (isLoading) {
-        return <AffiliateSkeleton />;
-    }
 
   return (
     <div className="space-y-6 pb-8">
@@ -190,12 +246,14 @@ export default function AffiliatePage() {
              <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">الترقية التالية: {nextLevelKey}</CardTitle>
-                    {nextLevel ? (
+                    {nextLevel && referralsCount < nextLevel.requirement ? (
                         <CardDescription>
                              ادعُ {nextLevel.requirement - referralsCount} شخصًا آخر للوصول للمستوى التالي.
                         </CardDescription>
                     ) : (
-                         <CardDescription>لقد وصلت إلى أعلى مستوى!</CardDescription>
+                         <CardDescription>
+                            {nextLevel ? `لقد وصلت إلى مستوى ${nextLevelKey}!` : 'لقد وصلت إلى أعلى مستوى!'}
+                         </CardDescription>
                     )}
                 </CardHeader>
                 <CardContent>
@@ -229,32 +287,8 @@ export default function AffiliatePage() {
             </div>
         </div>
 
-        <Card>
-                <CardHeader>
-                <CardTitle>التحليلات المالية</CardTitle>
-                <CardDescription>نظرة عامة على أفضل المسوقين في المنصة.</CardDescription>
-                </CardHeader>
-            <CardContent>
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>الترتيب</TableHead>
-                            <TableHead>الاسم</TableHead>
-                            <TableHead className="text-right">الأرباح</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {topMarketers.map((m) => (
-                            <TableRow key={m.rank}>
-                                <TableCell>{m.rank}</TableCell>
-                                <TableCell>{m.name}</TableCell>
-                                <TableCell className="text-right">${m.earnings.toFixed(2)}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+        <TransactionHistoryTable userId={authUser.uid} />
+
     </div>
   );
 }
