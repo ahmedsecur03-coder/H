@@ -59,7 +59,7 @@ function Header() {
           </div>
         </div>
        <div className="flex items-center gap-4 ml-auto">
-         <UserNav user={appUser} />
+         <UserNav user={appUser} isAdmin={user?.email === 'hagaaty@gmail.com'} />
        </div>
       </div>
        <div className="grid grid-cols-2 gap-4 ml-auto w-fit">
@@ -186,9 +186,11 @@ export default function DashboardLayout({
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
-             <Button variant="outline" size="sm" className='bg-card' asChild>
-                <Link href="/admin/dashboard">الانتقال للوحة المسؤول</Link>
-            </Button>
+             {user.email === 'hagaaty@gmail.com' && (
+                <Button variant="outline" size="sm" className='bg-card' asChild>
+                    <Link href="/admin/dashboard">الانتقال للوحة المسؤول</Link>
+                </Button>
+             )}
           </div>
         </SidebarHeader>
         <SidebarContent>
