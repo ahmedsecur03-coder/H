@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { runTransaction, collection, doc, query, addDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from '@/hooks/use-toast';
 import type { Service, Order, User } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
+import { useSearchParams } from 'next/navigation';
 
 type ProcessedLine = {
     line: number;
@@ -63,10 +64,18 @@ export default function MassOrderPage() {
     const { user: authUser } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
 
     const [massOrderText, setMassOrderText] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [batchResult, setBatchResult] = useState<BatchResult | null>(null);
+
+    useEffect(() => {
+        const prefill = searchParams.get('prefill');
+        if (prefill) {
+            setMassOrderText(decodeURIComponent(prefill));
+        }
+    }, [searchParams]);
 
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -348,5 +357,3 @@ export default function MassOrderPage() {
         </div>
     );
 }
-
-    
