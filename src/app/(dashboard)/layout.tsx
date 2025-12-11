@@ -71,7 +71,8 @@ function NavItems() {
               {item.children.map((child) => (
                 <SidebarMenuSubButton key={child.href} asChild>
                   <Link href={child.href}>
-                    {child.label}
+                    {child.icon && <child.icon className="w-4 h-4" />}
+                    <span>{child.label}</span>
                   </Link>
                 </SidebarMenuSubButton>
               ))}

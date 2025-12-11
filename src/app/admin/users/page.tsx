@@ -48,7 +48,7 @@ function EditUserDialog({ user, onUserUpdate }: { user: User, onUserUpdate: () =
   const [rank, setRank] = useState(user.rank);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Reset state when dialog opens
+  // Reset state when dialog opens or the user prop changes
   useEffect(() => {
     if(open) {
         setBalance(user.balance.toString());
@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
         <TableCell><Badge variant="secondary">{user.rank}</Badge></TableCell>
         <TableCell className="font-medium">${(user.balance ?? 0).toFixed(2)}</TableCell>
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-        <TableCell>{new Date(user.createdAt).toLocaleDateString('ar-EG')}</TableCell>
+        <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
         <TableCell className="text-right">
           <EditUserDialog user={user} onUserUpdate={forceCollectionUpdate} />
         </TableCell>

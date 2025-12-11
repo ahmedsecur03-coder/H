@@ -166,48 +166,40 @@ export default function OrdersPage() {
     if (totalPages <= 1) return null;
     
     const items = [];
-    const pageNumbers: number[] = [];
+    const pageNumbers: (number | 'ellipsis')[] = [];
+    const pageRange = 2; // How many pages to show around current page
 
-    // Always show first page
     pageNumbers.push(1);
 
-    // Logic for ellipsis and nearby pages
-    if (currentPage > 3) {
-      pageNumbers.push(-1); // Ellipsis
+    if (currentPage > pageRange + 1) {
+        pageNumbers.push('ellipsis');
     }
-    if (currentPage > 2) {
-      pageNumbers.push(currentPage - 1);
+
+    for (let i = Math.max(2, currentPage - pageRange); i <= Math.min(totalPages - 1, currentPage + pageRange); i++) {
+        pageNumbers.push(i);
     }
-    if (currentPage !== 1 && currentPage !== totalPages) {
-      pageNumbers.push(currentPage);
-    }
-    if (currentPage < totalPages - 1) {
-      pageNumbers.push(currentPage + 1);
-    }
-    if (currentPage < totalPages - 2) {
-      pageNumbers.push(-1); // Ellipsis
+
+    if (currentPage < totalPages - pageRange) {
+        pageNumbers.push('ellipsis');
     }
     
-    // Always show last page
     if (totalPages > 1) {
         pageNumbers.push(totalPages);
     }
 
     const uniquePageNumbers = [...new Set(pageNumbers)];
 
-    uniquePageNumbers.forEach((page, index) => {
-        if (page === -1) {
-            items.push(<PaginationEllipsis key={`ellipsis-${index}`} />);
-        } else {
-            items.push(
-                <PaginationItem key={page}>
-                    <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page); }}>{page}</PaginationLink>
-                </PaginationItem>
-            );
-        }
-    });
 
-    return items;
+    return uniquePageNumbers.map((page, index) => {
+        if (page === 'ellipsis') {
+            return <PaginationEllipsis key={`ellipsis-${index}`} />;
+        }
+        return (
+            <PaginationItem key={page}>
+                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page); }}>{page}</PaginationLink>
+            </PaginationItem>
+        );
+    });
   };
 
   return (
@@ -290,7 +282,7 @@ export default function OrdersPage() {
                     <TableCell className="text-center">
                       <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
+                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
