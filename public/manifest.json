@@ -1,11 +1,11 @@
 {
-  "name": "Hajaty Hub - منصة حاجتي",
-  "short_name": "حاجاتي",
-  "description": "منصتك المتكاملة للخدمات الرقمية والتسويق عبر الشبكات الاجتماعية.",
+  "name": "Hajaty Hub - منصة حاجتي للخدمات الرقمية",
+  "short_name": "Hajaty",
+  "description": "منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1A1D21",
-  "theme_color": "#FACC15",
+  "background_color": "#080c1b",
+  "theme_color": "#1A1D21",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",

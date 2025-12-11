@@ -36,7 +36,7 @@ function Header() {
               <Button asChild>
                 <Link href="/dashboard">لوحة التحكم</Link>
               </Button>
-               {appUser && <UserNav user={appUser} isAdmin={false}/>}
+               {appUser && <UserNav user={appUser} isAdmin={user.email === 'hagaaty@gmail.com'}/>}
             </>
           ) : (
             <>
@@ -74,7 +74,7 @@ export default function Home() {
                   بوابتك إلى الكون الرقمي
                 </h1>
                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
-                  منصة حاجاتي هي مركز قيادة لإطلاق إمكانياتك الكاملة في عالم التسويق الرقمي. من الحملات الإعلانية الذكية إلى تعزيز وجودك على وسائل التواصل الاجتماعي، نحن هنا لنجعل المستحيل ممكناً.
+                  منصة حاجتي هي مركز قيادة لإطلاق إمكانياتك الكاملة في عالم التسويق الرقمي. من الحملات الإعلانية الذكية إلى تعزيز وجودك على وسائل التواصل الاجتماعي، نحن هنا لنجعل المستحيل ممكناً.
                 </p>
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">
