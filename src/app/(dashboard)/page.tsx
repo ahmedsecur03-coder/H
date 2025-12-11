@@ -363,7 +363,7 @@ export default function DashboardPage() {
     () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
     [firestore, authUser]
   );
-  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(recentOrdersQuery);
+  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
 
   const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
   
