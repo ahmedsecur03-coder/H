@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -15,6 +15,8 @@ import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { aiSupportUsers as aiSupportUsersFlow } from '@/ai/flows/ai-support-users';
+import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 // Define the structure for a single message in the chat
 type Message = {
@@ -32,6 +34,17 @@ export default function AiAssistant() {
       content: 'مرحباً بك في مركز المساعدة الذكي! كيف يمكنني مساعدتك اليوم في منصة حاجاتي؟',
     },
   ]);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
+        }
+    }
+  }, [messages]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,12 +83,18 @@ export default function AiAssistant() {
   );
   
   const BotMessage = ({ children }: { children: React.ReactNode }) => (
-    <div className="flex items-start gap-3">
+     <div className="flex items-start gap-3">
        <Avatar className="w-8 h-8 bg-accent text-accent-foreground">
         <AvatarFallback><Bot size={18} /></AvatarFallback>
       </Avatar>
-      <div className="bg-muted p-3 rounded-lg max-w-xs break-words">
-        <p className="text-sm">{children}</p>
+       <div className="bg-muted p-3 rounded-lg max-w-xs break-words prose prose-sm prose-invert">
+         <ReactMarkdown
+            components={{
+                p: ({node, ...props}) => <p className="text-sm text-foreground" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc list-inside" {...props} />,
+                li: ({node, ...props}) => <li className="text-foreground" {...props} />,
+            }}
+         >{String(children)}</ReactMarkdown>
       </div>
     </div>
   );
@@ -99,7 +118,7 @@ export default function AiAssistant() {
             </SheetTitle>
           </SheetHeader>
           <Separator />
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <ScrollArea className="flex-1 -mx-6 px-6" ref={scrollAreaRef}>
             <div className="space-y-4 py-4">
                  {messages.map((msg, index) => (
                     <div key={index}>
