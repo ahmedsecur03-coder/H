@@ -32,6 +32,7 @@ import {
   Sparkles,
   Diamond,
   Check,
+  ShoppingCart,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
