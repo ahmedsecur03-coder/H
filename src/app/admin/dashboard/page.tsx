@@ -16,8 +16,8 @@ import {
 import { Line, LineChart, CartesianGrid, XAxis, Tooltip } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query } from 'firebase/firestore';
-import type { Order, User } from '@/lib/types';
+import { collectionGroup, query, where } from 'firebase/firestore';
+import type { Order, User, Ticket } from '@/lib/types';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -75,8 +75,12 @@ export default function AdminDashboardPage() {
 
     const usersQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'users')) : null, [firestore]);
     const { data: allUsers, isLoading: isUsersLoading } = useCollection<User>(usersQuery);
+    
+    const openTicketsQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'tickets'), where('status', '!=', 'مغلقة')) : null, [firestore]);
+    const { data: openTickets, isLoading: isTicketsLoading } = useCollection<Ticket>(openTicketsQuery);
 
-    const isLoading = isOrdersLoading || isUsersLoading;
+
+    const isLoading = isOrdersLoading || isUsersLoading || isTicketsLoading;
     
     const performanceData = useMemo(() => {
         if (!allOrders || !allUsers) return [];
@@ -87,6 +91,7 @@ export default function AdminDashboardPage() {
     const totalNewUsers = useMemo(() => performanceData.reduce((acc, item) => acc + item.users, 0), [performanceData]);
     const totalOrders = useMemo(() => performanceData.reduce((acc, item) => acc + item.orders, 0), [performanceData]);
     const totalUsersCount = allUsers?.length ?? 0;
+    const openTicketsCount = openTickets?.length ?? 0;
 
   if(isLoading) {
     return (
@@ -142,12 +147,12 @@ export default function AdminDashboardPage() {
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">تذاكر الدعم الجديدة</CardTitle>
+                    <CardTitle className="text-sm font-medium">تذاكر الدعم المفتوحة</CardTitle>
                     <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">12</div>
-                    <p className="text-xs text-muted-foreground">2 منها عاجلة</p>
+                    <div className="text-2xl font-bold">{openTicketsCount}</div>
+                    <p className="text-xs text-muted-foreground">تتطلب استجابة</p>
                 </CardContent>
             </Card>
         </div>
