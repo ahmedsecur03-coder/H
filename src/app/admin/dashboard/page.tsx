@@ -88,9 +88,13 @@ export default function AdminDashboardPage() {
         return processPerformanceData(allOrders, allUsers);
     }, [allOrders, allUsers]);
 
-    const totalRevenue = useMemo(() => performanceData.reduce((acc, item) => acc + item.revenue, 0), [performanceData]);
-    const totalNewUsers = useMemo(() => performanceData.reduce((acc, item) => acc + item.users, 0), [performanceData]);
-    const totalOrders = useMemo(() => performanceData.reduce((acc, item) => acc + item.orders, 0), [performanceData]);
+    const totalRevenue = useMemo(() => allOrders?.reduce((acc, item) => acc + item.charge, 0) ?? 0, [allOrders]);
+    const totalNewUsers = useMemo(() => {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        return allUsers?.filter(user => user.createdAt && new Date(user.createdAt) > oneWeekAgo).length ?? 0;
+    }, [allUsers]);
+    const totalOrders = useMemo(() => allOrders?.length ?? 0, [allOrders]);
     const totalUsersCount = allUsers?.length ?? 0;
     const openTicketsCount = openTickets?.length ?? 0;
 
@@ -120,7 +124,7 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">إجمالي الإيرادات (آخر 7 أيام)</CardTitle>
+                    <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -139,11 +143,11 @@ export default function AdminDashboardPage() {
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">إجمالي الطلبات (آخر 7 أيام)</CardTitle>
+                    <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
                     <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">+{totalOrders}</div>
+                    <div className="text-2xl font-bold">{totalOrders}</div>
                 </CardContent>
             </Card>
              <Card>
@@ -203,4 +207,3 @@ export default function AdminDashboardPage() {
   );
 }
 
-    

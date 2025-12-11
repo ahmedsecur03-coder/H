@@ -52,13 +52,3 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ];
-
-export const performanceData = [
-    { date: '2024-05-01', orders: 10, spend: 50, revenue: 75, users: 5 },
-    { date: '2024-05-02', orders: 12, spend: 65, revenue: 90, users: 2 },
-    { date: '2024-05-03', orders: 8, spend: 40, revenue: 60, users: 8 },
-    { date: '2024-05-04', orders: 15, spend: 80, revenue: 120, users: 3 },
-    { date: '2024-05-05', orders: 18, spend: 95, revenue: 140, users: 10 },
-    { date: '2024-05-06', orders: 14, spend: 70, revenue: 105, users: 7 },
-    { date: '2024-05-07', orders: 20, spend: 110, revenue: 165, users: 12 },
-];

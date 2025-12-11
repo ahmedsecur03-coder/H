@@ -373,7 +373,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                     <div className="grid gap-2">
                         <Label htmlFor="quantity">الكمية</Label>
                         <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-                        {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
+                        {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - ${selectedService.max}</p>}
                     </div>
                     <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
                         التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage*100}%)
