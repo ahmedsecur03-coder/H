@@ -51,11 +51,9 @@ function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'a
 }
 
 export default function AdminTicketDetailsPage() {
-  const { user } = useUser();
   const firestore = useFirestore();
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   

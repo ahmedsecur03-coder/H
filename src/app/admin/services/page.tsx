@@ -27,11 +27,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -329,5 +327,3 @@ export default function AdminServicesPage() {
     </div>
   );
 }
-
-    

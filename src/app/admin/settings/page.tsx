@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,

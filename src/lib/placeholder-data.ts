@@ -20,7 +20,6 @@ import {
   Briefcase,
   Palette,
 } from 'lucide-react';
-import React from 'react';
 import { PLATFORM_ICONS } from './icon-data';
 
 
@@ -50,7 +49,7 @@ export const dashboardNavItems: NestedNavItem[] = [
     children: [
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
         { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية وكالة', icon: Briefcase },
-        { href: '#', label: 'تصميم المواقع', icon: Palette },
+        { href: '/dashboard/services?platform=Website', label: 'تصميم المواقع', icon: Palette },
     ]
   },
   { href: '/dashboard/blog', label: 'المدونة', icon: BookOpen },

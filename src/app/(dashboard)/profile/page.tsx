@@ -62,24 +62,29 @@ export default function ProfilePage() {
     }, [user, userData, profileForm]);
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
-        if (!user || !firestore || !userDocRef) return;
+        if (!user || !userDocRef) return;
         
-        const updateData = { name: values.name, avatarUrl: values.avatarUrl };
+        const updateData:Partial<UserType> = { name: values.name, avatarUrl: values.avatarUrl };
+        
+        // Optimistically update the auth profile
+        updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl }).catch(error => {
+            // This is less critical, so we can just log it
+            console.error("Error updating Auth profile:", error);
+        });
 
-        try {
-            await updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl });
-            await updateDoc(userDocRef, updateData);
-            toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
-        } catch(serverError: any) {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'update',
-                requestResourceData: updateData
+        // Update the Firestore document
+        updateDoc(userDocRef, updateData)
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            errorEmitter.emit('permission-error', permissionError);
-        } finally {
-             profileForm.formState.isSubmitting = false;
-        }
     };
     
     const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
