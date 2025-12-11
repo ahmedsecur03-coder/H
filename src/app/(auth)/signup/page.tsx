@@ -36,6 +36,7 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
+      const avatarUrl = `https://i.pravatar.cc/150?u=${newUser.uid}`;
 
       // Now, handle the creation of the user document and referral logic in a transaction
       await runTransaction(firestore, async (transaction) => {
@@ -61,6 +62,7 @@ export default function SignupPage() {
         const newUserProfile: Omit<User, 'id'> = {
             name: name,
             email: newUser.email || 'N/A',
+            avatarUrl: avatarUrl,
             rank: 'مستكشف نجمي',
             balance: 0,
             adBalance: 0,
@@ -76,7 +78,7 @@ export default function SignupPage() {
       });
 
       // 4. Update the user's auth profile (displayName, photoURL)
-      await updateProfile(newUser, { displayName: name });
+      await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
       
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
