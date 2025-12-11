@@ -127,7 +127,9 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                     spend: 0,
                     status: 'بانتظار المراجعة'
                 };
-                transaction.set(doc(campaignColRef), newCampaignData);
+                // Use transaction to set the new campaign doc
+                const newCampaignDoc = doc(campaignColRef); // create a new doc ref with a random id.
+                transaction.set(newCampaignDoc, newCampaignData);
             });
 
             toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
@@ -175,6 +177,7 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                     <div className="space-y-2">
                         <Label htmlFor="budget">الميزانية ($)</Label>
                         <Input id="budget" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} required min="5" />
+                         <p className="text-xs text-muted-foreground">رصيدك الإعلاني الحالي: ${userData.adBalance?.toFixed(2) ?? '0.00'}</p>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading} className="w-full">
