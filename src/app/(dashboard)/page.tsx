@@ -44,15 +44,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { getRankForSpend } from '@/lib/service';
+import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import Link from 'next/link';
 
-const AFFILIATE_LEVELS = {
-    'برونزي': { commission: 10 },
-    'فضي': { commission: 12 },
-    'ذهبي': { commission: 15 },
-    'ماسي': { commission: 20 },
-};
 
 function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
@@ -113,83 +107,39 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 
     setIsSubmitting(true);
 
-    let promotionToast: { title: string; description: string } | null = null;
     const userDocRef = doc(firestore, "users", user.uid);
+    const newOrderData: Omit<Order, 'id'> = {
+        userId: user.uid,
+        serviceId: selectedService.id,
+        serviceName: `${selectedService.platform} - ${selectedService.category}`,
+        link: link,
+        quantity: numQuantity,
+        charge: cost,
+        orderDate: new Date().toISOString(),
+        status: 'قيد التنفيذ',
+    };
     
     runTransaction(firestore, async (transaction) => {
         const userDoc = await transaction.get(userDocRef);
         if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-        
-        const currentData = userDoc.data() as UserType;
-        const currentBalance = currentData.balance;
 
-        if (currentBalance < cost) throw new Error("رصيدك غير كافٍ.");
-
-        const newBalance = currentBalance - cost;
-        const newTotalSpent = currentData.totalSpent + cost;
-        const oldRank = getRankForSpend(currentData.totalSpent);
-        const newRank = getRankForSpend(newTotalSpent);
-        
-        const updates: Partial<UserType> = {
-            balance: newBalance,
-            totalSpent: newTotalSpent,
-        };
-
-        if (newRank.name !== oldRank.name) {
-            updates.rank = newRank.name;
-            if (newRank.reward > 0) {
-                updates.adBalance = (currentData.adBalance || 0) + newRank.reward;
-                promotionToast = {
-                    title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
-                    description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
-                };
-            }
+        if ((userDoc.data().balance ?? 0) < cost) {
+            throw new Error("رصيدك غير كافٍ.");
         }
 
-        transaction.update(userDocRef, updates);
-
-        const newOrderRef = doc(collection(firestore, `users/${user.uid}/orders`));
-        const newOrder: Omit<Order, 'id'> = {
-            userId: user.uid,
-            serviceId: selectedService.id,
-            serviceName: `${selectedService.platform} - ${selectedService.category}`,
-            link: link,
-            quantity: numQuantity,
-            charge: cost,
-            orderDate: new Date().toISOString(),
-            status: 'قيد التنفيذ',
-        };
-        transaction.set(newOrderRef, newOrder);
-
-         if (currentData.referrerId) {
-            const referrerRef = doc(firestore, 'users', currentData.referrerId);
-            const referrerDoc = await transaction.get(referrerRef);
-            if (referrerDoc.exists()) {
-                const referrerData = referrerDoc.data() as UserType;
-                const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
-                const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
-                const commissionAmount = cost * commissionRate;
-
-                transaction.update(referrerRef, {
-                    affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
-                });
-
-                const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
-                transaction.set(newTransactionRef, {
-                    userId: referrerData.id,
-                    referralId: user.uid,
-                    orderId: newOrderRef.id,
-                    amount: commissionAmount,
-                    transactionDate: new Date().toISOString(),
-                    level: 1 
-                });
-            }
+        let referrerDoc = null;
+        if (userDoc.data().referrerId) {
+             const referrerRef = doc(firestore, 'users', userDoc.data().referrerId);
+             referrerDoc = await transaction.get(referrerRef);
         }
+
+        return processOrderInTransaction(transaction, firestore, user.uid, newOrderData, referrerDoc);
     })
-    .then(() => {
+    .then((result) => {
+        if (!result) return;
         toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
-        if(promotionToast) {
-            setTimeout(() => toast(promotionToast), 1000);
+        if(result.promotion) {
+            setTimeout(() => toast(result.promotion), 1000);
         }
         setSelectedServiceId(undefined);
         setLink('');
