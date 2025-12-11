@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -543,7 +544,6 @@ const SidebarMenuButton = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     asChild?: boolean
     isActive?: boolean
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -552,7 +552,6 @@ const SidebarMenuButton = React.forwardRef<
       isActive = false,
       variant = "default",
       size = "default",
-      tooltip,
       className,
       children,
       ...props
@@ -560,10 +559,8 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
-    const isCollapsible = state === "collapsed"
-
-    const button = (
+    
+    return (
       <Comp
         ref={ref}
         data-sidebar="menu-button"
@@ -573,34 +570,8 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       >
         {children}
-        {isCollapsible && tooltip && (
-          <span className="sr-only">
-            {typeof tooltip === "string" ? tooltip : (tooltip as any)?.children}
-          </span>
-        )}
       </Comp>
     )
-
-    if (isMobile || !tooltip) {
-      return button
-    }
-
-    const tooltipContent = typeof tooltip === 'string' ? { children: tooltip } : tooltip;
-
-    if (isCollapsible) {
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>{button}</TooltipTrigger>
-            <TooltipContent
-              side="right"
-              align="center"
-              {...tooltipContent}
-            />
-          </Tooltip>
-        );
-    }
-    
-    return button;
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"

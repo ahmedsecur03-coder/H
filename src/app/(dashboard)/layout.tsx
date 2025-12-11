@@ -19,6 +19,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubContent,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
@@ -32,6 +33,8 @@ import { UserNav } from './_components/user-nav';
 import type { NestedNavItem, User as UserType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 function Header() {
   const { user } = useUser();
@@ -85,6 +88,65 @@ function Header() {
   );
 }
 
+function NavItems() {
+  const { state } = useSidebar();
+  const isCollapsible = state === "collapsed";
+
+  const renderNavItems = (items: NestedNavItem[]) => {
+    return items.map((item) => (
+      <SidebarMenuItem key={item.label}>
+        {item.children ? (
+          <SidebarMenuSub>
+            <SidebarMenuButton
+              className='justify-between'
+            >
+              <div className='flex items-center gap-2'>
+                {item.icon && <item.icon />}
+                <span>{item.label}</span>
+              </div>
+               <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
+            </SidebarMenuButton>
+            <SidebarMenuSubContent>
+              {item.children.map((child) => (
+                <SidebarMenuSubButton key={child.href} asChild>
+                  <Link href={child.href}>
+                    {child.label}
+                  </Link>
+                </SidebarMenuSubButton>
+              ))}
+            </SidebarMenuSubContent>
+          </SidebarMenuSub>
+        ) : (
+          isCollapsible ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton asChild>
+                  <Link href={item.href || '#'}>
+                    {item.icon && <item.icon />}
+                    <span className="sr-only">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              <TooltipContent side="right" align="center" className='font-body'>
+                {item.label}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <SidebarMenuButton asChild>
+              <Link href={item.href || '#'}>
+                {item.icon && <item.icon />}
+                <span>{item.label}</span>
+              </Link>
+            </SidebarMenuButton>
+          )
+        )}
+      </SidebarMenuItem>
+    ));
+  };
+
+  return <>{renderNavItems(dashboardNavItems)}</>;
+}
+
 
 export default function DashboardLayout({
   children,
@@ -100,7 +162,6 @@ export default function DashboardLayout({
     }
   }, [user, isUserLoading, router]);
 
-  // While loading, show a skeleton layout to prevent flashing content.
   if (isUserLoading || !user) {
     return (
         <div className="flex min-h-screen w-full">
@@ -133,55 +194,6 @@ export default function DashboardLayout({
     );
   }
 
-  const renderNavItems = (items: NestedNavItem[]) => {
-    return items.map((item) => (
-      <SidebarMenuItem key={item.href || item.label}>
-        {item.children ? (
-          <SidebarMenuSub>
-            <SidebarMenuButton
-              tooltip={{
-                children: item.label,
-                className: 'font-body',
-                side: 'left',
-              }}
-              className='justify-between'
-            >
-              <div className='flex items-center gap-2'>
-                {item.icon && <item.icon />}
-                <span>{item.label}</span>
-              </div>
-               <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
-            </SidebarMenuButton>
-            <SidebarMenuSubContent>
-              {item.children.map((child) => (
-                <SidebarMenuSubButton key={child.href} asChild>
-                  <Link href={child.href}>
-                    {child.label}
-                  </Link>
-                </SidebarMenuSubButton>
-              ))}
-            </SidebarMenuSubContent>
-          </SidebarMenuSub>
-        ) : (
-          <SidebarMenuButton
-            asChild
-            tooltip={{
-              children: item.label,
-              className: 'font-body',
-              side: 'left',
-            }}
-          >
-            <Link href={item.href || '#'}>
-               {item.icon && <item.icon />}
-              <span>{item.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        )}
-      </SidebarMenuItem>
-    ));
-  };
-
-
   return (
     <SidebarProvider>
       <Sidebar side="right" collapsible="icon">
@@ -197,7 +209,7 @@ export default function DashboardLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {renderNavItems(dashboardNavItems)}
+            <NavItems />
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
