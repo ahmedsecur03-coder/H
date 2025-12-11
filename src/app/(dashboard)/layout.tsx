@@ -10,7 +10,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarInset,
   SidebarTrigger,
   SidebarMenuSub,
   SidebarMenuSubButton,
@@ -148,7 +147,6 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      {/* Desktop Sidebar */}
       <Sidebar side="right" collapsible="icon" className="hidden md:block">
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
