@@ -1,5 +1,3 @@
-
-
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -11,26 +9,18 @@ import {
   Megaphone,
   MessageSquare,
   Settings,
-  ShieldCheck,
   Banknote,
   Users2,
   BookOpen,
-  Info,
-  Code2,
   HeartPulse,
+  Code2,
   Rocket,
   PenSquare,
-  Instagram,
-  Clapperboard,
-  Facebook,
-  Youtube,
-  Send,
-  Twitter,
-  Globe,
-  Palette,
-  Briefcase
+  Briefcase,
+  Palette
 } from 'lucide-react';
 import React from 'react';
+import { PLATFORM_ICONS } from './icon-data';
 
 
 export const dashboardNavItems: NestedNavItem[] = [
@@ -40,12 +30,12 @@ export const dashboardNavItems: NestedNavItem[] = [
     icon: Package,
     href: '/dashboard/services',
     children: [
-        { href: '/dashboard/services?platform=Instagram', label: 'انستغرام', icon: Instagram },
-        { href: '/dashboard/services?platform=TikTok', label: 'تيك توك', icon: Clapperboard },
-        { href: '/dashboard/services?platform=Facebook', label: 'فيسبوك', icon: Facebook },
-        { href: '/dashboard/services?platform=YouTube', label: 'يوتيوب', icon: Youtube },
-        { href: '/dashboard/services?platform=Telegram', label: 'تيليجرام', icon: Send },
-        { href: '/dashboard/services?platform=X (Twitter)', label: 'اكس (تويتر)', icon: Twitter },
+        { href: '/dashboard/services?platform=Instagram', label: 'انستغرام', icon: PLATFORM_ICONS.Instagram },
+        { href: '/dashboard/services?platform=TikTok', label: 'تيك توك', icon: PLATFORM_ICONS.TikTok },
+        { href: '/dashboard/services?platform=Facebook', label: 'فيسبوك', icon: PLATFORM_ICONS.Facebook },
+        { href: '/dashboard/services?platform=YouTube', label: 'يوتيوب', icon: PLATFORM_ICONS.YouTube },
+        { href: '/dashboard/services?platform=Telegram', label: 'تيليجرام', icon: PLATFORM_ICONS.Telegram },
+        { href: '/dashboard/services?platform=X (Twitter)', label: 'اكس (تويتر)', icon: PLATFORM_ICONS['X (Twitter)'] },
     ]
   },
   { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
