@@ -15,7 +15,6 @@ import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { aiSupportUsers as aiSupportUsersFlow } from '@/ai/flows/ai-support-users';
-import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 
 // Define the structure for a single message in the chat
@@ -91,7 +90,7 @@ export default function AiAssistant() {
          <ReactMarkdown
             components={{
                 p: ({node, ...props}) => <p className="text-sm text-foreground" {...props} />,
-                ul: ({node, ...props}) => <ul className="list-disc list-inside" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1" {...props} />,
                 li: ({node, ...props}) => <li className="text-foreground" {...props} />,
             }}
          >{String(children)}</ReactMarkdown>
@@ -103,7 +102,7 @@ export default function AiAssistant() {
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full shadow-lg"
+        className="fixed bottom-6 left-6 z-50 h-14 w-14 rounded-full shadow-lg bg-gradient-to-tr from-primary to-accent hover:scale-110 transition-transform duration-300"
         size="icon"
       >
         <Sparkles className="h-7 w-7" />
@@ -138,7 +137,7 @@ export default function AiAssistant() {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="اسأل عن أي شيء..."
+                placeholder="اسأل عن خدمة معينة..."
                 disabled={running}
                 dir="auto"
               />
