@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, runTransaction } from 'firebase/firestore';
 import type { User } from '@/lib/types';
@@ -36,10 +35,11 @@ import {
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from 'react';
 
 const RANKS: User['rank'][] = ['مستكشف نجمي', 'قائد صاروخي', 'سيد المجرة', 'سيد كوني'];
 
-function EditUserDialog({ user }: { user: User }) {
+function EditUserDialog({ user, onUserUpdate }: { user: User, onUserUpdate: () => void }) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ function EditUserDialog({ user }: { user: User }) {
   const [isSaving, setIsSaving] = useState(false);
   
   // Reset state when dialog opens
-  React.useEffect(() => {
+  useEffect(() => {
     if(open) {
         setBalance(user.balance.toString());
         setAdBalance(user.adBalance.toString());
@@ -73,6 +73,7 @@ function EditUserDialog({ user }: { user: User }) {
             });
         });
         toast({ title: 'نجاح', description: 'تم تحديث بيانات المستخدم بنجاح.' });
+        onUserUpdate();
         setOpen(false);
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'خطأ', description: error.message });
@@ -131,10 +132,10 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const usersQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'users') : null),
+    () => (firestore ? query(collection(firestore, 'users')) : null),
     [firestore]
   );
-  const { data: allUsers, isLoading } = useCollection<User>(usersQuery);
+  const { data: allUsers, isLoading, forceCollectionUpdate } = useCollection<User>(usersQuery);
 
   const filteredUsers = useMemo(() => {
     if (!allUsers) return [];
@@ -168,7 +169,7 @@ export default function AdminUsersPage() {
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
         <TableCell>{new Date(user.createdAt).toLocaleDateString('ar-EG')}</TableCell>
         <TableCell className="text-right">
-          <EditUserDialog user={user} />
+          <EditUserDialog user={user} onUserUpdate={forceCollectionUpdate} />
         </TableCell>
       </TableRow>
     ));
@@ -177,7 +178,7 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">إدارة المستخدمين</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المستخدمين</h1>
         <p className="text-muted-foreground">
           عرض وتعديل بيانات المستخدمين في المنصة.
         </p>
@@ -216,5 +217,3 @@ export default function AdminUsersPage() {
     </div>
   );
 }
-
-    
