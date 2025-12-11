@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from 'next/link';
@@ -90,7 +91,7 @@ export default function AdminLayout({
         router.push('/login');
       } else if (!ADMIN_EMAILS.includes(user.email || '')) {
         // If logged in but not an admin, redirect to user dashboard
-        router.push('/dashboard');
+        router.push('/');
       }
     }
   }, [user, isUserLoading, router]);

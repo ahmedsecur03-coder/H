@@ -1,4 +1,5 @@
 
+
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -26,25 +27,25 @@ import { PLATFORM_ICONS } from './icon-data';
 
 
 export const dashboardNavItems: NestedNavItem[] = [
-  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
   { href: '/services', label: 'الخدمات', icon: Package },
-  { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
-  { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
-  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
+  { href: '/orders', label: 'الطلبات', icon: ShoppingCart },
+  { href: '/mass-order', label: 'طلب جماعي', icon: ListOrdered },
+  { href: '/add-funds', label: 'شحن الرصيد', icon: DollarSign },
+  { href: '/affiliate', label: 'برنامج الإحالة', icon: Users },
   {
     label: 'الخدمات المتقدمة',
     icon: Rocket,
     href: '#',
     children: [
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+        { href: '/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
         { href: '/agency-accounts', label: 'حسابات إعلانية وكالة', icon: Briefcase },
     ]
   },
   { href: '/blog', label: 'المدونة', icon: BookOpen },
-  { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/dashboard/api', label: 'API', icon: Code2 },
-  { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
+  { href: '/support', label: 'الدعم الفني', icon: MessageSquare },
+  { href: '/api', label: 'API', icon: Code2 },
+  { href: '/system-status', label: 'حالة النظام', icon: HeartPulse },
 ];
 
 export const adminNavItems: NestedNavItem[] = [
@@ -58,5 +59,5 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
     { href: '/admin/system-log', label: 'سجل النظام', icon: History },
-    { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
+    { href: '/', label: 'لوحة المستخدم', icon: Shield },
 ];

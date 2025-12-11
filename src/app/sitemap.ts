@@ -6,16 +6,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // قائمة الصفحات الرئيسية
   const staticRoutes = [
     '/',
-    '/dashboard',
-    '/dashboard/services',
-    '/dashboard/orders',
-    '/dashboard/mass-order',
-    '/dashboard/add-funds',
-    '/dashboard/affiliate',
-    '/dashboard/campaigns',
-    '/dashboard/support',
-    '/dashboard/profile',
-    '/dashboard/settings',
+    '/orders',
+    '/mass-order',
+    '/add-funds',
+    '/affiliate',
+    '/campaigns',
+    '/support',
+    '/profile',
+    '/settings',
     '/login',
     '/signup'
   ];

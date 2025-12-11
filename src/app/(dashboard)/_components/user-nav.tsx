@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -66,13 +67,13 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/profile">
+            <Link href="/profile">
               <UserIcon className="ml-2 h-4 w-4" />
               <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/settings">
+            <Link href="/settings">
               <Settings className="ml-2 h-4 w-4" />
               <span>الإعدادات</span>
             </Link>

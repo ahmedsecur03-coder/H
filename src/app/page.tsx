@@ -1,198 +1,478 @@
 
+
 'use client';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Rocket, ShieldCheck, Zap, LogIn, UserPlus, Star, Package } from 'lucide-react';
-import Logo from '@/components/logo';
-import { useUser } from '@/firebase';
-import { UserNav } from './(dashboard)/_components/user-nav';
-import React from 'react';
+
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import CosmicBackground from '@/components/cosmic-background';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  DollarSign,
+  Loader2,
+  Users,
+  Trophy,
+  Rocket,
+  Shield,
+  Star,
+  Sparkles,
+  Diamond,
+  Check,
+  ShoppingCart,
+} from 'lucide-react';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
+import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { User as UserType, Order, Service } from '@/lib/types';
+import { useState, useMemo, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
+import Link from 'next/link';
 
-function Header() {
-  const { user, isUserLoading } = useUser();
 
-   const appUser = user ? {
-      name: user.displayName || `مستخدم #${user.uid.substring(0, 6)}`,
-      email: user.email || "مستخدم مسجل",
-      avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
-      id: user.uid
-  } : null;
+function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
+  const [link, setLink] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [cost, setCost] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openServiceSelector, setOpenServiceSelector] = useState(false)
+
+  const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
+  const { data: allServices, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+
+  const selectedService = useMemo(() => {
+    return selectedServiceId ? allServices?.find(s => s.id === selectedServiceId) : null;
+  }, [allServices, selectedServiceId]);
   
-  const adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
-  const isAdmin = user ? adminEmails.includes(user.email || '') : false;
+  const rank = getRankForSpend(userData?.totalSpent ?? 0);
+  const discountPercentage = rank.discount / 100;
+
+  useEffect(() => {
+    if (selectedService && quantity) {
+      const numQuantity = parseInt(quantity, 10);
+      if (!isNaN(numQuantity)) {
+        const baseCost = (numQuantity / 1000) * selectedService.price;
+        const discount = baseCost * discountPercentage;
+        setCost(baseCost - discount);
+      }
+    } else {
+      setCost(0);
+    }
+  }, [selectedService, quantity, discountPercentage]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firestore || !user || !selectedService || !link || !quantity) {
+      toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء جميع الحقول." });
+      return;
+    }
+    
+    const numQuantity = parseInt(quantity, 10);
+    if (isNaN(numQuantity) || numQuantity <= 0) {
+      toast({ variant: "destructive", title: "خطأ", description: "الكمية يجب أن تكون رقماً صحيحاً." });
+      return;
+    }
+
+    if (numQuantity < selectedService.min || numQuantity > selectedService.max) {
+       toast({ variant: "destructive", title: "خطأ", description: `الكمية خارج الحدود المسموحة (${selectedService.min} - ${selectedService.max}).` });
+      return;
+    }
+
+    if (userData.balance < cost) {
+      toast({ variant: "destructive", title: "خطأ", description: "رصيدك غير كافٍ لإتمام هذا الطلب." });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const userDocRef = doc(firestore, "users", user.uid);
+    const newOrderData: Omit<Order, 'id'> = {
+        userId: user.uid,
+        serviceId: selectedService.id,
+        serviceName: `${selectedService.platform} - ${selectedService.category}`,
+        link: link,
+        quantity: numQuantity,
+        charge: cost,
+        orderDate: new Date().toISOString(),
+        status: 'قيد التنفيذ',
+    };
+    
+    runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+
+        if ((userDoc.data().balance ?? 0) < cost) {
+            throw new Error("رصيدك غير كافٍ.");
+        }
+
+        let referrerDoc = null;
+        if (userDoc.data().referrerId) {
+             const referrerRef = doc(firestore, 'users', userDoc.data().referrerId);
+             referrerDoc = await transaction.get(referrerRef);
+        }
+
+        return processOrderInTransaction(transaction, firestore, user.uid, newOrderData, referrerDoc);
+    })
+    .then((result) => {
+        if (!result) return;
+        toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
+        if(result.promotion) {
+            setTimeout(() => toast(result.promotion), 1000);
+        }
+        setSelectedServiceId(undefined);
+        setLink('');
+        setQuantity('');
+        setCost(0);
+    })
+    .catch((error: any) => {
+        if(error.message.includes("رصيدك")) {
+            toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
+        } else {
+             const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+             });
+             errorEmitter.emit('permission-error', permissionError);
+        }
+        console.error("Order submission error:", error);
+    })
+    .finally(() => {
+        setIsSubmitting(false);
+    });
+  };
+
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Logo />
-        <nav className="flex items-center gap-4">
-          {isUserLoading ? (
-            <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
-          ) : user ? (
-            <>
-              <Button asChild>
-                <Link href="/dashboard">لوحة التحكم</Link>
-              </Button>
-               {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">
-                  <LogIn className="ml-2" />
-                  تسجيل الدخول
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">
-                  <UserPlus className="ml-2" />
-                  ابدأ الآن
-                </Link>
-              </Button>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-headline">تقديم طلب جديد</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {servicesLoading ? <QuickOrderFormSkeleton /> : (
+            <form onSubmit={handleSubmit} className="grid gap-6">
+              
+              <div className="grid gap-2">
+                 <Label>الخدمة</Label>
+                  <Popover open={openServiceSelector} onOpenChange={setOpenServiceSelector}>
+                      <PopoverTrigger asChild>
+                          <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openServiceSelector}
+                              className="w-full justify-between h-auto"
+                              disabled={servicesLoading}
+                          >
+                            <div className="flex flex-col text-right items-start">
+                              {selectedService
+                                  ? <>
+                                      <span className='font-bold'>{selectedService.platform} - {selectedService.category}</span>
+                                      <span className='text-xs text-muted-foreground'>${selectedService.price}/1k</span>
+                                    </>
+                                  : "ابحث عن خدمة بالاسم أو الرقم..."}
+                            </div>
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                              <CommandInput placeholder="ابحث عن خدمة..." />
+                              <CommandList>
+                                  <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
+                                  <CommandGroup>
+                                      {allServices?.map((s) => (
+                                          <CommandItem
+                                              key={s.id}
+                                              value={`${s.id} ${s.platform} ${s.category}`}
+                                              onSelect={() => {
+                                                  setSelectedServiceId(s.id)
+                                                  setOpenServiceSelector(false)
+                                              }}
+                                          >
+                                            <Check className={cn("ml-2 h-4 w-4", selectedServiceId === s.id ? "opacity-100" : "opacity-0")}/>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{s.platform} - {s.category}</span>
+                                                <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                                                    <span>ID: {s.id}</span>
+                                                    <span className='font-bold text-primary'>${s.price}/1k</span>
+                                                </div>
+                                            </div>
+                                          </CommandItem>
+                                      ))}
+                                  </CommandGroup>
+                              </CommandList>
+                          </Command>
+                      </PopoverContent>
+                  </Popover>
+              </div>
+
+              {selectedService && (
+                <>
+                    <Card className="bg-muted/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">وصف الخدمة</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 text-sm">
+                            <Alert variant="destructive" className="bg-destructive/10 text-destructive-foreground border-destructive/20">
+                                <AlertTitle className="flex items-center gap-2">🚨 تنبيه</AlertTitle>
+                                <AlertDescription>
+                                تأكد من تقديم طلبك بعناية قبل إرساله، حيث قد لا يكون الإلغاء بعد ذلك ممكنًا في بعض الأحيان.
+                                </AlertDescription>
+                            </Alert>
+                            <div>
+                                <h4 className="font-semibold mb-2">تفاصيل:</h4>
+                                <ul className="list-inside list-disc space-y-1 text-muted-foreground text-xs">
+                                   {selectedService.description?.split('\\n').map((line, i) => <li key={i}>{line}</li>)}
+                                    <li>إذا تم تغيير اسم الحساب، يعتبر الطلب مكتملاً.</li>
+                                    <li>تأكد من صحة الرابط قبل الطلب. إذا أدخلت رابطًا غير صحيح، فلن يكون هناك استرداد للمبلغ.</li>
+                                    <li>لا تطلب من مصدر آخر أثناء عملنا على طلبك.</li>
+                                    <li>تأكد من أن الحساب عام قبل إنشاء الطلب.</li>
+                                </ul>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="link">الرابط</Label>
+                        <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="quantity">الكمية (الحد الأدنى: {selectedService.min} - الحد الأقصى: {selectedService.max})</Label>
+                        <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required min={selectedService.min} max={selectedService.max}/>
+                    </div>
+
+                    <div className="text-sm font-medium text-center p-3 bg-muted rounded-md space-y-1">
+                         <div className="flex justify-between text-lg text-primary">
+                            <span className="font-bold">السعر:</span>
+                            <span className="font-bold">${cost.toFixed(4)}</span>
+                         </div>
+                         <p className="text-xs text-muted-foreground">(خصم {discountPercentage*100}%)</p>
+                    </div>
+
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/80" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'شراء الخدمة'}
+                    </Button>
+                </>
+              )}
+            </form>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
-export default function Home() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1">
-        <section className="relative w-full pt-24 pb-12 md:pt-40 md:pb-24 lg:pt-48 lg:pb-32 overflow-hidden">
-          <CosmicBackground />
-          <div className="container mx-auto px-4 md:px-6 text-center z-10 relative">
-            <div className="flex flex-col justify-center items-center space-y-6">
-              <div className="space-y-4">
-                 <h1 className="font-headline text-4xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl animated-gradient-text bg-gradient-to-r from-orange-400 via-amber-300 to-fuchsia-500">
-                  بوابتك إلى الكون الرقمي
-                </h1>
-                <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
-                  منصة حاجتي هي مركز قيادة لإطلاق إمكانياتك الكاملة في عالم التسويق الرقمي. من الحملات الإعلانية الذكية إلى تعزيز وجودك على وسائل التواصل الاجتماعي، نحن هنا لنجعل المستحيل ممكناً.
-                </p>
-              </div>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Button size="lg" asChild className="shadow-lg shadow-primary/20 hover:brightness-125 transition-all duration-300">
-                  <Link href="/signup">استكشف الكون</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-background/50 z-10 relative">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-5xl">لماذا تختار حاجاتي؟</h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  نظام يجمع بين القوة والحداثة والسرعة
-                </p>
-              </div>
-            </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 py-12 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3">
-              {[
-                { icon: ShieldCheck, title: "أمان وموثوقية", description: "استمتع بخدمات عالية الجودة مع ضمان أمان حسابك. نحن نستخدم أحدث التقنيات لتوفير بيئة آمنة وموثوقة لجميع عملياتك." },
-                { icon: Star, title: "جودة استثنائية", description: "نحن نقدم خدمات عالية الجودة من موردين موثوقين لضمان أفضل النتائج. لدينا فريق من الخبراء لمراقبة جودة الخدمات بشكل دوري." },
-                { icon: Zap, title: "تنفيذ فائق السرعة", description: "ابدأ حملاتك واحصل على نتائج فورية. أنظمتنا المتطورة تضمن تنفيذ طلباتك بسرعة قياسية مع الحفاظ على الجودة." },
-              ].map((feature, i) => (
-                  <div key={i} className="group grid gap-2 text-center p-4 rounded-lg hover:bg-card transition-colors duration-300">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20">
-                        <feature.icon className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-xl font-bold font-headline">{feature.title}</h3>
-                    <p className="text-muted-foreground">
-                        {feature.description}
-                    </p>
-                  </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        
-        <section className="w-full py-12 md:py-24 lg:py-32 z-10 relative">
-            <div className="container mx-auto px-4 md:px-6">
-                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-5xl">خدماتنا الرئيسية</h2>
-                    <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                      أدوات قوية مصممة لمساعدتك على النمو
-                    </p>
-                  </div>
+function QuickOrderFormSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-1/2" />
+            </CardHeader>
+            <CardContent>
+                <div className="grid gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                    <div className="bg-card p-8 rounded-lg">
-                        <Package className="h-8 w-8 text-primary mb-4" />
-                        <h3 className="text-2xl font-bold font-headline mb-2">الخدمات الكونية (SMM)</h3>
-                        <p className="text-muted-foreground mb-4">
-                            عزز تواجدك على وسائل التواصل الاجتماعي مع باقات المتابعين، الإعجابات، والمشاهدات لجميع المنصات. أسعار تنافسية وجودة لا تضاهى.
-                        </p>
-                        <Button variant="link" asChild><Link href="/services">اعرف المزيد</Link></Button>
-                    </div>
-                     <div className="bg-card p-8 rounded-lg">
-                        <Zap className="h-8 w-8 text-primary mb-4" />
-                        <h3 className="text-2xl font-bold font-headline mb-2">محرك الإعلانات</h3>
-                        <p className="text-muted-foreground mb-4">
-                            أدر حملاتك الإعلانية المدفوعة على جوجل، فيسبوك، وتيك توك من مكان واحد. أدوات تحليلية قوية وبوابة دفع مرنة لإطلاق حملات ناجحة.
-                        </p>
-                        <Button variant="link" asChild><Link href="/dashboard/campaigns">اعرف المزيد</Link></Button>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </CardContent>
+        </Card>
+    );
+}
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-background/50 z-10 relative">
-            <div className="container mx-auto px-4 md:px-6 max-w-3xl">
-                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-headline font-bold tracking-tighter sm:text-5xl">أسئلة شائعة</h2>
-                  </div>
-                </div>
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger>ما هي طرق الدفع المقدمة؟</AccordionTrigger>
-                    <AccordionContent>
-                      نحن نقدم طرق دفع متعددة ومرنة تشمل فودافون كاش، Binance Pay، والتحويلات البنكية. يمكنك شحن رصيدك بسهولة والبدء في استخدام خدماتنا.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger>ما هي مدة تنفيذ الطلبات؟</AccordionTrigger>
-                    <AccordionContent>
-                      تختلف مدة التنفيذ باختلاف الخدمة المطلوبة. معظم خدمات SMM تبدأ في التنفيذ خلال دقائق من الطلب، بينما قد تتطلب الحملات الإعلانية بعض الوقت للمراجعة والإعداد.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-3">
-                    <AccordionTrigger>هل استخدام خدماتكم آمن على حسابي؟</AccordionTrigger>
-                    <AccordionContent>
-                     نعم، نحن نضمن أمان حسابك. جميع خدماتنا تتوافق مع سياسات المنصات الاجتماعية. نحن لا نطلب كلمة المرور الخاصة بحسابك أبدًا.
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-            </div>
-        </section>
+export default function DashboardPage() {
+  const { user: authUser, isUserLoading: isAuthLoading } = useUser();
+  const firestore = useFirestore();
 
-      </main>
-      <footer className="bg-card border-t border-border z-10 relative">
-        <div className="container mx-auto py-6 px-4 md:px-6 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>
-            <nav className="flex gap-4 sm:gap-6">
-                <Link href="#" className="text-sm hover:text-primary underline-offset-4">شروط الخدمة</Link>
-                <Link href="#" className="text-sm hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
-            </nav>
+  const userDocRef = useMemoFirebase(
+    () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
+    [firestore, authUser]
+  );
+  const { data: userData, isLoading: isUserLoading } = useDoc<UserType>(userDocRef);
+
+  const ordersQuery = useMemoFirebase(
+    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
+    [firestore, authUser]
+  );
+  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+
+  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
+  
+  if (isLoading || !userData || !authUser) {
+    return (
+      <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+            <div className='mb-4'>
+                <Skeleton className="h-8 w-1/4 mb-2" />
+                <Skeleton className="h-5 w-1/2" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
+            </div>
+             <QuickOrderFormSkeleton />
         </div>
-      </footer>
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
+          <Skeleton className="h-[150px]" />
+          <Skeleton className="h-[300px]" />
+        </div>
+      </div>
+    );
+  }
+  
+  const rank = getRankForSpend(userData?.totalSpent ?? 0);
+  
+  const achievements = [
+    { icon: Rocket, title: "المنطلق الصاروخي", completed: (recentOrders?.length || 0) > 0 },
+    { icon: Shield, title: "المستخدم الموثوق", completed: (recentOrders?.length || 0) >= 10 },
+    { icon: ShoppingCart, title: "سيد الطلبات", completed: (recentOrders?.length || 0) >= 50 },
+    { icon: Star, title: "النجم الصاعد", completed: (userData.totalSpent || 0) >= 100 },
+    { icon: DollarSign, title: "ملك الإنفاق", completed: (userData.totalSpent || 0) >= 1000 },
+    { icon: Sparkles, title: "العميل المميز", completed: (userData.rank) === 'سيد المجرة' },
+    { icon: Diamond, title: "الأسطورة الكونية", completed: (userData.rank) === 'سيد كوني' },
+    { icon: Users, title: "المسوق الشبكي", completed: (userData.referralsCount || 0) >= 5 },
+  ];
+  
+  const statusVariant = {
+    'مكتمل': 'default',
+    'قيد التنفيذ': 'secondary',
+    'ملغي': 'destructive',
+    'جزئي': 'outline',
+  } as const;
+
+
+  return (
+    <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
+      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+            <div className='mb-4'>
+                <h1 className='text-3xl font-bold font-headline'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
+                <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
+            </div>
+        
+            <QuickOrderForm user={authUser} userData={userData} />
+
+            <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">آخر 5 طلبات</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>الخدمة</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-left">التكلفة</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {recentOrders && recentOrders.length > 0 ? (
+                    recentOrders.map((order) => (
+                        <TableRow key={order.id}>
+                        <TableCell className="font-medium">{order.serviceName}</TableCell>
+                        <TableCell>
+                            <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-left">${order.charge.toFixed(2)}</TableCell>
+                        </TableRow>
+                    ))
+                    ) : (
+                    <TableRow>
+                        <TableCell colSpan={3} className="text-center h-24">
+                        لا توجد طلبات لعرضها.
+                        </TableCell>
+                    </TableRow>
+                    )}
+                </TableBody>
+                </Table>
+            </CardContent>
+            </Card>
+      </div>
+
+      <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>الرصيد الأساسي</CardDescription>
+                    <CardTitle className="text-3xl">${(userData?.balance ?? 0).toFixed(2)}</CardTitle>
+                </CardHeader>
+                 <CardContent>
+                    <Button size="sm" className="w-full" asChild>
+                        <Link href="/add-funds">شحن الرصيد</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>الرصيد الإعلاني</CardDescription>
+                    <CardTitle className="text-3xl">${(userData?.adBalance ?? 0).toFixed(2)}</CardTitle>
+                </CardHeader>
+                  <CardContent>
+                    <Button size="sm" variant="outline" className="w-full" asChild>
+                        <Link href="/add-funds">تحويل رصيد</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>إجمالي الإنفاق</CardDescription>
+                    <CardTitle className="text-3xl">${(userData?.totalSpent ?? 0).toFixed(2)}</CardTitle>
+                </CardHeader>
+            </Card>
+             <Card>
+                <CardHeader className="pb-2">
+                    <CardDescription>رتبتك الكونية</CardDescription>
+                    <CardTitle className="text-xl text-primary">{rank.name}</CardTitle>
+                </CardHeader>
+            </Card>
+        </div>
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                    <span>الإنجازات الكونية</span>
+                    <Trophy className="text-primary"/>
+                </CardTitle>
+                 <CardDescription>أكملت {achievements.filter(a => a.completed).length} من {achievements.length} إنجازات</CardDescription>
+            </CardHeader>
+            <CardContent className='grid grid-cols-4 gap-4'>
+                 {achievements.map((ach, i) => (
+                    <TooltipProvider key={i}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className={cn(
+                                    'flex flex-col items-center justify-center gap-1 p-2 rounded-lg aspect-square border-2 transition-all',
+                                    ach.completed ? 'border-primary/50 bg-primary/20 text-primary' : 'border-transparent bg-muted text-muted-foreground'
+                                )}>
+                                    <ach.icon className="h-6 w-6" />
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{ach.title}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                ))}
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
-
-    
