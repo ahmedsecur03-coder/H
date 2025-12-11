@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Loader2, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, RefreshCw, BarChart, TrendingUp, MousePointerClick } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { simulateCampaignSpend } from '@/ai/flows/campaign-simulation-flow';
+import { simulateCampaignPerformance } from '@/ai/flows/campaign-simulation-flow';
 
 const statusVariant = {
   'نشط': 'default',
@@ -47,7 +47,7 @@ const statusVariant = {
 
 type Status = keyof typeof statusVariant;
 
-function CampaignActions({ campaign }: { campaign: Campaign }) {
+function CampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
@@ -65,6 +65,7 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
                 transaction.update(campaignDocRef, { status: newStatus });
             });
             toast({ title: 'نجاح', description: `تم تغيير حالة الحملة إلى ${newStatus}` });
+            forceCollectionUpdate(); // Force re-fetch
             setOpen(false);
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
@@ -93,6 +94,7 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
             });
 
             toast({ title: 'نجاح', description: 'تم رفض الحملة وإعادة الميزانية للمستخدم.' });
+            forceCollectionUpdate(); // Force re-fetch
             setOpen(false);
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'فشل الرفض', description: error.message });
@@ -112,35 +114,48 @@ function CampaignActions({ campaign }: { campaign: Campaign }) {
             return;
         }
 
-        try {
-            const remainingBudget = campaign.budget - campaign.spend;
-            if(remainingBudget <= 0) {
-                 toast({ variant: 'destructive', title: 'تنبيه', description: 'ميزانية الحملة قد استنفدت بالفعل.' });
-                 // Optionally update status to 'مكتمل'
-                 const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-                 await runTransaction(firestore, async (transaction) => {
-                    transaction.update(campaignDocRef, { status: "مكتمل" });
-                 });
-                 setSimulating(false);
-                 return;
-            }
+        const remainingBudget = campaign.budget - campaign.spend;
+        if(remainingBudget <= 0) {
+             toast({ variant: 'destructive', title: 'تنبيه', description: 'ميزانية الحملة قد استنفدت بالفعل.' });
+             const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+             await runTransaction(firestore, async (transaction) => {
+                transaction.update(campaignDocRef, { status: "مكتمل" });
+             });
+             forceCollectionUpdate();
+             setSimulating(false);
+             return;
+        }
 
-            const { simulatedSpend } = await simulateCampaignSpend({
+        try {
+            const { simulatedSpend, simulatedImpressions, simulatedClicks, simulatedResults } = await simulateCampaignPerformance({
                 campaignName: campaign.name,
                 platform: campaign.platform,
+                goal: campaign.goal,
                 remainingBudget: remainingBudget,
                 dailySpend: dailySpendAmount,
             });
 
-            const newSpend = campaign.spend + simulatedSpend;
+            const newSpend = (campaign.spend || 0) + simulatedSpend;
+            const newImpressions = (campaign.impressions || 0) + simulatedImpressions;
+            const newClicks = (campaign.clicks || 0) + simulatedClicks;
+            const newResults = (campaign.results || 0) + simulatedResults;
             const newStatus = newSpend >= campaign.budget ? 'مكتمل' : campaign.status;
 
             const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
             await runTransaction(firestore, async (transaction) => {
-                transaction.update(campaignDocRef, { spend: newSpend, status: newStatus });
+                transaction.update(campaignDocRef, { 
+                    spend: newSpend,
+                    impressions: newImpressions,
+                    clicks: newClicks,
+                    results: newResults,
+                    ctr: newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0,
+                    cpc: newClicks > 0 ? newSpend / newClicks : 0,
+                    status: newStatus 
+                });
             });
 
             toast({ title: 'محاكاة ناجحة', description: `تم إنفاق ${simulatedSpend.toFixed(2)}$ من الميزانية.`});
+            forceCollectionUpdate();
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'فشل المحاكاة', description: error.message });
         } finally {
@@ -220,7 +235,7 @@ export default function AdminCampaignsPage() {
     return query(q);
   }, [firestore, filter]);
 
-  const { data: campaigns, isLoading } = useCollection<Campaign>(campaignsQuery);
+  const { data: campaigns, isLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
 
   const renderContent = () => {
     if (isLoading) {
@@ -245,10 +260,10 @@ export default function AdminCampaignsPage() {
         <TableCell className="font-mono text-xs">{campaign.userId.substring(0, 10)}...</TableCell>
         <TableCell>{campaign.platform}</TableCell>
         <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
-        <TableCell>${campaign.spend.toFixed(2)}</TableCell>
+        <TableCell>${(campaign.spend || 0).toFixed(2)}</TableCell>
         <TableCell>${campaign.budget.toFixed(2)}</TableCell>
         <TableCell className="text-right">
-          <CampaignActions campaign={campaign} />
+          <CampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
         </TableCell>
       </TableRow>
     ));

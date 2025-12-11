@@ -209,6 +209,14 @@
           "type": "string",
           "description": "Platform the campaign is running on (e.g., Google Ads, Facebook)."
         },
+        "goal": {
+          "type": "string",
+          "description": "The objective of the campaign (e.g., website traffic, video views, conversions)."
+        },
+        "targetAudience": {
+            "type": "string",
+            "description": "A description of the target audience for the campaign."
+        },
         "startDate": {
           "type": "string",
           "description": "Date and time the campaign started.",
@@ -230,6 +238,26 @@
         "status": {
           "type": "string",
           "description": "Current status of the campaign (e.g., active, paused, completed)."
+        },
+        "impressions": {
+            "type": "number",
+            "description": "Total number of times the ad was shown."
+        },
+        "clicks": {
+            "type": "number",
+            "description": "Total number of clicks on the ad."
+        },
+        "ctr": {
+            "type": "number",
+            "description": "Click-Through Rate (clicks / impressions)."
+        },
+        "cpc": {
+            "type": "number",
+            "description": "Cost Per Click (spend / clicks)."
+        },
+        "results": {
+            "type": "number",
+            "description": "Number of results achieved, based on the campaign goal."
         }
       },
       "required": [
@@ -237,6 +265,8 @@
         "userId",
         "name",
         "platform",
+        "goal",
+        "targetAudience",
         "startDate",
         "budget",
         "spend",

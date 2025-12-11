@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@
 import { runTransaction, collection, query, doc, addDoc, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Loader2, Code, Facebook, Search } from "lucide-react";
+import { PlusCircle, Rocket, Loader2, Code, Facebook, Search, BarChart, Eye, MousePointerClick, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 
 const platformIcons = {
     Google: <Search className="w-8 h-8 text-primary" />,
@@ -35,13 +36,15 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52 2.845-.52 1.205 1.408 2.214 2.564 2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
 };
 
 type Platform = keyof typeof platformIcons;
+type Goal = Campaign['goal'];
+
 
 const platforms: { name: Platform; title: string; description: string; }[] = [
     { name: 'TikTok', title: 'TikTok Ads', description: 'حقق الانتشار الفيروسي بالإعلانات القصيرة.' },
@@ -49,6 +52,14 @@ const platforms: { name: Platform; title: string; description: string; }[] = [
     { name: 'Google', title: 'Google Ads', description: 'الوصول للعملاء أثناء بحثهم عنك.' },
     { name: 'Snapchat', title: 'Snapchat Ads', description: 'تواصل مع جيل الشباب بإعلانات إبداعية.' },
     { name: 'API', title: 'API & Automation', description: 'أتمتة حملاتك برمجياً.' },
+];
+
+const goals: { name: Goal; title: string }[] = [
+    { name: 'زيادة الوعي', title: 'زيادة الوعي' },
+    { name: 'زيارات للموقع', title: 'زيارات للموقع' },
+    { name: 'تفاعل مع المنشور', title: 'تفاعل مع المنشور' },
+    { name: 'مشاهدات فيديو', title: 'مشاهدات فيديو' },
+    { name: 'تحويلات', title: 'تحويلات' },
 ];
 
 
@@ -65,16 +76,56 @@ function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">عرض التفاصيل</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>تفاصيل الحملة: {campaign.name}</DialogTitle>
+                    <DialogDescription>نظرة شاملة على أداء حملتك حتى الآن.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <div className="flex justify-between"><span>الحالة:</span> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></div>
-                    <div className="flex justify-between"><span>المنصة:</span> <span>{campaign.platform}</span></div>
-                    <div className="flex justify-between"><span>الميزانية:</span> <span className="font-mono font-bold">${campaign.budget.toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span>الإنفاق:</span> <span className="font-mono font-bold">${campaign.spend.toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span>تاريخ البدء:</span> <span>{new Date(campaign.startDate).toLocaleDateString('ar-EG')}</span></div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4 py-4">
+                     <div className="flex items-center justify-between col-span-2">
+                        <span className="text-muted-foreground">الحالة:</span>
+                        <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge>
+                    </div>
+
+                    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                        <Eye className="w-8 h-8 text-primary" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">مرات الظهور</p>
+                            <p className="text-xl font-bold">{(campaign.impressions || 0).toLocaleString()}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                        <MousePointerClick className="w-8 h-8 text-primary" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">النقرات</p>
+                            <p className="text-xl font-bold">{(campaign.clicks || 0).toLocaleString()}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                        <Target className="w-8 h-8 text-primary" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">النتائج ({campaign.goal})</p>
+                            <p className="text-xl font-bold">{(campaign.results || 0).toLocaleString()}</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                        <BarChart className="w-8 h-8 text-primary" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">نسبة النقر (CTR)</p>
+                            <p className="text-xl font-bold">{(campaign.ctr || 0).toFixed(2)}%</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">تكلفة النقرة (CPC):</span>
+                        <span className="font-mono font-bold">${(campaign.cpc || 0).toFixed(3)}</span>
+                    </div>
+                     <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">الإنفاق / الميزانية:</span>
+                        <span className="font-mono font-bold">${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
+                    </div>
+                </div>
+                 <div className="w-full bg-muted rounded-full h-2.5">
+                    <div className="bg-primary h-2.5 rounded-full" style={{width: `${(campaign.spend / (campaign.budget || 1)) * 100}%`}}></div>
                 </div>
             </DialogContent>
         </Dialog>
@@ -87,6 +138,8 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [platform, setPlatform] = useState<Platform | undefined>();
+    const [goal, setGoal] = useState<Goal | undefined>();
+    const [targetAudience, setTargetAudience] = useState('');
     const [budget, setBudget] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -94,7 +147,7 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
         e.preventDefault();
         const budgetAmount = parseFloat(budget);
 
-        if (!firestore || !user || !name || !platform || !budgetAmount || budgetAmount <= 0) {
+        if (!firestore || !user || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول بشكل صحيح.' });
             return;
         }
@@ -122,22 +175,27 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                     userId: user.uid,
                     name,
                     platform,
+                    goal,
+                    targetAudience,
                     startDate: new Date().toISOString(),
                     budget: budgetAmount,
                     spend: 0,
-                    status: 'بانتظار المراجعة'
+                    status: 'بانتظار المراجعة',
+                    impressions: 0,
+                    clicks: 0,
+                    results: 0,
+                    ctr: 0,
+                    cpc: 0,
                 };
-                // Use transaction to set the new campaign doc
-                const newCampaignDoc = doc(campaignColRef); // create a new doc ref with a random id.
+                const newCampaignDoc = doc(campaignColRef);
                 transaction.set(newCampaignDoc, newCampaignData);
             });
 
             toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
             onCampaignCreated();
             setOpen(false);
-            setName('');
-            setPlatform(undefined);
-            setBudget('');
+            // Reset form
+            setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget('');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
         } finally {
@@ -173,6 +231,19 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
                                 {platforms.map(p => <SelectItem key={p.name} value={p.name}>{p.title}</SelectItem>)}
                             </SelectContent>
                         </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="goal">الهدف من الحملة</Label>
+                         <Select onValueChange={(value) => setGoal(value as Goal)} value={goal}>
+                            <SelectTrigger id="goal"><SelectValue placeholder="اختر هدف الحملة" /></SelectTrigger>
+                            <SelectContent>
+                                {goals.map(g => <SelectItem key={g.name} value={g.name}>{g.title}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="target-audience">وصف الجمهور المستهدف</Label>
+                        <Textarea id="target-audience" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} required placeholder="مثال: شباب في مصر مهتمون بكرة القدم والألعاب الإلكترونية" />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="budget">الميزانية ($)</Label>
