@@ -28,6 +28,7 @@ function UserInitializer() {
           const newUser: Omit<UserType, 'id'> = {
             name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
             email: user.email || 'N/A',
+            avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
             rank: 'مستكشف نجمي',
             balance: 0,
             adBalance: 0,

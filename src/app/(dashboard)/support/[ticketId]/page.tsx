@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
@@ -83,19 +83,27 @@ export default function TicketDetailsPage() {
       timestamp: new Date().toISOString(),
     };
 
-    try {
-      await updateDoc(ticketDocRef, {
+    const updatedData = {
         messages: arrayUnion(newMessage),
         status: 'قيد المراجعة',
-      });
-      setReplyMessage('');
-      toast({ title: 'تم إرسال ردك بنجاح.' });
-    } catch (error) {
-      console.error("Reply error:", error);
-      toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال ردك.' });
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+
+    updateDoc(ticketDocRef, updatedData)
+        .then(() => {
+            setReplyMessage('');
+            toast({ title: 'تم إرسال ردك بنجاح.' });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: ticketDocRef.path,
+                operation: 'update',
+                requestResourceData: { status: 'قيد المراجعة' }
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        })
+        .finally(() => {
+            setIsSubmitting(false);
+        });
   };
 
 

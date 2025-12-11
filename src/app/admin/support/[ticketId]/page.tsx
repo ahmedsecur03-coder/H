@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
@@ -98,24 +99,30 @@ export default function AdminTicketDetailsPage() {
       text: replyMessage,
       timestamp: new Date().toISOString(),
     };
-
-    try {
-      const updates: Partial<Ticket> = {
-          messages: arrayUnion(newMessage) as any
-      };
-      if (newStatus && newStatus !== ticket.status) {
-          updates.status = newStatus;
-      }
-      await updateDoc(ticketDocRef, updates);
-
-      setReplyMessage('');
-      toast({ title: 'تم إرسال الرد بنجاح.' });
-    } catch (error) {
-      console.error("Reply error:", error);
-      toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال الرد.' });
-    } finally {
-      setIsSubmitting(false);
+    
+    const updates: any = {
+        messages: arrayUnion(newMessage)
+    };
+    if (newStatus && newStatus !== ticket.status) {
+        updates.status = newStatus;
     }
+
+    updateDoc(ticketDocRef, updates)
+        .then(() => {
+             setReplyMessage('');
+             toast({ title: 'تم إرسال الرد بنجاح.' });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: ticketDocRef.path,
+                operation: 'update',
+                requestResourceData: updates,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        })
+        .finally(() => {
+            setIsSubmitting(false);
+        })
   };
 
 

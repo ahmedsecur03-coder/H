@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, query, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,36 +79,59 @@ export default function AdminBlogPage() {
 
     const handleAddPost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
-        try {
-            await addDoc(collection(firestore, 'blogPosts'), {
-                ...data,
-                authorId: user.uid,
-                publishDate: new Date().toISOString(),
+        
+        const newPostData = {
+            ...data,
+            authorId: user.uid,
+            publishDate: new Date().toISOString(),
+        };
+
+        const postsColRef = collection(firestore, 'blogPosts');
+        addDoc(postsColRef, newPostData)
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: postsColRef.path,
+                    operation: 'create',
+                    requestResourceData: newPostData
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        }
     };
 
     const handleEditPost = async (id: string, data: { title: string; content: string }) => {
         if (!firestore) return;
-        try {
-            await updateDoc(doc(firestore, 'blogPosts', id), data);
-            toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        }
+        const postDocRef = doc(firestore, 'blogPosts', id);
+        updateDoc(postDocRef, data)
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
+            })
+            .catch(serverError => {
+                 const permissionError = new FirestorePermissionError({
+                    path: postDocRef.path,
+                    operation: 'update',
+                    requestResourceData: data
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     };
 
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
-        try {
-            await deleteDoc(doc(firestore, 'blogPosts', id));
-            toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        }
+        const postDocRef = doc(firestore, 'blogPosts', id);
+        deleteDoc(postDocRef)
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
+            })
+            .catch(serverError => {
+                 const permissionError = new FirestorePermissionError({
+                    path: postDocRef.path,
+                    operation: 'delete',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
     };
 
     const renderContent = () => {

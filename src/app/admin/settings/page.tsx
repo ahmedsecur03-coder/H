@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2 } from 'lucide-react';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -54,7 +54,7 @@ export default function AdminSettingsPage() {
 
 
   const handleSaveChanges = async () => {
-    if (!firestore) return;
+    if (!firestore || !settingsDocRef) return;
     setIsSaving(true);
     
     const settingsToSave = {
@@ -65,21 +65,24 @@ export default function AdminSettingsPage() {
         dealOfTheDay,
     };
 
-    try {
-        await setDoc(doc(firestore, 'settings', 'global'), settingsToSave, { merge: true });
-        toast({
-          title: "تم حفظ الإعدادات",
-          description: "تم تحديث إعدادات الموقع بنجاح.",
+    setDoc(settingsDocRef, settingsToSave, { merge: true })
+        .then(() => {
+             toast({
+              title: "تم حفظ الإعدادات",
+              description: "تم تحديث إعدادات الموقع بنجاح.",
+            });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: settingsDocRef.path,
+                operation: 'write',
+                requestResourceData: settingsToSave,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        })
+        .finally(() => {
+            setIsSaving(false);
         });
-    } catch(error: any) {
-        toast({
-          variant: "destructive",
-          title: "خطأ",
-          description: "فشل حفظ الإعدادات: " + error.message,
-        });
-    } finally {
-        setIsSaving(false);
-    }
   };
 
   const handleCleanup = async (type: 'orders' | 'deposits') => {

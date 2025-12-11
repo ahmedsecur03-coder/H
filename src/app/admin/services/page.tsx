@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, query, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import {
@@ -159,32 +159,52 @@ export default function AdminServicesPage() {
 
   const handleAddService = async (data: Omit<Service, 'id'>) => {
     if (!firestore) return;
-    try {
-        await addDoc(collection(firestore, 'services'), data);
-        toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-    }
+    const servicesColRef = collection(firestore, 'services');
+    addDoc(servicesColRef, data)
+        .then(() => {
+            toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: servicesColRef.path,
+                operation: 'create',
+                requestResourceData: data
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   };
 
   const handleEditService = async (id: string, data: Omit<Service, 'id'>) => {
      if (!firestore) return;
-    try {
-        await updateDoc(doc(firestore, 'services', id), data);
-        toast({ title: 'نجاح', description: 'تم تحديث الخدمة بنجاح.' });
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-    }
+    const serviceDocRef = doc(firestore, 'services', id);
+    updateDoc(serviceDocRef, data)
+        .then(() => {
+            toast({ title: 'نجاح', description: 'تم تحديث الخدمة بنجاح.' });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: serviceDocRef.path,
+                operation: 'update',
+                requestResourceData: data
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   };
 
   const handleDeleteService = async (id: string) => {
       if (!firestore) return;
-      try {
-        await deleteDoc(doc(firestore, 'services', id));
-        toast({ title: 'نجاح', description: 'تم حذف الخدمة بنجاح.' });
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-    }
+      const serviceDocRef = doc(firestore, 'services', id);
+      deleteDoc(serviceDocRef)
+        .then(() => {
+            toast({ title: 'نجاح', description: 'تم حذف الخدمة بنجاح.' });
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: serviceDocRef.path,
+                operation: 'delete'
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   };
 
   const renderContent = () => {

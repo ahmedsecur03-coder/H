@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import CosmicBackground from '@/components/cosmic-background';
+import { FirestorePermissionError, errorEmitter } from '@/firebase';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -41,24 +42,6 @@ export default function SignupPage() {
       // Now, handle the creation of the user document and referral logic in a transaction
       await runTransaction(firestore, async (transaction) => {
         let referrerId: string | null = null;
-
-        // 1. Find the referrer if a referral code is present
-        if (referralCode) {
-            const usersRef = collection(firestore, 'users');
-            const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-                const referrerDoc = querySnapshot.docs[0];
-                referrerId = referrerDoc.id;
-                
-                // 2. Update the referrer's referralsCount
-                const newReferralsCount = (referrerDoc.data().referralsCount || 0) + 1;
-                transaction.update(referrerDoc.ref, { referralsCount: newReferralsCount });
-            }
-        }
-        
-        // 3. Create the new user's document
-        const newUserDocRef = doc(firestore, 'users', newUser.uid);
         const newUserProfile: Omit<User, 'id'> = {
             name: name,
             email: newUser.email || 'N/A',
@@ -79,7 +62,33 @@ export default function SignupPage() {
                 orderUpdates: true
             }
         };
+
+        // 1. Find the referrer if a referral code is present
+        if (referralCode) {
+            const usersRef = collection(firestore, 'users');
+            const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                const referrerDoc = querySnapshot.docs[0];
+                referrerId = referrerDoc.id;
+                newUserProfile.referrerId = referrerId;
+                
+                // 2. Update the referrer's referralsCount
+                const newReferralsCount = (referrerDoc.data().referralsCount || 0) + 1;
+                transaction.update(referrerDoc.ref, { referralsCount: newReferralsCount });
+            }
+        }
+        
+        // 3. Create the new user's document
+        const newUserDocRef = doc(firestore, 'users', newUser.uid);
         transaction.set(newUserDocRef, newUserProfile);
+      }).catch(serverError => {
+          const permissionError = new FirestorePermissionError({
+            path: `users/${newUser.uid}`,
+            operation: 'create',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          throw permissionError; // Re-throw to be caught by outer catch
       });
 
       // 4. Update the user's auth profile (displayName, photoURL)
@@ -89,6 +98,12 @@ export default function SignupPage() {
       router.push('/dashboard');
 
     } catch (error: any) {
+      // Don't show toast if it's our custom permission error, as it will be handled by the listener
+      if (error instanceof FirestorePermissionError) {
+        setLoading(false);
+        return;
+      }
+
       console.error(error);
       let description = 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
       if (error.code === 'auth/email-already-in-use') {

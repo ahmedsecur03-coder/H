@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { runTransaction, collection, doc, query, addDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -163,107 +163,115 @@ export default function MassOrderPage() {
         }
 
         // 3. Execute transaction
-        try {
-            let promotionToast: { title: string; description: string } | null = null;
-            await runTransaction(firestore, async (transaction) => {
-                const userRef = doc(firestore, 'users', authUser.uid);
-                const userDoc = await transaction.get(userRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-                
-                const currentData = userDoc.data() as User;
-                const currentBalance = currentData.balance;
-                if (currentBalance < totalFinalCost) throw new Error("رصيدك غير كافٍ.");
-
-                const newTotalSpent = currentData.totalSpent + totalFinalCost;
-                const oldRank = getRankForSpend(currentData.totalSpent);
-                const newRank = getRankForSpend(newTotalSpent);
-
-                const updates: Partial<User> = {
-                    balance: currentBalance - totalFinalCost,
-                    totalSpent: newTotalSpent
-                };
-                
-                if (newRank.name !== oldRank.name) {
-                    updates.rank = newRank.name;
-                    if(newRank.reward > 0) {
-                       updates.adBalance = (currentData.adBalance || 0) + newRank.reward;
-                        promotionToast = {
-                            title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
-                            description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
-                        };
-                    }
-                }
-                
-                transaction.update(userRef, updates);
-                
-                let referrerDoc: any = null;
-                let referrerUpdates: Partial<User> = {};
-
-                if (currentData.referrerId) {
-                    const referrerRef = doc(firestore, 'users', currentData.referrerId);
-                    referrerDoc = await transaction.get(referrerRef);
-                    if (referrerDoc.exists()) {
-                        referrerUpdates.affiliateEarnings = referrerDoc.data().affiliateEarnings || 0;
-                    }
-                }
-
-
-                for (const pLine of validLines) {
-                    if (pLine.isValid && pLine.finalCost && pLine.service) {
-                        const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
-                        const newOrder: Omit<Order, 'id'> = {
-                            userId: authUser!.uid,
-                            serviceId: pLine.service.id,
-                            serviceName: `${pLine.service.platform} - ${pLine.service.category}`,
-                            link: pLine.link,
-                            quantity: pLine.quantity,
-                            charge: pLine.finalCost,
-                            orderDate: new Date().toISOString(),
-                            status: 'قيد التنفيذ',
-                        };
-                        transaction.set(newOrderRef, newOrder);
-
-                        if(referrerDoc?.exists()) {
-                            const referrerData = referrerDoc.data() as User;
-                            const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
-                            const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
-                            const commissionAmount = pLine.finalCost * commissionRate;
-                            
-                            referrerUpdates.affiliateEarnings! += commissionAmount;
-                            
-                            const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
-                            transaction.set(newTransactionRef, {
-                                userId: referrerData.id,
-                                referralId: authUser.uid,
-                                orderId: newOrderRef.id,
-                                amount: commissionAmount,
-                                transactionDate: new Date().toISOString(),
-                                level: 1 // Assuming direct referral for now
-                            });
-                        }
-                    }
-                }
-
-                if (referrerDoc?.exists() && Object.keys(referrerUpdates).length > 0) {
-                    transaction.update(referrerDoc.ref, referrerUpdates);
-                }
-            });
+        let promotionToast: { title: string; description: string } | null = null;
+        runTransaction(firestore, async (transaction) => {
+            const userRef = doc(firestore, 'users', authUser.uid);
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
             
+            const currentData = userDoc.data() as User;
+            const currentBalance = currentData.balance;
+            if (currentBalance < totalFinalCost) throw new Error("رصيدك غير كافٍ.");
+
+            const newTotalSpent = currentData.totalSpent + totalFinalCost;
+            const oldRank = getRankForSpend(currentData.totalSpent);
+            const newRank = getRankForSpend(newTotalSpent);
+
+            const updates: Partial<User> = {
+                balance: currentBalance - totalFinalCost,
+                totalSpent: newTotalSpent
+            };
+            
+            if (newRank.name !== oldRank.name) {
+                updates.rank = newRank.name;
+                if(newRank.reward > 0) {
+                    updates.adBalance = (currentData.adBalance || 0) + newRank.reward;
+                    promotionToast = {
+                        title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
+                        description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
+                    };
+                }
+            }
+            
+            transaction.update(userRef, updates);
+            
+            let referrerDoc: any = null;
+            let referrerUpdates: Partial<User> = {};
+
+            if (currentData.referrerId) {
+                const referrerRef = doc(firestore, 'users', currentData.referrerId);
+                referrerDoc = await transaction.get(referrerRef);
+                if (referrerDoc.exists()) {
+                    referrerUpdates.affiliateEarnings = referrerDoc.data().affiliateEarnings || 0;
+                }
+            }
+
+            for (const pLine of validLines) {
+                if (pLine.isValid && pLine.finalCost && pLine.service) {
+                    const newOrderRef = doc(collection(firestore!, `users/${authUser!.uid}/orders`));
+                    const newOrder: Omit<Order, 'id'> = {
+                        userId: authUser!.uid,
+                        serviceId: pLine.service.id,
+                        serviceName: `${pLine.service.platform} - ${pLine.service.category}`,
+                        link: pLine.link,
+                        quantity: pLine.quantity,
+                        charge: pLine.finalCost,
+                        orderDate: new Date().toISOString(),
+                        status: 'قيد التنفيذ',
+                    };
+                    transaction.set(newOrderRef, newOrder);
+
+                    if(referrerDoc?.exists()) {
+                        const referrerData = referrerDoc.data() as User;
+                        const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
+                        const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
+                        const commissionAmount = pLine.finalCost * commissionRate;
+                        
+                        referrerUpdates.affiliateEarnings! += commissionAmount;
+                        
+                        const newTransactionRef = doc(collection(firestore, `users/${referrerData.id}/affiliateTransactions`));
+                        transaction.set(newTransactionRef, {
+                            userId: referrerData.id,
+                            referralId: authUser.uid,
+                            orderId: newOrderRef.id,
+                            amount: commissionAmount,
+                            transactionDate: new Date().toISOString(),
+                            level: 1 // Assuming direct referral for now
+                        });
+                    }
+                }
+            }
+
+            if (referrerDoc?.exists() && Object.keys(referrerUpdates).length > 0) {
+                transaction.update(referrerDoc.ref, referrerUpdates);
+            }
+        })
+        .then(() => {
             toast({ title: 'نجاح', description: `تم إرسال ${validLines.length} طلب بنجاح.` });
              if (promotionToast) {
                 setTimeout(() => toast(promotionToast), 1000);
             }
             setBatchResult({ successCount: validLines.length, errorCount: invalidLines.length, totalCost: totalFinalCost, errors: finalErrors });
             setMassOrderText('');
-
-        } catch (error: any) {
-             console.error("Mass order transaction failed:", error);
-             toast({ variant: "destructive", title: "فشل إرسال الطلب الجماعي", description: error.toString() });
+        })
+        .catch((error: any) => {
+            console.error("Mass order transaction failed:", error);
+            if(error.message.includes("رصيدك")) {
+                toast({ variant: "destructive", title: "فشل إرسال الطلب الجماعي", description: error.toString() });
+            } else {
+                 const permissionError = new FirestorePermissionError({
+                    path: `users/${authUser.uid}`,
+                    operation: 'update',
+                    requestResourceData: { balance: '...', totalSpent: '...' }
+                 });
+                 errorEmitter.emit('permission-error', permissionError);
+            }
              finalErrors.push(error.message);
              setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: 0, errors: finalErrors });
-        } finally {
+        })
+        .finally(() => {
             setIsProcessing(false);
-        }
+        });
     };
 
 

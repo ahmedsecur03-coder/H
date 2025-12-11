@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { addDoc, collection, doc, runTransaction } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,20 +48,27 @@ function VodafoneCashTab({ settings, isLoading }: { settings: any, isLoading: bo
             status: 'معلق',
         };
 
-        try {
-            const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
-            await addDoc(depositsColRef, depositRequest);
-            toast({
-                title: 'تم استلام طلبك',
-                description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
+        const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
+        addDoc(depositsColRef, depositRequest)
+            .then(() => {
+                toast({
+                    title: 'تم استلام طلبك',
+                    description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
+                });
+                setPhoneNumber('');
+                setAmountInEGP('');
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: depositsColRef.path,
+                    operation: 'create',
+                    requestResourceData: depositRequest,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsSubmitting(false);
             });
-            setPhoneNumber('');
-            setAmountInEGP('');
-        } catch (error) {
-             toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال طلبك.' });
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     if(isLoading) {
@@ -131,20 +138,27 @@ function BinancePayTab({ settings, isLoading }: { settings: any, isLoading: bool
             status: 'معلق',
         };
         
-        try {
-            const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
-            await addDoc(depositsColRef, depositRequest);
-            toast({
-                title: 'تم استلام طلبك',
-                description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
+        const depositsColRef = collection(firestore, `users/${user.uid}/deposits`);
+        addDoc(depositsColRef, depositRequest)
+            .then(() => {
+                 toast({
+                    title: 'تم استلام طلبك',
+                    description: 'تم إرسال طلب الإيداع الخاص بك بنجاح وهو الآن قيد المراجعة.',
+                });
+                setTransactionId('');
+                setAmount('');
+            })
+            .catch(serverError => {
+                 const permissionError = new FirestorePermissionError({
+                    path: depositsColRef.path,
+                    operation: 'create',
+                    requestResourceData: depositRequest,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsSubmitting(false);
             });
-            setTransactionId('');
-            setAmount('');
-        } catch(error) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من إرسال طلبك.' });
-        } finally {
-            setIsSubmitting(false);
-        }
     };
     
     if(isLoading) {
@@ -204,29 +218,39 @@ function TransferToAdBalance() {
         }
 
         setIsSubmitting(true);
-        try {
-            await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+        runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
 
-                const currentBalance = userDoc.data().balance ?? 0;
-                if (currentBalance < transferAmount) {
-                    throw new Error("رصيدك الأساسي غير كافٍ لإتمام عملية التحويل.");
-                }
+            const currentBalance = userDoc.data().balance ?? 0;
+            if (currentBalance < transferAmount) {
+                throw new Error("رصيدك الأساسي غير كافٍ لإتمام عملية التحويل.");
+            }
 
-                const newBalance = currentBalance - transferAmount;
-                const newAdBalance = (userDoc.data().adBalance ?? 0) + transferAmount;
+            const newBalance = currentBalance - transferAmount;
+            const newAdBalance = (userDoc.data().adBalance ?? 0) + transferAmount;
 
-                transaction.update(userDocRef, { balance: newBalance, adBalance: newAdBalance });
-            });
-
+            transaction.update(userDocRef, { balance: newBalance, adBalance: newAdBalance });
+        })
+        .then(() => {
             toast({ title: 'نجاح!', description: `تم تحويل ${transferAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} إلى رصيد الإعلانات بنجاح.` });
             setAmount('50');
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل التحويل', description: error.message });
-        } finally {
-            setIsSubmitting(false);
-        }
+        })
+        .catch((error: any) => {
+             if (error.message.includes("رصيدك")) {
+                 toast({ variant: "destructive", title: "فشل التحويل", description: error.message });
+             } else {
+                 const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: { balance: '...', adBalance: '...' }
+                 });
+                 errorEmitter.emit('permission-error', permissionError);
+             }
+        })
+        .finally(() => {
+             setIsSubmitting(false);
+        });
     };
     
     return (

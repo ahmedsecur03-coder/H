@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,41 +51,43 @@ function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicket
     if (!subject || !message || !firestore) return;
 
     setIsSubmitting(true);
-    try {
-      const ticketsColRef = collection(firestore, `users/${userId}/tickets`);
-      const newTicket: Omit<Ticket, 'id'> = {
-        userId,
-        subject,
-        message, // The initial message from the user
-        status: 'مفتوحة',
-        createdDate: new Date().toISOString(),
-        messages: [{
-          sender: 'user',
-          text: message,
-          timestamp: new Date().toISOString(),
-        }],
-      };
-      
-      const docRef = await addDoc(ticketsColRef, newTicket);
+    
+    const newTicket: Omit<Ticket, 'id'> = {
+      userId,
+      subject,
+      message, // The initial message from the user
+      status: 'مفتوحة',
+      createdDate: new Date().toISOString(),
+      messages: [{
+        sender: 'user',
+        text: message,
+        timestamp: new Date().toISOString(),
+      }],
+    };
 
-      toast({
-        title: 'تم فتح التذكرة بنجاح',
-        description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
-      });
-      setSubject('');
-      setMessage('');
-      setOpen(false);
-      onTicketCreated(docRef.id);
-    } catch (error) {
-      console.error('Error creating ticket:', error);
-      toast({
-        variant: 'destructive',
-        title: 'خطأ في إنشاء التذكرة',
-        description: 'حدث خطأ ما، يرجى المحاولة مرة أخرى.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    const ticketsColRef = collection(firestore, `users/${userId}/tickets`);
+    addDoc(ticketsColRef, newTicket)
+        .then(docRef => {
+            toast({
+                title: 'تم فتح التذكرة بنجاح',
+                description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
+            });
+            setSubject('');
+            setMessage('');
+            setOpen(false);
+            onTicketCreated(docRef.id);
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: ticketsColRef.path,
+                operation: 'create',
+                requestResourceData: newTicket
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        })
+        .finally(() => {
+            setIsSubmitting(false);
+        });
   };
 
   return (

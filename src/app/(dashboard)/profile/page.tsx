@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
@@ -63,13 +63,25 @@ export default function ProfilePage() {
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         if (!user || !firestore || !userDocRef) return;
-        try {
-            await updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl });
-            await updateDoc(userDocRef, { name: values.name, avatarUrl: values.avatarUrl });
-            toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        }
+        
+        const updateData = { name: values.name, avatarUrl: values.avatarUrl };
+
+        updateDoc(userDocRef, updateData)
+            .then(async () => {
+                await updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl });
+                toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                profileForm.formState.isSubmitting = false;
+            });
     };
     
     const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
