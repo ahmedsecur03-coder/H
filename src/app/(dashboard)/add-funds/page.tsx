@@ -181,6 +181,87 @@ function BinancePayTab({ settings, isLoading }: { settings: any, isLoading: bool
     );
 }
 
+function TransferToAdBalance() {
+    const { user: authUser } = useUser();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    
+    const [amount, setAmount] = useState('50');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const userDocRef = useMemoFirebase(
+        () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
+        [firestore, authUser]
+    );
+    const { data: userData, isLoading: isUserLoading } = useDoc<UserType>(userDocRef);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const transferAmount = parseFloat(amount);
+        if (!firestore || !authUser || !userDocRef || !userData || !transferAmount || transferAmount <= 0) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى إدخال مبلغ صحيح للتحويل.' });
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+
+                const currentBalance = userDoc.data().balance ?? 0;
+                if (currentBalance < transferAmount) {
+                    throw new Error("رصيدك الأساسي غير كافٍ لإتمام عملية التحويل.");
+                }
+
+                const newBalance = currentBalance - transferAmount;
+                const newAdBalance = (userDoc.data().adBalance ?? 0) + transferAmount;
+
+                transaction.update(userDocRef, { balance: newBalance, adBalance: newAdBalance });
+            });
+
+            toast({ title: 'نجاح!', description: `تم تحويل ${transferAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} إلى رصيد الإعلانات بنجاح.` });
+            setAmount('50');
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل التحويل', description: error.message });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>تحويل إلى رصيد الإعلانات</CardTitle>
+                <CardDescription>
+                    انقل الأموال من رصيدك الأساسي إلى رصيد الإعلانات لتمويل حملاتك.
+                </CardDescription>
+            </CardHeader>
+            {isUserLoading ? <CardContent><Skeleton className="h-40 w-full" /></CardContent> : (
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="space-y-4">
+                        <div className="text-sm">
+                            <p className="text-muted-foreground">الرصيد الأساسي المتاح: <span className="font-bold text-foreground">${(userData?.balance ?? 0).toFixed(2)}</span></p>
+                            <p className="text-muted-foreground">رصيدك الإعلاني: <span className="font-bold text-foreground">${(userData?.adBalance ?? 0).toFixed(2)}</span></p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="transfer-amount">المبلغ المراد تحويله ($)</Label>
+                            <Input id="transfer-amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="50" required min="1" />
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                         <Button type="submit" disabled={isSubmitting} className="w-full">
+                             {isSubmitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <ArrowLeftRight className="ml-2 h-4 w-4" />}
+                             تنفيذ التحويل
+                        </Button>
+                    </CardFooter>
+                </form>
+            )}
+        </Card>
+    )
+}
+
+
 export default function AddFundsPage() {
     const firestore = useFirestore();
     const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
@@ -196,7 +277,7 @@ export default function AddFundsPage() {
         </div>
       
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
                 <Tabs defaultValue="vodafone" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="vodafone">فودافون كاش</TabsTrigger>
@@ -210,9 +291,14 @@ export default function AddFundsPage() {
                     </TabsContent>
                 </Tabs>
             </div>
+            <div className="space-y-6">
+                <TransferToAdBalance />
+            </div>
        </div>
     </div>
   );
 }
+
+    
 
     

@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@
 import { runTransaction, collection, query, doc, addDoc, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Loader2, Code, Facebook, Search, BarChart, Eye, MousePointerClick, Target, ArrowLeftRight } from "lucide-react";
+import { PlusCircle, Rocket, Loader2, Code, Facebook, Search, BarChart, Eye, MousePointerClick, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -36,7 +36,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954.52 2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543 1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -261,76 +261,6 @@ function NewCampaignDialog({ userData, user, onCampaignCreated }: { userData: Us
     )
 }
 
-function TransferToAdBalance({ userData, userDocRef }: { userData: UserType, userDocRef: any }) {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-    
-    const [amount, setAmount] = useState('50');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!firestore || !userDocRef) { return; }
-
-        const transferAmount = parseFloat(amount);
-        if (isNaN(transferAmount) || transferAmount <= 0) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى إدخال مبلغ صحيح للتحويل.' });
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-
-                const currentBalance = userDoc.data().balance ?? 0;
-                if (currentBalance < transferAmount) {
-                    throw new Error("رصيدك الأساسي غير كافٍ لإتمام عملية التحويل.");
-                }
-
-                const newBalance = currentBalance - transferAmount;
-                const newAdBalance = (userDoc.data().adBalance ?? 0) + transferAmount;
-
-                transaction.update(userDocRef, { balance: newBalance, adBalance: newAdBalance });
-            });
-
-            toast({ title: 'نجاح!', description: `تم تحويل ${transferAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} إلى رصيد الإعلانات بنجاح.` });
-            setAmount('50');
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل التحويل', description: error.message });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-    
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>تحويل إلى رصيد الإعلانات</CardTitle>
-            </CardHeader>
-             <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-4">
-                    <div className="text-sm">
-                        <p className="text-muted-foreground">رصيدك الإعلاني: <span className="font-bold text-foreground">${(userData?.adBalance ?? 0).toFixed(2)}</span></p>
-                        <p className="text-muted-foreground">الرصيد الأساسي المتاح: <span className="font-bold text-foreground">${(userData?.balance ?? 0).toFixed(2)}</span></p>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="transfer-amount">المبلغ المراد تحويله ($)</Label>
-                        <Input id="transfer-amount" value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="50" required min="1" />
-                    </div>
-                </CardContent>
-                <CardFooter>
-                     <Button type="submit" disabled={isSubmitting} className="w-full">
-                         {isSubmitting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <ArrowLeftRight className="ml-2 h-4 w-4" />}
-                         تحويل الرصيد
-                    </Button>
-                </CardFooter>
-            </form>
-        </Card>
-    )
-}
-
 
 function CampaignsSkeleton() {
     return (
@@ -412,61 +342,62 @@ export default function CampaignsPage() {
         </div>
         
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-             <div className="lg:col-span-2">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>سجل الحملات الأخيرة</CardTitle>
-                         <CardDescription>قائمة بجميع حملاتك الإعلانية في النظام. يمكنك تتبع أدائها وتفاصيلها من هنا.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                       {campaigns && campaigns.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>اسم الحملة</TableHead>
-                                        <TableHead>الحالة</TableHead>
-                                        <TableHead>الإنفاق / الميزانية</TableHead>
-                                        <TableHead className="text-right">الإجراءات</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {campaigns.map((campaign) => (
-                                        <TableRow key={campaign.id}>
-                                            <TableCell className="font-medium">{campaign.name}</TableCell>
-                                            <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
-                                            <TableCell>
-                                                <div className='flex flex-col gap-1'>
-                                                    <span className='font-mono'>${(campaign.spend ?? 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
-                                                    <div className="w-full bg-muted rounded-full h-1.5">
-                                                        <div className="bg-primary h-1.5 rounded-full" style={{width: `${(campaign.spend / (campaign.budget || 1)) * 100}%`}}></div>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <CampaignDetailsDialog campaign={campaign} />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                             <div className="text-center py-10">
-                                <Rocket className="mx-auto h-12 w-12 text-muted-foreground" />
-                                <h3 className="mt-4 text-lg font-medium">ابدأ حملتك الإعلانية الأولى</h3>
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                    ليس لديك أي حملات إعلانية حتى الآن. أنشئ حملة جديدة لتبدأ.
-                                </p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-             </div>
-             <div className="space-y-6">
-                <TransferToAdBalance userData={userData} userDocRef={userDocRef} />
-             </div>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>سجل الحملات الأخيرة</CardTitle>
+                <CardDescription>قائمة بجميع حملاتك الإعلانية في النظام. يمكنك تتبع أدائها وتفاصيلها من هنا.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {campaigns && campaigns.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>اسم الحملة</TableHead>
+                                <TableHead>الحالة</TableHead>
+                                <TableHead>الإنفاق / الميزانية</TableHead>
+                                <TableHead className="text-right">الإجراءات</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {campaigns.map((campaign) => (
+                                <TableRow key={campaign.id}>
+                                    <TableCell className="font-medium">{campaign.name}</TableCell>
+                                    <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
+                                    <TableCell>
+                                        <div className='flex flex-col gap-1'>
+                                            <span className='font-mono'>${(campaign.spend ?? 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
+                                            <div className="w-full bg-muted rounded-full h-1.5">
+                                                <div className="bg-primary h-1.5 rounded-full" style={{width: `${(campaign.spend / (campaign.budget || 1)) * 100}%`}}></div>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <CampaignDetailsDialog campaign={campaign} />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <div className="text-center py-10">
+                        <Rocket className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-medium">ابدأ حملتك الإعلانية الأولى</h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            ليس لديك أي حملات إعلانية حتى الآن. أنشئ حملة جديدة لتبدأ.
+                        </p>
+                         <NewCampaignDialog userData={userData} user={authUser} onCampaignCreated={forceCollectionUpdate}>
+                           <Button className="mt-4">
+                                <PlusCircle className="ml-2 h-4 w-4" />
+                                إنشاء حملة جديدة
+                            </Button>
+                        </NewCampaignDialog>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
 
     </div>
   );
 }
+
+    
