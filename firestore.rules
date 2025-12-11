@@ -3,73 +3,8 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-    
-    // USERS
-    // Users can read and update their own profile.
-    // No one can create or delete user profiles directly except through auth triggers.
-    match /users/{userId} {
-      allow read, update: if isOwner(userId);
-    }
-    
-    // SERVICES
-    // All authenticated users can read the services catalog.
-    // Only admins (managed via custom claims or separate mechanism) should write. For now, deny all writes.
-    match /services/{serviceId} {
-      allow read: if request.auth != null;
-      allow write: if false; 
-    }
-    
-    // ORDERS
-    // Users can create, read, and update their own orders.
-    match /users/{userId}/orders/{orderId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    // CAMPAIGNS
-    // Users can create, read, and update their own campaigns.
-    match /users/{userId}/campaigns/{campaignId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    // DEPOSITS
-    // Users can create and read their own deposit requests.
-    // Admin will handle updates. We can refine this later to only allow user to create.
-    match /users/{userId}/deposits/{depositId} {
-       allow read, create: if isOwner(userId);
-       allow update, delete: if false; // Only admin should update status or delete
-    }
-    
-    // AFFILIATE TRANSACTIONS
-    // Users can read their own affiliate transactions. These are created server-side (via transaction).
-    match /users/{userId}/affiliateTransactions/{transactionId} {
-        allow read: if isOwner(userId);
-        allow write: if false; // Should be written in backend logic
-    }
-    
-    // BLOG POSTS
-    // All authenticated users can read blog posts.
-    // Writes are denied for now (should be admin-only).
-    match /blogPosts/{blogPostId} {
-        allow read: if request.auth != null;
-        allow write: if false;
-    }
-    
-    // TICKETS
-    // Users can create and manage their own support tickets.
-    match /users/{userId}/tickets/{ticketId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    // Default Deny: Disallow any other path access
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }
-
-    
