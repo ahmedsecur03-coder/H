@@ -83,7 +83,7 @@ const ApiKeyCard = () => {
                  <AlertDialog>
                   <AlertDialogTrigger asChild>
                      <Button variant="destructive" disabled={isRegenerating}>
-                        {isRegenerating ? <Loader2 className="ml-2 animate-spin" /> : <RefreshCw className="ml-2" />}
+                        {isRegenerating ? <Loader2 className="ml-2 animate-spin" /> : <RefreshCw className="ml-2 h-4 w-4" />}
                          إعادة توليد المفتاح
                     </Button>
                   </AlertDialogTrigger>
