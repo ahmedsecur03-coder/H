@@ -3,9 +3,6 @@
 
 import Link from 'next/link';
 import {
-  ChevronDown
-} from 'lucide-react';
-import {
   SidebarProvider,
   Sidebar,
   SidebarHeader,
@@ -23,19 +20,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from "firebase/firestore";
+import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
-import type { NestedNavItem, User as UserType } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { NestedNavItem } from '@/lib/types';
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { BottomNavBar } from './_components/bottom-nav';
+import { MobileHeader } from './_components/mobile-header';
+import { ChevronDown } from 'lucide-react';
 
-
-function Header({ isAdmin }: { isAdmin: boolean }) {
+function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
    const appUser = {
       name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
@@ -44,8 +41,7 @@ function Header({ isAdmin }: { isAdmin: boolean }) {
   };
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-        <SidebarTrigger className="md:hidden" />
+    <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="flex items-center gap-2 font-body ml-auto">
             <UserNav user={appUser} isAdmin={isAdmin} />
         </div>
@@ -151,7 +147,8 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar side="right" collapsible="icon">
+      {/* Desktop Sidebar */}
+      <Sidebar side="right" collapsible="icon" className="hidden md:block">
         <SidebarHeader>
           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
              <Logo />
@@ -168,12 +165,18 @@ export default function DashboardLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className="bg-transparent">
-        <Header isAdmin={isAdmin} />
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      
+      <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
+        <MobileHeader isAdmin={isAdmin} />
+        <DesktopHeader isAdmin={isAdmin} />
+        
+        <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
           {children}
         </main>
-      </SidebarInset>
+        
+        <BottomNavBar />
+      </div>
+
     </SidebarProvider>
   );
 }

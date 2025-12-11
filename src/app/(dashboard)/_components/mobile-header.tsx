@@ -1,0 +1,26 @@
+
+'use client';
+
+import Logo from '@/components/logo';
+import { UserNav } from './user-nav';
+
+export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
+  const { user } = useUser();
+   const appUser = {
+      name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
+      email: user?.email || "مستخدم مجهول",
+      avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
+  };
+
+  return (
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm md:hidden">
+      <Logo />
+      <div className="flex items-center gap-2 font-body">
+        <UserNav user={appUser} isAdmin={isAdmin} />
+      </div>
+    </header>
+  );
+}
+
+// We need to import useUser to satisfy the dependency checker
+import { useUser } from '@/firebase';
