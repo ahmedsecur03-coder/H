@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -24,14 +25,15 @@ import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const ADMIN_EMAIL = 'hagaaty@gmail.com';
+const ADMIN_EMAILS = ['hagaaty@gmail.com', 'admin@gmail.com'];
 
 function AdminHeader() {
   const { user } = useUser();
   const adminUser = {
     name: user?.displayName || "مسؤول",
-    email: user?.email || ADMIN_EMAIL,
+    email: user?.email || "admin@example.com",
     avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
+    id: user?.uid || 'N/A'
   };
 
   return (
@@ -86,7 +88,7 @@ export default function AdminLayout({
       if (!user) {
         // If not logged in, redirect to login page
         router.push('/login');
-      } else if (user.email !== ADMIN_EMAIL) {
+      } else if (!ADMIN_EMAILS.includes(user.email || '')) {
         // If logged in but not an admin, redirect to user dashboard
         router.push('/dashboard');
       }
@@ -94,7 +96,7 @@ export default function AdminLayout({
   }, [user, isUserLoading, router]);
 
   // Show a loading skeleton while checking auth and permissions
-  if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
+  if (isUserLoading || !user || !ADMIN_EMAILS.includes(user.email || '')) {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden md:block w-64 bg-muted/40 border-l p-4">

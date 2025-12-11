@@ -22,7 +22,11 @@ function Header() {
       name: user.displayName || `مستخدم #${user.uid.substring(0, 6)}`,
       email: user.email || "مستخدم مسجل",
       avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+      id: user.uid
   } : null;
+  
+  const adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
+  const isAdmin = user ? adminEmails.includes(user.email || '') : false;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
@@ -36,7 +40,7 @@ function Header() {
               <Button asChild>
                 <Link href="/dashboard">لوحة التحكم</Link>
               </Button>
-               {appUser && <UserNav user={appUser} isAdmin={user.email === 'hagaaty@gmail.com'}/>}
+               {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
             </>
           ) : (
             <>

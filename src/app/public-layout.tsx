@@ -20,6 +20,10 @@ function Header() {
       id: user.uid
   } : null;
 
+  const adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
+  const isAdmin = user ? adminEmails.includes(user.email || '') : false;
+
+
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
@@ -37,7 +41,7 @@ function Header() {
               <Button asChild>
                 <Link href="/dashboard">لوحة التحكم</Link>
               </Button>
-               {appUser && <UserNav user={appUser} isAdmin={user.email === 'hagaaty@gmail.com'}/>}
+               {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
             </>
           ) : (
             <>

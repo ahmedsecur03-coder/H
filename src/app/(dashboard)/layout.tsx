@@ -149,7 +149,8 @@ export default function DashboardLayout({
     );
   }
   
-  const isAdmin = user.email === 'hagaaty@gmail.com';
+  const adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
+  const isAdmin = adminEmails.includes(user.email || '');
 
   return (
     <SidebarProvider>
