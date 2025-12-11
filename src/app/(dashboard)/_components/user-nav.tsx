@@ -11,8 +11,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal
 } from '@/components/ui/dropdown-menu';
-import { Settings, User as UserIcon, LogOut, Shield } from 'lucide-react';
+import { Settings, User as UserIcon, LogOut, Shield, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -71,6 +75,25 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+                <Globe className="ml-2 h-4 w-4" />
+                <span>اللغة</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                    <DropdownMenuItem>
+                        <span className="mr-2">🇺🇸</span>
+                        <span>English</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                        <span className="mr-2">🇪🇬</span>
+                        <span>العربية</span>
+                    </DropdownMenuItem>
+                </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive focus:bg-destructive/10">
             <LogOut className="ml-2 h-4 w-4" />
