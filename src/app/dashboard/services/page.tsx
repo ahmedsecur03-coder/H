@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Flame, ShieldCheck, Zap } from 'lucide-react';
+import { Search, Flame, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
+import React from 'react';
 
 
 function ServicesPageSkeleton() {
@@ -118,7 +119,6 @@ export default function ServicesPage() {
 
 
   const handleOrderNow = (serviceId: string) => {
-    // Navigate to mass-order and pass the service id and some default values
     const orderText = `${serviceId}|ضع الرابط هنا|1000`;
     router.push(`/dashboard/mass-order?prefill=${encodeURIComponent(orderText)}`);
   };
@@ -133,7 +133,7 @@ export default function ServicesPage() {
     <div className="space-y-6 pb-8">
         <div>
             <div className="flex items-center gap-3 mb-2">
-                 {PlatformIcon && React.createElement(PlatformIcon, { className: "w-8 h-8 text-primary" })}
+                 {PlatformIcon && <PlatformIcon className="w-8 h-8 text-primary" />}
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
                     خدمات {activePlatform}
                 </h1>
