@@ -77,6 +77,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // System logs are only manageable by admins
+    match /systemLogs/{logId} {
+        allow read, write: if isAdmin();
+    }
+    
     // Admins can manage global settings
     match /settings/global {
       allow read: if request.auth != null;

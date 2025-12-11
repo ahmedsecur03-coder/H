@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -22,7 +23,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Flame, ShieldCheck } from 'lucide-react';
+import { Search, Flame, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   Select,
@@ -34,6 +35,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import React from 'react';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const PLATFORMS = [
   'Instagram',
@@ -203,6 +205,7 @@ export default function ServicesPage() {
                                                 <span>{service.category}</span>
                                                 {service.guarantee && <TooltipProvider><Tooltip><TooltipTrigger><ShieldCheck className="h-4 w-4 text-green-400" /></TooltipTrigger><TooltipContent>خدمة مع ضمان</TooltipContent></Tooltip></TooltipProvider>}
                                                 {service.speed === 'فوري' && <TooltipProvider><Tooltip><TooltipTrigger><Flame className="h-4 w-4 text-orange-400" /></TooltipTrigger><TooltipContent>بدء فوري</TooltipContent></Tooltip></TooltipProvider>}
+                                                {service.refill && <TooltipProvider><Tooltip><TooltipTrigger><RefreshCcw className="h-4 w-4 text-blue-400" /></TooltipTrigger><TooltipContent>إعادة تعبئة مدعومة</TooltipContent></Tooltip></TooltipProvider>}
                                             </div>
                                             <div className="text-xs text-muted-foreground mt-1">ID: {service.id}</div>
                                         </TableCell>

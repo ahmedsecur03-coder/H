@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -213,6 +214,7 @@ export default function ProfilePage() {
                         <Badge variant="secondary" className="mb-2">{userData.rank}</Badge>
                         <h2 className="text-3xl font-bold font-headline">{profileForm.watch('name')}</h2>
                         <p className="text-muted-foreground">{userData.email}</p>
+                        <p className="text-muted-foreground font-mono text-sm mt-1">#{user.uid}</p>
                     </div>
                 </div>
             </Card>

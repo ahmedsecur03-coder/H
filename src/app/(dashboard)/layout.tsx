@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -33,9 +34,10 @@ import { ChevronDown, Shield } from 'lucide-react';
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
    const appUser = {
-      name: user?.displayName || `مستخدم #${user?.uid.substring(0, 6)}`,
+      name: user?.displayName || `مستخدم`,
       email: user?.email || "مستخدم مجهول",
       avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
+      id: user?.uid || 'N/A'
   };
 
   return (

@@ -121,3 +121,13 @@ export type BlogPost = {
   authorId: string;
   publishDate: string;
 };
+
+
+export type SystemLog = {
+    id: string;
+    event: string;
+    level: 'info' | 'warning' | 'error';
+    message: string;
+    timestamp: string;
+    metadata?: Record<string, any>;
+}

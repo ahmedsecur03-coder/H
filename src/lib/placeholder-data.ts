@@ -1,3 +1,4 @@
+
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -19,6 +20,7 @@ import {
   Briefcase,
   Palette,
   Shield,
+  History
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -55,5 +57,6 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/support', label: 'الدعم الفني', icon: MessageSquare },
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
+    { href: '/admin/system-log', label: 'سجل النظام', icon: History },
     { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];
