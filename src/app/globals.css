@@ -3,91 +3,91 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Cairo', sans-serif;
+  font-family: 'PT Sans', sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 230 35% 7%; /* Deep space purple-blue */
+    --background: 222 84% 5%; /* Very Dark Blue */
     --foreground: 210 40% 98%;
 
-    --card: 230 35% 10%;
+    --card: 222 84% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 230 35% 7%;
+    --popover: 222 84% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 260 85% 65%; /* Bright Nebula Purple */
-    --primary-foreground: 210 40% 98%;
+    --primary: 198 93% 60%; /* Bright Cyan/Blue */
+    --primary-foreground: 222 84% 5%;
 
-    --secondary: 220 25% 15%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 230 35% 12%;
-    --muted-foreground: 220 20% 65%;
+    --muted: 222 84% 12%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 198 93% 60%; /* Electric Cyan Star */
-    --accent-foreground: 230 35% 7%;
+    --accent: 217 33% 17%; 
+    --accent-foreground: 198 93% 60%;
 
-    --destructive: 0 63% 40%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 230 35% 15%;
-    --input: 230 35% 12%;
-    --ring: 260 85% 70%;
+    --border: 217 33% 17%;
+    --input: 222 84% 10%;
+    --ring: 198 93% 60%;
     
-    --chart-1: 260 85% 65%; /* Purple */
-    --chart-2: 198 93% 60%; /* Cyan */
-    --chart-3: 30 80% 55%;  /* Orange */
-    --chart-4: 280 65% 60%; /* Violet */
-    --chart-5: 340 75% 55%; /* Pink */
+    --chart-1: 198 93% 60%;
+    --chart-2: 28 80% 55%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
 
     --radius: 0.5rem;
     
-    --sidebar-background: 230 35% 7%;
+    --sidebar-background: 222 84% 5%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 260 85% 65%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 230 35% 12%;
-    --sidebar-accent-foreground: 260 85% 65%;
-    --sidebar-border: 230 35% 15%;
-    --sidebar-ring: 260 85% 70%;
+    --sidebar-primary: 198 93% 60%;
+    --sidebar-primary-foreground: 222 84% 5%;
+    --sidebar-accent: 222 84% 10%;
+    --sidebar-accent-foreground: 198 93% 60%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 198 93% 60%;
   }
 
   .dark {
-    --background: 230 35% 7%; /* Deep space purple-blue */
+    --background: 222 84% 5%; /* Very Dark Blue */
     --foreground: 210 40% 98%;
 
-    --card: 230 35% 10%;
+    --card: 222 84% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 230 35% 7%;
+    --popover: 222 84% 5%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 260 85% 65%; /* Bright Nebula Purple */
-    --primary-foreground: 210 40% 98%;
+    --primary: 198 93% 60%; /* Bright Cyan/Blue */
+    --primary-foreground: 222 84% 5%;
 
-    --secondary: 220 25% 15%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
     
-    --muted: 230 35% 12%;
-    --muted-foreground: 220 20% 65%;
+    --muted: 222 84% 12%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 198 93% 60%; /* Electric Cyan Star */
-    --accent-foreground: 230 35% 7%;
+    --accent: 217 33% 17%; 
+    --accent-foreground: 198 93% 60%;
 
-    --destructive: 0 63% 40%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 230 35% 15%;
-    --input: 230 35% 12%;
-    --ring: 260 85% 70%;
+    --border: 217 33% 17%;
+    --input: 222 84% 10%;
+    --ring: 198 93% 60%;
     
-    --chart-1: 260 85% 65%; /* Purple */
-    --chart-2: 198 93% 60%; /* Cyan */
-    --chart-3: 30 80% 55%;  /* Orange */
-    --chart-4: 280 65% 60%; /* Violet */
-    --chart-5: 340 75% 55%; /* Pink */
+    --chart-1: 198 93% 60%;
+    --chart-2: 28 80% 55%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
