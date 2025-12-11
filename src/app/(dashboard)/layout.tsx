@@ -95,7 +95,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-        router.push('/');
+        router.push('/login');
     }
   }, [user, isUserLoading, router]);
 
@@ -206,5 +206,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-
-    
