@@ -11,9 +11,8 @@ import * as z from 'zod';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User as UserIcon, Lock, Image as ImageIcon } from 'lucide-react';
+import { Loader2, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,18 +23,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/form";
+import { Badge } from '@/components/ui/badge';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),
@@ -43,7 +32,7 @@ const profileSchema = z.object({
 });
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(6, "كلمة المرور الحالية مطلوبة."),
+  currentPassword: z.string().min(1, "كلمة المرور الحالية مطلوبة."),
   newPassword: z.string().min(6, "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."),
 });
 
@@ -73,10 +62,10 @@ export default function ProfilePage() {
     }, [user, userData, profileForm]);
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
-        if (!user || !firestore) return;
+        if (!user || !firestore || !userDocRef) return;
         try {
             await updateProfile(user, { displayName: values.name, photoURL: values.avatarUrl });
-            await updateDoc(doc(firestore, 'users', user.uid), { name: values.name, avatarUrl: values.avatarUrl });
+            await updateDoc(userDocRef, { name: values.name, avatarUrl: values.avatarUrl });
             toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
