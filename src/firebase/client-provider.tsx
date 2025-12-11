@@ -2,9 +2,9 @@
 'use client';
 
 import React, { useMemo, type ReactNode, useEffect } from 'react';
-import { FirebaseProvider, useAuth, useUser } from '@/firebase/provider';
+import { FirebaseProvider, useUser } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
-import { signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
+import { User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import type { User as UserType } from '@/lib/types';
 

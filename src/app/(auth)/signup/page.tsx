@@ -34,26 +34,10 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // This will trigger the user document creation in the FirebaseClientProvider
       await updateProfile(user, { displayName: name });
       
-      const newUser: Omit<User, 'id'> = {
-        name: name,
-        email: user.email!,
-        rank: 'مستكشف نجمي',
-        balance: 0,
-        adBalance: 0,
-        totalSpent: 0,
-        referralCode: user.uid.substring(0, 8),
-        referrerId: null,
-        createdAt: new Date().toISOString(),
-        affiliateEarnings: 0,
-        referralsCount: 0,
-        affiliateLevel: 'برونزي',
-      };
-
-      await setDoc(doc(firestore, 'users', user.uid), newUser);
-
-      toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح.' });
+      toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
 
     } catch (error: any) {
