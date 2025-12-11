@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+// This is now simplified. In a real-world scenario, this would be fetched from a status API.
 const services = [
   { name: "واجهة الموقع الرئيسية", status: "Operational" },
   { name: "لوحة تحكم المستخدم", status: "Operational" },
@@ -14,8 +15,8 @@ const services = [
   { name: "نظام الحملات الإعلانية", status: "Operational" },
   { name: "نظام الإحالة", status: "Operational" },
   { name: "الدعم الفني", status: "Operational" },
-  { name: "واجهة API", status: "Maintenance" },
-  { name: "لوحة تحكم المسؤول", status: "Degraded" },
+  { name: "واجهة API", status: "Operational" },
+  { name: "لوحة تحكم المسؤول", status: "Operational" },
 ];
 
 const statusConfig = {
