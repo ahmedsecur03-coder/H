@@ -573,27 +573,34 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       >
         {children}
-        {isCollapsible && tooltip && <span className="sr-only">{typeof tooltip === 'string' ? tooltip : (tooltip as any)?.children}</span>}
+        {isCollapsible && tooltip && (
+          <span className="sr-only">
+            {typeof tooltip === "string" ? tooltip : (tooltip as any)?.children}
+          </span>
+        )}
       </Comp>
-    );
+    )
 
-    if (!tooltip || isMobile) {
+    if (isMobile || !tooltip) {
       return button
     }
-    
+
     const tooltipContent = typeof tooltip === 'string' ? { children: tooltip } : tooltip;
 
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={!isCollapsible}
-          {...tooltipContent}
-        />
-      </Tooltip>
-    )
+    if (isCollapsible) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>{button}</TooltipTrigger>
+            <TooltipContent
+              side="right"
+              align="center"
+              {...tooltipContent}
+            />
+          </Tooltip>
+        );
+    }
+    
+    return button;
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
@@ -750,5 +757,3 @@ export {
   SidebarMenuSubContent,
   SidebarMenuSubButton
 }
-
-    
