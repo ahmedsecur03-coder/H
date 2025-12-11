@@ -17,7 +17,10 @@ import {
   Rocket,
   PenSquare,
   Briefcase,
-  Palette
+  Palette,
+  Gamepad2,
+  MapPin,
+  Clapperboard,
 } from 'lucide-react';
 import React from 'react';
 import { PLATFORM_ICONS } from './icon-data';
