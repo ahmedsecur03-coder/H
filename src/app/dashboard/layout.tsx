@@ -172,7 +172,7 @@ export default function DashboardLayout({
             }}
           >
             <Link href={item.href || '#'}>
-               {item.icon && <item.icon />}
+              {item.icon && <item.icon />}
               <span>{item.label}</span>
             </Link>
           </SidebarMenuButton>
