@@ -128,9 +128,10 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const { categories, servicesForCategory, selectedService } = useMemo(() => {
     if (!allServices) return { categories: [], servicesForCategory: [], selectedService: null };
     
-    const categories = selectedPlatform ? [...new Set(allServices.filter(s => s.platform === selectedPlatform).map(s => s.category))] : [];
+    const platformServices = allServices.filter(s => s.platform === selectedPlatform);
+    const categories = selectedPlatform ? [...new Set(platformServices.map(s => s.category))] : [];
     
-    const servicesForCategory = selectedCategory ? allServices.filter(s => s.platform === selectedPlatform && s.category === selectedCategory) : [];
+    const servicesForCategory = selectedCategory ? platformServices.filter(s => s.category === selectedCategory) : [];
 
     const selectedService = selectedServiceId ? allServices.find(s => s.id === selectedServiceId) : null;
     return { categories, servicesForCategory, selectedService };
@@ -200,15 +201,19 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                 totalSpent: newTotalSpent,
             };
 
-            let promotionToast = {};
+            let promotionToast: { title: string; description: string } | null = null;
+
 
             if (newRankInfo.name !== currentRankInfo.name) {
                 updates.rank = newRankInfo.name;
-                updates.adBalance = (currentData.adBalance || 0) + newRankInfo.reward;
-                 promotionToast = {
-                    title: `🎉 ترقية! أهلاً بك في رتبة ${newRankInfo.name}`,
-                    description: `لقد حصلت على مكافأة ${newRankInfo.reward}$ في رصيد إعلاناتك!`,
-                };
+                // Only add reward if there is one
+                if (newRankInfo.reward > 0) {
+                    updates.adBalance = (currentData.adBalance || 0) + newRankInfo.reward;
+                    promotionToast = {
+                        title: `🎉 ترقية! أهلاً بك في رتبة ${newRankInfo.name}`,
+                        description: `لقد حصلت على مكافأة ${newRankInfo.reward}$ في رصيد إعلاناتك!`,
+                    };
+                }
             }
 
             transaction.update(userDocRef, updates);
@@ -217,7 +222,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             const newOrder: Omit<Order, 'id'> = {
                 userId: user.uid,
                 serviceId: selectedService.id,
-                serviceName: `${selectedService.category} - ${selectedService.platform}`,
+                serviceName: `${selectedService.category} (${selectedService.platform})`,
                 link: link,
                 quantity: numQuantity,
                 charge: cost,
@@ -228,7 +233,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             return promotionToast;
         }).then((promotionToast) => {
             toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
-            if(Object.keys(promotionToast).length > 0) {
+            if(promotionToast) {
                  setTimeout(() => toast(promotionToast), 1000);
             }
         });
@@ -264,7 +269,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                 <Label>المنصة</Label>
                 <div className='flex flex-wrap gap-2'>
                     {servicePlatforms.map(p => (
-                        <Button key={p.name} type="button" variant={selectedPlatform === p.name ? "default" : "outline"} onClick={() => {setSelectedPlatform(p.name); setSelectedCategory(undefined); setSelectedServiceId(undefined);}}>
+                        <Button key={p.name} type="button" variant={selectedPlatform === p.name ? "default" : "outline"} className="flex-grow" onClick={() => {setSelectedPlatform(p.name); setSelectedCategory(undefined); setSelectedServiceId(undefined);}}>
                             {/* <p.icon className="ml-2" /> */}
                             {p.name}
                         </Button>
@@ -272,55 +277,61 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                 </div>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="category">الفئة</Label>
-                <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory} disabled={!selectedPlatform}>
-                  <SelectTrigger id="category"><SelectValue placeholder="اختر فئة" /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="service">الخدمة</Label>
-                 <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={open}
-                            className="w-full justify-between"
-                            disabled={!selectedCategory}
-                        >
-                            {selectedServiceId
-                                ? servicesForCategory.find((s) => s.id === selectedServiceId)?.platform
-                                : "اختر خدمة..."}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                         <Command>
-                            <CommandInput placeholder="ابحث عن خدمة..." />
-                            <CommandList>
-                                <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
-                                <CommandGroup>
-                                    {servicesForCategory.map((s) => (
-                                        <CommandItem
-                                            key={s.id}
-                                            value={s.id}
-                                            onSelect={(currentValue) => {
-                                                setSelectedServiceId(currentValue === selectedServiceId ? "" : currentValue)
-                                                setOpen(false)
-                                            }}
-                                        >
-                                            {s.platform} (سعر الألف: ${s.price})
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </PopoverContent>
-                </Popover>
-              </div>
+              {selectedPlatform && (
+                <div className="grid gap-2">
+                    <Label htmlFor="category">الفئة</Label>
+                    <Select onValueChange={(value) => { setSelectedCategory(value); setSelectedServiceId(undefined); }} value={selectedCategory} disabled={!selectedPlatform || categories.length === 0}>
+                    <SelectTrigger id="category"><SelectValue placeholder={categories.length > 0 ? "اختر فئة" : "لا توجد فئات لهذه المنصة"} /></SelectTrigger>
+                    <SelectContent>
+                        {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                    </SelectContent>
+                    </Select>
+                </div>
+              )}
+              
+              {selectedCategory && (
+                <div className="grid gap-2">
+                    <Label htmlFor="service">الخدمة</Label>
+                    <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={open}
+                                className="w-full justify-between"
+                                disabled={!selectedCategory || servicesForCategory.length === 0}
+                            >
+                                {selectedService
+                                    ? `${selectedService.id} - ${selectedService.category}`
+                                    : "اختر خدمة..."}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                                <CommandInput placeholder="ابحث عن خدمة..." />
+                                <CommandList>
+                                    <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
+                                    <CommandGroup>
+                                        {servicesForCategory.map((s) => (
+                                            <CommandItem
+                                                key={s.id}
+                                                value={s.id}
+                                                onSelect={(currentValue) => {
+                                                    setSelectedServiceId(currentValue === selectedServiceId ? "" : currentValue)
+                                                    setOpen(false)
+                                                }}
+                                            >
+                                                {s.id} - {s.category} (${s.price}/1k)
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+              )}
+              
               
               {selectedServiceId && (
                 <>
@@ -411,21 +422,16 @@ export default function DashboardPage() {
   }
   
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
-  const affiliateLevelInfo = {
-    'برونزي': { commission: '10%' },
-    'فضي': { commission: '12%' },
-    'ذهبي': { commission: '15%' },
-    'ماسي': { commission: '20%' },
-  }[userData?.affiliateLevel || 'برونزي'];
-
+  
   const achievements = [
-    { icon: Rocket, title: "المنطلق الصاروخي", completed: (userData.totalSpent || 0) > 1 },
+    { icon: Rocket, title: "المنطلق الصاروخي", completed: (ordersData?.length || 0) > 0 },
     { icon: Shield, title: "المستخدم الموثوق", completed: (ordersData?.length || 0) >= 10 },
     { icon: ShoppingCart, title: "سيد الطلبات", completed: (ordersData?.length || 0) >= 50 },
     { icon: Star, title: "النجم الصاعد", completed: (userData.totalSpent || 0) >= 100 },
     { icon: DollarSign, title: "ملك الإنفاق", completed: (userData.totalSpent || 0) >= 1000 },
     { icon: Sparkles, title: "العميل المميز", completed: (userData.rank) === 'سيد المجرة' },
     { icon: Diamond, title: "الأسطورة الكونية", completed: (userData.rank) === 'سيد كوني' },
+    { icon: Users, title: "المسوق الشبكي", completed: (userData.referralsCount || 0) >= 5 },
   ];
 
   function QuickOrderFormSkeleton() {
@@ -462,34 +468,34 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>الرصيد الأساسي</span>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-               <CardTitle className="text-sm font-medium flex justify-between items-center">
-                <span>الرصيد الإعلاني</span>
-                <Megaphone className="h-4 w-4 text-muted-foreground" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex justify-between items-center">
                 <span>إجمالي الإنفاق</span>
                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+               <CardTitle className="text-sm font-medium flex justify-between items-center">
+                <span>الرتبة الكونية</span>
+                <Gem className="h-4 w-4 text-muted-foreground" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userData?.rank ?? '...'}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex justify-between items-center">
+                <span>خصم الخدمات</span>
+                 <Percent className="h-4 w-4 text-muted-foreground" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{rank.discount}%</div>
             </CardContent>
           </Card>
         </div>
@@ -513,8 +519,8 @@ export default function DashboardPage() {
                     <YAxis yAxisId="left" orientation="right" stroke="hsl(var(--primary))" hide />
                     <YAxis yAxisId="right" orientation="left" stroke="hsl(var(--accent))" hide />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} yAxisId="left" />
-                    <Bar dataKey="charge" fill="var(--color-charge)" radius={4} yAxisId="right" />
+                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} yAxisId="left" name="الطلبات" />
+                    <Bar dataKey="charge" fill="var(--color-charge)" radius={4} yAxisId="right" name="الإنفاق" />
                   </BarChart>
                 </ChartContainer>
             </CardContent>
@@ -547,7 +553,7 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center">
+                    <TableCell colSpan={3} className="text-center h-24">
                       لا توجد طلبات لعرضها.
                     </TableCell>
                   </TableRow>
@@ -561,18 +567,8 @@ export default function DashboardPage() {
       <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
          <Card>
             <CardHeader>
-                <CardTitle>رتبتك الكونية</CardTitle>
-            </CardHeader>
-            <CardContent className='text-center'>
-                 <Gem className="h-16 w-16 text-primary mx-auto mb-2" />
-                 <p className='text-2xl font-bold'>{userData?.rank ?? '...'}</p>
-                 <p className="text-xs text-muted-foreground">خصم {rank.discount}% على الخدمات</p>
-            </CardContent>
-        </Card>
-         <Card>
-            <CardHeader>
                 <CardTitle>الإنجازات الكونية</CardTitle>
-                 <CardDescription>لقد أكملت {achievements.filter(a => a.completed).length} من {achievements.length} من الإنجازات</CardDescription>
+                 <CardDescription>أكملت {achievements.filter(a => a.completed).length} من {achievements.length} إنجازات</CardDescription>
             </CardHeader>
             <CardContent className='grid grid-cols-4 gap-4'>
                  {achievements.map((ach, i) => (
@@ -580,8 +576,8 @@ export default function DashboardPage() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className={cn(
-                                    'flex flex-col items-center justify-center gap-1 p-2 rounded-md aspect-square',
-                                    ach.completed ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+                                    'flex flex-col items-center justify-center gap-1 p-2 rounded-lg aspect-square border-2 transition-all',
+                                    ach.completed ? 'border-primary/50 bg-primary/20 text-primary' : 'border-transparent bg-muted text-muted-foreground'
                                 )}>
                                     <ach.icon className="h-6 w-6" />
                                 </div>
@@ -599,5 +595,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
