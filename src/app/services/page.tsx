@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -77,6 +77,7 @@ function ServicesPageSkeleton() {
 export default function ServicesPage() {
   const firestore = useFirestore();
   const router = useRouter();
+  const { user } = useUser();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('default');
@@ -111,8 +112,12 @@ export default function ServicesPage() {
 
 
   const handleOrderNow = (serviceId: string) => {
-    const orderText = `${serviceId}|ضع الرابط هنا|1000`;
-    router.push(`/dashboard/mass-order?prefill=${encodeURIComponent(orderText)}`);
+    if (user) {
+        const orderText = `${serviceId}|ضع الرابط هنا|1000`;
+        router.push(`/dashboard/mass-order?prefill=${encodeURIComponent(orderText)}`);
+    } else {
+        router.push('/login');
+    }
   };
   
   const handlePlatformChange = useCallback((platform: string) => {

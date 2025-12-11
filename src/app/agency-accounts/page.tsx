@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, TrendingUp, XCircle, Briefcase } from "lucide-react";
 import { PLATFORM_ICONS } from '@/lib/icon-data';
+import { useUser } from "@/firebase";
+import { useRouter } from "next/navigation";
 
 const agencyAccounts = [
     {
@@ -60,6 +62,19 @@ const features = [
 
 
 export default function AgencyAccountsPage() {
+    const { user } = useUser();
+    const router = useRouter();
+
+    const handlePurchase = () => {
+        if (user) {
+            // In a real app, this would lead to a checkout page or add to cart.
+            // For now, we can just lead to the add-funds page.
+            router.push('/dashboard/add-funds');
+        } else {
+            router.push('/login');
+        }
+    };
+
     return (
         <div className="space-y-8 pb-8">
             <div>
@@ -115,7 +130,7 @@ export default function AgencyAccountsPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full text-lg py-6 bg-gradient-to-r from-primary to-primary/80 hover:brightness-110">اشتر الآن</Button>
+                            <Button onClick={handlePurchase} className="w-full text-lg py-6 bg-gradient-to-r from-primary to-primary/80 hover:brightness-110">اشتر الآن</Button>
                         </CardFooter>
                     </Card>
                 ))}
