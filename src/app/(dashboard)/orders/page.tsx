@@ -91,6 +91,9 @@ function OrdersPageSkeleton() {
                         </TableBody>
                     </Table>
                 </CardContent>
+                 <CardFooter className="justify-center border-t pt-4">
+                    <Skeleton className="h-9 w-64" />
+                 </CardFooter>
             </Card>
         </div>
     );
@@ -116,7 +119,7 @@ export default function OrdersPage() {
         q = query(q, where('status', '==', statusFilter));
     }
     // Note: Firestore doesn't support full-text search natively on multiple fields.
-    // The search term filter will be applied on the client-side.
+    // The search term filter will be applied on the client-side for simplicity here.
     return q;
   }, [baseQuery, statusFilter]);
 
@@ -124,6 +127,7 @@ export default function OrdersPage() {
 
   const filteredOrders = useMemo(() => {
     if (!allOrders) return [];
+    if (!searchTerm) return allOrders;
     return allOrders.filter(order => 
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -149,6 +153,7 @@ export default function OrdersPage() {
     }
   };
 
+  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter]);
@@ -161,29 +166,30 @@ export default function OrdersPage() {
     if (totalPages <= 1) return null;
     
     const items = [];
-    const pageNumbers = [];
+    const pageNumbers: number[] = [];
 
-    if (totalPages <= 5) {
-        for (let i = 1; i <= totalPages; i++) {
-            pageNumbers.push(i);
-        }
-    } else {
-        pageNumbers.push(1);
-        if (currentPage > 3) {
-            pageNumbers.push(-1); // Ellipsis
-        }
-        if (currentPage > 2) {
-            pageNumbers.push(currentPage - 1);
-        }
-        if (currentPage !== 1 && currentPage !== totalPages) {
-            pageNumbers.push(currentPage);
-        }
-        if (currentPage < totalPages - 1) {
-            pageNumbers.push(currentPage + 1);
-        }
-        if (currentPage < totalPages - 2) {
-            pageNumbers.push(-1); // Ellipsis
-        }
+    // Always show first page
+    pageNumbers.push(1);
+
+    // Logic for ellipsis and nearby pages
+    if (currentPage > 3) {
+      pageNumbers.push(-1); // Ellipsis
+    }
+    if (currentPage > 2) {
+      pageNumbers.push(currentPage - 1);
+    }
+    if (currentPage !== 1 && currentPage !== totalPages) {
+      pageNumbers.push(currentPage);
+    }
+    if (currentPage < totalPages - 1) {
+      pageNumbers.push(currentPage + 1);
+    }
+    if (currentPage < totalPages - 2) {
+      pageNumbers.push(-1); // Ellipsis
+    }
+    
+    // Always show last page
+    if (totalPages > 1) {
         pageNumbers.push(totalPages);
     }
 
@@ -240,8 +246,26 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      {isLoading && <Skeleton className="h-96 w-full" />}
-      {!isLoading && paginatedOrders && paginatedOrders.length > 0 ? (
+      {isLoading && (!paginatedOrders || paginatedOrders.length === 0) ? (
+        <Card>
+            <CardContent className="p-0">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                                {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+      ) : paginatedOrders && paginatedOrders.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -266,7 +290,7 @@ export default function OrdersPage() {
                     <TableCell className="text-center">
                       <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
@@ -291,7 +315,7 @@ export default function OrdersPage() {
             </CardFooter>
            )}
         </Card>
-      ) : !isLoading && (
+      ) : (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
             <CardHeader>
                 <div className="mx-auto bg-muted p-4 rounded-full">
@@ -310,5 +334,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-
-    
