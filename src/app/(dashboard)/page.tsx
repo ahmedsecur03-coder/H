@@ -44,8 +44,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { getRankForSpend, RANKS, AFFILIATE_LEVELS } from '@/lib/service';
+import { getRankForSpend } from '@/lib/service';
 import Link from 'next/link';
+
+const AFFILIATE_LEVELS = {
+    'برونزي': { commission: 10 },
+    'فضي': { commission: 12 },
+    'ذهبي': { commission: 15 },
+    'ماسي': { commission: 20 },
+};
 
 function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
@@ -258,8 +265,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                                                 <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                                                     <span>ID: {s.id}</span>
                                                     <span className='font-bold text-primary'>${s.price}/1k</span>
-                                                    {s.speed && <span>⚡️{s.speed}</span>}
-                                                    {s.guarantee && <span>⛔️ضمان</span>}
                                                 </div>
                                             </div>
                                           </CommandItem>
@@ -278,12 +283,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                             <CardTitle className="text-lg">وصف الخدمة</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
-                            <div className="grid grid-cols-2 gap-2">
-                                <p>⏱️ <span className="font-semibold">البدء:</span> {selectedService.startTime || 'غير محدد'}</p>
-                                <p>⚡️ <span className="font-semibold">السرعة:</span> {selectedService.speed || 'غير محدد'}</p>
-                                <p>🔴 <span className="font-semibold">السقوط:</span> {selectedService.dropRate || 'غير محدد'}</p>
-                                <p>🟢 <span className="font-semibold">الضمان:</span> {selectedService.guarantee ? 'متوفر' : 'بدون ضمان'}</p>
-                            </div>
                             <Alert variant="destructive" className="bg-destructive/10 text-destructive-foreground border-destructive/20">
                                 <AlertTitle className="flex items-center gap-2">🚨 تنبيه</AlertTitle>
                                 <AlertDescription>
@@ -313,10 +312,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                     </div>
 
                     <div className="text-sm font-medium text-center p-3 bg-muted rounded-md space-y-1">
-                         <div className="flex justify-between">
-                            <span>متوسط الوقت:</span>
-                            <span>{selectedService.avgTime || 'غير محدد'}</span>
-                         </div>
                          <div className="flex justify-between text-lg text-primary">
                             <span className="font-bold">السعر:</span>
                             <span className="font-bold">${cost.toFixed(4)}</span>
@@ -324,7 +319,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                          <p className="text-xs text-muted-foreground">(خصم {discountPercentage*100}%)</p>
                     </div>
 
-                    <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={isSubmitting}>
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary/80" disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'شراء الخدمة'}
                     </Button>
                 </>
@@ -368,7 +363,7 @@ export default function DashboardPage() {
     () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
     [firestore, authUser]
   );
-  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(recentOrdersQuery);
 
   const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
   
