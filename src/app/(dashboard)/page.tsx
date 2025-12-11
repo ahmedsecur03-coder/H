@@ -22,13 +22,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   DollarSign,
   Package,
   ShoppingCart,
@@ -63,6 +56,10 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 const RANKS: { name: UserType['rank']; spend: number; discount: number, reward: number }[] = [
   { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
@@ -95,27 +92,15 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const [selectedPlatform, setSelectedPlatform] = useState<string | undefined>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
   const [link, setLink] = useState('');
   const [quantity, setQuantity] = useState('');
   const [cost, setCost] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openServiceSelector, setOpenServiceSelector] = useState(false)
 
-  // Queries for services
   const servicesQuery = useMemoFirebase(() => firestore ? collection(firestore, 'services') : null, [firestore]);
   const { data: allServices, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
-  
-  const platforms = useMemo(() => {
-      if (!allServices) return [];
-      const platformSet = new Set(allServices.map(s => s.platform));
-      return Array.from(platformSet);
-  }, [allServices]);
-
-  const servicesForPlatform = useMemo(() => {
-      if (!selectedPlatform || !allServices) return [];
-      return allServices.filter(s => s.platform === selectedPlatform);
-  }, [selectedPlatform, allServices]);
 
   const selectedService = useMemo(() => {
     return selectedServiceId ? allServices?.find(s => s.id === selectedServiceId) : null;
@@ -124,7 +109,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
   const discountPercentage = rank.discount / 100;
 
-  // Calculate cost
   useEffect(() => {
     if (selectedService && quantity) {
       const numQuantity = parseInt(quantity, 10);
@@ -211,8 +195,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             };
             transaction.set(newOrderRef, newOrder);
 
-             // Affiliate Commission Logic
-            if (currentData.referrerId) {
+             if (currentData.referrerId) {
                 const referrerRef = doc(firestore, 'users', currentData.referrerId);
                 const referrerDoc = await transaction.get(referrerRef);
                 if (referrerDoc.exists()) {
@@ -232,7 +215,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
                         orderId: newOrderRef.id,
                         amount: commissionAmount,
                         transactionDate: new Date().toISOString(),
-                        level: 1 // Assuming direct referral for now
+                        level: 1 
                     });
                 }
             }
@@ -243,8 +226,6 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
             setTimeout(() => toast(promotionToast), 1000);
         }
 
-        // Reset form
-        setSelectedPlatform(undefined);
         setSelectedServiceId(undefined);
         setLink('');
         setQuantity('');
@@ -262,58 +243,126 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">تقديم طلب جديد</CardTitle>
-        <CardDescription>اختر المنصة، ثم الفئة، ثم الخدمة لبدء طلبك.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className='flex items-center gap-2 overflow-x-auto pb-2'>
-                 {platforms.map(p => {
-                    return (
-                        <Button key={p} type="button" variant={selectedPlatform === p ? 'default' : 'outline'} onClick={() => setSelectedPlatform(p)} className="flex items-center gap-2 shrink-0">
-                           <span>{p}</span>
-                        </Button>
-                    )
-                 })}
-            </div>
-
-            {selectedPlatform && (
-                <div className="grid gap-2">
-                    <Label htmlFor="service">الخدمة</Label>
-                    <Select onValueChange={setSelectedServiceId} value={selectedServiceId}>
-                    <SelectTrigger id="service">
-                        <SelectValue placeholder="اختر الخدمة المطلوبة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {servicesForPlatform.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                            {s.category} - ${s.price}/1k
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                    </Select>
-                </div>
-            )}
+        {servicesLoading ? <QuickOrderFormSkeleton /> : (
+            <form onSubmit={handleSubmit} className="grid gap-6">
               
-              {selectedServiceId && (
+              <div className="grid gap-2">
+                 <Label>الخدمة</Label>
+                  <Popover open={openServiceSelector} onOpenChange={setOpenServiceSelector}>
+                      <PopoverTrigger asChild>
+                          <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={openServiceSelector}
+                              className="w-full justify-between h-auto"
+                              disabled={servicesLoading}
+                          >
+                            <div className="flex flex-col text-right items-start">
+                              {selectedService
+                                  ? <>
+                                      <span className='font-bold'>{selectedService.platform} - {selectedService.category}</span>
+                                      <span className='text-xs text-muted-foreground'>${selectedService.price}/1k</span>
+                                    </>
+                                  : "ابحث عن خدمة بالاسم أو الرقم..."}
+                            </div>
+                          </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                              <CommandInput placeholder="ابحث عن خدمة..." />
+                              <CommandList>
+                                  <CommandEmpty>لم يتم العثور على خدمة.</CommandEmpty>
+                                  <CommandGroup>
+                                      {allServices?.map((s) => (
+                                          <CommandItem
+                                              key={s.id}
+                                              value={`${s.id} ${s.platform} ${s.category}`}
+                                              onSelect={() => {
+                                                  setSelectedServiceId(s.id)
+                                                  setOpenServiceSelector(false)
+                                              }}
+                                          >
+                                            <Check className={cn("ml-2 h-4 w-4", selectedServiceId === s.id ? "opacity-100" : "opacity-0")}/>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{s.platform} - {s.category}</span>
+                                                <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                                                    <span>ID: {s.id}</span>
+                                                    <span className='font-bold text-primary'>${s.price}/1k</span>
+                                                    {s.speed && <span>⚡️{s.speed}</span>}
+                                                    {s.guarantee && <span>⛔️ضمان</span>}
+                                                </div>
+                                            </div>
+                                          </CommandItem>
+                                      ))}
+                                  </CommandGroup>
+                              </CommandList>
+                          </Command>
+                      </PopoverContent>
+                  </Popover>
+              </div>
+
+              {selectedService && (
                 <>
+                    <Card className="bg-muted/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">وصف الخدمة</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 text-sm">
+                            <div className="grid grid-cols-2 gap-2">
+                                <p>⏱️ <span className="font-semibold">البدء:</span> {selectedService.startTime || 'غير محدد'}</p>
+                                <p>⚡️ <span className="font-semibold">السرعة:</span> {selectedService.speed || 'غير محدد'}</p>
+                                <p>🔴 <span className="font-semibold">السقوط:</span> {selectedService.dropRate || 'غير محدد'}</p>
+                                <p>🟢 <span className="font-semibold">الضمان:</span> {selectedService.guarantee ? 'متوفر' : 'بدون ضمان'}</p>
+                            </div>
+                            <Alert variant="destructive" className="bg-destructive/10 text-destructive-foreground border-destructive/20">
+                                <AlertTitle className="flex items-center gap-2">🚨 تنبيه</AlertTitle>
+                                <AlertDescription>
+                                تأكد من تقديم طلبك بعناية قبل إرساله، حيث قد لا يكون الإلغاء بعد ذلك ممكنًا في بعض الأحيان.
+                                </AlertDescription>
+                            </Alert>
+                            <div>
+                                <h4 className="font-semibold mb-2">تفاصيل:</h4>
+                                <ul className="list-inside list-disc space-y-1 text-muted-foreground text-xs">
+                                   {selectedService.description?.split('\n').map((line, i) => <li key={i}>{line}</li>)}
+                                    <li>إذا تم تغيير اسم الحساب، يعتبر الطلب مكتملاً.</li>
+                                    <li>تأكد من صحة الرابط قبل الطلب. إذا أدخلت رابطًا غير صحيح، فلن يكون هناك استرداد للمبلغ.</li>
+                                    <li>لا تطلب من مصدر آخر أثناء عملنا على طلبك.</li>
+                                    <li>تأكد من أن الحساب عام قبل إنشاء الطلب.</li>
+                                </ul>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <div className="grid gap-2">
                         <Label htmlFor="link">الرابط</Label>
                         <Input id="link" placeholder="https://..." value={link} onChange={(e) => setLink(e.target.value)} required />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="quantity">الكمية</Label>
-                        <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required />
-                        {selectedService && <p className="text-xs text-muted-foreground">الحدود: {selectedService.min} - {selectedService.max}</p>}
+                        <Label htmlFor="quantity">الكمية (الحد الأدنى: {selectedService.min} - الحد الأقصى: {selectedService.max})</Label>
+                        <Input id="quantity" type="number" placeholder="1000" value={quantity} onChange={(e) => setQuantity(e.target.value)} required min={selectedService.min} max={selectedService.max}/>
                     </div>
-                    <div className="text-sm font-medium text-center p-2 bg-muted rounded-md">
-                        التكلفة التقديرية: <span className="text-primary">${cost.toFixed(2)}</span> (خصم {discountPercentage}%)
+
+                    <div className="text-sm font-medium text-center p-3 bg-muted rounded-md space-y-1">
+                         <div className="flex justify-between">
+                            <span>متوسط الوقت:</span>
+                            <span>{selectedService.avgTime || 'غير محدد'}</span>
+                         </div>
+                         <div className="flex justify-between text-lg text-primary">
+                            <span className="font-bold">السعر:</span>
+                            <span className="font-bold">${cost.toFixed(4)}</span>
+                         </div>
+                         <p className="text-xs text-muted-foreground">(خصم {discountPercentage*100}%)</p>
                     </div>
-                    <Button type="submit" className="w-full bg-primary/90 hover:bg-primary text-primary-foreground" disabled={isSubmitting}>
+
+                    <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="animate-spin" /> : 'شراء الخدمة'}
                     </Button>
                 </>
               )}
-        </form>
+            </form>
+        )}
       </CardContent>
     </Card>
   );
@@ -325,13 +374,10 @@ function QuickOrderFormSkeleton() {
         <Card>
             <CardHeader>
                 <Skeleton className="h-6 w-1/2" />
-                <Skeleton className="h-4 w-3/4" />
             </CardHeader>
             <CardContent>
                 <div className="grid gap-4">
-                    <div className='flex items-center gap-2'>
-                        {Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-10 w-24" />)}
-                    </div>
+                    <Skeleton className="h-10 w-full" />
                     <Skeleton className="h-10 w-full" />
                     <Skeleton className="h-10 w-full" />
                 </div>
@@ -506,3 +552,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

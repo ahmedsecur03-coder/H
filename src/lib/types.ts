@@ -31,9 +31,11 @@ export type Service = {
   description?: string;
   avgTime?: string;
   guarantee?: boolean;
-  speed?: 'فوري' | 'سريع' | 'بطيء';
+  speed?: string; // Changed to string to support values like '+40k/day'
   dripFeed?: boolean;
   refill?: boolean;
+  startTime?: string;
+  dropRate?: string;
 };
 
 export type Order = {

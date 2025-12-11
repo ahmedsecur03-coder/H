@@ -99,6 +99,10 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      width: {
+        'sidebar': 'var(--sidebar-width)',
+        'sidebar-icon': 'var(--sidebar-width-icon)',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
