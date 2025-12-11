@@ -3,6 +3,7 @@
 
 import Logo from '@/components/logo';
 import { UserNav } from './user-nav';
+import { useUser } from '@/firebase';
 
 export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
@@ -22,6 +23,3 @@ export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
     </header>
   );
 }
-
-// We need to import useUser to satisfy the dependency checker
-import { useUser } from '@/firebase';

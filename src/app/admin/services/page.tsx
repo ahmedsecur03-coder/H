@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
@@ -7,95 +8,101 @@ import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Trash2, Loader2, ListFilter, Save } from 'lucide-react';
+import { PlusCircle, Upload, Trash2, Loader2, ListFilter, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import React from 'react';
 
-// A reusable component for inline editing
-function EditableCell({ value, onSave, type = 'text' }: { value: string | number, onSave: (newValue: string) => Promise<void>, type?: 'text' | 'number' }) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [currentValue, setCurrentValue] = useState(String(value));
+function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: any) => Promise<void>, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
+    const [data, setData] = useState({
+        id: service?.id || '',
+        category: service?.category || '',
+        platform: service?.platform || '',
+        price: service?.price || 0,
+        min: service?.min || 0,
+        max: service?.max || 0,
+        refill: service?.refill || false,
+    });
     const [isSaving, setIsSaving] = useState(false);
-    const { toast } = useToast();
 
-    const handleSave = async () => {
-        if (String(value) === currentValue) {
-            setIsEditing(false);
-            return;
+    React.useEffect(() => {
+        if (service) {
+            setData({
+                id: service.id,
+                category: service.category,
+                platform: service.platform,
+                price: service.price,
+                min: service.min,
+                max: service.max,
+                refill: service.refill || false,
+            });
+        } else {
+             setData({ id: '', category: '', platform: '', price: 0, min: 0, max: 0, refill: false });
         }
+    }, [service, open]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         setIsSaving(true);
         try {
-            await onSave(currentValue);
-            setIsEditing(false);
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل التحديث', description: error.message });
+            await onSave(data);
+            onOpenChange(false);
         } finally {
             setIsSaving(false);
         }
     };
-
-    if (isEditing) {
-        return (
-            <div className="flex items-center gap-2">
-                <Input
-                    type={type}
-                    value={currentValue}
-                    onChange={(e) => setCurrentValue(e.target.value)}
-                    onBlur={handleSave}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                    autoFocus
-                    className="h-8"
-                />
-                {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-            </div>
-        );
-    }
     
     return (
-        <div onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-muted/50 p-1 rounded-md min-h-[2rem] flex items-center">
-            {value}
-        </div>
-    );
-}
-
-function AddNewServiceRow({ onAdd, isAdding }: { onAdd: (service: Omit<Service, 'id'>) => void, isAdding: boolean }) {
-    const [newService, setNewService] = useState({ platform: '', category: '', price: '0', min: '0', max: '0', refill: false });
-
-    const handleAdd = () => {
-        onAdd({
-            ...newService,
-            price: parseFloat(newService.price) || 0,
-            min: parseInt(newService.min, 10) || 0,
-            max: parseInt(newService.max, 10) || 0,
-        });
-        setNewService({ platform: '', category: '', price: '0', min: '0', max: '0', refill: false });
-    };
-
-    return (
-        <TableRow className="bg-muted/50 hover:bg-muted/60">
-            <TableCell><Input className="h-8 bg-background" placeholder="ID (auto)" disabled /></TableCell>
-            <TableCell><Input className="h-8 bg-background" placeholder="الفئة" value={newService.category} onChange={e => setNewService({...newService, category: e.target.value})} /></TableCell>
-            <TableCell><Input className="h-8 bg-background" placeholder="المنصة" value={newService.platform} onChange={e => setNewService({...newService, platform: e.target.value})} /></TableCell>
-            <TableCell><Input className="h-8 bg-background" placeholder="السعر" type="number" value={newService.price} onChange={e => setNewService({...newService, price: e.target.value})} /></TableCell>
-            <TableCell>
-                <div className="flex gap-1">
-                    <Input className="h-8 bg-background" placeholder="أدنى" type="number" value={newService.min} onChange={e => setNewService({...newService, min: e.target.value})} />
-                    <Input className="h-8 bg-background" placeholder="أقصى" type="number" value={newService.max} onChange={e => setNewService({...newService, max: e.target.value})} />
-                </div>
-            </TableCell>
-            <TableCell className="text-center">
-                <Switch checked={newService.refill} onCheckedChange={checked => setNewService({...newService, refill: checked})} />
-            </TableCell>
-            <TableCell className="text-right">
-                <Button size="icon" onClick={handleAdd} disabled={isAdding}>
-                    {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                </Button>
-            </TableCell>
-        </TableRow>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{service ? 'تعديل الخدمة' : 'إضافة خدمة جديدة'}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label>رقم الخدمة (ID)</Label>
+                        <Input value={data.id} onChange={e => setData({...data, id: e.target.value})} placeholder="اتركه فارغاً للتوليد التلقائي" disabled={!!service} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label>الفئة</Label>
+                        <Input value={data.category} onChange={e => setData({...data, category: e.target.value})} required />
+                    </div>
+                     <div className="space-y-2">
+                        <Label>المنصة</Label>
+                        <Input value={data.platform} onChange={e => setData({...data, platform: e.target.value})} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>السعر/1000</Label>
+                        <Input type="number" value={data.price} onChange={e => setData({...data, price: parseFloat(e.target.value) || 0})} required />
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>الحد الأدنى</Label>
+                            <Input type="number" value={data.min} onChange={e => setData({...data, min: parseInt(e.target.value) || 0})} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>الحد الأقصى</Label>
+                            <Input type="number" value={data.max} onChange={e => setData({...data, max: parseInt(e.target.value) || 0})} required />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                         <Switch id="refill" checked={data.refill} onCheckedChange={checked => setData({...data, refill: checked})} />
+                        <Label htmlFor="refill">إعادة تعبئة مدعومة</Label>
+                    </div>
+                     <DialogFooter>
+                        <Button type="submit" disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : 'حفظ'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }
 
@@ -103,10 +110,11 @@ export default function AdminServicesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
 
   const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services')) : null, [firestore]);
-  const { data: services, isLoading, forceCollectionUpdate } = useCollection<Service>(servicesQuery);
+  const { data: services, isLoading } = useCollection<Service>(servicesQuery);
 
   const filteredServices = useMemo(() => {
     if (!services) return [];
@@ -119,46 +127,39 @@ export default function AdminServicesPage() {
     );
   }, [services, searchTerm]);
   
-  const handleFieldUpdate = useCallback(async (serviceId: string, field: keyof Service, value: string | number | boolean) => {
+  const handleSaveService = async (data: Omit<Service, 'id'> & { id?: string }) => {
     if (!firestore) return;
-    const serviceDocRef = doc(firestore, 'services', serviceId);
-    
-    let processedValue = value;
-    if (field === 'price' || field === 'min' || field === 'max') {
-        processedValue = typeof value === 'string' ? parseFloat(value) : value;
-        if(isNaN(processedValue as number)) {
-            toast({ variant: 'destructive', title: 'قيمة غير صالحة'});
-            throw new Error('Invalid number');
+
+    if (selectedService) { // Editing existing service
+        const serviceDocRef = doc(firestore, 'services', selectedService.id);
+        const { id, ...updateData } = data; // Don't update the ID
+        await updateDoc(serviceDocRef, updateData)
+            .then(() => toast({ title: 'نجاح', description: 'تم تحديث الخدمة بنجاح.' }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({ path: serviceDocRef.path, operation: 'update', requestResourceData: updateData });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+    } else { // Adding new service
+        const servicesColRef = collection(firestore, 'services');
+        if (data.id) { // Use user-provided ID
+            const newServiceDocRef = doc(firestore, 'services', data.id);
+            const { id, ...newServiceData } = data;
+            await setDoc(newServiceDocRef, newServiceData)
+                .then(() => toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' }))
+                .catch(serverError => {
+                    const permissionError = new FirestorePermissionError({ path: newServiceDocRef.path, operation: 'create', requestResourceData: newServiceData });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+        } else { // Auto-generate ID
+             const { id, ...newServiceData } = data;
+             await addDoc(servicesColRef, newServiceData)
+                .then(() => toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' }))
+                .catch(serverError => {
+                    const permissionError = new FirestorePermissionError({ path: servicesColRef.path, operation: 'create', requestResourceData: newServiceData });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
         }
     }
-
-    const updateData = { [field]: processedValue };
-    
-    return updateDoc(serviceDocRef, updateData).catch(serverError => {
-        const permissionError = new FirestorePermissionError({ path: serviceDocRef.path, operation: 'update', requestResourceData: updateData });
-        errorEmitter.emit('permission-error', permissionError);
-        throw new Error('فشل تحديث الخدمة.');
-    });
-  }, [firestore, toast]);
-
-  const handleAddService = async (data: Omit<Service, 'id'>) => {
-    if (!firestore) return;
-    if (!data.category || !data.platform) {
-        toast({variant: 'destructive', title: 'خطأ', description: 'الفئة والمنصة حقول مطلوبة.'});
-        return;
-    }
-    setIsAdding(true);
-    const servicesColRef = collection(firestore, 'services');
-    addDoc(servicesColRef, data)
-        .then(() => {
-            toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
-            forceCollectionUpdate();
-        })
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({ path: servicesColRef.path, operation: 'create', requestResourceData: data });
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => setIsAdding(false));
   };
 
   const handleDeleteService = async (id: string) => {
@@ -173,6 +174,11 @@ export default function AdminServicesPage() {
             errorEmitter.emit('permission-error', permissionError);
         });
   };
+
+  const handleOpenDialog = (service?: Service) => {
+      setSelectedService(service);
+      setIsDialogOpen(true);
+  }
 
   const renderContent = () => {
     if (isLoading && !filteredServices) {
@@ -198,23 +204,15 @@ export default function AdminServicesPage() {
     return filteredServices.map(service => (
       <TableRow key={service.id}>
           <TableCell className="font-mono text-xs">{service.id}</TableCell>
-          <TableCell><EditableCell value={service.category} onSave={(v) => handleFieldUpdate(service.id, 'category', v)} /></TableCell>
-          <TableCell><EditableCell value={service.platform} onSave={(v) => handleFieldUpdate(service.id, 'platform', v)} /></TableCell>
-          <TableCell><EditableCell value={service.price.toFixed(4)} type="number" onSave={(v) => handleFieldUpdate(service.id, 'price', v)} /></TableCell>
-          <TableCell className="flex gap-1">
-            <EditableCell value={service.min} type="number" onSave={(v) => handleFieldUpdate(service.id, 'min', v)} />
-            -
-            <EditableCell value={service.max} type="number" onSave={(v) => handleFieldUpdate(service.id, 'max', v)} />
-          </TableCell>
+          <TableCell>{service.category}</TableCell>
+          <TableCell>{service.platform}</TableCell>
+          <TableCell>${service.price.toFixed(4)}</TableCell>
+          <TableCell>{service.min} / {service.max}</TableCell>
            <TableCell className="text-center">
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger><Switch checked={!!service.refill} onCheckedChange={(c) => handleFieldUpdate(service.id, 'refill', c)} /></TooltipTrigger>
-                    <TooltipContent>إعادة تعبئة مدعومة</TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            {service.refill ? <Badge variant="default">نعم</Badge> : <Badge variant="secondary">لا</Badge>}
           </TableCell>
           <TableCell className="text-right">
+                <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
@@ -239,6 +237,7 @@ export default function AdminServicesPage() {
         </div>
         <div className="flex gap-2">
            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد بالجملة</Button>
+           <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة خدمة</Button>
         </div>
       </div>
        <Card>
@@ -260,13 +259,18 @@ export default function AdminServicesPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <AddNewServiceRow onAdd={handleAddService} isAdding={isAdding}/>
                         {renderContent()}
                     </TableBody>
                 </Table>
             )}
         </CardContent>
        </Card>
+        <ServiceDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            service={selectedService}
+            onSave={handleSaveService}
+        />
     </div>
   );
 }
