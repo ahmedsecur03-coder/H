@@ -52,7 +52,7 @@ function NetworkTree() {
     );
     const { data: userData } = useDoc<UserType>(userDocRef);
     
-    // Placeholder data for the tree until multi-level tracking is implemented
+    // Placeholder data for 5 levels. Level 1 is dynamic.
     const treeData = {
         level: 0,
         name: "أنت",
@@ -60,6 +60,8 @@ function NetworkTree() {
             { level: 1, name: "دعوة مباشرة", count: userData?.referralsCount || 0 },
             { level: 2, name: "المستوى الثاني", count: 0 },
             { level: 3, name: "المستوى الثالث", count: 0 },
+            { level: 4, name: "المستوى الرابع", count: 0 },
+            { level: 5, name: "المستوى الخامس", count: 0 },
         ]
     };
 
@@ -67,11 +69,11 @@ function NetworkTree() {
         <Card>
             <CardHeader>
                 <CardTitle>شجرة شبكتك التسويقية</CardTitle>
-                <CardDescription>نظرة عامة على مستويات شبكة الإحالة الخاصة بك.</CardDescription>
+                <CardDescription>نظرة عامة على مستويات شبكة الإحالة الخاصة بك (حتى 5 مستويات).</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-center items-center h-48">
-                 <div className="flex items-center gap-4 text-center">
-                    <div className="flex flex-col items-center gap-2">
+            <CardContent className="flex justify-center items-center h-48 overflow-x-auto">
+                 <div className="flex items-center gap-2 text-center p-4">
+                    <div className="flex flex-col items-center gap-2 shrink-0">
                         <div className="w-16 h-16 rounded-full bg-primary/20 text-primary flex items-center justify-center border-2 border-primary">
                             <Target className="h-8 w-8" />
                         </div>
@@ -80,8 +82,8 @@ function NetworkTree() {
 
                     {treeData.children.map((child, index) => (
                         <React.Fragment key={index}>
-                            <div className="w-12 h-1 bg-border-muted-foreground/30 hidden md:block"></div>
-                             <div className="flex flex-col items-center gap-2">
+                            <div className="w-8 h-1 bg-border-muted-foreground/30 shrink-0"></div>
+                             <div className="flex flex-col items-center gap-2 shrink-0">
                                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                                     <span className="text-2xl font-bold">{child.count}</span>
                                 </div>
@@ -292,7 +294,3 @@ export default function AffiliatePage() {
     </div>
   );
 }
-
-    
-
-    
