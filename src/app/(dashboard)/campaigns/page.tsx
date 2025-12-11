@@ -36,7 +36,7 @@ const platformIcons = {
             fill="currentColor"
             viewBox="0 0 24 24"
         >
-           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
+           <path d="M12.986 2.695c-.687 0-1.375.02-2.063.059-4.887.279-8.73 4.14-8.91 9.027-.037.986.138 1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 003.543-1.066c.687 0 1.375-.02 2.063-.059 4.887-.279 8.73-4.14 8.91-9.027.037-.986-.138-1.954-.52-2.845-.52-1.205-1.408-2.214-2.564-2.883a8.91 8.91 0 00-3.543-1.066zM8.31 10.638c0-.687.558-1.244 1.243-1.244.685 0 1.244.557 1.244 1.244s-.559 1.244-1.244 1.244-1.243-.557-1.243-1.244zm6.136 0c0-.687.558-1.244 1.244-1.244.685 0 1.243.557 1.243 1.244s-.558 1.244-1.243 1.244-1.244-.557-1.244-1.244zm-3.068 5.759s-2.006-1.51-2.006-2.565c0-.628.52-1.085 1.085-1.085.298 0 .577.12.783.318.206.198.318.46.318.767 0 1.055-2.006 2.565-2.006 2.565h1.826s2.006-1.51 2.006-2.565c0-.628-.52-1.085-1.085-1.085-.298 0-.577.12-.783.318-.206.198-.318.46-.318.767 0 1.055 2.006 2.565 2.006 2.565H11.378z"/>
         </svg>
     ),
     API: <Code className="w-8 h-8 text-primary" />
@@ -397,20 +397,20 @@ export default function CampaignsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
              {platforms.map(platform => (
-                 <Card key={platform.name} className="hover:border-primary/50 transition-colors">
-                     <CardHeader className="flex flex-row items-center justify-between">
-                         <div className="space-y-1">
-                            <CardTitle>{platform.title}</CardTitle>
-                            <CardDescription>{platform.description}</CardDescription>
-                         </div>
-                         {platformIcons[platform.name]}
-                     </CardHeader>
-                 </Card>
+                 <NewCampaignDialog userData={userData} user={authUser} onCampaignCreated={forceCollectionUpdate} key={platform.name}>
+                     <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+                         <CardHeader className="flex flex-row items-center justify-between">
+                             <div className="space-y-1">
+                                <CardTitle>{platform.title}</CardTitle>
+                                <CardDescription>{platform.description}</CardDescription>
+                             </div>
+                             {platformIcons[platform.name]}
+                         </CardHeader>
+                     </Card>
+                 </NewCampaignDialog>
              ))}
         </div>
         
-        <NewCampaignDialog userData={userData} user={authUser} onCampaignCreated={forceCollectionUpdate}/>
-
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
              <div className="lg:col-span-2">
@@ -470,5 +470,3 @@ export default function CampaignsPage() {
     </div>
   );
 }
-
-    
