@@ -21,22 +21,22 @@ const services = [
 const statusConfig = {
   Operational: {
     icon: CheckCircle2,
-    color: "bg-green-500",
+    color: "text-green-500",
     text: "يعمل بكفاءة",
   },
   Maintenance: {
     icon: Clock,
-    color: "bg-yellow-500",
+    color: "text-yellow-500",
     text: "تحت الصيانة",
   },
   Degraded: {
     icon: AlertCircle,
-    color: "bg-orange-500",
+    color: "text-orange-500",
     text: "أداء متدهور",
   },
   Outage: {
     icon: AlertCircle,
-    color: "bg-red-500",
+    color: "text-red-500",
     text: "انقطاع الخدمة",
   },
 };
@@ -67,12 +67,12 @@ export default function SystemStatusPage() {
           return (
             <Card key={index} className="flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
-                <config.icon className={`h-6 w-6 text-${config.color.replace('bg-', '')}-500`} />
+                <config.icon className={`h-6 w-6 ${config.color}`} />
                 <span className="font-medium">{service.name}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`h-3 w-3 rounded-full ${config.color} animate-pulse`}></div>
-                <span className={`font-semibold text-sm text-${config.color.replace('bg-', '')}-500`}>{config.text}</span>
+                <div className={`h-3 w-3 rounded-full ${config.color.replace('text-', 'bg-')} animate-pulse`}></div>
+                <span className={`font-semibold text-sm ${config.color}`}>{config.text}</span>
               </div>
             </Card>
           );
