@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
