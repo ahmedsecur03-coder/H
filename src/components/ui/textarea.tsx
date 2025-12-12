@@ -2,26 +2,33 @@
 import * as React from 'react';
 
 import {cn} from '@/lib/utils';
-import { useImperativeHandle, useRef } from 'react';
+import { useImperativeHandle, useRef, useEffect } from 'react';
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(
   ({className, ...props}, ref) => {
     const localRef = useRef<HTMLTextAreaElement>(null);
     useImperativeHandle(ref, () => localRef.current!);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const textarea = localRef.current;
         if (textarea) {
             const handleInput = () => {
                 textarea.style.height = 'auto';
-                textarea.style.height = `${textarea.scrollHeight}px`;
+                // Add a buffer for the final height to prevent scrollbar flicker
+                textarea.style.height = `${textarea.scrollHeight + 2}px`;
             };
-            textarea.addEventListener('input', handleInput);
             
-            // Initial resize on mount and when props.value changes
+            // Run on mount, on change, and when the component is focused
+            textarea.addEventListener('input', handleInput);
+            textarea.addEventListener('focus', handleInput);
+
+            // Initial resize
             handleInput();
             
-            return () => textarea.removeEventListener('input', handleInput);
+            return () => {
+                textarea.removeEventListener('input', handleInput);
+                textarea.removeEventListener('focus', handleInput);
+            }
         }
     }, [props.value]); // Re-run effect if external value changes
 

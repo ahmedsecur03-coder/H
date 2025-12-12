@@ -83,7 +83,9 @@ export default function AdminTicketDetailsPage() {
     if (scrollAreaRef.current) {
         const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
         if (viewport) {
-            viewport.scrollTop = viewport.scrollHeight;
+             setTimeout(() => {
+                viewport.scrollTop = viewport.scrollHeight;
+            }, 0);
         }
     }
   }, [ticket?.messages]);
