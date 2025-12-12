@@ -28,7 +28,7 @@ import { PLATFORM_ICONS } from './icon-data';
 
 
 export const publicNavItems: NestedNavItem[] = [
-    { href: '/home', label: 'الرئيسية', icon: Home },
+    { href: '/', label: 'الرئيسية', icon: Home },
     { href: '/services', label: 'الخدمات', icon: Package },
     { href: '/blog', label: 'المدونة', icon: BookOpen },
     { href: '/agency-accounts', label: 'حسابات وكالة', icon: Briefcase },
