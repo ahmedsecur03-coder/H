@@ -64,7 +64,6 @@ export default function AiAssistant() {
         content: 'عذراً، حدث خطأ ما أثناء محاولة معالجة طلبك. يرجى المحاولة مرة أخرى.',
       };
       setMessages(prev => [...prev, errorMessage]);
-      console.error('AI Flow Error:', error);
     } finally {
       setRunning(false);
     }

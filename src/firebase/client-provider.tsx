@@ -25,7 +25,6 @@ function UserInitializer() {
             if (!userDoc.exists()) {
               // User document doesn't exist, create it.
               // This serves as a fallback for social logins or if the signup transaction fails.
-              console.warn("User document not found for user:", user.uid, ". Creating a fallback document.");
               const newUser: Omit<UserType, 'id'> = {
                 name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
                 email: user.email || 'N/A',
@@ -49,10 +48,9 @@ function UserInitializer() {
               
               // Using setDoc with merge:true is safer here as a fallback
               await setDoc(userDocRef, newUser, { merge: true });
-              console.log("Created fallback user document for user:", user.uid);
             }
         } catch (error) {
-             console.error("Error in checkAndCreateUserDoc:", error);
+             // Silently catch errors here, as this is a background process.
         }
       };
 
