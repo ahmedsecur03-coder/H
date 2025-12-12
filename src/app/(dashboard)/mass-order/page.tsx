@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -141,23 +142,6 @@ export default function MassOrderPage() {
         let promotionToast: { title: string; description: string } | null = null;
         try {
             await runTransaction(firestore, async (transaction) => {
-                const userRef = doc(firestore, 'users', authUser.uid);
-                const userDoc = await transaction.get(userRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-                
-                let currentData = userDoc.data() as User;
-                
-                // Re-check balance inside transaction for safety
-                if (currentData.balance < totalFinalCost) {
-                    throw new Error(`رصيدك غير كاف. التكلفة: $${totalFinalCost.toFixed(2)}, رصيدك: $${currentData.balance.toFixed(2)}`);
-                }
-    
-                let referrerDoc: any = null;
-                if (currentData.referrerId) {
-                    const referrerRef = doc(firestore, 'users', currentData.referrerId);
-                    referrerDoc = await transaction.get(referrerRef);
-                }
-    
                 for (const pLine of validLines) {
                      if (pLine.isValid && pLine.finalCost && pLine.service) {
                         const orderData: Omit<Order, 'id'> = {
@@ -176,7 +160,6 @@ export default function MassOrderPage() {
                             firestore,
                             authUser.uid,
                             orderData,
-                            referrerDoc
                         );
                         
                         if (result.promotion) {
@@ -207,7 +190,6 @@ export default function MassOrderPage() {
                  errorEmitter.emit('permission-error', permissionError);
                  const defaultError = 'فشل العملية بسبب خطأ في الصلاحيات أثناء معالجة الطلبات.';
                  finalErrors.push(defaultError);
-                 toast({ variant: 'destructive', title: 'فشل العملية', description: defaultError });
              }
              setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: 0, errors: finalErrors });
         } finally {
@@ -309,3 +291,4 @@ export default function MassOrderPage() {
         </div>
     );
 }
+

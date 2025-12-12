@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, collection, deleteDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -94,28 +94,25 @@ export default function AdminSettingsPage() {
           let collectionRef;
           let dateThreshold: Date;
           let count = 0;
+          let q;
 
           if (type === 'orders') {
               collectionRef = collectionGroup(firestore, 'orders');
               dateThreshold = new Date();
               dateThreshold.setDate(dateThreshold.getDate() - 90);
-              const q = query(collectionRef, where('status', '==', 'مكتمل'), where('orderDate', '<', dateThreshold.toISOString()));
-              const snapshot = await getDocs(q);
-              snapshot.forEach(doc => {
-                  batch.delete(doc.ref);
-                  count++;
-              });
-          } else if (type === 'deposits') {
+              q = query(collectionRef, where('status', '==', 'مكتمل'), where('orderDate', '<', dateThreshold.toISOString()));
+          } else { // deposits
               collectionRef = collectionGroup(firestore, 'deposits');
               dateThreshold = new Date();
               dateThreshold.setDate(dateThreshold.getDate() - 30);
-              const q = query(collectionRef, where('status', '==', 'مرفوض'), where('depositDate', '<', dateThreshold.toISOString()));
-              const snapshot = await getDocs(q);
-              snapshot.forEach(doc => {
-                  batch.delete(doc.ref);
-                  count++;
-              });
+              q = query(collectionRef, where('status', '==', 'مرفوض'), where('depositDate', '<', dateThreshold.toISOString()));
           }
+
+          const snapshot = await getDocs(q);
+          snapshot.forEach(doc => {
+              batch.delete(doc.ref);
+              count++;
+          });
 
           if (count > 0) {
               await batch.commit();
@@ -125,7 +122,8 @@ export default function AdminSettingsPage() {
           }
 
       } catch (error: any) {
-          toast({ variant: "destructive", title: "خطأ", description: "فشل عملية التنظيف: " + error.message });
+          const permissionError = new FirestorePermissionError({ path: 'multiple', operation: 'delete' });
+          errorEmitter.emit('permission-error', permissionError);
       } finally {
           setIsCleaning(null);
       }
@@ -266,3 +264,4 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+

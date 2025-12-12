@@ -2,8 +2,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, doc, runTransaction, where } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
+import { collectionGroup, query, doc, runTransaction, where, updateDoc } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import {
   Card,
@@ -58,49 +58,47 @@ function CampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campai
     const handleAction = async (newStatus: 'نشط' | 'متوقف') => {
         if (!firestore) return;
         setLoading(true);
-        
-        try {
-            const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-            await runTransaction(firestore, async (transaction) => {
-                transaction.update(campaignDocRef, { status: newStatus });
+        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+        updateDoc(campaignDocRef, { status: newStatus })
+            .then(() => {
+                toast({ title: 'نجاح', description: `تم تغيير حالة الحملة إلى ${newStatus}` });
+                forceCollectionUpdate(); // Force re-fetch
+                setOpen(false);
+            })
+            .catch(error => {
+                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { status: newStatus } });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setLoading(false);
             });
-            toast({ title: 'نجاح', description: `تم تغيير حالة الحملة إلى ${newStatus}` });
-            forceCollectionUpdate(); // Force re-fetch
-            setOpen(false);
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        } finally {
-            setLoading(false);
-        }
     };
     
     const handleReject = async () => {
         if (!firestore) return;
         setLoading(true);
+        const userDocRef = doc(firestore, 'users', campaign.userId);
+        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+        
+        runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
 
-        try {
-            const userDocRef = doc(firestore, 'users', campaign.userId);
-            const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-
-            await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-
-                const currentAdBalance = userDoc.data().adBalance ?? 0;
-                const newAdBalance = currentAdBalance + campaign.budget;
-                
-                transaction.update(userDocRef, { adBalance: newAdBalance });
-                transaction.delete(campaignDocRef);
-            });
-
+            const currentAdBalance = userDoc.data().adBalance ?? 0;
+            const newAdBalance = currentAdBalance + campaign.budget;
+            
+            transaction.update(userDocRef, { adBalance: newAdBalance });
+            transaction.delete(campaignDocRef);
+        }).then(() => {
             toast({ title: 'نجاح', description: 'تم رفض الحملة وإعادة الميزانية للمستخدم.' });
             forceCollectionUpdate(); // Force re-fetch
             setOpen(false);
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل الرفض', description: error.message });
-        } finally {
+        }).catch(error => {
+             const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
+             errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => {
             setLoading(false);
-        }
+        });
     };
 
     const handleSimulation = async () => {
@@ -118,9 +116,7 @@ function CampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campai
         if(remainingBudget <= 0) {
              toast({ variant: 'destructive', title: 'تنبيه', description: 'ميزانية الحملة قد استنفدت بالفعل.' });
              const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-             await runTransaction(firestore, async (transaction) => {
-                transaction.update(campaignDocRef, { status: "مكتمل" });
-             });
+             updateDoc(campaignDocRef, { status: "مكتمل" });
              forceCollectionUpdate();
              setSimulating(false);
              return;
@@ -142,22 +138,23 @@ function CampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campai
             const newStatus = newSpend >= campaign.budget ? 'مكتمل' : campaign.status;
 
             const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-            await runTransaction(firestore, async (transaction) => {
-                transaction.update(campaignDocRef, { 
-                    spend: newSpend,
-                    impressions: newImpressions,
-                    clicks: newClicks,
-                    results: newResults,
-                    ctr: newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0,
-                    cpc: newClicks > 0 ? newSpend / newClicks : 0,
-                    status: newStatus 
-                });
-            });
+            const updateData = {
+                spend: newSpend,
+                impressions: newImpressions,
+                clicks: newClicks,
+                results: newResults,
+                ctr: newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0,
+                cpc: newClicks > 0 ? newSpend / newClicks : 0,
+                status: newStatus 
+            };
+            
+            await updateDoc(campaignDocRef, updateData);
 
             toast({ title: 'محاكاة ناجحة', description: `تم إنفاق ${simulatedSpend.toFixed(2)}$ من الميزانية.`});
             forceCollectionUpdate();
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل المحاكاة', description: error.message });
+            const permissionError = new FirestorePermissionError({ path: `users/${campaign.userId}/campaigns/${campaign.id}`, operation: 'update' });
+            errorEmitter.emit('permission-error', permissionError);
         } finally {
             setSimulating(false);
         }
@@ -309,3 +306,4 @@ export default function AdminCampaignsPage() {
     </div>
   );
 }
+

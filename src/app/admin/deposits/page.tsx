@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
 import {
   collectionGroup,
   query,
@@ -54,10 +54,10 @@ function DepositTable({ status }: { status: Status }) {
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
     if (!firestore) return;
     setLoadingAction(deposit.id);
-    try {
-      const userDocRef = doc(firestore, 'users', deposit.userId);
-      const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
+    const userDocRef = doc(firestore, 'users', deposit.userId);
+    const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
 
+    try {
       await runTransaction(firestore, async (transaction) => {
         if (newStatus === 'مقبول') {
            const userDoc = await transaction.get(userDocRef);
@@ -77,11 +77,11 @@ function DepositTable({ status }: { status: Status }) {
         description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
       });
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'خطأ',
-        description: error.message || 'فشل تحديث حالة الطلب.',
-      });
+        const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'update',
+        });
+        errorEmitter.emit('permission-error', permissionError);
     } finally {
       setLoadingAction(null);
     }
@@ -201,3 +201,4 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
+
