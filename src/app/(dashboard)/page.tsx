@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -104,7 +103,7 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     }
 
     if (userData.balance < cost) {
-      toast({ variant: "destructive", title: "خطأ", description: "رصيدك غير كافٍ لإتمام هذا الطلب." });
+      toast({ variant: "destructive", title: "رصيد غير كافٍ", description: "رصيدك الحالي لا يكفي لإتمام هذا الطلب." });
       return;
     }
 
@@ -122,23 +121,24 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
         status: 'قيد التنفيذ',
     };
     
-    runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+    try {
+        const result = await runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+    
+            if ((userDoc.data().balance ?? 0) < cost) {
+                throw new Error("رصيدك غير كافٍ.");
+            }
+    
+            let referrerDoc = null;
+            if (userDoc.data().referrerId) {
+                 const referrerRef = doc(firestore, 'users', userDoc.data().referrerId);
+                 referrerDoc = await transaction.get(referrerRef);
+            }
+    
+            return processOrderInTransaction(transaction, firestore, user.uid, newOrderData, referrerDoc);
+        });
 
-        if ((userDoc.data().balance ?? 0) < cost) {
-            throw new Error("رصيدك غير كافٍ.");
-        }
-
-        let referrerDoc = null;
-        if (userDoc.data().referrerId) {
-             const referrerRef = doc(firestore, 'users', userDoc.data().referrerId);
-             referrerDoc = await transaction.get(referrerRef);
-        }
-
-        return processOrderInTransaction(transaction, firestore, user.uid, newOrderData, referrerDoc);
-    })
-    .then((result) => {
         if (!result) return;
         toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
         if(result.promotion) {
@@ -148,9 +148,9 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
         setLink('');
         setQuantity('');
         setCost(0);
-    })
-    .catch((error: any) => {
-        if(error.message.includes("رصيدك")) {
+
+    } catch(error: any) {
+        if(error.message.includes("رصيدك") || error.message.includes("المستخدم")) {
             toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
         } else {
              const permissionError = new FirestorePermissionError({
@@ -159,10 +159,9 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
              });
              errorEmitter.emit('permission-error', permissionError);
         }
-    })
-    .finally(() => {
+    } finally {
         setIsSubmitting(false);
-    });
+    }
   };
 
 

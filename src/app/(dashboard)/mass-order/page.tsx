@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -140,78 +139,80 @@ export default function MassOrderPage() {
 
         // 3. Execute transaction
         let promotionToast: { title: string; description: string } | null = null;
-        runTransaction(firestore, async (transaction) => {
-            const userRef = doc(firestore, 'users', authUser.uid);
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userRef = doc(firestore, 'users', authUser.uid);
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+                
+                let currentData = userDoc.data() as User;
+                
+                // Re-check balance inside transaction for safety
+                if (currentData.balance < totalFinalCost) {
+                    throw new Error(`رصيدك غير كاف. التكلفة: $${totalFinalCost.toFixed(2)}, رصيدك: $${currentData.balance.toFixed(2)}`);
+                }
+    
+                let referrerDoc: any = null;
+                if (currentData.referrerId) {
+                    const referrerRef = doc(firestore, 'users', currentData.referrerId);
+                    referrerDoc = await transaction.get(referrerRef);
+                }
+    
+                for (const pLine of validLines) {
+                     if (pLine.isValid && pLine.finalCost && pLine.service) {
+                        const orderData: Omit<Order, 'id'> = {
+                            userId: authUser!.uid,
+                            serviceId: pLine.service.id,
+                            serviceName: `${pLine.service.platform} - ${pLine.service.category}`,
+                            link: pLine.link,
+                            quantity: pLine.quantity,
+                            charge: pLine.finalCost,
+                            orderDate: new Date().toISOString(),
+                            status: 'قيد التنفيذ',
+                        };
+    
+                        const result = await processOrderInTransaction(
+                            transaction,
+                            firestore,
+                            authUser.uid,
+                            orderData,
+                            referrerDoc
+                        );
+                        
+                        if (result.promotion) {
+                            promotionToast = result.promotion;
+                        }
+                     }
+                }
+    
+            });
             
-            let currentData = userDoc.data() as User;
-            let currentBalance = currentData.balance;
-
-            if (currentBalance < totalFinalCost) throw new Error("رصيدك غير كافٍ.");
-
-            // Get referrer doc once if it exists
-            let referrerDoc: any = null;
-            if (currentData.referrerId) {
-                const referrerRef = doc(firestore, 'users', currentData.referrerId);
-                referrerDoc = await transaction.get(referrerRef);
-            }
-
-            for (const pLine of validLines) {
-                 if (pLine.isValid && pLine.finalCost && pLine.service) {
-                    const orderData: Omit<Order, 'id'> = {
-                        userId: authUser!.uid,
-                        serviceId: pLine.service.id,
-                        serviceName: `${pLine.service.platform} - ${pLine.service.category}`,
-                        link: pLine.link,
-                        quantity: pLine.quantity,
-                        charge: pLine.finalCost,
-                        orderDate: new Date().toISOString(),
-                        status: 'قيد التنفيذ',
-                    };
-
-                    const result = await processOrderInTransaction(
-                        transaction,
-                        firestore,
-                        authUser.uid,
-                        orderData,
-                        referrerDoc
-                    );
-                    
-                    if (result.promotion) {
-                        promotionToast = result.promotion;
-                    }
-                 }
-            }
-
-        })
-        .then(() => {
             toast({ title: 'نجاح', description: `تم إرسال ${validLines.length} طلب بنجاح.` });
-             if (promotionToast) {
+            if (promotionToast) {
                 setTimeout(() => toast(promotionToast!), 1000);
             }
             setBatchResult({ successCount: validLines.length, errorCount: invalidLines.length, totalCost: totalFinalCost, errors: finalErrors });
             setMassOrderText('');
-        })
-        .catch((error: any) => {
-            console.error("Mass order transaction failed:", error);
-            if(error.message.includes("رصيدك")) {
-                toast({ variant: "destructive", title: "فشل إرسال الطلب الجماعي", description: error.toString() });
-            } else {
+
+        } catch (error: any) {
+             if (error.message.includes("رصيدك") || error.message.includes("المستخدم")) {
+                 finalErrors.push(error.message);
+                 toast({ variant: "destructive", title: "فشل إرسال الطلب الجماعي", description: error.message });
+             } else {
                  const permissionError = new FirestorePermissionError({
                     path: `users/${authUser.uid}`,
                     operation: 'update',
                     requestResourceData: { balance: '...', totalSpent: '...' }
                  });
                  errorEmitter.emit('permission-error', permissionError);
-                 toast({ variant: 'destructive', title: 'فشل العملية', description: 'حدث خطأ في الصلاحيات أثناء معالجة الطلبات.' });
-            }
-             finalErrors.push(error.message);
+                 const defaultError = 'فشل العملية بسبب خطأ في الصلاحيات أثناء معالجة الطلبات.';
+                 finalErrors.push(defaultError);
+                 toast({ variant: 'destructive', title: 'فشل العملية', description: defaultError });
+             }
              setBatchResult({ successCount: 0, errorCount: lines.length, totalCost: 0, errors: finalErrors });
-        })
-        .finally(() => {
+        } finally {
             setIsProcessing(false);
-        });
+        }
     };
 
 
@@ -233,7 +234,9 @@ export default function MassOrderPage() {
                 </CardHeader>
                 <CardContent>
                     <Textarea
-                        placeholder={`1|https://instagram.com/user1|1000\n2|https://youtube.com/watch?v=abc|5000\n5|https://facebook.com/page|200`}
+                        placeholder={`1|https://instagram.com/user1|1000
+2|https://youtube.com/watch?v=abc|5000
+5|https://facebook.com/page|200`}
                         className="min-h-[250px] text-left ltr bg-input"
                         value={massOrderText}
                         onChange={(e) => setMassOrderText(e.target.value)}

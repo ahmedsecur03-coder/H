@@ -1,4 +1,3 @@
-
 import type { User, Order } from '@/lib/types';
 import { collection, doc, Firestore, Transaction, DocumentSnapshot } from 'firebase/firestore';
 
@@ -63,6 +62,11 @@ export async function processOrderInTransaction(
     const userData = userDoc.data() as User;
     const cost = orderData.charge;
     
+    // Pre-check for sufficient balance
+    if (userData.balance < cost) {
+        throw new Error("رصيدك غير كافٍ لإتمام هذا الطلب.");
+    }
+
     // 1. Update user's balance and total spent
     const newBalance = userData.balance - cost;
     const newTotalSpent = userData.totalSpent + cost;
