@@ -39,33 +39,21 @@ const passwordSchema = z.object({
   newPassword: z.string().min(6, "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."),
 });
 
-// Helper function to convert image URL to data URI
-async function toDataUri(url: string) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            // Attempt to use a CORS proxy for external images
-            const proxyResponse = await fetch(`https://cors-anywhere.herokuapp.com/${url}`);
-            if (!proxyResponse.ok) throw new Error(`Failed to fetch image from proxy`);
-            const blob = await proxyResponse.blob();
-            return new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }
-        const blob = await response.blob();
-        return new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    } catch(e) {
-        console.error("Failed to convert image to data URI:", e);
-        throw new Error("Could not load image data. It may be due to CORS policy.");
+// Helper function to get data URI from our new API proxy
+async function getDataUriFromProxy(imageUrl: string): Promise<string> {
+    const response = await fetch('/api/image-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl }),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json();
+        throw new Error(errorBody.error || 'Failed to fetch image from proxy');
     }
+
+    const { dataUri } = await response.json();
+    return dataUri;
 }
 
 
@@ -105,13 +93,17 @@ export default function ProfilePage() {
         setIsGenerating(true);
         toast({ title: 'جاري استحضار الإبداع الكوني...', description: 'قد تستغرق العملية بضع لحظات.' });
         try {
-            const dataUri = await toDataUri(currentAvatarUrl);
+            const dataUri = await getDataUriFromProxy(currentAvatarUrl);
+
             const { media } = await ai.generate({
-                model: 'googleai/gemini-pro-vision',
+                model: 'googleai/gemini-2.5-flash-image-preview',
                 prompt: [
                     { text: 'Give this avatar a cosmic, artistic flair. Maybe add nebula-reflecting sunglasses or starry patterns on the clothes. Be creative. Do not change the person. Return only the edited image.' },
                     { media: { url: dataUri } }
                 ],
+                config: {
+                    responseModalities: ['TEXT', 'IMAGE'],
+                },
             });
 
             if (media?.url) {
@@ -316,3 +308,5 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+    
