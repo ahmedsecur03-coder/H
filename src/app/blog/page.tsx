@@ -7,6 +7,7 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 function BlogPostSkeleton() {
   return (
@@ -60,7 +61,7 @@ export default function BlogPage() {
               </CardHeader>
               <CardContent>
                 <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
-                  <p>{post.content}</p>
+                  <ReactMarkdown>{post.content}</ReactMarkdown>
                 </div>
               </CardContent>
             </Card>
