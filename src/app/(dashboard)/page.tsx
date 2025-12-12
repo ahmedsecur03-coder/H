@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -28,17 +29,73 @@ import {
   Sparkles,
   Diamond,
   ShoppingCart,
+  Gift,
+  Loader2
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { getRankForSpend } from '@/lib/service';
+import { getRankForSpend, claimDailyRewardAndGenerateArticle } from '@/lib/service';
 import Link from 'next/link';
 import { QuickOrderForm } from './_components/quick-order-form';
+import { useToast } from '@/hooks/use-toast';
+
+
+function DailyRewardCard({ userId, onClaim }: { userId: string, onClaim: () => void }) {
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleClaim = async () => {
+        setIsLoading(true);
+        try {
+            await claimDailyRewardAndGenerateArticle(userId);
+            toast({
+                title: "🎉 تم!",
+                description: "تمت إضافة 1$ إلى رصيد إعلاناتك ونشر مقال جديد في المدونة.",
+            });
+            onClaim();
+        } catch (error: any) {
+            console.error("Reward claim error:", error);
+            toast({
+                variant: 'destructive',
+                title: 'حدث خطأ',
+                description: error.message || 'فشل في الحصول على المكافأة. يرجى المحاولة مرة أخرى.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    return (
+        <Card className="bg-gradient-to-tr from-accent/20 via-card to-card border-accent/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline">
+                    <Gift className="text-accent" />
+                    مكافأة المحتوى اليومية
+                </CardTitle>
+                <CardDescription>
+                    اضغط على الزر لكسب 1$ في رصيد الإعلانات. سيقوم الذكاء الاصطناعي أيضًا بنشر مقال حصري ومحسن للسيو في المدونة لزيادة زوار الموقع!
+                </CardDescription>
+            </CardHeader>
+            <CardFooter>
+                <Button className="w-full" onClick={handleClaim} disabled={isLoading}>
+                    {isLoading ? (
+                        <Loader2 className="animate-spin ml-2" />
+                    ) : (
+                        <Sparkles className="ml-2 h-4 w-4" />
+                    )}
+                    {isLoading ? 'جاري الإنشاء...' : 'اضغط واكسب 1$ + محتوى حصري'}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
+
 
 function DashboardSkeleton() {
     return (
@@ -69,7 +126,7 @@ export default function DashboardPage() {
     () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
     [firestore, authUser]
   );
-  const { data: userData, isLoading: isUserLoading } = useDoc<UserType>(userDocRef);
+  const { data: userData, isLoading: isUserLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
   const ordersQuery = useMemoFirebase(
     () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
@@ -188,6 +245,9 @@ export default function DashboardPage() {
                 </CardHeader>
             </Card>
         </div>
+
+        <DailyRewardCard userId={authUser.uid} onClaim={forceDocUpdate} />
+
          <Card>
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">

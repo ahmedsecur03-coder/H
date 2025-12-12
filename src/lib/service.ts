@@ -1,7 +1,9 @@
+'use server';
 
-import type { User, Order } from '@/lib/types';
-import { collection, doc, Firestore, Transaction, DocumentSnapshot } from 'firebase/firestore';
-
+import type { User, Order, BlogPost } from '@/lib/types';
+import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
+import { generateSeoArticle } from '@/ai/flows/seo-article-flow';
 
 export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number }[] = [
   { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
@@ -140,4 +142,54 @@ export async function processOrderInTransaction(
     return { promotion };
 }
 
+
+/**
+ * Gives the user a $1 ad credit and generates a new SEO-optimized blog post.
+ * This is a server-side function.
+ * @param userId The ID of the user claiming the reward.
+ */
+export async function claimDailyRewardAndGenerateArticle(userId: string): Promise<void> {
+    const { firestore } = initializeFirebase();
+    if (!firestore) {
+        throw new Error("Firestore is not initialized.");
+    }
     
+    // Array of potential topics for the AI to write about
+    const topics = [
+        "أسرار زيادة متابعين تيك توك في 2024",
+        "كيفية إنشاء حملة إعلانية ناجحة على فيسبوك",
+        "دليل المبتدئين لتصدر نتائج بحث جوجل",
+        "استراتيجيات التسويق عبر انستغرام للشركات الصغيرة",
+        "لماذا يجب أن تستخدم حسابات الوكالة الإعلانية؟",
+        "أفضل الممارسات لزيادة التفاعل على منشوراتك"
+    ];
+    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+
+    // 1. Generate the article using the Genkit flow
+    const article = await generateSeoArticle({ topicSuggestion: randomTopic });
+    
+    // 2. Update user balance and create blog post in a transaction
+    const userRef = doc(firestore, 'users', userId);
+    const blogPostsRef = collection(firestore, 'blogPosts');
+
+    await runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists()) {
+            throw new Error("المستخدم غير موجود.");
+        }
+        
+        // Add $1 to the user's adBalance
+        const newAdBalance = (userDoc.data().adBalance || 0) + 1;
+        transaction.update(userRef, { adBalance: newAdBalance });
+
+        // Create the new blog post document
+        const newPostRef = doc(blogPostsRef);
+        const newPostData: Omit<BlogPost, 'id'> = {
+            title: article.title,
+            content: article.content,
+            authorId: "ai_content_generator", // Special author ID for AI
+            publishDate: new Date().toISOString(),
+        };
+        transaction.set(newPostRef, newPostData);
+    });
+}
