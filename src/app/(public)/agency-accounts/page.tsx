@@ -14,7 +14,6 @@ const agencyAccounts = [
         platform: "Facebook",
         title: "حساب إعلاني فيسبوك (وكالة)",
         description: "حساب أعمال (Business Manager) قوي وموثوق لفيسبوك، مصمم خصيصًا للتعامل مع الميزانيات الكبيرة والحملات المعقدة.",
-        Icon: PLATFORM_ICONS.Facebook,
         tags: ["موثوق", "وكالة", "Business Manager"],
         price: 100,
         discountedPrice: 90,
@@ -23,7 +22,6 @@ const agencyAccounts = [
         platform: "Google",
         title: "حساب إعلاني جوجل (وكالة)",
         description: "حساب جوجل آمن ومستقر من وكالة معتمدة، يقلل بشكل كبير من خطر الإغلاق المفاجئ والمشاكل التقنية.",
-        Icon: PLATFORM_ICONS.Google,
         tags: ["آمن", "مستقر", "وكالة"],
         price: 75,
         discountedPrice: 67.5,
@@ -32,7 +30,6 @@ const agencyAccounts = [
         platform: "TikTok",
         title: "حساب إعلاني تيك توك (وكالة)",
         description: "حساب إعلاني رسمي من وكالة تيك توك، يتميز بالاستقرار العالي وحدود الإنفاق المرتفعة. مثالي للحملات الكبيرة.",
-        Icon: PLATFORM_ICONS.TikTok,
         tags: ["إنفاق عالي", "موثوق", "وكالة"],
         price: 50,
         discountedPrice: 45,
@@ -108,32 +105,35 @@ export default function AgencyAccountsPage() {
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {agencyAccounts.map((account) => (
-                    <Card key={account.platform} className="flex flex-col">
-                        <CardHeader className="text-center items-center">
-                            <div className="bg-muted rounded-full p-4 mb-4">
-                                <account.Icon className="w-10 h-10 text-foreground" />
-                            </div>
-                            <CardTitle className="font-headline text-2xl">{account.title}</CardTitle>
-                            <CardDescription className="text-xs px-4">{account.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-4">
-                             <div className="flex justify-center gap-2">
-                                {account.tags.map((tag) => (
-                                    <Badge key={tag} variant="secondary">{tag}</Badge>
-                                ))}
-                            </div>
-                            <div className="text-center space-y-1">
-                                <p className="text-2xl text-muted-foreground line-through">${account.price}</p>
-                                <p className="text-5xl font-bold text-primary">${account.discountedPrice}</p>
-                                <p className="text-sm text-muted-foreground">دفع لمرة واحدة</p>
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button onClick={handlePurchase} className="w-full text-lg py-6 bg-gradient-to-r from-primary to-primary/80 hover:brightness-110">اشتر الآن</Button>
-                        </CardFooter>
-                    </Card>
-                ))}
+                {agencyAccounts.map((account) => {
+                    const Icon = PLATFORM_ICONS[account.platform] || PLATFORM_ICONS.Default;
+                    return (
+                        <Card key={account.platform} className="flex flex-col">
+                            <CardHeader className="text-center items-center">
+                                <div className="bg-muted rounded-full p-4 mb-4">
+                                    <Icon className="w-10 h-10 text-foreground" />
+                                </div>
+                                <CardTitle className="font-headline text-2xl">{account.title}</CardTitle>
+                                <CardDescription className="text-xs px-4">{account.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow space-y-4">
+                                 <div className="flex justify-center gap-2">
+                                    {account.tags.map((tag) => (
+                                        <Badge key={tag} variant="secondary">{tag}</Badge>
+                                    ))}
+                                </div>
+                                <div className="text-center space-y-1">
+                                    <p className="text-2xl text-muted-foreground line-through">${account.price}</p>
+                                    <p className="text-5xl font-bold text-primary">${account.discountedPrice}</p>
+                                    <p className="text-sm text-muted-foreground">دفع لمرة واحدة</p>
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button onClick={handlePurchase} className="w-full text-lg py-6 bg-gradient-to-r from-primary to-primary/80 hover:brightness-110">اشتر الآن</Button>
+                            </CardFooter>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
     );

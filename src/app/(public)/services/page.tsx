@@ -45,6 +45,7 @@ const PLATFORMS = [
   'Telegram',
   'X (Twitter)',
   'Google',
+  'Snapchat',
 ];
 
 function ServicesPageSkeleton() {
@@ -142,7 +143,7 @@ export default function ServicesPage() {
     <div className="space-y-6 pb-8">
         <div>
             <div className="flex items-center gap-3 mb-2">
-                 {ActivePlatformIcon && <ActivePlatformIcon className="w-8 h-8 text-primary" />}
+                 {ActivePlatformIcon && <div className="w-8 h-8"><ActivePlatformIcon /></div>}
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
                     خدمات {activePlatform}
                 </h1>
@@ -153,7 +154,7 @@ export default function ServicesPage() {
         </div>
         
         <Tabs value={activePlatform} onValueChange={handlePlatformChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
                 {PLATFORMS.map(p => (
                     <TabsTrigger key={p} value={p}>{p}</TabsTrigger>
                 ))}

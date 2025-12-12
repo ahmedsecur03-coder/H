@@ -97,43 +97,22 @@
       "type": "object",
       "description": "Represents a service offered on the platform.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the service entity."
-        },
-        "platform": {
-          "type": "string",
-          "description": "Platform the service is offered on (e.g., Facebook, Instagram)."
-        },
-        "category": {
-          "type": "string",
-          "description": "Category of the service (e.g., SMM, Advertising)."
-        },
-        "price": {
-          "type": "number",
-          "description": "Price of the service."
-        },
-        "min": {
-          "type": "number",
-          "description": "Minimum quantity for the service."
-        },
-        "max": {
-          "type": "number",
-          "description": "Maximum quantity for the service."
-        },
-        "refill": {
-            "type": "boolean",
-            "description": "Indicates if the service supports refills in case of drops."
-        }
+        "id": { "type": "string", "description": "Unique identifier for the service entity." },
+        "platform": { "type": "string", "description": "Platform the service is offered on (e.g., Facebook, Instagram)." },
+        "category": { "type": "string", "description": "Category of the service (e.g., SMM, Advertising)." },
+        "price": { "type": "number", "description": "Price of the service per 1000 units." },
+        "min": { "type": "number", "description": "Minimum quantity for the service." },
+        "max": { "type": "number", "description": "Maximum quantity for the service." },
+        "refill": { "type": "boolean", "description": "Indicates if the service supports refills in case of drops." },
+        "dripFeed": { "type": "boolean", "description": "Indicates if drip-feed is available for this service." },
+        "speed": { "type": "string", "description": "Estimated speed of delivery (e.g., '1K/day')." },
+        "avgTime": { "type": "string", "description": "Average completion time for an order." },
+        "description": { "type": "string", "description": "Detailed description of the service." },
+        "guarantee": { "type": "boolean", "description": "Indicates if there is a guarantee for the service." },
+        "startTime": { "type": "string", "description": "Estimated start time for the service delivery." },
+        "dropRate": { "type": "string", "description": "Estimated drop rate for the service (e.g., '1-5%')." }
       },
-      "required": [
-        "id",
-        "platform",
-        "category",
-        "price",
-        "min",
-        "max"
-      ]
+      "required": [ "id", "platform", "category", "price", "min", "max" ]
     },
     "Order": {
       "$schema": "http://json-schema.org/draft-07/schema#",

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { runTransaction, collection, query, doc, addDoc, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 
-type Platform = keyof typeof PLATFORM_ICONS;
+type Platform = Campaign['platform'];
 type Goal = Campaign['goal'];
 
 
@@ -135,8 +135,10 @@ function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { us
 
         setLoading(true);
 
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
+
         try {
-            const userDocRef = doc(firestore, 'users', user.uid);
             await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userDocRef);
                 if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
@@ -146,7 +148,6 @@ function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { us
 
                 transaction.update(userDocRef, { adBalance: currentAdBalance - budgetAmount });
                 
-                const campaignColRef = collection(firestore, `users/${user.uid}/campaigns`);
                 const newCampaignData: Omit<Campaign, 'id'> = {
                     userId: user.uid,
                     name,
@@ -163,8 +164,8 @@ function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { us
                     ctr: 0,
                     cpc: 0,
                 };
-                // Firestore automatically generates an ID when using addDoc in a transaction context
-                const newCampaignDoc = doc(campaignColRef); 
+                
+                const newCampaignDoc = doc(campaignsColRef); 
                 transaction.set(newCampaignDoc, newCampaignData);
             });
 
@@ -174,7 +175,15 @@ function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { us
             // Reset form
             setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget('');
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
+            if(error.message.includes('رصيد')) {
+                 toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
+            } else {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update'
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            }
         } finally {
             setLoading(false);
         }
