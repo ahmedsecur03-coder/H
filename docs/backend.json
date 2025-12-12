@@ -57,6 +57,11 @@
           "description": "Date and time the user was created.",
           "format": "date-time"
         },
+        "lastRewardClaimedAt": {
+            "type": "string",
+            "description": "Date and time the daily reward was last claimed.",
+            "format": "date-time"
+        },
         "affiliateEarnings": {
           "type": "number",
           "description": "Total earnings from the affiliate program."

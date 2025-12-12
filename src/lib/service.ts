@@ -1,3 +1,4 @@
+
 'use server';
 
 import type { User, Order, BlogPost } from '@/lib/types';
@@ -153,6 +154,24 @@ export async function claimDailyRewardAndGenerateArticle(userId: string): Promis
     if (!firestore) {
         throw new Error("Firestore is not initialized.");
     }
+     if (!process.env.GEMINI_API_KEY) {
+        throw new Error("الموارد قيد التجميع حاليًا، يرجى المحاولة لاحقًا.");
+    }
+
+    const userRef = doc(firestore, 'users', userId);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+        throw new Error("المستخدم غير موجود.");
+    }
+
+    const userData = userDoc.data() as User;
+    const lastClaimed = userData.lastRewardClaimedAt ? new Date(userData.lastRewardClaimedAt).getTime() : 0;
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    if (Date.now() - lastClaimed < twentyFourHours) {
+        throw new Error("لقد حصلت على مكافأتك بالفعل اليوم. عد غدًا!");
+    }
     
     // Array of potential topics for the AI to write about
     const topics = [
@@ -169,18 +188,15 @@ export async function claimDailyRewardAndGenerateArticle(userId: string): Promis
     const article = await generateSeoArticle({ topicSuggestion: randomTopic });
     
     // 2. Update user balance and create blog post in a transaction
-    const userRef = doc(firestore, 'users', userId);
     const blogPostsRef = collection(firestore, 'blogPosts');
 
     await runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userRef);
-        if (!userDoc.exists()) {
-            throw new Error("المستخدم غير موجود.");
-        }
-        
-        // Add $1 to the user's adBalance
-        const newAdBalance = (userDoc.data().adBalance || 0) + 1;
-        transaction.update(userRef, { adBalance: newAdBalance });
+        // Add $1 to the user's adBalance and update last claimed date
+        const newAdBalance = (userData.adBalance || 0) + 1;
+        transaction.update(userRef, { 
+            adBalance: newAdBalance,
+            lastRewardClaimedAt: new Date().toISOString() 
+        });
 
         // Create the new blog post document
         const newPostRef = doc(blogPostsRef);

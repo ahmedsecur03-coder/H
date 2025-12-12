@@ -12,6 +12,7 @@ export type User = {
   referralCode: string;
   referrerId: string | null;
   createdAt: string;
+  lastRewardClaimedAt?: string; // Date and time the daily reward was last claimed.
   affiliateEarnings?: number;
   referralsCount?: number;
   affiliateLevel?: 'برونزي' | 'فضي' | 'ذهبي' | 'ماسي';
