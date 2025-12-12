@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PostDialog } from './_components/post-dialog';
+import { AiPostDialog } from './_components/ai-post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
@@ -20,21 +21,31 @@ export default function AdminBlogPage() {
     const firestore = useFirestore();
     const { user } = useUser();
     const { toast } = useToast();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState<BlogPost | undefined>(undefined);
 
     const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts')) : null, [firestore]);
     const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
 
-    const handleOpenDialog = (post?: BlogPost) => {
+    const handleOpenPostDialog = (post?: BlogPost) => {
         setSelectedPost(post);
-        setIsDialogOpen(true);
+        setIsPostDialogOpen(true);
     };
+
+    const handleArticleGenerated = (article: { title: string; content: string }) => {
+        // Create a temporary "new post" object and open the dialog
+        const newPost: Partial<BlogPost> = {
+            title: article.title,
+            content: article.content,
+        };
+        handleOpenPostDialog(newPost as BlogPost);
+    };
+
 
     const handleSavePost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
         
-        if (selectedPost) { // Editing
+        if (selectedPost && selectedPost.id) { // Editing
             const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
             await updateDoc(postDocRef, data)
                 .then(() => toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' }))
@@ -42,7 +53,7 @@ export default function AdminBlogPage() {
                     const permissionError = new FirestorePermissionError({ path: postDocRef.path, operation: 'update', requestResourceData: data });
                     errorEmitter.emit('permission-error', permissionError);
                 });
-        } else { // Adding
+        } else { // Adding new post (either manually or from AI)
             const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
             const postsColRef = collection(firestore, 'blogPosts');
             await addDoc(postsColRef, newPostData)
@@ -98,7 +109,7 @@ export default function AdminBlogPage() {
                 <TableCell>{new Date(post.publishDate).toLocaleDateString('ar-EG')}</TableCell>
                 <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
                 <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(post)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)}>
                         <Pencil className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
@@ -128,7 +139,10 @@ export default function AdminBlogPage() {
                     <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المدونة</h1>
                     <p className="text-muted-foreground">إنشاء وتعديل وحذف منشورات الأخبار والإعلانات.</p>
                 </div>
-                <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                 <div className="flex gap-2">
+                    <AiPostDialog onArticleGenerated={handleArticleGenerated} />
+                    <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                </div>
             </div>
             <Card>
                 <CardHeader>
@@ -149,8 +163,8 @@ export default function AdminBlogPage() {
                 </CardContent>
             </Card>
             <PostDialog 
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
+                open={isPostDialogOpen}
+                onOpenChange={setIsPostDialogOpen}
                 post={selectedPost}
                 onSave={handleSavePost}
             />
