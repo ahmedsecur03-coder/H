@@ -55,7 +55,7 @@ function DailyRewardCard({ userId, onClaim }: { userId: string, onClaim: () => v
             await claimDailyRewardAndGenerateArticle(userId);
             toast({
                 title: "🎉 تم!",
-                description: "تمت إضافة 1$ إلى رصيد إعلاناتك ونشر مقال جديد في المدونة.",
+                description: "تمت إضافة 1$ إلى رصيد إعلاناتك بنجاح.",
             });
             onClaim();
         } catch (error: any) {
@@ -76,10 +76,10 @@ function DailyRewardCard({ userId, onClaim }: { userId: string, onClaim: () => v
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline">
                     <Gift className="text-accent" />
-                    مكافأة المحتوى اليومية
+                    المكافأة اليومية
                 </CardTitle>
                 <CardDescription>
-                    اضغط على الزر لكسب 1$ في رصيد الإعلانات. سيقوم الذكاء الاصطناعي أيضًا بنشر مقال حصري ومحسن للسيو في المدونة لزيادة زوار الموقع!
+                    احصل على مكافأتك اليومية! اضغط على الزر أدناه لكسب 1$ في رصيد إعلاناتك مجانًا لتمويل حملاتك.
                 </CardDescription>
             </CardHeader>
             <CardFooter>
@@ -89,7 +89,7 @@ function DailyRewardCard({ userId, onClaim }: { userId: string, onClaim: () => v
                     ) : (
                         <Sparkles className="ml-2 h-4 w-4" />
                     )}
-                    {isLoading ? 'جاري الإنشاء...' : 'اضغط واكسب 1$ + محتوى حصري'}
+                    {isLoading ? 'لحظات...' : 'احصل على مكافأتك اليومية (1$)'}
                 </Button>
             </CardFooter>
         </Card>
