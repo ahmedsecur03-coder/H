@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -12,7 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Line, LineChart, CartesianGrid, XAxis, Tooltip } from 'recharts';
+import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collectionGroup, query, where } from 'firebase/firestore';
@@ -22,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const chartConfig = {
   revenue: {
-    label: 'الإيرادات',
+    label: 'الإيرادات ($)',
     color: 'hsl(var(--primary))',
   },
   users: {
@@ -168,37 +169,56 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                  <LineChart accessibilityLayer data={performanceData}>
-                     <CartesianGrid vertical={false} />
-                      <XAxis
-                        dataKey="date"
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
-                      />
-                      <Tooltip
-                        content={<ChartTooltipContent indicator="dot" />}
-                      />
-                     <Line
-                        dataKey="revenue"
-                        type="natural"
-                        stroke="var(--color-revenue)"
-                        strokeWidth={2}
-                        dot={{ fill: "var(--color-revenue)" }}
-                        activeDot={{ r: 6 }}
-                        name="الإيرادات"
-                      />
-                       <Line
-                        dataKey="users"
-                        type="natural"
-                        stroke="var(--color-users)"
-                        strokeWidth={2}
-                        dot={{ fill: "var(--color-users)" }}
-                        activeDot={{ r: 6 }}
-                        name="مستخدمون جدد"
-                      />
-                  </LineChart>
+                   <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                        data={performanceData}
+                        margin={{
+                            top: 5,
+                            right: 10,
+                            left: 10,
+                            bottom: 5,
+                        }}
+                        >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
+                        />
+                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
+                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
+                        <Tooltip
+                            content={<ChartTooltipContent
+                                formatter={(value, name) => {
+                                    if (name === 'revenue') {
+                                        return `$${(value as number).toFixed(2)}`;
+                                    }
+                                    return value;
+                                }}
+                                indicator="dot" 
+                            />}
+                        />
+                         <Legend />
+                        <Line
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="var(--color-revenue)"
+                            strokeWidth={2}
+                            name={chartConfig.revenue.label}
+                        />
+                        <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="users"
+                            stroke="var(--color-users)"
+                            strokeWidth={2}
+                             name={chartConfig.users.label}
+                        />
+                        </LineChart>
+                    </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>
         </Card>
