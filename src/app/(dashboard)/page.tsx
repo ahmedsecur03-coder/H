@@ -127,7 +127,11 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
            return processOrderInTransaction(transaction, firestore, user.uid, newOrderData);
         });
 
-        if (!result) return;
+        if (!result) {
+            setIsSubmitting(false);
+            return;
+        };
+
         toast({ title: "تم إرسال الطلب بنجاح!", description: `التكلفة: $${cost.toFixed(2)}` });
         if(result.promotion) {
             setTimeout(() => toast(result.promotion), 1000);
@@ -217,37 +221,29 @@ function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
 
               {selectedService && (
                 <>
-                    <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
-                        <CollapsibleTrigger asChild>
-                            <Button variant="link" className="p-0 text-xs text-muted-foreground">
-                                <ChevronDown className={cn("ml-1 h-3 w-3 transition-transform", isDescriptionOpen && "rotate-180")} />
-                                {isDescriptionOpen ? 'إخفاء التفاصيل' : 'عرض تفاصيل وشروط الخدمة'}
-                            </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <Card className="bg-muted/50 mt-2">
-                                <CardContent className="p-4 space-y-4 text-sm">
-                                    <Alert variant="destructive" className="bg-destructive/10 text-destructive-foreground border-destructive/20">
-                                        <AlertTitle className="flex items-center gap-2">🚨 تنبيه</AlertTitle>
-                                        <AlertDescription>
-                                        تأكد من تقديم طلبك بعناية قبل إرساله، حيث قد لا يكون الإلغاء بعد ذلك ممكنًا في بعض الأحيان.
-                                        </AlertDescription>
-                                    </Alert>
-                                    <div>
-                                        <h4 className="font-semibold mb-2">تفاصيل:</h4>
-                                        <ul className="list-inside list-disc space-y-1 text-muted-foreground text-xs">
-                                           {selectedService.description?.split('\\n').map((line, i) => <li key={i}>{line}</li>)}
-                                            <li>إذا تم تغيير اسم الحساب، يعتبر الطلب مكتملاً.</li>
-                                            <li>تأكد من صحة الرابط قبل الطلب. إذا أدخلت رابطًا غير صحيح، فلن يكون هناك استرداد للمبلغ.</li>
-                                            <li>لا تطلب من مصدر آخر أثناء عملنا على طلبك.</li>
-                                            <li>تأكد من أن الحساب عام قبل إنشاء الطلب.</li>
-                                        </ul>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </CollapsibleContent>
-                    </Collapsible>
-                    
+                    <Card className="bg-muted/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg">وصف الخدمة</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 text-sm">
+                            <Alert variant="destructive" className="bg-destructive/10 text-destructive-foreground border-destructive/20">
+                                <AlertTitle className="flex items-center gap-2">🚨 تنبيه</AlertTitle>
+                                <AlertDescription>
+                                تأكد من تقديم طلبك بعناية قبل إرساله، حيث قد لا يكون الإلغاء بعد ذلك ممكنًا في بعض الأحيان.
+                                </AlertDescription>
+                            </Alert>
+                            <div>
+                                <h4 className="font-semibold mb-2">تفاصيل:</h4>
+                                <ul className="list-inside list-disc space-y-1 text-muted-foreground text-xs">
+                                   {selectedService.description?.split('\\n').map((line, i) => <li key={i}>{line}</li>)}
+                                    <li>إذا تم تغيير اسم الحساب، يعتبر الطلب مكتملاً.</li>
+                                    <li>تأكد من صحة الرابط قبل الطلب. إذا أدخلت رابطًا غير صحيح، فلن يكون هناك استرداد للمبلغ.</li>
+                                    <li>لا تطلب من مصدر آخر أثناء عملنا على طلبك.</li>
+                                    <li>تأكد من أن الحساب عام قبل إنشاء الطلب.</li>
+                                </ul>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     <div className="grid gap-2">
                         <Label htmlFor="link">الرابط</Label>
@@ -472,4 +468,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

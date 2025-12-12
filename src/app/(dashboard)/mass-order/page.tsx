@@ -182,11 +182,7 @@ export default function MassOrderPage() {
                  finalErrors.push(error.message);
                  toast({ variant: "destructive", title: "فشل إرسال الطلب الجماعي", description: error.message });
              } else {
-                 const permissionError = new FirestorePermissionError({
-                    path: `users/${authUser.uid}`,
-                    operation: 'update',
-                    requestResourceData: { balance: '...', totalSpent: '...' }
-                 });
+                 const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}`, operation: 'update' });
                  errorEmitter.emit('permission-error', permissionError);
                  const defaultError = 'فشل العملية بسبب خطأ في الصلاحيات أثناء معالجة الطلبات.';
                  finalErrors.push(defaultError);
@@ -291,4 +287,3 @@ export default function MassOrderPage() {
         </div>
     );
 }
-
