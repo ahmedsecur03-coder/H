@@ -64,8 +64,6 @@ export default function AgencyAccountsPage() {
 
     const handlePurchase = () => {
         if (user) {
-            // In a real app, this would lead to a checkout page or add to cart.
-            // For now, we can just lead to the add-funds page.
             router.push('/dashboard/add-funds');
         } else {
             router.push('/login');
@@ -106,7 +104,7 @@ export default function AgencyAccountsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {agencyAccounts.map((account) => {
-                    const Icon = PLATFORM_ICONS[account.platform] || PLATFORM_ICONS.Default;
+                    const Icon = PLATFORM_ICONS[account.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
                     return (
                         <Card key={account.platform} className="flex flex-col">
                             <CardHeader className="text-center items-center">
