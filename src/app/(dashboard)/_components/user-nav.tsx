@@ -36,6 +36,7 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
   const { toast } = useToast();
 
   const handleSignOut = async () => {
+    if (!auth) return;
     try {
         await signOut(auth);
         toast({ title: 'تم تسجيل الخروج', description: 'نراك قريباً!' });
