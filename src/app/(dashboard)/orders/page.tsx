@@ -182,7 +182,7 @@ export default function OrdersPage() {
       pageNumbers.push('ellipsis');
     }
     
-    if (totalPages > 1) {
+    if (totalPages > 1 && !pageNumbers.includes(totalPages)) {
       pageNumbers.push(totalPages);
     }
 
@@ -324,3 +324,5 @@ export default function OrdersPage() {
     </div>
   );
 }
+
+    

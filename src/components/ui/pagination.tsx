@@ -70,7 +70,7 @@ const PaginationPrevious = ({
   <PaginationLink
     aria-label="اذهب للصفحة السابقة"
     size="default"
-    className={cn("gap-1 pl-2.5", className, disabled ? "pointer-events-none opacity-50" : "")}
+    className={cn("gap-1 pr-2.5", className, disabled ? "pointer-events-none opacity-50" : "")}
     {...props}
   >
     <ChevronRight className="h-4 w-4" />
@@ -87,7 +87,7 @@ const PaginationNext = ({
   <PaginationLink
     aria-label="اذهب للصفحة التالية"
     size="default"
-    className={cn("gap-1 pr-2.5", className, disabled ? "pointer-events-none opacity-50" : "")}
+    className={cn("gap-1 pl-2.5", className, disabled ? "pointer-events-none opacity-50" : "")}
     {...props}
   >
     <span>التالي</span>
@@ -120,3 +120,5 @@ export {
   PaginationNext,
   PaginationPrevious,
 }
+
+    
