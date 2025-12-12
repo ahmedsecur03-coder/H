@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,10 +11,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
-import type { Service, Order } from '@/lib/types';
-import { getAuth } from 'firebase/auth';
+import type { Service, Order, Ticket } from '@/lib/types';
 
 // Tool to get available services from Firestore
 const getAvailableServices = ai.defineTool(
@@ -86,11 +86,6 @@ const getUserOrders = ai.defineTool(
         try {
             let q = query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc'), limit(10));
 
-            if (input.orderId) {
-                // In a real app, you'd do a direct doc get, but for tool simplicity we'll filter client-side after a fetch.
-                // This is not efficient for Firestore reads.
-            }
-
             const querySnapshot = await getDocs(q);
             let orders: Order[] = [];
             querySnapshot.forEach(doc => {
@@ -113,6 +108,47 @@ const getUserOrders = ai.defineTool(
     }
 );
 
+// Tool to create a support ticket
+const createSupportTicket = ai.defineTool(
+    {
+        name: 'createSupportTicket',
+        description: "Creates a new support ticket for the user when they have a problem that can't be solved with other tools. Always ask for user confirmation before using this tool.",
+        inputSchema: z.object({
+            subject: z.string().describe("A concise summary of the user's problem."),
+            message: z.string().describe("A detailed description of the user's problem, based on the conversation history."),
+        }),
+        outputSchema: z.object({
+            ticketId: z.string(),
+        }),
+    },
+    async (input) => {
+        const { auth, firestore } = initializeFirebase();
+        const user = auth.currentUser;
+
+        if (!firestore || !user) {
+            throw new Error("User must be logged in to create a ticket.");
+        }
+        
+        const newTicket: Omit<Ticket, 'id'> = {
+            userId: user.uid,
+            subject: input.subject,
+            message: input.message,
+            status: 'مفتوحة',
+            createdDate: new Date().toISOString(),
+            messages: [{
+                sender: 'user',
+                text: input.message,
+                timestamp: new Date().toISOString(),
+            }],
+        };
+
+        const ticketsColRef = collection(firestore, `users/${user.uid}/tickets`);
+        const docRef = await addDoc(ticketsColRef, newTicket);
+
+        return { ticketId: docRef.id };
+    }
+);
+
 
 const AISupportUsersInputSchema = z.object({
   query: z.string().describe('The user query for AI support.'),
@@ -132,7 +168,7 @@ const prompt = ai.definePrompt({
   name: 'aiSupportUsersPrompt',
   input: {schema: AISupportUsersInputSchema},
   output: {schema: AISupportUsersOutputSchema},
-  tools: [getAvailableServices, getUserOrders],
+  tools: [getAvailableServices, getUserOrders, createSupportTicket],
   prompt: `You are a friendly and helpful AI assistant for the Hajaty Hub platform.
   Your responses must always be in Arabic.
   
@@ -146,7 +182,15 @@ const prompt = ai.definePrompt({
   - For each order, mention the Order ID, Service Name, Status, and Date.
   - If no orders are found, inform the user politely.
   
-  - Be conversational and helpful. End your response by asking if there is anything else you can help with.
+  If the user describes a problem that cannot be resolved with the available tools (e.g., an order is stuck, a payment failed, they need a refund), you should offer to create a support ticket for them.
+  - First, propose opening a ticket by saying something like: "أرى أنك تواجه مشكلة. هل تود مني فتح تذكرة دعم فني لك وسيقوم الفريق بمراجعتها؟"
+  - If the user agrees (e.g., says "نعم", "افتح تذكرة", "موافق"), then and ONLY then, use the 'createSupportTicket' tool.
+  - For the 'subject' of the ticket, create a short, clear summary of the issue.
+  - For the 'message', use the user's own words from the query to describe the problem.
+  - After successfully creating the ticket, respond with: "لقد قمت بإنشاء تذكرة دعم لك. سيقوم فريقنا بمراجعتها والرد في أقرب وقت. هل يمكنني مساعدتك في شيء آخر؟"
+  - If the user does not want to create a ticket, just be helpful and ask if there is anything else you can assist with.
+
+  Be conversational and helpful. Unless you are creating a ticket, end your response by asking if there is anything else you can help with.
 
   User Query: {{{query}}}`,
 });
