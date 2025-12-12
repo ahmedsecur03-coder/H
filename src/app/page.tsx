@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Card,
   CardContent,
@@ -14,14 +12,44 @@ import {
   Shield,
   Sparkles,
   ShoppingCart,
+  ChevronLeft,
 } from 'lucide-react';
 import Link from 'next/link';
+import { initializeFirebaseServer } from '@/firebase/server';
+import { collection, query, limit, getDocs } from 'firebase/firestore';
+import type { Service } from '@/lib/types';
+import { PLATFORM_ICONS } from '@/lib/icon-data';
 
 
-export default function HomePage() {
-    // This is a public landing page
+async function getFeaturedServices(): Promise<Service[]> {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return [];
+
+    try {
+        const servicesRef = collection(firestore, 'services');
+        // Fetch a limited number of services to feature on the home page
+        const q = query(servicesRef, limit(8));
+        const querySnapshot = await getDocs(q);
+
+        const services: Service[] = [];
+        querySnapshot.forEach(doc => {
+            services.push({ id: doc.id, ...doc.data() } as Service);
+        });
+        
+        return services;
+
+    } catch (error) {
+        console.error("Error fetching featured services: ", error);
+        return [];
+    }
+}
+
+
+export default async function HomePage() {
+  const featuredServices = await getFeaturedServices();
+
   return (
-    <div className="space-y-12 pb-8">
+    <div className="space-y-16 pb-8">
         <section className="text-center py-20">
             <h1 className="text-5xl lg:text-6xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-r from-primary via-secondary to-primary">
                 بوابتك إلى الكون الرقمي
@@ -80,6 +108,45 @@ export default function HomePage() {
                 </Card>
             </div>
         </section>
+
+        {featuredServices.length > 0 && (
+            <section>
+                 <div className="text-center mb-10">
+                    <h2 className="text-3xl font-bold font-headline">نظرة على خدماتنا الكونية</h2>
+                    <p className="text-muted-foreground">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {featuredServices.map(service => {
+                        const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
+                        return (
+                            <Card key={service.id} className="flex flex-col hover:border-primary/50 transition-colors duration-300">
+                                <CardHeader className="flex-row items-center gap-4">
+                                     <div className="p-3 bg-muted rounded-full">
+                                        <Icon className="w-6 h-6 text-foreground" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-lg leading-tight">{service.category}</CardTitle>
+                                        <CardDescription>{service.platform}</CardDescription>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="flex-grow flex flex-col justify-end">
+                                    <div className="text-center">
+                                        <p className="text-3xl font-bold text-primary">${service.price.toFixed(3)}</p>
+                                        <p className="text-xs text-muted-foreground">/ لكل 1000</p>
+                                    </div>
+                                     <Button asChild variant="outline" className="mt-4 w-full">
+                                        <Link href="/services">
+                                            <ChevronLeft className="h-4 w-4 ml-2" />
+                                            عرض التفاصيل
+                                        </Link>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        )
+                    })}
+                </div>
+            </section>
+        )}
     </div>
   );
 }
