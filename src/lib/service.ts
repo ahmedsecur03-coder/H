@@ -2,7 +2,7 @@
 'use server';
 
 import type { User, Order, BlogPost } from '@/lib/types';
-import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction } from 'firebase/firestore';
+import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { generateSeoArticle } from '@/ai/flows/seo-article-flow';
 
@@ -13,14 +13,15 @@ export const RANKS: { name: User['rank']; spend: number; discount: number, rewar
   { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50 },
 ];
 
-export const AFFILIATE_LEVELS = {
-    'برونزي': { commission: 10 },
-    'فضي': { commission: 12 },
-    'ذهبي': { commission: 15 },
-    'ماسي': { commission: 20 },
+export const AFFILIATE_LEVELS: { [key in Exclude<User['affiliateLevel'], undefined>]: { commission: number, nextLevel: User['affiliateLevel'] | null, requirement: number } } = {
+    'برونزي': { commission: 5, nextLevel: 'فضي', requirement: 10 },
+    'فضي': { commission: 7, nextLevel: 'ذهبي', requirement: 50 },
+    'ذهبي': { commission: 10, nextLevel: 'ماسي', requirement: 200 },
+    'ماسي': { commission: 15, nextLevel: null, requirement: Infinity },
 };
 
-const MULTI_LEVEL_COMMISSIONS = [5, 3, 2, 1, 0.5]; // e.g. Level 1 gets 5%, Level 2 gets 3%, etc.
+
+const MULTI_LEVEL_COMMISSIONS = [3, 2, 1, 0.5, 0.25]; // Level 2 gets 3%, Level 3 gets 2%, etc. up to 6 levels total.
 
 
 export function getRankForSpend(spend: number) {
@@ -103,27 +104,58 @@ export async function processOrderInTransaction(
 
     // 4. Handle multi-level affiliate commissions
     let currentReferrerId = userData.referrerId;
-    for (let i = 0; i < MULTI_LEVEL_COMMISSIONS.length && currentReferrerId; i++) {
+    let directReferrer: DocumentSnapshot | null = null;
+
+    // Get the direct referrer (Level 1) first to apply their specific commission rate
+    if (currentReferrerId) {
+        const directReferrerRef = doc(firestore, 'users', currentReferrerId);
+        directReferrer = await transaction.get(directReferrerRef);
+
+        if (directReferrer.exists()) {
+            const referrerData = directReferrer.data() as User;
+            const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
+            const directCommissionRate = AFFILIATE_LEVELS[affiliateLevel].commission / 100;
+            const directCommissionAmount = cost * directCommissionRate;
+
+            if (directCommissionAmount > 0) {
+                 transaction.update(directReferrerRef, {
+                    affiliateEarnings: (referrerData.affiliateEarnings || 0) + directCommissionAmount
+                });
+                const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                transaction.set(newTransactionRef, {
+                    userId: currentReferrerId,
+                    referralId: userId,
+                    orderId: newOrderRef.id,
+                    amount: directCommissionAmount,
+                    transactionDate: new Date().toISOString(),
+                    level: 1,
+                });
+            }
+        }
+    }
+
+    // Now, handle the multi-level (network) commissions for levels 2 and up
+    let indirectReferrerId = directReferrer?.exists() ? (directReferrer.data() as User).referrerId : null;
+
+    for (let i = 0; i < MULTI_LEVEL_COMMISSIONS.length && indirectReferrerId; i++) {
         const commissionRate = MULTI_LEVEL_COMMISSIONS[i] / 100;
         const commissionAmount = cost * commissionRate;
-        const level = i + 1;
+        const level = i + 2; // Starts from level 2
 
         if (commissionAmount > 0) {
-            const referrerRef = doc(firestore, 'users', currentReferrerId);
+            const referrerRef = doc(firestore, 'users', indirectReferrerId);
             const referrerDoc = await transaction.get(referrerRef);
 
             if (referrerDoc.exists()) {
                 const referrerData = referrerDoc.data() as User;
                 
-                // Update referrer's affiliate earnings
                 transaction.update(referrerRef, {
                     affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
                 });
 
-                // Create an affiliate transaction record
-                const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                const newTransactionRef = doc(collection(firestore, `users/${indirectReferrerId}/affiliateTransactions`));
                 transaction.set(newTransactionRef, {
-                    userId: currentReferrerId,
+                    userId: indirectReferrerId,
                     referralId: userId,
                     orderId: newOrderRef.id,
                     amount: commissionAmount,
@@ -131,14 +163,13 @@ export async function processOrderInTransaction(
                     level: level,
                 });
 
-                // Move to the next level up the chain
-                currentReferrerId = referrerData.referrerId;
+                indirectReferrerId = referrerData.referrerId;
             } else {
-                // Referrer doesn't exist, so we stop the chain.
                 break;
             }
         }
     }
+
 
     return { promotion };
 }
@@ -159,38 +190,40 @@ export async function claimDailyRewardAndGenerateArticle(userId: string): Promis
     }
 
     const userRef = doc(firestore, 'users', userId);
-    const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-        throw new Error("المستخدم غير موجود.");
-    }
-
-    const userData = userDoc.data() as User;
-    const lastClaimed = userData.lastRewardClaimedAt ? new Date(userData.lastRewardClaimedAt).getTime() : 0;
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    if (Date.now() - lastClaimed < twentyFourHours) {
-        throw new Error("لقد حصلت على مكافأتك بالفعل اليوم. عد غدًا!");
-    }
     
-    // Array of potential topics for the AI to write about
-    const topics = [
-        "أسرار زيادة متابعين تيك توك في 2024",
-        "كيفية إنشاء حملة إعلانية ناجحة على فيسبوك",
-        "دليل المبتدئين لتصدر نتائج بحث جوجل",
-        "استراتيجيات التسويق عبر انستغرام للشركات الصغيرة",
-        "لماذا يجب أن تستخدم حسابات الوكالة الإعلانية؟",
-        "أفضل الممارسات لزيادة التفاعل على منشوراتك"
-    ];
-    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-
-    // 1. Generate the article using the Genkit flow
-    const article = await generateSeoArticle({ topicSuggestion: randomTopic });
-    
-    // 2. Update user balance and create blog post in a transaction
-    const blogPostsRef = collection(firestore, 'blogPosts');
-
+    // We must use a transaction to safely check the date and update the balance.
     await runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+
+        if (!userDoc.exists()) {
+            throw new Error("المستخدم غير موجود.");
+        }
+
+        const userData = userDoc.data() as User;
+        const lastClaimed = userData.lastRewardClaimedAt ? new Date(userData.lastRewardClaimedAt).getTime() : 0;
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        if (Date.now() - lastClaimed < twentyFourHours) {
+            throw new Error("لقد حصلت على مكافأتك بالفعل اليوم. عد غدًا!");
+        }
+
+        // Array of potential topics for the AI to write about
+        const topics = [
+            "أسرار زيادة متابعين تيك توك في 2024",
+            "كيفية إنشاء حملة إعلانية ناجحة على فيسبوك",
+            "دليل المبتدئين لتصدر نتائج بحث جوجل",
+            "استراتيجيات التسويق عبر انستغرام للشركات الصغيرة",
+            "لماذا يجب أن تستخدم حسابات الوكالة الإعلانية؟",
+            "أفضل الممارسات لزيادة التفاعل على منشوراتك"
+        ];
+        const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+
+        // 1. Generate the article using the Genkit flow
+        const article = await generateSeoArticle({ topicSuggestion: randomTopic });
+        
+        // 2. Update user balance and create blog post in the same transaction
+        const blogPostsRef = collection(firestore, 'blogPosts');
+
         // Add $1 to the user's adBalance and update last claimed date
         const newAdBalance = (userData.adBalance || 0) + 1;
         transaction.update(userRef, { 
@@ -209,3 +242,5 @@ export async function claimDailyRewardAndGenerateArticle(userId: string): Promis
         transaction.set(newPostRef, newPostData);
     });
 }
+
+    

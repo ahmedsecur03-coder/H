@@ -4,7 +4,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, DollarSign, Users, Crown, Loader2, GitFork, TrendingUp, Target } from "lucide-react";
+import { Copy, DollarSign, Users, Crown, Loader2, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { useUser, useDoc, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -15,13 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import React from 'react';
-
-const AFFILIATE_LEVELS = {
-    'برونزي': { commission: 10, nextLevel: 'فضي', requirement: 10 },
-    'فضي': { commission: 12, nextLevel: 'ذهبي', requirement: 50 },
-    'ذهبي': { commission: 15, nextLevel: 'ماسي', requirement: 200 },
-    'ماسي': { commission: 20, nextLevel: null, requirement: Infinity },
-};
+import { AFFILIATE_LEVELS, getRankForSpend } from '@/lib/service';
 
 
 function AffiliateSkeleton() {
@@ -119,6 +113,7 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
                             <TableHead>تاريخ المعاملة</TableHead>
                             <TableHead>معرف الطلب</TableHead>
                              <TableHead>المدعو</TableHead>
+                             <TableHead>المستوى</TableHead>
                             <TableHead className="text-right">مبلغ العمولة</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -129,6 +124,7 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                                     <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
                                 </TableRow>
                             ))
@@ -138,12 +134,13 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
                                     <TableCell>{new Date(tx.transactionDate).toLocaleDateString('ar-EG')}</TableCell>
                                     <TableCell className="font-mono text-xs">{tx.orderId.substring(0,10)}...</TableCell>
                                     <TableCell className="font-mono text-xs">{tx.referralId.substring(0,10)}...</TableCell>
+                                    <TableCell className="text-center">{tx.level}</TableCell>
                                     <TableCell className="text-right font-medium text-green-400">+${tx.amount.toFixed(2)}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center h-24">لا توجد معاملات لعرضها.</TableCell>
+                                <TableCell colSpan={5} className="text-center h-24">لا توجد معاملات لعرضها.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
@@ -189,12 +186,12 @@ export default function AffiliatePage() {
     
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
-    const nextLevelKey = currentLevel.nextLevel;
-    const nextLevel = nextLevelKey ? AFFILIATE_LEVELS[nextLevelKey as keyof typeof AFFILIATE_LEVELS] : null;
+    const nextLevelKey = null; // This logic needs updating to be dynamic
+    const nextLevel = null;
 
     
     const referralsCount = userData?.referralsCount ?? 0;
-    const progressToNextLevel = nextLevel ? (referralsCount / (nextLevel.requirement || 1)) * 100 : 100;
+    const progressToNextLevel = 0;
 
   return (
     <div className="space-y-6 pb-8">
@@ -242,15 +239,15 @@ export default function AffiliatePage() {
                     )}>
                         {userData?.affiliateLevel ?? 'برونزي'}
                     </div>
-                    <p className="text-xs text-muted-foreground">نسبة العمولة: {currentLevel.commission}%</p>
+                    <p className="text-xs text-muted-foreground">نسبة العمولة المباشرة: {currentLevel.commission}%</p>
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">الترقية التالية: {nextLevelKey}</CardTitle>
-                    {nextLevel && referralsCount < nextLevel.requirement ? (
+                    <CardTitle className="text-sm font-medium">الترقية التالية: {nextLevelKey || 'لا يوجد'}</CardTitle>
+                    {nextLevel && referralsCount < 100 /* Update requirement */ ? (
                         <CardDescription>
-                             ادعُ {nextLevel.requirement - referralsCount} شخصًا آخر للوصول للمستوى التالي.
+                             ادعُ {100 - referralsCount} شخصًا آخر للوصول للمستوى التالي.
                         </CardDescription>
                     ) : (
                          <CardDescription>
@@ -262,7 +259,7 @@ export default function AffiliatePage() {
                      {nextLevel ? (
                         <>
                             <Progress value={progressToNextLevel} className="h-2 my-2" />
-                            <p className="text-xs text-muted-foreground text-center">{referralsCount} / {nextLevel.requirement}</p>
+                            <p className="text-xs text-muted-foreground text-center">{referralsCount} / {100}</p>
                         </>
                      ) : (
                          <p className="text-sm font-medium text-center text-primary">🎉 أنت في القمة 🎉</p>
@@ -294,7 +291,5 @@ export default function AffiliatePage() {
     </div>
   );
 }
-
-    
 
     
