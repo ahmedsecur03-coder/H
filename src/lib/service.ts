@@ -1,3 +1,4 @@
+
 import type { User, Order } from '@/lib/types';
 import { collection, doc, Firestore, Transaction, DocumentSnapshot } from 'firebase/firestore';
 
@@ -15,6 +16,8 @@ export const AFFILIATE_LEVELS = {
     'ذهبي': { commission: 15 },
     'ماسي': { commission: 20 },
 };
+
+const MULTI_LEVEL_COMMISSIONS = [5, 3, 2, 1, 0.5]; // e.g. Level 1 gets 5%, Level 2 gets 3%, etc.
 
 
 export function getRankForSpend(spend: number) {
@@ -34,15 +37,14 @@ export function getRankForSpend(spend: number) {
  * This function encapsulates the logic for:
  * - Updating user's balance and total spent.
  * - Checking for rank promotion and applying rewards.
- * - Calculating and applying affiliate commissions.
+ * - Calculating and applying multi-level affiliate commissions.
  * - Creating the order document.
- * - Creating the affiliate transaction document.
+ * - Creating affiliate transaction documents for each level.
  * 
  * @param transaction The Firestore transaction object.
  * @param firestore The Firestore instance.
  * @param userId The ID of the user placing the order.
  * @param orderData The data for the new order.
- * @param referrerDocSnapshot An optional snapshot of the referrer's user document.
  * @returns A promise that resolves with an object containing an optional promotion message.
  */
 export async function processOrderInTransaction(
@@ -50,7 +52,6 @@ export async function processOrderInTransaction(
     firestore: Firestore,
     userId: string,
     orderData: Omit<Order, 'id'>,
-    referrerDocSnapshot: DocumentSnapshot<User> | null
 ) {
     const userRef = doc(firestore, "users", userId);
     const userDoc = await transaction.get(userRef);
@@ -97,29 +98,46 @@ export async function processOrderInTransaction(
     const newOrderRef = doc(collection(firestore, `users/${userId}/orders`));
     transaction.set(newOrderRef, orderData);
 
-    // 4. Handle affiliate commission
-    if (referrerDocSnapshot?.exists()) {
-        const referrerData = referrerDocSnapshot.data() as User;
-        const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
-        const commissionRate = (AFFILIATE_LEVELS[affiliateLevel as keyof typeof AFFILIATE_LEVELS]?.commission || 10) / 100;
+    // 4. Handle multi-level affiliate commissions
+    let currentReferrerId = userData.referrerId;
+    for (let i = 0; i < MULTI_LEVEL_COMMISSIONS.length && currentReferrerId; i++) {
+        const commissionRate = MULTI_LEVEL_COMMISSIONS[i] / 100;
         const commissionAmount = cost * commissionRate;
+        const level = i + 1;
 
-        // Update referrer's affiliate earnings
-        transaction.update(referrerDocSnapshot.ref, {
-            affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
-        });
+        if (commissionAmount > 0) {
+            const referrerRef = doc(firestore, 'users', currentReferrerId);
+            const referrerDoc = await transaction.get(referrerRef);
 
-        // Create an affiliate transaction record for the referrer
-        const newTransactionRef = doc(collection(firestore, `users/${referrerDocSnapshot.id}/affiliateTransactions`));
-        transaction.set(newTransactionRef, {
-            userId: referrerDocSnapshot.id,
-            referralId: userId,
-            orderId: newOrderRef.id,
-            amount: commissionAmount,
-            transactionDate: new Date().toISOString(),
-            level: 1, // Assuming direct referral for now
-        });
+            if (referrerDoc.exists()) {
+                const referrerData = referrerDoc.data() as User;
+                
+                // Update referrer's affiliate earnings
+                transaction.update(referrerRef, {
+                    affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
+                });
+
+                // Create an affiliate transaction record
+                const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                transaction.set(newTransactionRef, {
+                    userId: currentReferrerId,
+                    referralId: userId,
+                    orderId: newOrderRef.id,
+                    amount: commissionAmount,
+                    transactionDate: new Date().toISOString(),
+                    level: level,
+                });
+
+                // Move to the next level up the chain
+                currentReferrerId = referrerData.referrerId;
+            } else {
+                // Referrer doesn't exist, so we stop the chain.
+                break;
+            }
+        }
     }
 
     return { promotion };
 }
+
+    
