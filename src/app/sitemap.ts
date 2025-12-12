@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // الصفحات العامة
   const publicRoutes = [
-    '/home',
+    '/',
     '/services',
     '/blog',
     '/agency-accounts',
@@ -18,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
-    priority: route === '/home' ? 1.0 : 0.8,
+    priority: route === '/' ? 1.0 : 0.8,
   }));
   
   // صفحات لوحة التحكم الرئيسية

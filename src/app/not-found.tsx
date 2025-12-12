@@ -20,7 +20,7 @@ export default function NotFoundPage() {
           عذرًا، يبدو أنك خرجت عن المسار المداري. الصفحة التي تبحث عنها قد تكون في مجرة أخرى أو تم نقلها.
         </p>
         <Button asChild className="mt-8">
-          <Link href="/dashboard">العودة إلى مركز القيادة</Link>
+          <Link href="/">العودة إلى مركز القيادة</Link>
         </Button>
       </div>
     </div>

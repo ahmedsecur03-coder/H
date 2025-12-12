@@ -32,16 +32,16 @@ import {
   Gift,
   Loader2
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useMemoFirebase as useMemo } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order } from '@/lib/types';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend, claimDailyRewardAndGenerateArticle } from '@/lib/service';
 import Link from 'next/link';
-import { QuickOrderForm } from './_components/quick-order-form';
+import { QuickOrderForm } from '../_components/quick-order-form';
 import { useToast } from '@/hooks/use-toast';
 
 

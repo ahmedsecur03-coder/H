@@ -95,7 +95,7 @@ export default function AdminLayout({
         router.push('/login');
       } else if (!ADMIN_EMAILS.includes(user.email || '')) {
         // If logged in but not an admin, redirect to user dashboard
-        router.push('/');
+        router.push('/dashboard');
       }
     }
   }, [user, isUserLoading, router]);
