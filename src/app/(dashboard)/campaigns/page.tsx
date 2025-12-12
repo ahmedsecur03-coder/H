@@ -334,9 +334,14 @@ export default function CampaignsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {campaigns.map((campaign) => (
+                            {campaigns.map((campaign) => {
+                                const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
+                                return (
                                 <TableRow key={campaign.id}>
-                                    <TableCell className="font-medium">{campaign.name}</TableCell>
+                                    <TableCell className="font-medium flex items-center gap-2">
+                                        <Icon className="w-4 h-4 text-muted-foreground" />
+                                        <span>{campaign.name}</span>
+                                    </TableCell>
                                     <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
                                     <TableCell>
                                         <div className='flex flex-col gap-1'>
@@ -350,7 +355,8 @@ export default function CampaignsPage() {
                                         <CampaignDetailsDialog campaign={campaign} />
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                                )
+                            })}
                         </TableBody>
                     </Table>
                 ) : (
@@ -374,3 +380,5 @@ export default function CampaignsPage() {
     </div>
   );
 }
+
+    
