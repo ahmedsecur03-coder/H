@@ -79,7 +79,7 @@ function DailyRewardCard({ userId, onClaim }: { userId: string, onClaim: () => v
                     المكافأة اليومية
                 </CardTitle>
                 <CardDescription>
-                    احصل على مكافأتك اليومية! اضغط على الزر أدناه لكسب 1$ في رصيد إعلاناتك مجانًا لتمويل حملاتك.
+                    احصل على مكافأتك اليومية! اضغط على الزر أدناه لكسب 1$ في رصيد إعلاناتك مجانًا.
                 </CardDescription>
             </CardHeader>
             <CardFooter>
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                 </CardHeader>
                  <CardContent>
                     <Button size="sm" className="w-full" asChild>
-                        <Link href="/dashboard/add-funds">شحن الرصيد</Link>
+                        <Link href="/add-funds">شحن الرصيد</Link>
                     </Button>
                 </CardContent>
             </Card>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                 </CardHeader>
                   <CardContent>
                     <Button size="sm" variant="outline" className="w-full" asChild>
-                        <Link href="/dashboard/add-funds">تحويل رصيد</Link>
+                        <Link href="/add-funds">تحويل رصيد</Link>
                     </Button>
                 </CardContent>
             </Card>
