@@ -8,103 +8,14 @@ import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Trash2, Loader2, ListFilter, Pencil } from 'lucide-react';
+import { PlusCircle, Upload, Trash2, ListFilter, Pencil, CheckCircle, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { ServiceDialog } from './_components/service-dialog';
+import { Badge } from '@/components/ui/badge';
 import React from 'react';
-
-function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: any) => Promise<void>, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
-    const [data, setData] = useState({
-        id: service?.id || '',
-        category: service?.category || '',
-        platform: service?.platform || '',
-        price: service?.price || 0,
-        min: service?.min || 0,
-        max: service?.max || 0,
-        refill: service?.refill || false,
-    });
-    const [isSaving, setIsSaving] = useState(false);
-
-    React.useEffect(() => {
-        if (service) {
-            setData({
-                id: service.id,
-                category: service.category,
-                platform: service.platform,
-                price: service.price,
-                min: service.min,
-                max: service.max,
-                refill: service.refill || false,
-            });
-        } else {
-             setData({ id: '', category: '', platform: '', price: 0, min: 0, max: 0, refill: false });
-        }
-    }, [service, open]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaving(true);
-        try {
-            await onSave(data);
-            onOpenChange(false);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-    
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{service ? 'تعديل الخدمة' : 'إضافة خدمة جديدة'}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label>رقم الخدمة (ID)</Label>
-                        <Input value={data.id} onChange={e => setData({...data, id: e.target.value})} placeholder="اتركه فارغاً للتوليد التلقائي" disabled={!!service} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label>الفئة</Label>
-                        <Input value={data.category} onChange={e => setData({...data, category: e.target.value})} required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label>المنصة</Label>
-                        <Input value={data.platform} onChange={e => setData({...data, platform: e.target.value})} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>السعر/1000</Label>
-                        <Input type="number" value={data.price} onChange={e => setData({...data, price: parseFloat(e.target.value) || 0})} required />
-                    </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>الحد الأدنى</Label>
-                            <Input type="number" value={data.min} onChange={e => setData({...data, min: parseInt(e.target.value) || 0})} required />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>الحد الأقصى</Label>
-                            <Input type="number" value={data.max} onChange={e => setData({...data, max: parseInt(e.target.value) || 0})} required />
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                         <Switch id="refill" checked={data.refill} onCheckedChange={checked => setData({...data, refill: checked})} />
-                        <Label htmlFor="refill">إعادة تعبئة مدعومة</Label>
-                    </div>
-                     <DialogFooter>
-                        <Button type="submit" disabled={isSaving}>
-                            {isSaving ? <Loader2 className="animate-spin" /> : 'حفظ'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-}
 
 export default function AdminServicesPage() {
   const firestore = useFirestore();
@@ -184,14 +95,14 @@ export default function AdminServicesPage() {
     if (isLoading && !filteredServices) {
       return Array.from({length: 10}).map((_, i) => (
         <TableRow key={i}>
-          {Array.from({length: 7}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+          {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
         </TableRow>
       ));
     }
      if (!filteredServices || filteredServices.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="h-24 text-center">
+          <TableCell colSpan={8} className="h-24 text-center">
              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
                 <h3 className="mt-4 font-headline text-2xl">{searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
@@ -208,8 +119,11 @@ export default function AdminServicesPage() {
           <TableCell>{service.platform}</TableCell>
           <TableCell>${service.price.toFixed(4)}</TableCell>
           <TableCell>{service.min} / {service.max}</TableCell>
+          <TableCell className="text-center">
+             {service.guarantee ? <Badge variant="default" className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 ml-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 ml-1" />لا</Badge>}
+          </TableCell>
            <TableCell className="text-center">
-            {service.refill ? <Badge variant="default">نعم</Badge> : <Badge variant="secondary">لا</Badge>}
+            {service.refill ? <Badge variant="default"><CheckCircle className="w-3 h-3 ml-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 ml-1" />لا</Badge>}
           </TableCell>
           <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
@@ -237,7 +151,13 @@ export default function AdminServicesPage() {
         </div>
         <div className="flex gap-2">
            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد بالجملة</Button>
-           <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة خدمة</Button>
+            <ServiceDialog
+                open={isDialogOpen && !selectedService}
+                onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}
+                onSave={handleSaveService}
+            >
+                <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة خدمة</Button>
+            </ServiceDialog>
         </div>
       </div>
        <Card>
@@ -254,6 +174,7 @@ export default function AdminServicesPage() {
                             <TableHead>المنصة</TableHead>
                             <TableHead>السعر/1000</TableHead>
                             <TableHead>الحدود</TableHead>
+                            <TableHead className="text-center">ضمان</TableHead>
                             <TableHead className="text-center">إعادة تعبئة</TableHead>
                             <TableHead className="text-right">إجراءات</TableHead>
                         </TableRow>
@@ -266,12 +187,11 @@ export default function AdminServicesPage() {
         </CardContent>
        </Card>
         <ServiceDialog
-            open={isDialogOpen}
-            onOpenChange={setIsDialogOpen}
+            open={isDialogOpen && !!selectedService}
+            onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}
             service={selectedService}
             onSave={handleSaveService}
         />
     </div>
   );
 }
-
