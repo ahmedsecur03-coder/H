@@ -151,7 +151,7 @@ export default function AdminUsersPage() {
         <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
         <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-        <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+        <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'غير متوفر'}</TableCell>
         <TableCell className="text-right">
             <EditUserDialog user={user} onUserUpdate={forceCollectionUpdate}>
                 <Button variant="outline" size="sm">تعديل</Button>
