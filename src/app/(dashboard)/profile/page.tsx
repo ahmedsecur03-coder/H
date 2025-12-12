@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useForm } from 'react-hook-form';
@@ -27,6 +27,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ai } from '@/ai/genkit';
 import { cn } from '@/lib/utils';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 
 const profileSchema = z.object({
@@ -166,7 +168,7 @@ export default function ProfilePage() {
 
     if(isLoading) {
         return (
-             <div className="space-y-6 pb-8">
+             <div className="space-y-8 pb-8">
                  <div>
                     <Skeleton className="h-8 w-1/4" />
                     <Skeleton className="h-5 w-1/2 mt-2" />
@@ -308,5 +310,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    

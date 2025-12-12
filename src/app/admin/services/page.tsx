@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ServiceDialog } from './_components/service-dialog';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function AdminServicesPage() {
   const firestore = useFirestore();
@@ -186,12 +188,14 @@ export default function AdminServicesPage() {
             )}
         </CardContent>
        </Card>
-        <ServiceDialog
+        {selectedService && <ServiceDialog
             open={isDialogOpen && !!selectedService}
             onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}
             service={selectedService}
             onSave={handleSaveService}
-        />
+        >
+            {/* This dialog is controlled by the button in the table row */}
+        </ServiceDialog>}
     </div>
   );
 }

@@ -7,34 +7,41 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
  * An invisible component that listens for globally emitted 'permission-error' events.
- * It throws any received error to be caught by Next.js's global-error.tsx.
+ * When an error is received, it throws it to be caught by Next.js's global error boundary
+ * (e.g., error.tsx or global-error.tsx), making debugging of security rules much easier
+ * by showing a detailed overlay in development.
  */
 export function FirebaseErrorListener() {
-  // Use the specific error type for the state for type safety.
+  // The state holds the error that needs to be thrown.
   const [error, setError] = useState<FirestorePermissionError | null>(null);
 
   useEffect(() => {
-    // The callback now expects a strongly-typed error, matching the event payload.
-    const handleError = (error: FirestorePermissionError) => {
-      // Set error in state to trigger a re-render.
-      setError(error);
+    // Define the handler for the 'permission-error' event.
+    // The event emitter is strongly typed, so `err` is known to be FirestorePermissionError.
+    const handleError = (err: FirestorePermissionError) => {
+      // Set the error in the component's state. This will trigger a re-render.
+      setError(err);
     };
 
-    // The typed emitter will enforce that the callback for 'permission-error'
-    // matches the expected payload type (FirestorePermissionError).
+    // Subscribe the handler to the event emitter.
     errorEmitter.on('permission-error', handleError);
 
-    // Unsubscribe on unmount to prevent memory leaks.
+    // Return a cleanup function to unsubscribe when the component unmounts.
+    // This is crucial to prevent memory leaks.
     return () => {
       errorEmitter.off('permission-error', handleError);
     };
-  }, []);
+  }, []); // The empty dependency array ensures this effect runs only once on mount.
 
-  // On re-render, if an error exists in state, throw it.
+  // If the `error` state is not null (i.e., an error has been set),
+  // throw it during the render phase. Next.js will catch this and display
+  // its error overlay, which includes the rich, contextual information
+  // from our custom FirestorePermissionError.
   if (error) {
     throw error;
   }
 
-  // This component renders nothing.
+  // This component renders nothing to the DOM. Its only purpose is to
+  // bridge the event emitter with React's error handling mechanism.
   return null;
 }

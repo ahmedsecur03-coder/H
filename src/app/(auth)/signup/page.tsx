@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import CosmicBackground from '@/components/cosmic-background';
-import { FirestorePermissionError, errorEmitter } from '@/firebase';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -72,6 +73,7 @@ export default function SignupPage() {
             referralCode: newUser.uid.substring(0, 8).toUpperCase(),
             referrerId: referrerId, // Set the referrerId here
             createdAt: new Date().toISOString(),
+            lastRewardClaimedAt: undefined,
             affiliateEarnings: 0,
             referralsCount: 0,
             affiliateLevel: 'برونزي',

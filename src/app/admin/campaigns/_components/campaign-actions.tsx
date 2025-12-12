@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useFirestore, FirestorePermissionError, errorEmitter } from '@/firebase';
+import { useFirestore } from '@/firebase';
 import { doc, runTransaction, updateDoc } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 const statusVariant = {
   'نشط': 'default',

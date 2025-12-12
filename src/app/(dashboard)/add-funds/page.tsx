@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useMemoFirebase, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { addDoc, collection, doc, runTransaction } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { Deposit, User as UserType } from '@/lib/types';
 import { Loader2, ArrowLeftRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
 function VodafoneCashTab({ settings, isLoading }: { settings: any, isLoading: boolean }) {
     const { user } = useUser();
@@ -251,7 +253,7 @@ function TransferToAdBalance() {
                     requestResourceData: { balance: '...', adBalance: '...' }
                  });
                  errorEmitter.emit('permission-error', permissionError);
-                 toast({ variant: "destructive", title: "فشل التحويل", description: "فشلت العملية بسبب خطأ في الصلاحيات." });
+                 // Do not show a toast here, the global listener will handle it.
              }
         })
         .finally(() => {

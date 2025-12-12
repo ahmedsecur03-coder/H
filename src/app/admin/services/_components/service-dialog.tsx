@@ -1,10 +1,8 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useFirestore, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { doc, updateDoc, addDoc, setDoc, collection } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

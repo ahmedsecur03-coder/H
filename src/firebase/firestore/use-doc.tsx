@@ -1,3 +1,4 @@
+
 'use client';
     
 import { useState, useEffect, useCallback } from 'react';
@@ -83,8 +84,10 @@ export function useDoc<T = any>(
           operation: 'get',
           path: memoizedDocRef.path,
         })
-
-        setError(contextualError)
+        
+        // Do not set component-level error state here for permission denied,
+        // as the global error listener will handle it.
+        // setError(contextualError);
         setData(null)
         setIsLoading(false)
 

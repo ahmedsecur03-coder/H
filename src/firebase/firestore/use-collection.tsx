@@ -27,18 +27,6 @@ export interface UseCollectionResult<T> {
   forceCollectionUpdate: () => void; // Function to force a re-fetch.
 }
 
-/* Internal implementation of Query:
-  https://github.com/firebase/firebase-js-sdk/blob/c5f08a9bc5da0d2b0207802c972d53724ccef055/packages/firestore/src/lite-api/reference.ts#L143
-*/
-export interface InternalQuery extends Query<DocumentData> {
-  _query: {
-    path: {
-      canonicalString(): string;
-      toString(): string;
-    }
-  }
-}
-
 const getPathFromRefOrQuery = (refOrQuery: CollectionReference | Query): string => {
     if (refOrQuery.type === 'collection') {
         return (refOrQuery as CollectionReference).path;
@@ -111,7 +99,9 @@ export function useCollection<T = any>(
           path,
         })
 
-        setError(contextualError)
+        // Do not set component-level error state here for permission denied,
+        // as the global error listener will handle it.
+        // setError(contextualError); 
         setData(null)
         setIsLoading(false)
 
@@ -123,7 +113,7 @@ export function useCollection<T = any>(
   }, [memoizedTargetRefOrQuery, nonce]); 
 
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
-    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+    throw new Error('A query or collection reference passed to useCollection was not properly memoized using useMemoFirebase. This will cause infinite render loops.');
   }
 
   return { data, isLoading, error, forceCollectionUpdate };
