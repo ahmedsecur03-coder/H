@@ -8,43 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   DollarSign,
-  Loader2,
-  Users,
-  Trophy,
   Rocket,
   Shield,
-  Star,
   Sparkles,
-  Diamond,
-  Check,
   ShoppingCart,
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { doc, collection, query, orderBy, limit, runTransaction } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { User as UserType, Order, Service } from '@/lib/types';
-import { useState, useMemo, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import Link from 'next/link';
 
 
@@ -53,7 +24,7 @@ export default function HomePage() {
   return (
     <div className="space-y-12 pb-8">
         <section className="text-center py-20">
-            <h1 className="text-5xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-r from-primary via-orange-400 to-primary">
+            <h1 className="text-5xl lg:text-6xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-r from-primary via-secondary to-primary">
                 بوابتك إلى الكون الرقمي
             </h1>
             <p className="mt-4 text-xl text-muted-foreground max-w-3xl mx-auto">
