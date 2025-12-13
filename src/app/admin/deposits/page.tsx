@@ -44,10 +44,14 @@ function DepositTable({ status }: { status: Status }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   const depositsQuery = useMemoFirebase(
-    () =>
-      firestore
-        ? query(collectionGroup(firestore, 'deposits'), where('status', '==', status), orderBy('depositDate', 'desc'))
-        : null,
+    () => {
+        if (!firestore) return null;
+        return query(
+            collectionGroup(firestore, 'deposits'), 
+            where('status', '==', status), 
+            orderBy('depositDate', 'desc')
+        );
+    },
     [firestore, status]
   );
 

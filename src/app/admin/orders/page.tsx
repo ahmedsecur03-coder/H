@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query } from 'firebase/firestore';
+import { collectionGroup, query, where } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import {
   Card,
@@ -42,10 +41,17 @@ export default function AdminOrdersPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    const ordersQuery = useMemoFirebase(
-        () => (firestore ? query(collectionGroup(firestore, 'orders')) : null),
-        [firestore]
-    );
+    const ordersQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        
+        let q = query(collectionGroup(firestore, 'orders'));
+
+        if (statusFilter !== 'all') {
+            q = query(q, where('status', '==', statusFilter));
+        }
+
+        return q;
+    }, [firestore, statusFilter]);
 
     const { data: allOrders, isLoading } = useCollection<Order>(ordersQuery);
 
