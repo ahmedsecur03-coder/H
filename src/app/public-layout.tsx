@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, ChevronDown } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
@@ -12,6 +12,42 @@ import CosmicBackground from '@/components/cosmic-background';
 import { publicNavItems } from '@/lib/placeholder-data';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  )
+})
+ListItem.displayName = "ListItem"
+
 
 function Header() {
   const { user, isUserLoading } = useUser();
@@ -32,20 +68,38 @@ function Header() {
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
-        <nav className="hidden items-center gap-6 md:flex">
-            {publicNavItems.map((item) => (
-               <Link 
-                key={item.label}
-                href={item.href} 
-                className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-primary" : "text-muted-foreground"
-                )}
-               >
-                 {item.label}
-               </Link>
-            ))}
-        </nav>
+         <NavigationMenu>
+            <NavigationMenuList>
+               {publicNavItems.map((item) => (
+                <NavigationMenuItem key={item.label}>
+                  {item.children ? (
+                    <>
+                      <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                          {item.children.map((component) => (
+                            <ListItem
+                              key={component.label}
+                              title={component.label}
+                              href={component.href}
+                            >
+                              {/* You can add descriptions for each item here if you want */}
+                            </ListItem>
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </>
+                  ) : (
+                    <Link href={item.href} legacyBehavior passHref>
+                        <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), pathname === item.href ? 'text-primary' : '')}>
+                           {item.label}
+                        </NavigationMenuLink>
+                    </Link>
+                  )}
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
         <div className="flex items-center gap-4">
           {isUserLoading ? (
             <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Flame, ShieldCheck, RefreshCcw } from 'lucide-react';
+import { Search, Flame, ShieldCheck, RefreshCcw, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   Select,
@@ -143,13 +143,13 @@ export default function ServicesPage() {
     <div className="space-y-6 pb-8">
         <div>
             <div className="flex items-center gap-3 mb-2">
-                 {ActivePlatformIcon && <div className="w-8 h-8"><ActivePlatformIcon /></div>}
+                 <Users className="w-8 h-8 text-primary" />
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
-                    خدمات {activePlatform}
+                    خدمات التسويق عبر وسائل التواصل (SMM)
                 </h1>
             </div>
             <p className="text-muted-foreground">
-                كل ما تحتاجه للنمو على {activePlatform}. تصفح القائمة أدناه للعثور على الخدمة المثالية لك.
+                كل ما تحتاجه للنمو على جميع المنصات. تصفح القائمة أدناه للعثور على الخدمة المثالية لك.
             </p>
         </div>
         
@@ -164,7 +164,7 @@ export default function ServicesPage() {
         {isLoading ? <ServicesPageSkeleton /> : (
             <Card>
                 <CardHeader>
-                    <CardTitle>قائمة الخدمات</CardTitle>
+                    <CardTitle>قائمة خدمات {activePlatform}</CardTitle>
                     <CardDescription>استخدم البحث والفرز للعثور على الخدمة التي تريدها بسرعة.</CardDescription>
                     <div className="flex items-center gap-4 pt-4">
                         <div className="relative flex-1">
@@ -230,9 +230,3 @@ export default function ServicesPage() {
                     </Table>
                 </CardContent>
             </Card>
-        )}
-    </div>
-  );
-}
-
-    

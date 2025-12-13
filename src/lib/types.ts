@@ -59,7 +59,7 @@ export type NavItem = {
 };
 
 export type NestedNavItem = NavItem & {
-  children?: (NavItem | NestedNavItem)[];
+  children?: Omit<NestedNavItem, 'children'>[];
 }
 
 
@@ -139,7 +139,4 @@ export type SystemLog = {
     id: string;
     event: string;
     level: 'info' | 'warning' | 'error';
-    message: string;
-    timestamp: string;
-    metadata?: Record<string, any>;
-}
+    message

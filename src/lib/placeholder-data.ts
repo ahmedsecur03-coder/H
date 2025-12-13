@@ -1,4 +1,3 @@
-
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -22,21 +21,31 @@ import {
   Shield,
   History,
   Home,
-  HandCoins
+  HandCoins,
+  AppWindow
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
 
 export const publicNavItems: NestedNavItem[] = [
     { href: '/', label: 'الرئيسية', icon: Home },
-    { href: '/services', label: 'الخدمات', icon: Package },
+    { 
+      label: 'الخدمات',
+      icon: Package,
+      href: '#', // Add a placeholder href
+      children: [
+        { href: '/services', label: 'خدمات SMM', icon: Users },
+        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+        { href: '/agency-accounts', label: 'حسابات إعلانية وكالة', icon: Briefcase },
+        { href: '/dashboard/support', label: 'تصميم المواقع والتطبيقات', icon: AppWindow },
+      ]
+    },
     { href: '/blog', label: 'المدونة', icon: BookOpen },
-    { href: '/agency-accounts', label: 'حسابات وكالة', icon: Briefcase },
 ];
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { href: '/services', label: 'الخدمات', icon: Package },
+  { href: '/services', label: 'خدمات SMM', icon: Package },
   { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
   { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
