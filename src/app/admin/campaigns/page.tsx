@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, where } from 'firebase/firestore';
+import { collectionGroup, query, where, Query } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
 import {
   Card,
@@ -38,11 +38,11 @@ export default function AdminCampaignsPage() {
 
   const campaignsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    let q = collectionGroup(firestore, 'campaigns');
+    const campaignsCollection = collectionGroup(firestore, 'campaigns');
     if (filter !== 'all') {
-      return query(q, where('status', '==', filter));
+      return query(campaignsCollection, where('status', '==', filter));
     }
-    return query(q);
+    return query(campaignsCollection);
   }, [firestore, filter]);
 
   const { data: campaigns, isLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);

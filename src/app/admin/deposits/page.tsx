@@ -9,7 +9,8 @@ import {
   where,
   doc,
   runTransaction,
-  orderBy
+  orderBy,
+  Query
 } from 'firebase/firestore';
 import type { Deposit } from '@/lib/types';
 
@@ -46,8 +47,9 @@ function DepositTable({ status }: { status: Status }) {
   const depositsQuery = useMemoFirebase(
     () => {
         if (!firestore) return null;
+        const depositsCollection = collectionGroup(firestore, 'deposits');
         return query(
-            collectionGroup(firestore, 'deposits'), 
+            depositsCollection, 
             where('status', '==', status), 
             orderBy('depositDate', 'desc')
         );

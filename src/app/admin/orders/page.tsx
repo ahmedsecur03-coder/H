@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, where } from 'firebase/firestore';
+import { collectionGroup, query, where, Query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import {
   Card,
@@ -44,13 +45,13 @@ export default function AdminOrdersPage() {
     const ordersQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         
-        let q = query(collectionGroup(firestore, 'orders'));
+        const ordersCollection = collectionGroup(firestore, 'orders');
 
         if (statusFilter !== 'all') {
-            q = query(q, where('status', '==', statusFilter));
+            return query(ordersCollection, where('status', '==', statusFilter));
         }
 
-        return q;
+        return query(ordersCollection);
     }, [firestore, statusFilter]);
 
     const { data: allOrders, isLoading } = useCollection<Order>(ordersQuery);
@@ -58,21 +59,21 @@ export default function AdminOrdersPage() {
     const filteredOrders = useMemo(() => {
         if (!allOrders) return [];
         
-        return allOrders.filter(order => {
-            const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-            const lowerCaseSearch = searchTerm.toLowerCase();
-            const matchesSearch = !searchTerm ||
-                order.id.toLowerCase().includes(lowerCaseSearch) ||
-                order.userId.toLowerCase().includes(lowerCaseSearch) ||
-                order.link.toLowerCase().includes(lowerCaseSearch);
+        if (!searchTerm) {
+          return allOrders;
+        }
 
-            return matchesStatus && matchesSearch;
-        });
+        const lowerCaseSearch = searchTerm.toLowerCase();
+        return allOrders.filter(order => 
+            order.id.toLowerCase().includes(lowerCaseSearch) ||
+            order.userId.toLowerCase().includes(lowerCaseSearch) ||
+            order.link.toLowerCase().includes(lowerCaseSearch)
+        );
 
-    }, [allOrders, statusFilter, searchTerm]);
+    }, [allOrders, searchTerm]);
 
     const renderContent = () => {
-         if (isLoading && !filteredOrders) {
+         if (isLoading) {
             return Array.from({length: 10}).map((_, i) => (
                 <TableRow key={i}>
                     {Array.from({length: 6}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
@@ -80,7 +81,7 @@ export default function AdminOrdersPage() {
             ));
         }
 
-        if (filteredOrders.length === 0) {
+        if (!filteredOrders || filteredOrders.length === 0) {
             return (
                 <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">لا توجد طلبات تطابق بحثك.</TableCell>

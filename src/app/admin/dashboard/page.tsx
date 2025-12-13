@@ -16,7 +16,7 @@ import {
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, where } from 'firebase/firestore';
+import { collection, collectionGroup, query, where } from 'firebase/firestore';
 import type { Order, User, Ticket } from '@/lib/types';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
     const ordersQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'orders')) : null, [firestore]);
     const { data: allOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
 
-    const usersQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'users')) : null, [firestore]);
+    const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
     const { data: allUsers, isLoading: isUsersLoading } = useCollection<User>(usersQuery);
     
     const openTicketsQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'tickets'), where('status', '!=', 'مغلقة')) : null, [firestore]);
