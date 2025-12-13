@@ -1,7 +1,7 @@
 
 import type { User, Order, BlogPost } from '@/lib/types';
 import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebaseServer } from '@/firebase/server';
 import { generateSeoArticle } from '@/ai/flows/seo-article-flow';
 
 export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number }[] = [
@@ -179,7 +179,7 @@ export async function processOrderInTransaction(
  * @param userId The ID of the user claiming the reward.
  */
 export async function claimDailyRewardAndGenerateArticle(userId: string): Promise<void> {
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseServer();
     if (!firestore) {
         throw new Error("Firestore is not initialized.");
     }

@@ -9,10 +9,13 @@
 
 import {ai} from '@/ai/genkit';
 import { collection, getDocs, query, where, orderBy, limit, addDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebaseServer } from '@/firebase/server';
 import type { Service, Order, Ticket } from '@/lib/types';
 import { AISupportUsersInputSchema, AISupportUsersOutputSchema, type AISupportUsersInput, type AISupportUsersOutput } from './ai-support-types';
 import { z } from 'zod';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeFirebase } from '@/firebase';
+
 
 // Tool to get available services from Firestore
 const getAvailableServices = ai.defineTool(
@@ -30,7 +33,7 @@ const getAvailableServices = ai.defineTool(
         })),
     },
     async (input) => {
-        const { firestore } = initializeFirebase();
+        const { firestore } = initializeFirebaseServer();
         if (!firestore) return [];
 
         try {
@@ -64,6 +67,7 @@ const getUserOrders = ai.defineTool(
         name: 'getUserOrders',
         description: "Get the user's order history. Use this to answer questions about their recent orders, check the status of an order, or find a specific order.",
         inputSchema: z.object({
+            userId: z.string().describe("The user's unique ID."),
             orderId: z.string().optional().describe("A specific order ID to look for."),
             serviceQuery: z.string().optional().describe("A search term to find orders for a specific service, e.g., 'Instagram Followers'."),
         }),
@@ -76,15 +80,13 @@ const getUserOrders = ai.defineTool(
         })),
     },
     async (input) => {
-        const { auth, firestore } = initializeFirebase();
-        const user = auth.currentUser;
-
-        if (!firestore || !user) {
+        const { firestore } = initializeFirebaseServer();
+        if (!firestore || !input.userId) {
             return [];
         }
 
         try {
-            let q = query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc'), limit(10));
+            let q = query(collection(firestore, `users/${input.userId}/orders`), orderBy('orderDate', 'desc'), limit(10));
 
             const querySnapshot = await getDocs(q);
             let orders: Order[] = [];
@@ -115,6 +117,7 @@ const createSupportTicket = ai.defineTool(
         name: 'createSupportTicket',
         description: "Creates a new support ticket for the user when they have a problem that can't be solved with other tools. Always ask for user confirmation before using this tool.",
         inputSchema: z.object({
+            userId: z.string().describe("The user's unique ID."),
             subject: z.string().describe("A concise summary of the user's problem."),
             message: z.string().describe("A detailed description of the user's problem, based on the conversation history."),
         }),
@@ -123,16 +126,15 @@ const createSupportTicket = ai.defineTool(
         }),
     },
     async (input) => {
-        const { auth, firestore } = initializeFirebase();
-        const user = auth.currentUser;
+        const { firestore } = initializeFirebaseServer();
 
-        if (!firestore || !user) {
+        if (!firestore || !input.userId) {
             throw new Error("User must be logged in to create a ticket.");
         }
         
         try {
             const newTicket: Omit<Ticket, 'id'> = {
-                userId: user.uid,
+                userId: input.userId,
                 subject: input.subject,
                 message: input.message,
                 status: 'مفتوحة',
@@ -144,7 +146,7 @@ const createSupportTicket = ai.defineTool(
                 }],
             };
 
-            const ticketsColRef = collection(firestore, `users/${user.uid}/tickets`);
+            const ticketsColRef = collection(firestore, `users/${input.userId}/tickets`);
             const docRef = await addDoc(ticketsColRef, newTicket);
 
             return { ticketId: docRef.id };
@@ -157,12 +159,30 @@ const createSupportTicket = ai.defineTool(
 
 
 export async function aiSupportUsers(input: AISupportUsersInput): Promise<AISupportUsersOutput> {
-  return aiSupportUsersFlow(input);
+  // This is a workaround to get the user's ID on the server.
+  // In a real app, you'd likely pass the user's ID from the client.
+  const { auth } = initializeFirebase();
+  const userId = auth.currentUser?.uid;
+
+  if (!userId) {
+    return { response: "يرجى تسجيل الدخول أولاً لاستخدام المساعد الذكي." };
+  }
+  
+  const flowInput = {
+    query: input.query,
+    userId: userId,
+  };
+
+  return aiSupportUsersFlow(flowInput);
 }
+
+const AISupportServerInputSchema = AISupportUsersInputSchema.extend({
+    userId: z.string().describe("The user's unique ID."),
+});
 
 const prompt = ai.definePrompt({
   name: 'aiSupportUsersPrompt',
-  input: {schema: AISupportUsersInputSchema},
+  input: {schema: AISupportServerInputSchema},
   output: {schema: AISupportUsersOutputSchema},
   tools: [getAvailableServices, getUserOrders, createSupportTicket],
   prompt: `You are a friendly and helpful AI assistant for the Hajaty Hub platform.
@@ -173,14 +193,14 @@ const prompt = ai.definePrompt({
   - For each service, you MUST mention the service ID (معرف الخدمة), a brief description, and the price per 1000.
   - If you don't find any services matching the query, politely inform the user.
 
-  When users ask about their orders (e.g., "what's my last order?", "status of order X"), use the 'getUserOrders' tool.
+  When users ask about their orders (e.g., "what's my last order?", "status of order X"), use the 'getUserOrders' tool. You must pass the 'userId' from the input to this tool.
   - Present the orders in a clear, bulleted list.
   - For each order, mention the Order ID, Service Name, Status, and Date.
   - If no orders are found, inform the user politely.
   
   If the user describes a problem that cannot be resolved with the available tools (e.g., an order is stuck, a payment failed, they need a refund), you should offer to create a support ticket for them.
   - First, propose opening a ticket by saying something like: "أرى أنك تواجه مشكلة. هل تود مني فتح تذكرة دعم فني لك وسيقوم الفريق بمراجعتها؟"
-  - If the user agrees (e.g., says "نعم", "افتح تذكرة", "موافق"), then and ONLY then, use the 'createSupportTicket' tool.
+  - If the user agrees (e.g., says "نعم", "افتح تذكرة", "موافق"), then and ONLY then, use the 'createSupportTicket' tool. You must pass the 'userId' from the input to this tool.
   - For the 'subject' of the ticket, create a short, clear summary of the issue.
   - For the 'message', use the user's own words from the query to describe the problem.
   - After successfully creating the ticket, respond with: "لقد قمت بإنشاء تذكرة دعم لك. سيقوم فريقنا بمراجعتها والرد في أقرب وقت. هل يمكنني مساعدتك في شيء آخر؟"
@@ -188,13 +208,14 @@ const prompt = ai.definePrompt({
 
   Be conversational and helpful. Unless you are creating a ticket, end your response by asking if there is anything else you can help with.
 
+  User ID: {{{userId}}}
   User Query: {{{query}}}`,
 });
 
 const aiSupportUsersFlow = ai.defineFlow(
   {
     name: 'aiSupportUsersFlow',
-    inputSchema: AISupportUsersInputSchema,
+    inputSchema: AISupportServerInputSchema,
     outputSchema: AISupportUsersOutputSchema,
   },
   async input => {
