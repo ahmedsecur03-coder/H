@@ -139,4 +139,7 @@ export type SystemLog = {
     id: string;
     event: string;
     level: 'info' | 'warning' | 'error';
-    message
+    message: string;
+    timestamp: string;
+    metadata: Record<string, any>;
+}

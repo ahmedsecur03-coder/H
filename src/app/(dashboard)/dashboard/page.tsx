@@ -36,7 +36,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend, claimDailyRewardAndGenerateArticle } from '@/lib/service';
@@ -63,6 +63,76 @@ function DashboardSkeleton() {
           <Skeleton className="h-[300px]" />
         </div>
       </div>
+    );
+}
+
+function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: () => void }) {
+    const { toast } = useToast();
+    const [isClaiming, setIsClaiming] = useState(false);
+    const [timeLeft, setTimeLeft] = useState('');
+
+    const canClaim = useMemo(() => {
+        if (!user.lastRewardClaimedAt) return true;
+        const lastClaimedTime = new Date(user.lastRewardClaimedAt).getTime();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        return Date.now() - lastClaimedTime > twentyFourHours;
+    }, [user.lastRewardClaimedAt]);
+
+    useEffect(() => {
+        if (canClaim || !user.lastRewardClaimedAt) return;
+
+        const intervalId = setInterval(() => {
+            const lastClaimedTime = new Date(user.lastRewardClaimedAt!).getTime();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const nextClaimTime = lastClaimedTime + twentyFourHours;
+            const now = Date.now();
+            const remaining = nextClaimTime - now;
+
+            if (remaining <= 0) {
+                setTimeLeft('');
+                clearInterval(intervalId);
+            } else {
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+                setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+            }
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [canClaim, user.lastRewardClaimedAt]);
+
+    const handleClaim = async () => {
+        setIsClaiming(true);
+        toast({ title: 'جاري طلب المكافأة...', description: 'يقوم الذكاء الاصطناعي بإنشاء المحتوى الآن.' });
+        try {
+            await claimDailyRewardAndGenerateArticle(user.id);
+            toast({ title: '🎉 تم بنجاح!', description: 'تمت إضافة 1$ لرصيد إعلاناتك ونشر مقال جديد في المدونة!' });
+            onClaim();
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+        } finally {
+            setIsClaiming(false);
+        }
+    };
+
+    return (
+        <Card className="bg-gradient-to-br from-secondary/30 to-background">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between font-headline">
+                    <span>المكافأة الكونية اليومية</span>
+                    <Gift className="text-primary"/>
+                </CardTitle>
+                <CardDescription>
+                    اطلب مكافأتك اليومية: 1$ رصيد إعلانات + مقال جديد للمدونة يولده الذكاء الاصطناعي!
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button className="w-full text-lg" onClick={handleClaim} disabled={!canClaim || isClaiming}>
+                    {isClaiming ? <Loader2 className="animate-spin" /> : canClaim ? 'اطلب مكافأتك الآن!' : `عد بعد: ${timeLeft}`}
+                </Button>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -183,6 +253,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+         <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
          <Card>
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
