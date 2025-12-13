@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -657,6 +658,19 @@ const SidebarMenuSub = ({ ...props }: React.ComponentProps<typeof Collapsible>) 
     <Collapsible {...props} />
 );
 
+const SidebarMenuSubTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<typeof CollapsibleTrigger> & { asChild?: boolean }
+>(({ asChild = true, ...props }, ref) => (
+  <CollapsibleTrigger asChild={asChild} {...props} ref={ref}>
+    <SidebarMenuButton className="justify-between w-full">
+      {props.children}
+    </SidebarMenuButton>
+  </CollapsibleTrigger>
+));
+SidebarMenuSubTrigger.displayName = "SidebarMenuSubTrigger";
+
+
 const SidebarMenuSubContent = ({ ...props }: React.ComponentProps<typeof CollapsibleContent>) => (
     <CollapsibleContent
       className="group-data-[collapsible=icon]:hidden ml-7 flex flex-col gap-1 border-l-2 border-dotted border-sidebar-border/50 pl-2"
@@ -712,5 +726,6 @@ export {
   useSidebar,
   SidebarMenuSub,
   SidebarMenuSubContent,
-  SidebarMenuSubButton
+  SidebarMenuSubButton,
+  SidebarMenuSubTrigger
 }

@@ -17,6 +17,7 @@ import {
   SidebarMenuSubContent,
   useSidebar,
   SidebarFooter,
+  SidebarMenuSubTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
@@ -73,15 +74,13 @@ function NavItems() {
       <SidebarMenuItem key={item.label}>
         {item.children ? (
           <SidebarMenuSub>
-            <SidebarMenuButton
-              className='justify-between'
-            >
-              <div className='flex items-center gap-2'>
-                {item.icon && <item.icon />}
-                <span>{item.label}</span>
-              </div>
-               <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
-            </SidebarMenuButton>
+            <SidebarMenuSubTrigger>
+                <div className='flex items-center gap-2'>
+                    {item.icon && <item.icon />}
+                    <span>{item.label}</span>
+                </div>
+                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
+            </SidebarMenuSubTrigger>
             <SidebarMenuSubContent>
               {item.children.map((child) => (
                 <SidebarMenuSubButton key={child.href} asChild>
