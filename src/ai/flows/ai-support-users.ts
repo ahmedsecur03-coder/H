@@ -52,6 +52,7 @@ const getAvailableServices = ai.defineTool(
             return filteredServices.map(({ id, category, platform, price }) => ({ id, category, platform, price }));
 
         } catch (error) {
+            console.error("AI Tool Error (getAvailableServices):", error);
             return [];
         }
     }
@@ -102,6 +103,7 @@ const getUserOrders = ai.defineTool(
             return orders.slice(0, 5).map(({ id, serviceName, status, orderDate, charge }) => ({ id, serviceName, status, orderDate, charge }));
 
         } catch (error) {
+            console.error("AI Tool Error (getUserOrders):", error);
             return [];
         }
     }
@@ -128,23 +130,28 @@ const createSupportTicket = ai.defineTool(
             throw new Error("User must be logged in to create a ticket.");
         }
         
-        const newTicket: Omit<Ticket, 'id'> = {
-            userId: user.uid,
-            subject: input.subject,
-            message: input.message,
-            status: 'مفتوحة',
-            createdDate: new Date().toISOString(),
-            messages: [{
-                sender: 'user',
-                text: input.message,
-                timestamp: new Date().toISOString(),
-            }],
-        };
+        try {
+            const newTicket: Omit<Ticket, 'id'> = {
+                userId: user.uid,
+                subject: input.subject,
+                message: input.message,
+                status: 'مفتوحة',
+                createdDate: new Date().toISOString(),
+                messages: [{
+                    sender: 'user',
+                    text: input.message,
+                    timestamp: new Date().toISOString(),
+                }],
+            };
 
-        const ticketsColRef = collection(firestore, `users/${user.uid}/tickets`);
-        const docRef = await addDoc(ticketsColRef, newTicket);
+            const ticketsColRef = collection(firestore, `users/${user.uid}/tickets`);
+            const docRef = await addDoc(ticketsColRef, newTicket);
 
-        return { ticketId: docRef.id };
+            return { ticketId: docRef.id };
+        } catch (error) {
+            console.error("AI Tool Error (createSupportTicket):", error);
+            throw new Error("Failed to create support ticket.");
+        }
     }
 );
 
