@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -43,8 +42,16 @@ const PLATFORMS = [
   'YouTube',
   'Telegram',
   'X (Twitter)',
-  'Google',
   'Snapchat',
+  'Kwai',
+  'VK',
+  'WhatsApp',
+  'خدمات الألعاب',
+  'خرائط جوجل',
+  'Threads',
+  'Kick',
+  'Clubhouse',
+  'زيارات مواقع',
 ];
 
 function ServicesPageSkeleton() {
