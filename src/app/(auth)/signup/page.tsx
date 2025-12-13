@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { useAuth, useFirestore, useMemoFirebase } from '@/firebase';
@@ -66,6 +65,7 @@ export default function SignupPage() {
             email: newUser.email || 'N/A',
             avatarUrl: avatarUrl,
             rank: 'مستكشف نجمي',
+            role: 'user', // Set default role for new users
             balance: 0,
             adBalance: 0,
             totalSpent: 0,

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, type ReactNode, useEffect } from 'react';
@@ -22,14 +21,15 @@ function UserInitializer() {
       const checkAndCreateUserDoc = async () => {
         try {
             const userDoc = await getDoc(userDocRef);
-            if (!userDoc.exists()) {
-              // User document doesn't exist, create it.
+            if (!userDoc.exists() || !userDoc.data().role) {
+              // User document doesn't exist, or role is missing (for older users)
               // This serves as a fallback for social logins or if the signup transaction fails.
-              const newUser: Omit<UserType, 'id'> = {
+              const newUser: Partial<UserType> = {
                 name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
                 email: user.email || 'N/A',
                 avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
                 rank: 'مستكشف نجمي',
+                role: 'user', // Ensure role is set
                 balance: 0,
                 adBalance: 0,
                 totalSpent: 0,
@@ -46,7 +46,8 @@ function UserInitializer() {
                 }
               };
               
-              // Using setDoc with merge:true is safer here as a fallback
+              // Using setDoc with merge:true is safer here as a fallback,
+              // it will create the doc if it doesn't exist, or update it if it does.
               await setDoc(userDocRef, newUser, { merge: true });
             }
         } catch (error) {
