@@ -10,12 +10,14 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Bot, User, CornerDownLeft, Loader2, Sparkles } from 'lucide-react';
+import { Bot, User, CornerDownLeft, Loader2, Sparkles, XCircle } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { aiSupportUsers } from '@/ai/flows/ai-support-users';
 import ReactMarkdown from 'react-markdown';
+import { isAiConfigured } from '@/ai/genkit';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 // Define the structure for a single message in the chat
 type Message = {
@@ -27,6 +29,7 @@ export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [running, setRunning] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'system',
@@ -34,6 +37,11 @@ export default function AiAssistant() {
     },
   ]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Check configuration only on the client-side
+    setIsConfigured(isAiConfigured());
+  }, []);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -47,7 +55,7 @@ export default function AiAssistant() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || running) return;
+    if (!input.trim() || running || !isConfigured) return;
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -116,36 +124,50 @@ export default function AiAssistant() {
             </SheetTitle>
           </SheetHeader>
           <Separator />
-          <ScrollArea className="flex-1 -mx-6 px-6" ref={scrollAreaRef}>
-            <div className="space-y-4 py-4">
-                 {messages.map((msg, index) => (
-                    <div key={index}>
-                        {msg.role === 'user' && <UserMessage>{msg.content}</UserMessage>}
-                        {(msg.role === 'model' || msg.role === 'system') && <BotMessage>{msg.content}</BotMessage>}
+          {!isConfigured ? (
+             <div className="flex-1 flex items-center justify-center">
+                 <Alert variant="destructive" className="border-destructive/20">
+                    <XCircle className="h-4 w-4" />
+                    <AlertTitle>خدمة غير متاحة</AlertTitle>
+                    <AlertDescription>
+                        المساعد الذكي غير متاح حالياً. يرجى المحاولة مرة أخرى لاحقاً.
+                    </AlertDescription>
+                </Alert>
+             </div>
+          ): (
+            <>
+                <ScrollArea className="flex-1 -mx-6 px-6" ref={scrollAreaRef}>
+                    <div className="space-y-4 py-4">
+                        {messages.map((msg, index) => (
+                            <div key={index}>
+                                {msg.role === 'user' && <UserMessage>{msg.content}</UserMessage>}
+                                {(msg.role === 'model' || msg.role === 'system') && <BotMessage>{msg.content}</BotMessage>}
+                            </div>
+                        ))}
+                        {running && (
+                        <BotMessage>
+                            <Loader2 className="animate-spin" />
+                        </BotMessage>
+                        )}
                     </div>
-                ))}
-                {running && (
-                  <BotMessage>
-                    <Loader2 className="animate-spin" />
-                  </BotMessage>
-                )}
-            </div>
-          </ScrollArea>
-          <SheetFooter>
-            <form onSubmit={handleSubmit} className="w-full flex items-center gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="اسأل عن خدمة معينة..."
-                disabled={running}
-                dir="auto"
-              />
-              <Button type="submit" size="icon" disabled={running}>
-                {running ? <Loader2 className="animate-spin" /> : <CornerDownLeft />}
-                <span className="sr-only">إرسال</span>
-              </Button>
-            </form>
-          </SheetFooter>
+                </ScrollArea>
+                <SheetFooter>
+                    <form onSubmit={handleSubmit} className="w-full flex items-center gap-2">
+                    <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="اسأل عن خدمة معينة..."
+                        disabled={running}
+                        dir="auto"
+                    />
+                    <Button type="submit" size="icon" disabled={running}>
+                        {running ? <Loader2 className="animate-spin" /> : <CornerDownLeft />}
+                        <span className="sr-only">إرسال</span>
+                    </Button>
+                    </form>
+                </SheetFooter>
+            </>
+          )}
         </SheetContent>
       </Sheet>
     </>

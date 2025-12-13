@@ -25,7 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from '@/components/ui/badge';
-import { ai } from '@/ai/genkit';
+import { ai, isAiConfigured } from '@/ai/genkit';
 import { cn } from '@/lib/utils';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -64,6 +64,11 @@ export default function ProfilePage() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isGenerating, setIsGenerating] = useState(false);
+    const [aiConfigured, setAiConfigured] = useState(false);
+
+    useEffect(() => {
+        setAiConfigured(isAiConfigured());
+    }, []);
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, 'users', user.uid) : null), [firestore, user]);
     const { data: userData, isLoading: isUserDataLoading } = useDoc<UserType>(userDocRef);
@@ -244,9 +249,11 @@ export default function ProfilePage() {
                                             <FormControl>
                                                 <Input placeholder="https://example.com/image.png" {...field} />
                                             </FormControl>
-                                            <Button type="button" variant="outline" size="icon" onClick={handleAvatarGeneration} disabled={isGenerating} title="توليد صورة بالذكاء الاصطناعي">
-                                                {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                                            </Button>
+                                            {aiConfigured && (
+                                                <Button type="button" variant="outline" size="icon" onClick={handleAvatarGeneration} disabled={isGenerating} title="توليد صورة بالذكاء الاصطناعي">
+                                                    {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
+                                                </Button>
+                                            )}
                                         </div>
                                         <FormMessage />
                                         </FormItem>
