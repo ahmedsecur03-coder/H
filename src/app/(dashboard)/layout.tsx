@@ -142,7 +142,7 @@ export default function DashboardLayout({
   if (isLoading || !user) {
     return (
         <div className="flex min-h-screen w-full">
-            <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
+            <div className="hidden md:block w-64 bg-sidebar border-l p-4">
                 <div className="flex h-12 items-center justify-center px-4 mb-4">
                      <Logo />
                 </div>
