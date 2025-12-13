@@ -32,7 +32,7 @@ import {
   Gift,
   Loader2
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useMemoFirebase as useMemo } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order } from '@/lib/types';
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                 </CardHeader>
                  <CardContent>
                     <Button size="sm" className="w-full" asChild>
-                        <Link href="/add-funds">شحن الرصيد</Link>
+                        <Link href="/dashboard/add-funds">شحن الرصيد</Link>
                     </Button>
                 </CardContent>
             </Card>

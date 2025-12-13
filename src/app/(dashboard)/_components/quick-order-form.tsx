@@ -211,6 +211,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     return (
                         <Button 
                             key={platform} 
+                            type="button"
                             variant={selectedPlatform === platform ? "default" : "outline"}
                             onClick={() => handlePlatformSelect(platform)}
                             className="flex flex-col h-14 md:h-12 md:flex-row"
