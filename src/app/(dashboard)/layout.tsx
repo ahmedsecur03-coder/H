@@ -35,6 +35,7 @@ import { doc } from 'firebase/firestore';
 
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
+  const router = useRouter();
    const appUser = {
       name: user?.displayName || `مستخدم`,
       email: user?.email || "مستخدم مجهول",
@@ -42,12 +43,16 @@ function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
       id: user?.uid || 'N/A'
   };
 
+  const handleAdminNav = () => {
+    router.push('/admin/dashboard');
+  };
+
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="flex items-center gap-2 font-body ml-auto">
              {isAdmin && (
-                <Button variant="outline" size="sm" asChild>
-                    <Link href="/admin/dashboard"><Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول</Link>
+                <Button variant="outline" size="sm" onClick={handleAdminNav}>
+                    <Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول
                 </Button>
              )}
             <UserNav user={appUser} isAdmin={isAdmin} />
@@ -127,6 +132,8 @@ export default function DashboardLayout({
   }, [user, isUserLoading, router]);
   
   const isLoading = isUserLoading || isUserDataLoading;
+  
+  const isAdmin = !isLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
 
   if (isLoading || !user) {
     return (
@@ -156,8 +163,6 @@ export default function DashboardLayout({
         </div>
     );
   }
-  
-  const isAdmin = !isUserDataLoading && (userData?.role === 'admin' || user.email === 'hagaaty@gmail.com');
 
   return (
     <SidebarProvider>

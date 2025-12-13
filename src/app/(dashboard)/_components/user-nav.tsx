@@ -84,14 +84,14 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
             </Link>
           </DropdownMenuItem>
            {isAdmin && (
-            <DropdownMenuItem onClick={handleAdminNav}>
+            <DropdownMenuItem onClick={handleAdminNav} className="cursor-pointer">
               <Shield className="ml-2 h-4 w-4" />
               <span>لوحة تحكم المسؤول</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+        <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">
             <LogOut className="ml-2 h-4 w-4" />
             <span>تسجيل الخروج</span>
         </DropdownMenuItem>
