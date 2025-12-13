@@ -46,10 +46,6 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
     }
   };
 
-  const handleAdminNav = () => {
-    router.push('/admin/dashboard');
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -83,12 +79,6 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
               <span>الإعدادات</span>
             </Link>
           </DropdownMenuItem>
-           {isAdmin && (
-            <DropdownMenuItem onClick={handleAdminNav} className="cursor-pointer">
-              <Shield className="ml-2 h-4 w-4" />
-              <span>لوحة تحكم المسؤول</span>
-            </DropdownMenuItem>
-          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">

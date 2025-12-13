@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -12,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, Megaphone, Briefcase, AppWindow } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -22,6 +23,7 @@ import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 function QuickOrderFormSkeleton() {
     return (
@@ -31,6 +33,11 @@ function QuickOrderFormSkeleton() {
                  <Skeleton className="h-4 w-3/4 mt-2" />
             </CardHeader>
             <CardContent>
+                 <div className="grid grid-cols-3 gap-2 mb-4">
+                     <Skeleton className="h-10 w-full" />
+                     <Skeleton className="h-10 w-full" />
+                     <Skeleton className="h-10 w-full" />
+                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-2">
                     {Array.from({ length: 16 }).map((_, i) => (
                         <Skeleton key={i} className="h-12 w-full" />
@@ -205,6 +212,17 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-6">
+            <div className="grid grid-cols-3 gap-2 mb-4">
+                 <Button variant="outline" asChild>
+                    <Link href="/dashboard/campaigns"><Megaphone className="w-4 h-4 ml-2"/>الحملات الإعلانية</Link>
+                 </Button>
+                 <Button variant="outline" asChild>
+                    <Link href="/agency-accounts"><Briefcase className="w-4 h-4 ml-2"/>خدمات الوكالة</Link>
+                </Button>
+                 <Button variant="outline" asChild>
+                    <Link href="/dashboard/support"><AppWindow className="w-4 h-4 ml-2"/>تصميم المواقع</Link>
+                 </Button>
+            </div>
            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-2">
                 {sortedPlatforms.map(platform => {
                     const Icon = PLATFORM_ICONS[platform] || PLATFORM_ICONS.Default;
@@ -260,12 +278,6 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                             <CardTitle className="text-lg">وصف الخدمة</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
-                            <Alert variant="destructive" className="bg-destructive/10 text-destructive-foreground border-destructive/20">
-                                <AlertTitle className="flex items-center gap-2">🚨 تنبيه</AlertTitle>
-                                <AlertDescription>
-                                تأكد من تقديم طلبك بعناية قبل إرساله، حيث قد لا يكون الإلغاء بعد ذلك ممكنًا في بعض الأحيان.
-                                </AlertDescription>
-                            </Alert>
                              <ScrollArea className="h-40">
                                 <div className="space-y-2 pr-4">
                                      <h4 className="font-semibold mb-2">تفاصيل:</h4>

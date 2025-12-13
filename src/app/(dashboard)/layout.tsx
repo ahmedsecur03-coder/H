@@ -16,6 +16,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubContent,
   useSidebar,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
@@ -32,6 +33,8 @@ import { BottomNavBar } from './_components/bottom-nav';
 import { MobileHeader } from './_components/mobile-header';
 import { ChevronDown, Shield } from 'lucide-react';
 import { doc } from 'firebase/firestore';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getRankForSpend } from '@/lib/service';
 
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
@@ -134,6 +137,7 @@ export default function DashboardLayout({
   const isLoading = isUserLoading || isUserDataLoading;
   
   const isAdmin = !isLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
+  const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
   if (isLoading || !user) {
     return (
@@ -177,6 +181,18 @@ export default function DashboardLayout({
             <NavItems />
           </SidebarMenu>
         </SidebarContent>
+         <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
+             <div className="flex items-center gap-3 p-2">
+                <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                 <div>
+                    <p className="font-semibold text-sm">{user.displayName}</p>
+                    <p className="text-xs text-muted-foreground">{rank.name}</p>
+                 </div>
+            </div>
+        </SidebarFooter>
       </Sidebar>
       
       <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
