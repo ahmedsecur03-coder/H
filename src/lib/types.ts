@@ -92,6 +92,16 @@ export type Deposit = {
     status: 'معلق' | 'مقبول' | 'مرفوض';
 };
 
+export type Withdrawal = {
+    id: string;
+    userId: string;
+    amount: number;
+    method: 'فودافون كاش' | 'Binance Pay';
+    details: Record<string, any>;
+    requestDate: string;
+    status: 'معلق' | 'مقبول' | 'مرفوض';
+};
+
 export type AffiliateTransaction = {
     id: string;
     userId: string;

@@ -16,6 +16,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import React from 'react';
 import { AFFILIATE_LEVELS, getRankForSpend } from '@/lib/service';
+import { WithdrawalDialog } from "./_components/withdrawal-dialog";
 
 
 function AffiliateSkeleton() {
@@ -161,7 +162,7 @@ export default function AffiliatePage() {
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
-    const { data: userData, isLoading: isUserDocLoading } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: isUserDocLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
     useEffect(() => {
         if (typeof window !== 'undefined' && userData?.referralCode) {
@@ -180,7 +181,7 @@ export default function AffiliatePage() {
         });
     };
     
-    if (isLoading || !authUser) {
+    if (isLoading || !authUser || !userData) {
         return <AffiliateSkeleton />;
     }
     
@@ -213,7 +214,9 @@ export default function AffiliatePage() {
                     <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
                 </CardContent>
                  <CardFooter>
-                    <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
+                    <WithdrawalDialog user={userData} onWithdrawalRequest={forceDocUpdate}>
+                       <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
+                    </WithdrawalDialog>
                 </CardFooter>
             </Card>
              <Card>

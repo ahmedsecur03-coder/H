@@ -21,7 +21,8 @@ import {
   Palette,
   Shield,
   History,
-  Home
+  Home,
+  HandCoins
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -57,6 +58,7 @@ export const dashboardNavItems: NestedNavItem[] = [
 export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
     { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
+    { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
     { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
     { href: '/admin/orders', label: 'الطلبات', icon: ShoppingCart },
     { href: '/admin/services', label: 'الخدمات', icon: Package },

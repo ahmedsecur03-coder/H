@@ -312,6 +312,22 @@
         "details"
       ]
     },
+     "Withdrawal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Withdrawal",
+      "type": "object",
+      "description": "Represents a user's request to withdraw affiliate earnings.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the withdrawal entity." },
+        "userId": { "type": "string", "description": "Reference to User. (Relationship: User 1:N Withdrawal)" },
+        "amount": { "type": "number", "description": "Amount requested for withdrawal." },
+        "method": { "type": "string", "enum": ["فودافون كاش", "Binance Pay"], "description": "Payment method for the withdrawal." },
+        "details": { "type": "object", "description": "Withdrawal method specific details (e.g., phone number, Binance ID)." },
+        "requestDate": { "type": "string", "description": "Date and time the withdrawal was requested.", "format": "date-time" },
+        "status": { "type": "string", "enum": ["معلق", "مقبول", "مرفوض"], "description": "Status of the withdrawal request." }
+      },
+      "required": ["id", "userId", "amount", "method", "details", "requestDate", "status"]
+    },
     "AffiliateTransaction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "AffiliateTransaction",
@@ -508,6 +524,12 @@
         "$ref": "#/entities/Deposit"
       },
       "description": "Stores deposit requests made by users. Includes denormalized 'userId' for authorization independence."
+    },
+    "/users/{userId}/withdrawals/{withdrawalId}": {
+      "schema": {
+        "$ref": "#/entities/Withdrawal"
+      },
+      "description": "Stores withdrawal requests made by users for their affiliate earnings."
     },
     "/users/{userId}/affiliateTransactions/{affiliateTransactionId}": {
       "schema": {
