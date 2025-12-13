@@ -83,11 +83,11 @@ function NavItems() {
             </SidebarMenuSubTrigger>
             <SidebarMenuSubContent>
               {item.children.map((child) => (
-                <SidebarMenuSubButton key={child.href} asChild>
-                  <Link href={child.href}>
-                    {child.icon && <child.icon className="w-4 h-4" />}
-                    <span>{child.label}</span>
-                  </Link>
+                 <SidebarMenuSubButton key={child.href} asChild>
+                    <Link href={child.href}>
+                        {child.icon && <child.icon className="w-4 h-4" />}
+                        <span>{child.label}</span>
+                    </Link>
                 </SidebarMenuSubButton>
               ))}
             </SidebarMenuSubContent>
@@ -96,7 +96,7 @@ function NavItems() {
            <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <SidebarMenuButton asChild>
+                 <SidebarMenuButton asChild>
                     <Link href={item.href || '#'}>
                         {item.icon && <item.icon />}
                         <span>{item.label}</span>

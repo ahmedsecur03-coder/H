@@ -23,7 +23,7 @@ export function initializeFirebaseServer() {
   // Return null for services to be handled gracefully by the calling function.
   if (!serviceAccount) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('FIREBASE_SERVICE_ACCOUNT env var not set. Server-side Firebase features will be disabled.');
+      console.warn('FIREBASE_SERVICE_ACCOUNT env var not set. Server-side features (like AI flows and actions) will be disabled. This is expected for local development outside of a Firebase environment.');
     }
     return { firebaseApp: null, firestore: null };
   }

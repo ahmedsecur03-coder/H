@@ -14,10 +14,10 @@ import { generateSeoArticle } from '@/ai/flows/seo-article-flow';
 export async function claimDailyRewardAndGenerateArticle(userId: string): Promise<void> {
     const { firestore } = initializeFirebaseServer();
     if (!firestore) {
-        throw new Error("Firestore is not initialized.");
+        throw new Error("خوادم المكافآت غير متاحة حاليًا، يرجى المحاولة مرة أخرى لاحقًا.");
     }
      if (!process.env.GEMINI_API_KEY) {
-        throw new Error("الموارد قيد التجميع حاليًا، يرجى المحاولة لاحقًا.");
+        throw new Error("الموارد الإبداعية قيد التجميع حاليًا، يرجى المحاولة مرة أخرى لاحقًا.");
     }
 
     const userRef = doc(firestore, 'users', userId);
