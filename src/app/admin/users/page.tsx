@@ -18,7 +18,12 @@ export default function AdminUsersPage() {
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users')) : null), [firestore]);
+  // Corrected and simplified query definition
+  const usersQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'users')) : null),
+    [firestore]
+  );
+  
   const { data: allUsers, isLoading, forceCollectionUpdate } = useCollection<User>(usersQuery);
 
   const filteredUsers = useMemo(() => {
