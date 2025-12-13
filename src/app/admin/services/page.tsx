@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ServiceDialog } from './_components/service-dialog';
+import { ImportDialog } from './_components/import-dialog';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -27,7 +28,7 @@ export default function AdminServicesPage() {
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
 
   const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services')) : null, [firestore]);
-  const { data: services, isLoading } = useCollection<Service>(servicesQuery);
+  const { data: services, isLoading, forceCollectionUpdate } = useCollection<Service>(servicesQuery);
 
   const filteredServices = useMemo(() => {
     if (!services) return [];
@@ -108,7 +109,7 @@ export default function AdminServicesPage() {
              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
                 <h3 className="mt-4 font-headline text-2xl">{searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{searchTerm ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة."}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{searchTerm ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة أو استيرادها."}</p>
             </div>
           </TableCell>
         </TableRow>
@@ -152,7 +153,9 @@ export default function AdminServicesPage() {
           <p className="text-muted-foreground">إضافة وتعديل وحذف خدمات المنصة.</p>
         </div>
         <div className="flex gap-2">
-           <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد بالجملة</Button>
+           <ImportDialog onImportComplete={forceCollectionUpdate}>
+             <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد بالجملة</Button>
+           </ImportDialog>
             <ServiceDialog
                 open={isDialogOpen && !selectedService}
                 onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}

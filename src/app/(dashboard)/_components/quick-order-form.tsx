@@ -52,7 +52,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>('Instagram');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
   const [link, setLink] = useState('');
@@ -66,7 +66,16 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
   const { platforms, categories, services } = useMemo(() => {
     if (!allServices) return { platforms: [], categories: [], services: [] };
     
+    const platformOrder = ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'Telegram', 'X (Twitter)', 'Snapchat', 'Kwai', 'VK', 'WhatsApp', 'خدمات الألعاب', 'خرائط جوجل', 'Threads', 'Kick', 'Clubhouse', 'زيارات مواقع'];
     const uniquePlatforms = [...new Set(allServices.map(s => s.platform))];
+    uniquePlatforms.sort((a, b) => {
+        const indexA = platformOrder.indexOf(a);
+        const indexB = platformOrder.indexOf(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
+
 
     let categories: string[] = [];
     if (selectedPlatform) {
@@ -202,7 +211,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     return <QuickOrderFormSkeleton />;
   }
 
-  const sortedPlatforms = platforms.sort((a,b) => a.localeCompare(b));
+  const sortedPlatforms = platforms;
 
   return (
     <Card>
@@ -212,30 +221,31 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-6">
-            <div className="grid grid-cols-3 gap-2 mb-4">
-                 <Button variant="outline" asChild>
+            <div className="flex flex-wrap gap-2 justify-center mb-4">
+                 <Button variant="outline" asChild size="sm">
                     <Link href="/dashboard/campaigns"><Megaphone className="w-4 h-4 ml-2"/>الحملات الإعلانية</Link>
                  </Button>
-                 <Button variant="outline" asChild>
+                 <Button variant="outline" asChild size="sm">
                     <Link href="/agency-accounts"><Briefcase className="w-4 h-4 ml-2"/>خدمات الوكالة</Link>
                 </Button>
-                 <Button variant="outline" asChild>
+                 <Button variant="outline" asChild size="sm">
                     <Link href="/dashboard/support"><AppWindow className="w-4 h-4 ml-2"/>تصميم المواقع</Link>
                  </Button>
             </div>
-           <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-2">
+           <div className="flex flex-wrap gap-2 justify-center">
                 {sortedPlatforms.map(platform => {
                     const Icon = PLATFORM_ICONS[platform] || PLATFORM_ICONS.Default;
                     return (
                         <Button 
                             key={platform} 
                             type="button"
+                            size="sm"
                             variant={selectedPlatform === platform ? "default" : "outline"}
                             onClick={() => handlePlatformSelect(platform)}
-                            className="flex flex-col h-14 md:h-12 md:flex-row"
+                            className="flex-grow"
                         >
-                            <Icon className="w-5 h-5 mb-1 md:mb-0 md:ml-2"/>
-                            <span className="text-xs md:text-sm">{platform}</span>
+                            <Icon className="w-4 h-4 ml-2"/>
+                            <span>{platform}</span>
                         </Button>
                     );
                 })}

@@ -23,15 +23,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Flame, ShieldCheck, RefreshCcw, Users } from 'lucide-react';
+import { Search, Flame, ShieldCheck, RefreshCcw, Users, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import React from 'react';
@@ -58,29 +57,82 @@ function ServicesPageSkeleton() {
                     <Skeleton className="h-8 w-full" />
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead><Skeleton className="h-5 w-24"/></TableHead>
-                                <TableHead><Skeleton className="h-5 w-24"/></TableHead>
-                                <TableHead><Skeleton className="h-5 w-24"/></TableHead>
-                                <TableHead><Skeleton className="h-5 w-16"/></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {Array.from({ length: 10 }).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-20" /></TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
+                    <div className="flex items-center gap-4 py-4">
+                        <Skeleton className="h-10 flex-1" />
+                    </div>
+                     <Skeleton className="h-64 w-full" />
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+function CategoryAccordion({ services, searchTerm, handleOrderNow }: { services: Service[], searchTerm: string, handleOrderNow: (id: string) => void }) {
+    const categories = useMemo(() => {
+        const grouped: { [key: string]: Service[] } = {};
+        services.forEach(service => {
+            if (!grouped[service.category]) {
+                grouped[service.category] = [];
+            }
+            grouped[service.category].push(service);
+        });
+        return grouped;
+    }, [services]);
+    
+    const filteredCategories = useMemo(() => {
+        if (!searchTerm) return Object.keys(categories);
+        return Object.keys(categories).filter(category =>
+            category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            categories[category].some(s => s.id.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+    }, [categories, searchTerm]);
+
+    if (filteredCategories.length === 0) {
+        return <div className="h-24 text-center flex items-center justify-center text-muted-foreground">لا توجد خدمات تطابق بحثك.</div>;
+    }
+
+    return (
+        <Accordion type="multiple" className="w-full">
+            {filteredCategories.map(category => (
+                <AccordionItem value={category} key={category}>
+                    <AccordionTrigger>{category} ({categories[category].length})</AccordionTrigger>
+                    <AccordionContent>
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>الخدمة</TableHead>
+                                    <TableHead className="w-32 text-center">السعر/1000</TableHead>
+                                    <TableHead className="w-48 text-center">الحدود</TableHead>
+                                    <TableHead className="w-28 text-left"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {categories[category].map((service) => (
+                                     <TableRow key={service.id}>
+                                        <TableCell>
+                                            <div className="font-medium flex items-center gap-2">
+                                                <span>ID: {service.id}</span>
+                                                {service.guarantee && <TooltipProvider><Tooltip><TooltipTrigger><ShieldCheck className="h-4 w-4 text-green-400" /></TooltipTrigger><TooltipContent>خدمة مع ضمان</TooltipContent></Tooltip></TooltipProvider>}
+                                                {service.speed === 'فوري' && <TooltipProvider><Tooltip><TooltipTrigger><Flame className="h-4 w-4 text-orange-400" /></TooltipTrigger><TooltipContent>بدء فوري</TooltipContent></Tooltip></TooltipProvider>}
+                                                {service.refill && <TooltipProvider><Tooltip><TooltipTrigger><RefreshCcw className="h-4 w-4 text-blue-400" /></TooltipTrigger><TooltipContent>إعادة تعبئة مدعومة</TooltipContent></Tooltip></TooltipProvider>}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground mt-1">{service.category}</div>
+                                        </TableCell>
+                                        <TableCell className="text-center font-mono text-sm">${service.price.toFixed(4)}</TableCell>
+                                        <TableCell className="text-center text-muted-foreground text-sm">{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
+                                        <TableCell className="text-left">
+                                            <Button variant="default" size="sm" onClick={() => handleOrderNow(service.id)}>
+                                                اطلب الآن
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                         </Table>
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
     );
 }
 
@@ -90,7 +142,6 @@ export default function ServicesPage() {
   const { user } = useUser();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('default');
   const [activePlatform, setActivePlatform] = useState('Instagram');
 
   const servicesQuery = useMemoFirebase(
@@ -100,25 +151,10 @@ export default function ServicesPage() {
   
   const { data: allServices, isLoading } = useCollection<Service>(servicesQuery);
 
-  const filteredAndSortedServices = useMemo(() => {
+  const platformServices = useMemo(() => {
     if (!allServices) return [];
-    
-    let filtered = allServices.filter(service => service.platform === activePlatform);
-
-    if (searchTerm) {
-      filtered = filtered.filter((service) => {
-        const serviceName = `${service.id} ${service.category}`.toLowerCase();
-        return serviceName.includes(searchTerm.toLowerCase());
-      });
-    }
-
-    if (sortOrder === 'price_asc') {
-      return [...filtered].sort((a, b) => a.price - b.price);
-    }
-    
-    return filtered;
-
-  }, [allServices, searchTerm, sortOrder, activePlatform]);
+    return allServices.filter(service => service.platform === activePlatform);
+  }, [allServices, activePlatform]);
 
 
   const handleOrderNow = (serviceId: string) => {
@@ -133,7 +169,6 @@ export default function ServicesPage() {
   const handlePlatformChange = useCallback((platform: string) => {
     setActivePlatform(platform);
     setSearchTerm('');
-    setSortOrder('default');
   }, []);
 
 
@@ -164,70 +199,27 @@ export default function ServicesPage() {
         {isLoading ? <ServicesPageSkeleton /> : (
             <Card>
                 <CardHeader>
-                    <CardTitle>قائمة خدمات {activePlatform}</CardTitle>
-                    <CardDescription>استخدم البحث والفرز للعثور على الخدمة التي تريدها بسرعة.</CardDescription>
-                    <div className="flex items-center gap-4 pt-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder={`ابحث في خدمات ${activePlatform}...`}
-                                className="pr-10"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <Select value={sortOrder} onValueChange={setSortOrder}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="فرز حسب" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="default">افتراضي</SelectItem>
-                                <SelectItem value="price_asc">الأرخص أولاً</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <CardTitle className="flex items-center gap-2">
+                        <ActivePlatformIcon className="w-6 h-6" />
+                        <span>قائمة خدمات {activePlatform}</span>
+                    </CardTitle>
+                    <CardDescription>استخدم البحث للعثور على فئة أو خدمة محددة.</CardDescription>
+                     <div className="relative pt-4">
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={`ابحث في خدمات ${activePlatform}...`}
+                            className="pr-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>الخدمة</TableHead>
-                                <TableHead className="w-32 text-center">السعر/1000</TableHead>
-                                <TableHead className="w-48 text-center">الحدود</TableHead>
-                                <TableHead className="w-28 text-left"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredAndSortedServices.length > 0 ? (
-                                filteredAndSortedServices.map((service) => (
-                                    <TableRow key={service.id}>
-                                        <TableCell>
-                                            <div className="font-medium flex items-center gap-2">
-                                                <span>{service.category}</span>
-                                                {service.guarantee && <TooltipProvider><Tooltip><TooltipTrigger><ShieldCheck className="h-4 w-4 text-green-400" /></TooltipTrigger><TooltipContent>خدمة مع ضمان</TooltipContent></Tooltip></TooltipProvider>}
-                                                {service.speed === 'فوري' && <TooltipProvider><Tooltip><TooltipTrigger><Flame className="h-4 w-4 text-orange-400" /></TooltipTrigger><TooltipContent>بدء فوري</TooltipContent></Tooltip></TooltipProvider>}
-                                                {service.refill && <TooltipProvider><Tooltip><TooltipTrigger><RefreshCcw className="h-4 w-4 text-blue-400" /></TooltipTrigger><TooltipContent>إعادة تعبئة مدعومة</TooltipContent></Tooltip></TooltipProvider>}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground mt-1">ID: {service.id}</div>
-                                        </TableCell>
-                                        <TableCell className="text-center font-mono text-sm">${service.price.toFixed(4)}</TableCell>
-                                        <TableCell className="text-center text-muted-foreground text-sm">{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
-                                        <TableCell className="text-left">
-                                            <Button variant="default" size="sm" onClick={() => handleOrderNow(service.id)}>
-                                                اطلب الآن
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                                        لا توجد خدمات تطابق بحثك في هذه الفئة.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    <CategoryAccordion 
+                        services={platformServices} 
+                        searchTerm={searchTerm} 
+                        handleOrderNow={handleOrderNow} 
+                    />
                 </CardContent>
             </Card>
         )}
