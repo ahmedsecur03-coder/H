@@ -55,7 +55,7 @@
         },
         "referrerId": {
           "type": "string",
-          "description": "Reference to the User who referred this user. (Relationship: User 1:N User (referrals))"
+          "description": "Reference to the User who referred this user."
         },
         "createdAt": {
           "type": "string",

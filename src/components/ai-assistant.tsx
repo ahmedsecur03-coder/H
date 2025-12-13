@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+import { useUser } from '@/firebase';
 import {
   Sheet,
   SheetContent,
@@ -26,6 +28,7 @@ type Message = {
 };
 
 export default function AiAssistant() {
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [running, setRunning] = useState(false);
@@ -63,7 +66,7 @@ export default function AiAssistant() {
     setRunning(true);
 
     try {
-      const response = await aiSupportUsers({ query: input });
+      const response = await aiSupportUsers({ query: input }, user?.uid || null);
       const botMessage: Message = { role: 'model', content: response.response };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {

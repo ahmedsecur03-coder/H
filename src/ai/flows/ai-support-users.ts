@@ -13,8 +13,6 @@ import { initializeFirebaseServer } from '@/firebase/server';
 import type { Service, Order, Ticket } from '@/lib/types';
 import { AISupportUsersInputSchema, AISupportUsersOutputSchema, type AISupportUsersInput, type AISupportUsersOutput } from './ai-support-types';
 import { z } from 'zod';
-import { getAuth } from 'firebase-admin/auth';
-import { initializeFirebase } from '@/firebase';
 
 
 // Tool to get available services from Firestore
@@ -157,13 +155,11 @@ const createSupportTicket = ai.defineTool(
     }
 );
 
+const AISupportServerInputSchema = AISupportUsersInputSchema.extend({
+    userId: z.string().describe("The user's unique ID."),
+});
 
-export async function aiSupportUsers(input: AISupportUsersInput): Promise<AISupportUsersOutput> {
-  // This is a workaround to get the user's ID on the server.
-  // In a real app, you'd likely pass the user's ID from the client.
-  const { auth } = initializeFirebase();
-  const userId = auth.currentUser?.uid;
-
+export async function aiSupportUsers(input: AISupportUsersInput, userId: string | null): Promise<AISupportUsersOutput> {
   if (!userId) {
     return { response: "يرجى تسجيل الدخول أولاً لاستخدام المساعد الذكي." };
   }
@@ -175,10 +171,6 @@ export async function aiSupportUsers(input: AISupportUsersInput): Promise<AISupp
 
   return aiSupportUsersFlow(flowInput);
 }
-
-const AISupportServerInputSchema = AISupportUsersInputSchema.extend({
-    userId: z.string().describe("The user's unique ID."),
-});
 
 const prompt = ai.definePrompt({
   name: 'aiSupportUsersPrompt',
