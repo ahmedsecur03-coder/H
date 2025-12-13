@@ -46,6 +46,10 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
     }
   };
 
+  const handleAdminNav = () => {
+    router.push('/admin/dashboard');
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -80,11 +84,9 @@ export function UserNav({ user, isAdmin = false }: UserNavProps) {
             </Link>
           </DropdownMenuItem>
            {isAdmin && (
-            <DropdownMenuItem asChild>
-              <Link href="/admin/dashboard">
-                <Shield className="ml-2 h-4 w-4" />
-                <span>لوحة تحكم المسؤول</span>
-              </Link>
+            <DropdownMenuItem onClick={handleAdminNav}>
+              <Shield className="ml-2 h-4 w-4" />
+              <span>لوحة تحكم المسؤول</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
