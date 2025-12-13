@@ -1,32 +1,18 @@
+
 'use server';
 
 /**
  * @fileOverview This file defines the AI flow for generating a long-form SEO-optimized article.
  *
  * - generateSeoArticle - A function that creates a blog post about a relevant digital marketing topic.
- * - SeoArticleInput - The input type for the generation function.
- * - SeoArticleOutput - The return type for the generation function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-export const SeoArticleInputSchema = z.object({
-  topicSuggestion: z.string().describe('A suggestion for the article topic, e.g., "TikTok growth strategies".'),
-});
-export type SeoArticleInput = z.infer<typeof SeoArticleInputSchema>;
-
-export const SeoArticleOutputSchema = z.object({
-  title: z.string().describe('The final, catchy, SEO-optimized title for the blog post.'),
-  content: z.string().describe('The full content of the blog post, written in Arabic, at least 800 words long, with markdown for formatting (headings, lists, etc.).'),
-});
-export type SeoArticleOutput = z.infer<typeof SeoArticleOutputSchema>;
-
+import { SeoArticleInputSchema, SeoArticleOutputSchema, type SeoArticleInput, type SeoArticleOutput } from './seo-article-types';
 
 export async function generateSeoArticle(input: SeoArticleInput): Promise<SeoArticleOutput> {
     return seoArticleFlow(input);
 }
-
 
 const prompt = ai.definePrompt({
   name: 'seoArticlePrompt',
@@ -53,7 +39,6 @@ Instructions:
 
 Provide ONLY the JSON output with the 'title' and 'content' fields.`,
 });
-
 
 const seoArticleFlow = ai.defineFlow(
   {

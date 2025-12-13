@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generateSeoArticle, SeoArticleOutputSchema } from '@/ai/flows/seo-article-flow';
-import type { z } from 'zod';
+import { generateSeoArticle } from '@/ai/flows/seo-article-flow';
+import type { SeoArticleOutput } from '@/ai/flows/seo-article-types';
 
-type SeoArticleOutput = z.infer<typeof SeoArticleOutputSchema>;
 
 interface AiPostDialogProps {
     onArticleGenerated: (article: SeoArticleOutput) => void;

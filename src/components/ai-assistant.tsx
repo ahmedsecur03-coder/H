@@ -14,7 +14,7 @@ import { Bot, User, CornerDownLeft, Loader2, Sparkles } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
-import { aiSupportUsers as aiSupportUsersFlow } from '@/ai/flows/ai-support-users';
+import { aiSupportUsers } from '@/ai/flows/ai-support-users';
 import ReactMarkdown from 'react-markdown';
 
 // Define the structure for a single message in the chat
@@ -55,7 +55,7 @@ export default function AiAssistant() {
     setRunning(true);
 
     try {
-      const response = await aiSupportUsersFlow({ query: input });
+      const response = await aiSupportUsers({ query: input });
       const botMessage: Message = { role: 'model', content: response.response };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {

@@ -5,15 +5,14 @@
  * @fileOverview This file defines the AI support user flow for the application.
  *
  * - aiSupportUsers - A function that provides AI support to users.
- * - AISupportUsersInput - The input type for the aiSupportUsers function.
- * - AISupportUsersOutput - The return type for the aiSupportUsers function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import { collection, getDocs, query, where, orderBy, limit, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import type { Service, Order, Ticket } from '@/lib/types';
+import { AISupportUsersInputSchema, AISupportUsersOutputSchema, type AISupportUsersInput, type AISupportUsersOutput } from './ai-support-types';
+import { z } from 'zod';
 
 // Tool to get available services from Firestore
 const getAvailableServices = ai.defineTool(
@@ -149,16 +148,6 @@ const createSupportTicket = ai.defineTool(
     }
 );
 
-
-const AISupportUsersInputSchema = z.object({
-  query: z.string().describe('The user query for AI support.'),
-});
-export type AISupportUsersInput = z.infer<typeof AISupportUsersInputSchema>;
-
-const AISupportUsersOutputSchema = z.object({
-  response: z.string().describe('The AI support response to the user query.'),
-});
-export type AISupportUsersOutput = z.infer<typeof AISupportUsersOutputSchema>;
 
 export async function aiSupportUsers(input: AISupportUsersInput): Promise<AISupportUsersOutput> {
   return aiSupportUsersFlow(input);
