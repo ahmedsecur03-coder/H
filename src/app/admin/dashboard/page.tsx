@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -16,8 +15,8 @@ import {
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, collectionGroup, query, where } from 'firebase/firestore';
-import type { Order, User, Ticket } from '@/lib/types';
+import { collection, query } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -72,7 +71,10 @@ function processPerformanceData(users: User[]) {
 export default function AdminDashboardPage() {
     const firestore = useFirestore();
 
-    const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
+    const usersQuery = useMemoFirebase(
+      () => (firestore ? query(collection(firestore, 'users')) : null),
+      [firestore]
+    );
     const { data: allUsers, isLoading: isUsersLoading } = useCollection<User>(usersQuery);
 
     const isLoading = isUsersLoading;
@@ -89,9 +91,10 @@ export default function AdminDashboardPage() {
 
     const totalUsersCount = allUsers?.length ?? 0;
     const totalNewUsers = useMemo(() => {
+        if (!allUsers) return 0;
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        return allUsers?.filter(user => user.createdAt && new Date(user.createdAt) > oneWeekAgo).length ?? 0;
+        return allUsers.filter(user => user.createdAt && new Date(user.createdAt) > oneWeekAgo).length;
     }, [allUsers]);
     
 
