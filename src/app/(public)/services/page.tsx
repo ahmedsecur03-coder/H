@@ -230,3 +230,7 @@ export default function ServicesPage() {
                     </Table>
                 </CardContent>
             </Card>
+        )}
+    </div>
+  );
+}
