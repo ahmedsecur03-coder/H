@@ -36,7 +36,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User as UserType, Order } from '@/lib/types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend, claimDailyRewardAndGenerateArticle } from '@/lib/service';
