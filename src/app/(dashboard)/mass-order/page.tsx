@@ -208,7 +208,7 @@ export default function MassOrderPage() {
                     <CardTitle>إدخال الطلبات</CardTitle>
                     <CardDescription>
                         اتبع التنسيق التالي لكل طلب في سطر منفصل: <code>id_الخدمة|الرابط|الكمية</code><br/>
-                        ستحصل على خصم <span className="font-bold text-primary">{rank.discount}%</span> على جميع الطلبات لرتبتك الحالية ({rank.name}).
+                       {rank.discount > 0 && `ستحصل على خصم <span className="font-bold text-primary">${rank.discount}%</span> على جميع الطلبات لرتبتك الحالية (${rank.name}).`}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -288,5 +288,3 @@ export default function MassOrderPage() {
         </div>
     );
 }
-
-    

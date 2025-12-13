@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 function QuickOrderFormSkeleton() {
     return (
@@ -49,8 +50,11 @@ function QuickOrderFormSkeleton() {
 export function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
   const firestore = useFirestore();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const platformFromUrl = searchParams.get('platform');
 
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>('Instagram');
+
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(platformFromUrl || 'Instagram');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>();
   const [link, setLink] = useState('');
@@ -269,7 +273,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                                     <SelectItem key={s.id} value={s.id}>
                                         <div className="flex justify-between w-full">
                                             <span>{s.id} - {s.category}</span>
-                                            <span className="font-bold text-primary mr-4">${s.price}/1k</span>
+                                            <span className="font-bold text-primary mr-4">${s.price.toFixed(4)}/1k</span>
                                         </div>
                                     </SelectItem>
                                 ))}
@@ -315,7 +319,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                             <span className="font-bold">السعر:</span>
                             <span className="font-bold">${cost.toFixed(4)}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">(خصم {discountPercentage*100}%)</p>
+                        {discountPercentage > 0 && <p className="text-xs text-muted-foreground">(خصم {discountPercentage*100}%)</p>}
                     </div>
 
                     <Button type="submit" className="w-full text-lg py-6" disabled={isSubmitting}>

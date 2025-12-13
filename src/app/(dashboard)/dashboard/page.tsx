@@ -44,6 +44,7 @@ import { claimDailyRewardAndGenerateArticle } from '@/lib/actions';
 import Link from 'next/link';
 import { QuickOrderForm } from '../_components/quick-order-form';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
 
 
 function DashboardSkeleton() {
@@ -140,6 +141,9 @@ function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: () => voi
 export default function DashboardPage() {
   const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
+  const platformFromUrl = searchParams.get('platform');
+
 
   const userDocRef = useMemoFirebase(
     () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
