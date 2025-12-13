@@ -91,21 +91,29 @@ export default function AdminLayout({
 
   const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
   const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
+  
+  const isLoading = isUserLoading || isUserDataLoading;
+  
+  // This logic now mirrors the one in the main dashboard layout for consistency.
+  // It checks the role from Firestore but also includes the temporary email-based override.
+  const isAdmin = !isLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
 
   useEffect(() => {
-    if (!isUserLoading && !isUserDataLoading) {
+    // Wait until loading is complete before checking permissions
+    if (!isLoading) {
       if (!user) {
+        // If no user is logged in, redirect to login
         router.push('/login');
-      } else if (userData?.role !== 'admin') {
+      } else if (!isAdmin) {
+        // If the user is logged in but is not an admin, redirect to the user dashboard
         router.push('/dashboard');
       }
     }
-  }, [user, userData, isUserLoading, isUserDataLoading, router]);
+  }, [user, isAdmin, isLoading, router]);
 
-  const isLoading = isUserLoading || isUserDataLoading;
 
   // Show a loading skeleton while checking auth and permissions
-  if (isLoading || !user || userData?.role !== 'admin') {
+  if (isLoading || !isAdmin) {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
