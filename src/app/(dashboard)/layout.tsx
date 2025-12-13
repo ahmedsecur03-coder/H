@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from 'next/link';
@@ -156,7 +157,7 @@ export default function DashboardLayout({
     );
   }
   
-  const isAdmin = userData?.role === 'admin';
+  const isAdmin = !isUserDataLoading && userData?.role === 'admin';
 
   return (
     <SidebarProvider>
