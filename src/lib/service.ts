@@ -1,6 +1,4 @@
 
-'use server';
-
 import type { User, Order, BlogPost } from '@/lib/types';
 import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
@@ -242,5 +240,3 @@ export async function claimDailyRewardAndGenerateArticle(userId: string): Promis
         transaction.set(newPostRef, newPostData);
     });
 }
-
-    
