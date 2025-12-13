@@ -4,87 +4,61 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // --- Helper Functions ---
+
+    // Admin check: List of admin emails
+    function isAdmin() {
+      let adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
+      return request.auth != null && request.auth.token.email in adminEmails;
+    }
+
+    // Ownership check
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    function isCreatingOwnProfile(userId) {
-      return isOwner(userId) && request.method == 'create';
-    }
-    
-    function isUpdatingOwnProfile(userId) {
-      // Users can only update specific, non-critical fields.
-      // They cannot change their rank, balance, totalSpent, etc.
-      let modifiableFields = ['name', 'avatarUrl', 'notificationPreferences'];
-      return isOwner(userId) 
-        && request.method == 'update'
-        && request.resource.data.keys().hasOnly(modifiableFields);
-    }
-    
-    function isTransferringBalance(userId) {
-      // Users can only decrease their balance and increase their adBalance.
-      return isOwner(userId)
-        && request.method == 'update'
-        && request.resource.data.keys().hasAll(['balance', 'adBalance'])
-        && request.resource.data.size() == 2
-        && request.resource.data.balance < resource.data.balance;
-    }
+    // --- Rules for Specific Collections ---
 
-    // --- Collections ---
-
-    // Users: Users can create their own profile, update a limited set of fields,
-    // and transfer funds from their main balance to ad balance. Only the user can read their own profile.
+    // USERS collection:
+    // Read: Admins can read any user profile. Users can only read their own.
+    // Create: Users can create their own profile.
+    // Update: Admins can update any field. Users can only update specific, non-critical fields.
+    // Delete: Only admins can delete user profiles.
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow write: if isCreatingOwnProfile(userId) || isUpdatingOwnProfile(userId) || isTransferringBalance(userId);
+      allow read: if isAdmin() || isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isAdmin() || 
+                       (isOwner(userId) && request.resource.data.keys().hasOnly(['name', 'avatarUrl', 'notificationPreferences'])) ||
+                       (isOwner(userId) && request.resource.data.keys().hasAll(['balance', 'adBalance']) && request.resource.data.size() == 2 && request.resource.data.balance < resource.data.balance);
+      allow delete: if isAdmin();
+
+      // USER Subcollections:
+      // Admins have full access. Users can only access their own subcollections.
+      match /{subcollection}/{docId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
     }
 
-    // Services: Publicly readable by all authenticated users. Writable only by admins (not enforced here yet).
+    // SERVICES, BLOGS, SETTINGS:
+    // Read: Any authenticated user can read.
+    // Write: Only admins can write.
     match /services/{serviceId} {
       allow read: if request.auth != null;
-      allow write: if false; // To be managed by admin SDK in the future
+      allow write: if isAdmin();
     }
-
-    // Blog Posts: Publicly readable by all authenticated users. Writable only by admins.
     match /blogPosts/{blogPostId} {
         allow read: if request.auth != null;
-        allow write: if false; // To be managed by admin SDK in the future
+        allow write: if isAdmin();
     }
-    
-    // Settings: Readable by all authenticated users. Writable only by admins.
-    match /settings/global {
+    match /settings/{settingId} {
         allow read: if request.auth != null;
-        allow write: if false; // To be managed by admin SDK in the future
+        allow write: if isAdmin();
     }
 
-    // System Logs: No client access. Writable only by admin functions.
+    // SYSTEM LOGS:
+    // Read/Write: Only admins can access.
     match /systemLogs/{logId} {
-        allow read, write: if false;
-    }
-
-
-    // --- User-owned Subcollections ---
-    // The user must be the owner of the parent user document.
-
-    match /users/{userId}/orders/{orderId} {
-      allow read, create, update, delete: if isOwner(userId);
-    }
-    
-    match /users/{userId}/campaigns/{campaignId} {
-      allow read, create, update, delete: if isOwner(userId);
-    }
-
-    match /users/{userId}/deposits/{depositId} {
-      allow read, create, update, delete: if isOwner(userId);
-    }
-    
-    match /users/{userId}/affiliateTransactions/{transactionId} {
-      allow read, create, update, delete: if isOwner(userId);
-    }
-
-    match /users/{userId}/tickets/{ticketId} {
-      allow read, create, update, delete: if isOwner(userId);
+        allow read, write: if isAdmin();
     }
   }
 }
