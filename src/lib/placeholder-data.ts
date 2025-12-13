@@ -32,12 +32,12 @@ export const publicNavItems: NestedNavItem[] = [
     { 
       label: 'الخدمات',
       icon: Package,
-      href: '#', // Add a placeholder href
+      href: '/services',
       children: [
-        { href: '/services', label: 'خدمات SMM', icon: Users },
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
-        { href: '/agency-accounts', label: 'حسابات إعلانية وكالة', icon: Briefcase },
-        { href: '/dashboard/support', label: 'تصميم المواقع والتطبيقات', icon: AppWindow },
+        { href: '/services', label: 'جميع خدمات SMM', description: 'تصفح كل خدمات التسويق عبر وسائل التواصل الاجتماعي.', icon: Users },
+        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك على جوجل، فيسبوك، وتيك توك.', icon: Megaphone },
+        { href: '/agency-accounts', label: 'حسابات إعلانية (وكالة)', description: 'حسابات قوية وموثوقة للإنفاق العالي.', icon: Briefcase },
+        { href: '/dashboard/support', label: 'تصميم المواقع والتطبيقات', description: 'اطلب تصميم موقع أو تطبيق احترافي.', icon: AppWindow },
       ]
     },
     { href: '/blog', label: 'المدونة', icon: BookOpen },

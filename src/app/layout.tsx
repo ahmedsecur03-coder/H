@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { PT_Sans } from 'next/font/google';
+import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
 import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
+import { ThemeProvider } from '@/components/theme-provider';
 
-const fontSans = PT_Sans({
-  subsets: ['latin'],
+const fontSans = Tajawal({
+  subsets: ['arabic'],
   weight: ['400', '700'],
   variable: '--font-sans',
 });
@@ -31,16 +32,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className={cn('font-sans antialiased bg-background', fontSans.variable)}>
-        <FirebaseClientProvider>
-          {children}
-          <DynamicAiAssistant />
-          <Toaster />
-        </FirebaseClientProvider>
+         <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FirebaseClientProvider>
+            {children}
+            <DynamicAiAssistant />
+            <Toaster />
+          </FirebaseClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

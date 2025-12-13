@@ -56,6 +56,7 @@ export type NavItem = {
   href: string;
   label: string;
   icon: React.ElementType;
+  description?: string;
 };
 
 export type NestedNavItem = NavItem & {

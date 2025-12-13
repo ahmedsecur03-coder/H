@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { LogIn, UserPlus, ChevronDown } from 'lucide-react';
+import { LogIn, UserPlus } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
@@ -21,6 +21,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -79,23 +80,26 @@ function Header() {
                       <NavigationMenuContent>
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                           {item.children.map((component) => (
-                             <ListItem key={component.label} href={component.href} title={component.label} />
+                             <ListItem key={component.label} href={component.href} title={component.label}>
+                               {component.description}
+                             </ListItem>
                           ))}
                         </ul>
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <NavigationMenuLink asChild active={pathname === item.href}>
-                      <Link href={item.href} className={navigationMenuTriggerStyle()}>
-                        {item.label}
-                      </Link>
-                    </NavigationMenuLink>
+                    <Link href={item.href} legacyBehavior passHref>
+                        <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), pathname === item.href ? "bg-accent text-accent-foreground" : "")}>
+                            {item.label}
+                        </NavigationMenuLink>
+                    </Link>
                   )}
                 </NavigationMenuItem>
               ))}
             </NavigationMenuList>
           </NavigationMenu>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+            <ThemeToggle />
           {isUserLoading ? (
             <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
           ) : user ? (
