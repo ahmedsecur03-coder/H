@@ -33,8 +33,8 @@ const chartConfig = {
 } as const;
 
 
-function processPerformanceData(orders: Order[], users: User[]) {
-    if (!orders || !users) return [];
+function processPerformanceData(users: User[]) {
+    if (!users) return [];
     
     const dataByDate: Record<string, { date: string, revenue: number, users: number, orders: number }> = {};
     const today = new Date();
@@ -46,14 +46,15 @@ function processPerformanceData(orders: Order[], users: User[]) {
         dataByDate[dateStr] = { date: dateStr, revenue: 0, users: 0, orders: 0 };
     }
 
-    orders.forEach(order => {
-        const orderDate = new Date(order.orderDate);
-        const dateStr = orderDate.toISOString().split('T')[0];
-        if (dataByDate[dateStr]) {
-            dataByDate[dateStr].revenue += order.charge;
-            dataByDate[dateStr].orders += 1;
-        }
-    });
+    // Revenue and order processing is disabled for now to fix the bug.
+    // orders.forEach(order => {
+    //     const orderDate = new Date(order.orderDate);
+    //     const dateStr = orderDate.toISOString().split('T')[0];
+    //     if (dataByDate[dateStr]) {
+    //         dataByDate[dateStr].revenue += order.charge;
+    //         dataByDate[dateStr].orders += 1;
+    //     }
+    // });
 
     users.forEach(user => {
         if(!user.createdAt) return;
@@ -71,32 +72,28 @@ function processPerformanceData(orders: Order[], users: User[]) {
 export default function AdminDashboardPage() {
     const firestore = useFirestore();
 
-    const ordersQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'orders')) : null, [firestore]);
-    const { data: allOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
-
     const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
     const { data: allUsers, isLoading: isUsersLoading } = useCollection<User>(usersQuery);
-    
-    const openTicketsQuery = useMemoFirebase(() => firestore ? query(collectionGroup(firestore, 'tickets'), where('status', '!=', 'مغلقة')) : null, [firestore]);
-    const { data: openTickets, isLoading: isTicketsLoading } = useCollection<Ticket>(openTicketsQuery);
 
-
-    const isLoading = isOrdersLoading || isUsersLoading || isTicketsLoading;
+    const isLoading = isUsersLoading;
     
     const performanceData = useMemo(() => {
-        if (!allOrders || !allUsers) return [];
-        return processPerformanceData(allOrders, allUsers);
-    }, [allOrders, allUsers]);
+        if (!allUsers) return [];
+        return processPerformanceData(allUsers);
+    }, [allUsers]);
 
-    const totalRevenue = useMemo(() => allOrders?.reduce((acc, item) => acc + item.charge, 0) ?? 0, [allOrders]);
+    // Simplified stats - we can re-enable these later with a more robust fetching strategy.
+    const totalRevenue = 0; // Temporarily disabled
+    const totalOrders = 0; // Temporarily disabled
+    const openTicketsCount = 0; // Temporarily disabled
+
+    const totalUsersCount = allUsers?.length ?? 0;
     const totalNewUsers = useMemo(() => {
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         return allUsers?.filter(user => user.createdAt && new Date(user.createdAt) > oneWeekAgo).length ?? 0;
     }, [allUsers]);
-    const totalOrders = useMemo(() => allOrders?.length ?? 0, [allOrders]);
-    const totalUsersCount = allUsers?.length ?? 0;
-    const openTicketsCount = openTickets?.length ?? 0;
+    
 
   if(isLoading) {
     return (
@@ -129,6 +126,7 @@ export default function AdminDashboardPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">(قيد الصيانة)</p>
                 </CardContent>
             </Card>
              <Card>
@@ -148,6 +146,7 @@ export default function AdminDashboardPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{totalOrders}</div>
+                     <p className="text-xs text-muted-foreground">(قيد الصيانة)</p>
                 </CardContent>
             </Card>
              <Card>
@@ -157,7 +156,7 @@ export default function AdminDashboardPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{openTicketsCount}</div>
-                    <p className="text-xs text-muted-foreground">تتطلب استجابة</p>
+                    <p className="text-xs text-muted-foreground">(قيد الصيانة)</p>
                 </CardContent>
             </Card>
         </div>
@@ -165,7 +164,7 @@ export default function AdminDashboardPage() {
         <Card>
             <CardHeader>
                 <CardTitle>نظرة عامة على الأداء</CardTitle>
-                 <CardDescription>الإيرادات والمستخدمون الجدد في آخر 7 أيام.</CardDescription>
+                 <CardDescription>المستخدمون الجدد في آخر 7 أيام.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-[350px] w-full">
@@ -187,7 +186,6 @@ export default function AdminDashboardPage() {
                             tickMargin={8}
                             tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
                         />
-                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
                         <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
                         <Tooltip
                             content={<ChartTooltipContent
@@ -201,14 +199,6 @@ export default function AdminDashboardPage() {
                             />}
                         />
                          <Legend />
-                        <Line
-                            yAxisId="left"
-                            type="monotone"
-                            dataKey="revenue"
-                            stroke="var(--color-revenue)"
-                            strokeWidth={2}
-                            name={chartConfig.revenue.label}
-                        />
                         <Line
                             yAxisId="right"
                             type="monotone"
