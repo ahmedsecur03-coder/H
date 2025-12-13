@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -11,7 +10,7 @@ export async function POST(request: Request) {
 
     // Validate the URL to prevent potential SSRF attacks
     const url = new URL(imageUrl);
-    const validHosts = ['i.pravatar.cc', 'images.unsplash.com', 'lh3.googleusercontent.com'];
+    const validHosts = ['i.pravatar.cc', 'images.unsplash.com', 'lh3.googleusercontent.com', 'placehold.co', 'picsum.photos'];
     if (!validHosts.includes(url.hostname)) {
         // Allow data URIs to pass through
         if (!url.protocol.startsWith('data:')) {
@@ -40,5 +39,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message || 'An unknown error occurred' }, { status: 500 });
   }
 }
-
-    

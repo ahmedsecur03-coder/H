@@ -1,32 +1,23 @@
 import {genkit, Plugin} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 
-// Helper to check if the AI service is configured
-export function isAiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY;
-}
-
-// Helper to conditionally enable the Google AI plugin
-function configureGoogleAI(): Plugin<any> | null {
-  if (isAiConfigured()) {
+function configureGoogleAI(): Plugin<any>[] {
+  if (process.env.GEMINI_API_KEY) {
     console.log("Configuring Google AI plugin...");
-    return googleAI({ apiKey: process.env.GEMINI_API_KEY });
+    return [googleAI({ apiKey: process.env.GEMINI_API_KEY })];
   }
-  console.warn("GEMINI_API_KEY is not set. Google AI plugin will be disabled.");
-  return null;
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn("GEMINI_API_KEY is not set. AI-related features will be disabled. This is expected for local development.");
+  }
+  
+  return [];
 }
 
-const googleAIPlugin = configureGoogleAI();
+const plugins = configureGoogleAI();
 
 export const ai = genkit({
-  plugins: [
-    // Conditionally include the plugin only if it's configured
-    ...(googleAIPlugin ? [googleAIPlugin] : []),
-  ],
-  // We still define a default model so genkit doesn't complain,
-  // but calls will fail if the plugin is not available.
-  // We will guard against this in the UI.
-  model: 'googleai/gemini-pro-vision',
-  // Allow passing a different model in generate() call.
-  allowModelConversions: true
+  plugins,
+  logLevel: 'debug',
+  enableTracingAndMetrics: true,
 });

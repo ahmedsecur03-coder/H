@@ -25,10 +25,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from '@/components/ui/badge';
-import { ai, isAiConfigured } from '@/ai/genkit';
+import { isAiConfigured } from '@/ai/client';
 import { cn } from '@/lib/utils';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { generate } from 'genkit/generate';
 
 
 const profileSchema = z.object({
@@ -102,7 +103,7 @@ export default function ProfilePage() {
         try {
             const dataUri = await getDataUriFromProxy(currentAvatarUrl);
 
-            const { media } = await ai.generate({
+            const { media } = await generate({
                 model: 'googleai/gemini-2.5-flash-image-preview',
                 prompt: [
                     { text: 'Give this avatar a cosmic, artistic flair. Maybe add nebula-reflecting sunglasses or starry patterns on the clothes. Be creative. Do not change the person. Return only the edited image.' },

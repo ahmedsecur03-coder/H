@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { aiSupportUsers } from '@/ai/flows/ai-support-users';
 import ReactMarkdown from 'react-markdown';
-import { isAiConfigured } from '@/ai/genkit';
+import { isAiConfigured } from '@/ai/client';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 // Define the structure for a single message in the chat
@@ -32,7 +32,7 @@ export default function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [running, setRunning] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(true);
+  const [configured, setConfigured] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'system',
@@ -43,7 +43,7 @@ export default function AiAssistant() {
 
   useEffect(() => {
     // Check configuration only on the client-side
-    setIsConfigured(isAiConfigured());
+    setConfigured(isAiConfigured());
   }, []);
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function AiAssistant() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || running || !isConfigured) return;
+    if (!input.trim() || running || !configured) return;
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -127,13 +127,13 @@ export default function AiAssistant() {
             </SheetTitle>
           </SheetHeader>
           <Separator />
-          {!isConfigured ? (
+          {!configured ? (
              <div className="flex-1 flex items-center justify-center">
                  <Alert variant="destructive" className="border-destructive/20">
                     <XCircle className="h-4 w-4" />
                     <AlertTitle>خدمة غير متاحة</AlertTitle>
                     <AlertDescription>
-                        المساعد الذكي غير متاح حالياً. يرجى المحاولة مرة أخرى لاحقاً.
+                        المساعد الذكي غير متاح حالياً. يرجى التأكد من إعداد مفتاح الواجهة البرمجية.
                     </AlertDescription>
                 </Alert>
              </div>
