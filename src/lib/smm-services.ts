@@ -5,93 +5,5920 @@ import type { Service } from './types';
 // In a real application, this data would likely come from a database or an external API.
 // For this prototype, it's hardcoded to allow for easy import into Firestore.
 
-export const SMM_SERVICES: Omit<Service, 'description' | 'avgTime' | 'dripFeed' | 'startTime' | 'dropRate'>[] = [
-  // Instagram Services
-  { id: '1', platform: 'Instagram', category: 'متابعين', price: 1.50, min: 100, max: 100000, guarantee: true, refill: true, speed: '10K/Day' },
-  { id: '2', platform: 'Instagram', category: 'متابعين', price: 2.50, min: 50, max: 50000, guarantee: true, refill: true, speed: '20K/Day' },
-  { id: '3', platform: 'Instagram', category: 'لايكات', price: 0.50, min: 10, max: 10000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '4', platform: 'Instagram', category: 'لايكات', price: 1.00, min: 20, max: 20000, guarantee: true, refill: true, speed: '5K/Hour' },
-  { id: '5', platform: 'Instagram', category: 'مشاهدات فيديو', price: 0.10, min: 100, max: 1000000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '6', platform: 'Instagram', category: 'مشاهدات ريلز', price: 0.15, min: 100, max: 2000000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '7', platform: 'Instagram', category: 'تعليقات', price: 5.00, min: 10, max: 1000, guarantee: false, refill: false, speed: '1K/Day' },
-  { id: '8', platform: 'Instagram', category: 'حفظ', price: 0.80, min: 50, max: 50000, guarantee: false, refill: false, speed: '10K/Day' },
-  { id: '9', platform: 'Instagram', category: 'زيارات بروفايل', price: 0.40, min: 100, max: 100000, guarantee: false, refill: false, speed: '20K/Day' },
-  { id: '10', platform: 'Instagram', category: 'تصويت ستوري', price: 3.00, min: 10, max: 5000, guarantee: false, refill: false, speed: '5K/Day' },
-  // ... and so on for all 715 services. This is a truncated example.
-
-  // TikTok Services
-  { id: '100', platform: 'TikTok', category: 'متابعين', price: 2.00, min: 100, max: 50000, guarantee: true, refill: true, speed: '5K/Day' },
-  { id: '101', platform: 'TikTok', category: 'لايكات', price: 0.80, min: 50, max: 100000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '102', platform: 'TikTok', category: 'مشاهدات', price: 0.01, min: 1000, max: 10000000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '103', platform: 'TikTok', category: 'مشاركات', price: 1.20, min: 100, max: 10000, guarantee: false, refill: false, speed: '10K/Day' },
-  { id: '104', platform: 'TikTok', category: 'تعليقات', price: 6.00, min: 10, max: 1000, guarantee: false, refill: false, speed: '1K/Day' },
-  { id: '105', platform: 'TikTok', category: 'حفظ', price: 1.00, min: 100, max: 50000, guarantee: false, refill: false, speed: '20K/Day' },
-  { id: '106', platform: 'TikTok', category: 'لايكات (عرب)', price: 1.50, min: 50, max: 20000, guarantee: false, refill: false, speed: '5K/Day' },
-  { id: '107', platform: 'TikTok', category: 'مشاهدات بث مباشر', price: 3.50, min: 100, max: 10000, guarantee: false, refill: false, speed: 'فوري' },
-
-
-  // Facebook Services
-  { id: '200', platform: 'Facebook', category: 'لايكات صفحة', price: 3.00, min: 100, max: 20000, guarantee: true, refill: true, speed: '1K/Day' },
-  { id: '201', platform: 'Facebook', category: 'متابعين بروفايل', price: 2.80, min: 100, max: 30000, guarantee: true, refill: true, speed: '2K/Day' },
-  { id: '202', platform: 'Facebook', category: 'لايكات منشور', price: 1.00, min: 50, max: 10000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '203', platform: 'Facebook', category: 'مشاهدات فيديو', price: 0.20, min: 100, max: 1000000, guarantee: false, refill: false, speed: '50K/Day' },
-  { id: '204', platform: 'Facebook', category: 'أعضاء جروب', price: 4.00, min: 100, max: 10000, guarantee: false, refill: false, speed: '1K/Day' },
-  { id: '205', platform: 'Facebook', category: 'لايكات (عرب)', price: 2.50, min: 50, max: 5000, guarantee: false, refill: false, speed: '2K/Day' },
-
-
-  // YouTube Services
-  { id: '300', platform: 'YouTube', category: 'مشتركين', price: 15.00, min: 100, max: 10000, guarantee: true, refill: true, speed: '500/Day' },
-  { id: '301', platform: 'YouTube', category: 'مشاهدات', price: 1.80, min: 1000, max: 1000000, guarantee: false, refill: false, speed: '10K/Day' },
-  { id: '302', platform: 'YouTube', category: 'لايكات', price: 8.00, min: 50, max: 5000, guarantee: false, refill: false, speed: '1K/Day' },
-  { id: '303', platform: 'YouTube', category: 'ساعات مشاهدة', price: 5.00, min: 1000, max: 4000, guarantee: true, refill: true, speed: '100-200/Day' },
-  { id: '304', platform: 'YouTube', category: 'تعليقات', price: 10.00, min: 10, max: 500, guarantee: false, refill: false, speed: '500/Day' },
-
-
-  // Telegram Services
-  { id: '400', platform: 'Telegram', category: 'أعضاء قناة/جروب', price: 1.00, min: 100, max: 200000, guarantee: false, refill: false, speed: '20K/Day' },
-  { id: '401', platform: 'Telegram', category: 'مشاهدات آخر منشور', price: 0.05, min: 100, max: 100000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '402', platform: 'Telegram', category: 'تصويت', price: 2.00, min: 100, max: 10000, guarantee: false, refill: false, speed: '10K/Day' },
-  { id: '403', platform: 'Telegram', category: 'أعضاء (عرب)', price: 4.00, min: 100, max: 50000, guarantee: false, refill: false, speed: '5K/Day' },
-
-  // X (Twitter) Services
-  { id: '500', platform: 'X (Twitter)', category: 'متابعين', price: 4.00, min: 100, max: 10000, guarantee: true, refill: true, speed: '1K/Day' },
-  { id: '501', platform: 'X (Twitter)', category: 'لايكات', price: 3.00, min: 50, max: 5000, guarantee: false, refill: false, speed: '5K/Day' },
-  { id: '502', platform: 'X (Twitter)', category: 'إعادة تغريد (Retweets)', price: 3.50, min: 50, max: 5000, guarantee: false, refill: false, speed: '5K/Day' },
-  { id: '503', platform: 'X (Twitter)', category: 'مشاهدات فيديو', price: 0.50, min: 100, max: 100000, guarantee: false, refill: false, speed: '20K/Day' },
-  
-  // Threads Services
-  { id: '600', platform: 'Threads', category: 'متابعين', price: 2.50, min: 100, max: 20000, guarantee: true, refill: true, speed: '5K/Day' },
-  { id: '601', platform: 'Threads', category: 'لايكات', price: 1.00, min: 50, max: 10000, guarantee: false, refill: false, speed: '10K/Day' },
-
-  // Snapchat Services
-  { id: '700', platform: 'Snapchat', category: 'مشاهدات ستوري', price: 1.50, min: 100, max: 50000, guarantee: false, refill: false, speed: '10K/Day' },
-  { id: '701', platform: 'Snapchat', category: 'أصدقاء', price: 5.00, min: 100, max: 5000, guarantee: false, refill: false, speed: '1K/Day' },
-
-  // Kwai Services
-  { id: '800', platform: 'Kwai', category: 'متابعين', price: 2.20, min: 100, max: 30000, guarantee: false, refill: false, speed: '5K/Day' },
-  { id: '801', platform: 'Kwai', category: 'لايكات', price: 0.90, min: 50, max: 20000, guarantee: false, refill: false, speed: '10K/Day' },
-
-  // VK Services
-  { id: '900', platform: 'VK', category: 'أصدقاء/متابعين', price: 3.00, min: 100, max: 10000, guarantee: false, refill: false, speed: '2K/Day' },
-  { id: '901', platform: 'VK', category: 'أعضاء جروب', price: 3.50, min: 100, max: 10000, guarantee: false, refill: false, speed: '2K/Day' },
-  
-  // ... This represents a sample. A full list would be much longer.
-  // To reach 715 services, we would need to add many more variations and platforms.
-  // For the purpose of this prototype, we'll imagine the full list is here.
-  // The following are just placeholders to simulate a larger list.
-  { id: '1000', platform: 'Instagram', category: 'متابعين (عرب)', price: 5.50, min: 100, max: 10000, guarantee: true, refill: true, speed: '2K/Day' },
-  { id: '1001', platform: 'Instagram', category: 'متابعين (أجانب - جودة عالية)', price: 3.50, min: 100, max: 25000, guarantee: true, refill: true, speed: '8K/Day' },
-  { id: '1002', platform: 'Instagram', category: 'لايكات (ريلز)', price: 0.60, min: 20, max: 50000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '1003', platform: 'TikTok', category: 'مشاهدات (عرب)', price: 0.05, min: 1000, max: 5000000, guarantee: false, refill: false, speed: '100K/Day' },
-  { id: '1004', platform: 'Facebook', category: 'تفاعل (لايك، لاف، إلخ)', price: 1.20, min: 50, max: 10000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '1005', platform: 'YouTube', category: 'مشاهدات (تحقق الربح)', price: 3.00, min: 1000, max: 100000, guarantee: true, refill: false, speed: '3K/Day' },
-  { id: '1006', platform: 'Telegram', category: 'أعضاء (حقيقيين)', price: 2.50, min: 100, max: 20000, guarantee: false, refill: false, speed: '5K/Day' },
-  { id: '1007', platform: 'X (Twitter)', category: 'متابعين (عرب)', price: 7.00, min: 100, max: 5000, guarantee: true, refill: true, speed: '500/Day' },
-  { id: '1008', platform: 'Instagram', category: 'مشاهدات ستوري', price: 0.20, min: 100, max: 100000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '1009', platform: 'زيارات مواقع', category: 'زيارات من جوجل', price: 2.00, min: 1000, max: 100000, guarantee: false, refill: false, speed: '10K/Day' },
-  { id: '1010', platform: 'زيارات مواقع', category: 'زيارات مباشرة', price: 1.00, min: 1000, max: 200000, guarantee: false, refill: false, speed: '20K/Day' },
-  { id: '1011', platform: 'Clubhouse', category: 'متابعين', price: 4.00, min: 100, max: 5000, guarantee: false, refill: false, speed: '1K/Day' },
-  { id: '1012', platform: 'Clubhouse', category: 'مستمعين للغرفة', price: 5.00, min: 50, max: 1000, guarantee: false, refill: false, speed: 'فوري' },
-  { id: '1013', platform: 'Kick', category: 'متابعين', price: 3.00, min: 100, max: 10000, guarantee: false, refill: false, speed: '2K/Day' },
-  { id: '1014', platform: 'Kick', category: 'مشاهدات بث', price: 2.50, min: 100, max: 5000, guarantee: false, refill: false, speed: 'فوري' },
-];
+export const SMM_SERVICES: Service[] = [
+  {
+    "id": "5860",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.614,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "42 ساعات 16 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4216",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 0.6091,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "5 ساعات 10 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة + منشورات |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4560",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.1413,
+    "min": 100,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "5 - 10 ألف/اليوم",
+    "avgTime": "2 ساعات 45 دقائق",
+    "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدايه فوريه |⚡السرعة 5 - 10 ألف/اليوم |⛔ بدون ضمان"
+  },
+  {
+    "id": "5854",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.1923,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 - 5 ألف/اليوم",
+    "avgTime": "4 ساعات 10 دقائق",
+    "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 1 - 5 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5103",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.1504,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 7 دقائق",
+    "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5360",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.3705,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "6 ساعات 40 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥 بدون نقص |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4540",
+    "platform": "Facebook",
+    "category": "أعضاء جروب",
+    "price": 0.2875,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "20 ألف/يوم",
+    "avgTime": "4 ساعات 25 دقائق",
+    "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 20 ألف/يوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5857",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.6187,
+    "min": 10,
+    "max": 50000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+3 ألف/اليوم",
+    "avgTime": "3 ساعات 54 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +3 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5184",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.6292,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5898",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.7105,
+    "min": 10,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعه +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5341",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 0.9264,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "3 ساعات 59 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5092",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.1862,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "5 ساعات 29 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5093",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.296,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 32 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "5090",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.3838,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 41 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "5445",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.4637,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "1 ساعة 44 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "4996",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.5435,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "16 ساعات 51 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4453",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.4032,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "1 ساعة 27 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4496",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.6364,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 31 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4062",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.8012,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "4 ساعات 9 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "4500",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.911,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "28 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "5442",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 2.0212,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "5 ساعات 49 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "4447",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 2.1499,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 49 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5885",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.902,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "1 ساعة 5 دقائق",
+    "description": "متابعين تيكتوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4752",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.935,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "20 ساعات 8 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5881",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.946,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "17 ساعات 49 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "4091",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.957,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "56 ساعات 7 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "5428",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.968,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "25 ساعات 32 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "4614",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.979,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "26 ساعات 2 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5859",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.54,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "10 ساعات 43 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5878",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.551,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 54 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅7 أيام ضمان"
+  },
+  {
+    "id": "5879",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.562,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 52 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅15 يوم ضمان"
+  },
+  {
+    "id": "5365",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.573,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5869",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.584,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "5 ساعات 54 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "5870",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.595,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "16 ساعات 5 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "5872",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.606,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "8 ساعات 15 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5356",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.617,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "4 ساعات 58 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5460",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 1.2075,
+    "min": 500,
+    "max": 25000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "70 ساعات 34 دقائق",
+    "description": "متابعين فيسبوك (صفحة + بروفايل) |🎯 100% صفحات مصرية |⚡السرعه +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "3724",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.231,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "53 دقائق",
+    "description": "إعجابات إنستغرام سريعة | 🔥بداية فورية"
+  },
+  {
+    "id": "3236",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.242,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "58 دقائق",
+    "description": "إعجابات إنستغرام سريعة |🔥بداية فورية |✅365 يوم ضمان"
+  },
+  {
+    "id": "4503",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.253,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "52 دقائق",
+    "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5754",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0085,
+    "min": 5000,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "45 دقائق",
+    "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية"
+  },
+  {
+    "id": "5755",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0116,
+    "min": 50,
+    "max": 2147483647,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 مليون",
+    "avgTime": "4 دقائق",
+    "description": "مشاهدات تيك توك |🔥بداية فورية |⚡السرعة 1 مليون |✅365 يوم ضمان"
+  },
+  {
+    "id": "5867",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.8464,
+    "min": 50,
+    "max": 200000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+2 - 3 ألف/اليوم",
+    "avgTime": "18 ساعات 9 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +2 - 3 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5486",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.1,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+2 - 3 ألف/اليوم",
+    "avgTime": "8 ساعات 11 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +2 - 3 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5868",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.825,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "2 ساعات 31 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5893",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.1,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "2 ساعات 27 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "634",
+    "platform": "TikTok",
+    "category": "حفظ",
+    "price": 0.0127,
+    "min": 10,
+    "max": 2147483647,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "10 دقائق",
+    "description": "حفظ فيديو تيك توك |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5895",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.3076,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "4 ساعات 8 دقائق",
+    "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5101",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.3185,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "1 ساعة 15 دقائق",
+    "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5097",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.3391,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "42 دقائق",
+    "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "4561",
+    "platform": "Facebook",
+    "category": "متابعين",
+    "price": 0.2248,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "4 ساعات 5 دقائق",
+    "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "4144",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.5775,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "10 ساعات 35 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥 بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5363",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.3402,
+    "min": 10,
+    "max": 200000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "5 ساعات 45 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥 نقص قليل |⚡السرعة 10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4147",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.3644,
+    "min": 10,
+    "max": 200000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "5 ساعات 48 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5466",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.3809,
+    "min": 10,
+    "max": 200000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "16 ساعات 7 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "4604",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.3975,
+    "min": 10,
+    "max": 200000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "2 ساعات 44 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "4559",
+    "platform": "Facebook",
+    "category": "إعجابات + متابعة",
+    "price": 0.414,
+    "min": 10,
+    "max": 200000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "5 ساعات 5 دقائق",
+    "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "1141",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0154,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 8 دقائق",
+    "description": "إعجابات تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "1142",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.016,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 28 دقائق",
+    "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "1143",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0165,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "3 ساعات 23 دقائق",
+    "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "1144",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0171,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 35 دقائق",
+    "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "1145",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0176,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "3 ساعات 19 دقائق",
+    "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "1146",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0182,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 32 دقائق",
+    "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "3013",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0009,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "6 ساعات 9 دقائق",
+    "description": "مشاهدات إنستغرام |🔥يعمل على كل الروابط |⚡السرعة 100 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5969",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.0028,
+    "min": 5,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "5 ساعات 3 دقائق",
+    "description": "حفظ منشور إنستجرام |🔥بداية فورية |✅30 يوم ضمان [الأرخص]"
+  },
+  {
+    "id": "6011",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 1.1862,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان (تعمل مع فتح أو غلق زر المراجعه )"
+  },
+  {
+    "id": "6012",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.0425,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان (تعمل مع فتح أو غلق زر المراجعه )"
+  },
+  {
+    "id": "6027",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.4468,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "15 دقائق",
+    "description": "متابعين إنستغرام |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان (تعمل مع فتح أو غلق زر المراجعه )"
+  },
+  {
+    "id": "3793",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.1482,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 13 دقائق",
+    "description": "متابعين إنستغرام |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "4548",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.045,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 - 5 ألف/اليوم",
+    "avgTime": "13 ساعات 26 دقائق",
+    "description": "مشاهدات يوتيوب |🔥خدمة جديدة - ننصح بها |⚡السرعة 1 - 5 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5919",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.308,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "6 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5465",
+    "platform": "YouTube",
+    "category": "تعليقات",
+    "price": 3.564,
+    "min": 10,
+    "max": 20000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تعليقات يوتيوب مخصصة |🔥بدون نقص |⚡السرعة +10 ألف/اليوم|✅30 يوم ضمان"
+  },
+  {
+    "id": "5726",
+    "platform": "Telegram",
+    "category": "أعضاء",
+    "price": 0.715,
+    "min": 500,
+    "max": 200000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "10 ساعات 58 دقائق",
+    "description": "أعضاء تيليجرام |📢قناة / مجموعة |⚡السرعة +20 ألف/اليوم |✅ضمان 30 يوم"
+  },
+  {
+    "id": "5725",
+    "platform": "Telegram",
+    "category": "مشاهدات",
+    "price": 0.0047,
+    "min": 5,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "23 دقائق",
+    "description": "مشاهدات تيليجرام للمنشورات |📢 اخر 1 منشور |🔥بداية فورية"
+  },
+  {
+    "id": "5723",
+    "platform": "Telegram",
+    "category": "تفاعل",
+    "price": 0.013,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "1 ساعة 33 دقائق",
+    "description": "تفاعل تليجرام إيجابى مكس [👍 ❤️ 🔥 🎉🤩 😁]"
+  },
+  {
+    "id": "5724",
+    "platform": "Telegram",
+    "category": "تفاعل",
+    "price": 0.013,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "5 ساعات 46 دقائق",
+    "description": "تفاعل تليجرام سلبى مكس [👎 🤮 😁 🤯 😢 🤔 💩 🤬]"
+  },
+  {
+    "id": "5567",
+    "platform": "Canva",
+    "category": "اشتراك",
+    "price": 0.15,
+    "min": 1,
+    "max": 1,
+    "guarantee": false,
+    "refill": false,
+    "speed": "خلال 24 ساعة",
+    "avgTime": "34 ساعات 51 دقائق",
+    "description": "اشتراك كانفا برو لمدة 1 سنة"
+  },
+  {
+    "id": "6003",
+    "platform": "TikTok",
+    "category": "نقاط معركة",
+    "price": 0.1265,
+    "min": 500,
+    "max": 1000000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "1 دقيقة",
+    "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5846",
+    "platform": "TikTok",
+    "category": "نقاط معركة",
+    "price": 0.132,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "32 دقائق",
+    "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5301",
+    "platform": "TikTok",
+    "category": "نقاط معركة",
+    "price": 0.154,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "32 دقائق",
+    "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5302",
+    "platform": "TikTok",
+    "category": "نقاط معركة",
+    "price": 0.165,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "3 دقائق",
+    "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5303",
+    "platform": "TikTok",
+    "category": "نقاط معركة",
+    "price": 0.187,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "18 دقائق",
+    "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "205",
+    "platform": "TikTok",
+    "category": "عملات",
+    "price": 11.5,
+    "min": 500,
+    "max": 100000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "0 - 12 ساعة",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "عملات تيكتوك | البدء من 0 - 12 ساعة | إقرأ وصف الخدمة 🔥"
+  },
+  {
+    "id": "5374",
+    "platform": "TikTok",
+    "category": "متابعين مصريين",
+    "price": 6.2675,
+    "min": 500,
+    "max": 500,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "39 ساعات 33 دقائق",
+    "description": "متابعين تيكتوك | 🎯حسابات عربية أكونتات نشطة 100٪ |🔥ممول من الاعلانات"
+  },
+  {
+    "id": "4751",
+    "platform": "TikTok",
+    "category": "تعليقات مصرية",
+    "price": 31.9,
+    "min": 10,
+    "max": 5000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100/اليوم",
+    "avgTime": "37 ساعات 45 دقائق",
+    "description": "تعليقات تيك توك مخصصة |🎯100%حسابات مصرية |⚡السرعة + 100/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5992",
+    "platform": "TikTok",
+    "category": "شير مصري",
+    "price": 0.209,
+    "min": 100,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 10 ألف/اليوم",
+    "avgTime": "19 ساعات 37 دقائق",
+    "description": "شير فيديو تيكتوك |🎯100%حسابات مصرية |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5993",
+    "platform": "TikTok",
+    "category": "تنزيل فيديو مصري",
+    "price": 0.2128,
+    "min": 10,
+    "max": 20000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 10 ألف/اليوم",
+    "avgTime": "36 ساعات 6 دقائق",
+    "description": "تنزيل فيديو تيكتوك |🎯100%حسابات مصرية |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5005",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0046,
+    "min": 50,
+    "max": 2147483333,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "4 دقائق",
+    "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية"
+  },
+  {
+    "id": "4084",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0229,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "2 دقائق",
+    "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية"
+  },
+  {
+    "id": "4172",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0159,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "34 دقائق",
+    "description": "مشاهدات فيديو تيك توك |🔥بداية فورية"
+  },
+  {
+    "id": "5753",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0212,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "8 دقائق",
+    "description": "مشاهدات فيديو تيك توك |🔥بداية فورية"
+  },
+  {
+    "id": "4608",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0422,
+    "min": 5000,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "1 ساعة 20 دقائق",
+    "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية"
+  },
+  {
+    "id": "3790",
+    "platform": "TikTok",
+    "category": "مشاهدات",
+    "price": 0.0168,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 مليون",
+    "avgTime": "25 دقائق",
+    "description": "مشاهدات تيك توك |🔥بداية فورية |⚡السرعة 1 مليون |✅365 يوم ضمان"
+  },
+  {
+    "id": "4288",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "5 ساعات 1 دقيقة",
+    "description": "مشاهدات تيك توك |🎯من مصر |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4279",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "3 ساعات 2 دقائق",
+    "description": "مشاهدات تيك توك |🎯من السعودية |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4281",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "31 دقائق",
+    "description": "مشاهدات تيك توك |🎯من الكويت |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4280",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "1 ساعة 9 دقائق",
+    "description": "مشاهدات تيك توك |🎯من الإمارات |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4282",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "1 دقيقة",
+    "description": "مشاهدات تيك توك |🎯من عمان |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4283",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "1 دقيقة",
+    "description": "مشاهدات تيك توك |🎯من قطر |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4284",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "2 ساعات 47 دقائق",
+    "description": "مشاهدات تيك توك |🎯من الأردن |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4285",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "20 ساعات 58 دقائق",
+    "description": "مشاهدات تيك توك |🎯من الجزائر |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4286",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "4 ساعات 2 دقائق",
+    "description": "مشاهدات تيك توك |🎯من المغرب |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "4287",
+    "platform": "TikTok",
+    "category": "مشاهدات مستهدفة",
+    "price": 0.0429,
+    "min": 1000,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 مليون",
+    "avgTime": "3 ساعات 53 دقائق",
+    "description": "مشاهدات تيك توك |🎯من تونس |⚡السرعة 10 مليون |🔥بدون نقص"
+  },
+  {
+    "id": "6007",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0319,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "1 ساعة 50 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5856",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.595,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+2 ألف/اليوم",
+    "avgTime": "11 ساعات 32 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +2 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "6010",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.033,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "10 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5900",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 2.255,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+15 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5899",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 2.42,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+15 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5330",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 2.75,
+    "min": 10,
+    "max": 500000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5838",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 2.948,
+    "min": 10,
+    "max": 300000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+1-5 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +1-5 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5001",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 3.08,
+    "min": 100,
+    "max": 500000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+15 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5722",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 3.795,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5850",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.5524,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+15 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5883",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.54,
+    "min": 10,
+    "max": 500000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+15 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5839",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.518,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5884",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.851,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "12 ساعات 27 دقائق",
+    "description": "متابعين تيك توك |🔥100% حسابات حقيقية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5852",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.43,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+15 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5855",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.815,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "12 ساعات 59 دقائق",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5812",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.716,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5849",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.43,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5851",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.595,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4090",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.65,
+    "min": 10,
+    "max": 500000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |✨جودة حقيقية |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5858",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.573,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+4 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +4 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4218",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.242,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |✨جودة حقيقية |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4088",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.68,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |✨جودة حقيقية |⚡السرعة +1 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5398",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.98,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "15 ساعات 56 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5871",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 3.51,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "15 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4436",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.76,
+    "min": 1000,
+    "max": 150000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100-200/اليوم",
+    "avgTime": "20 ساعات 11 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +100-200/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5198",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.76,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 20 ألف/اليوم",
+    "avgTime": "3 ساعات 19 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة + 20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5331",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 5.17,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "18 ساعات",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعه +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5933",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 2.97,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5894",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 5.17,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعه +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5880",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.595,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "7 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5897",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.595,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "13 ساعات 49 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعه +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5882",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.617,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "7 ساعات 10 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "5368",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.969,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "35 دقائق",
+    "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +1 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4554",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.88,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+2 - 5 ألف/اليوم",
+    "avgTime": "10 ساعات 44 دقائق",
+    "description": "متابعين تيك توك |⚡السرعة +2 - 5 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5813",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 1.8,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين تيك توك |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5711",
+    "platform": "TikTok",
+    "category": "متابعين",
+    "price": 0.92,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+3 - 5 ألف/اليوم",
+    "avgTime": "7 ساعات 41 دقائق",
+    "description": "متابعين تيك توك |⚡السرعه +3 - 5 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5845",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.132,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "18 ساعات 41 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5840",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.143,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "26 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5847",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.154,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "1 ساعة 18 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5841",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.077,
+    "min": 10,
+    "max": 2000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريعة",
+    "avgTime": "3 ساعات 58 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة"
+  },
+  {
+    "id": "5842",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0825,
+    "min": 10,
+    "max": 2000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "3 ساعات 46 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة |✅60 يوم ضمان"
+  },
+  {
+    "id": "5844",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0847,
+    "min": 10,
+    "max": 2000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "1 ساعة 1 دقيقة",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة |✅365 يوم ضمان"
+  },
+  {
+    "id": "5843",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.088,
+    "min": 10,
+    "max": 2000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "55 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡سريعة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "30",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0825,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "9 ساعات 9 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "31",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0842,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "70 ساعات 44 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "32",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0867,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "4 ساعات 6 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "33",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0891,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "139 ساعات 4 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "34",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0908,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "40 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "35",
+    "platform": "TikTok",
+    "category": "إعجابات + مشاهدات",
+    "price": 0.0933,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "32 دقائق",
+    "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "6040",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0407,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "11 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5467",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0418,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "22 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +1 - 10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5332",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0759,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "20 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5930",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0814,
+    "min": 10,
+    "max": 2000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "18 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +1 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4435",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.099,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريعة",
+    "avgTime": "1 ساعة 4 دقائق",
+    "description": "إعجابات تيك توك |🔥سريعة |⛔بدون ضمان"
+  },
+  {
+    "id": "4096",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0418,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "51 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5105",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0149,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "12 ساعات",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅60 يوم ضمان"
+  },
+  {
+    "id": "4221",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0792,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "1 ساعة 8 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +20 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "4094",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.033,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "1 ساعة 10 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "6000",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0979,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "4 ساعات 9 دقائق",
+    "description": "إعجابات تيك توك |🔥سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "4555",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.1045,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "1 ساعة 9 دقائق",
+    "description": "إعجابات تيك توك |🔥سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5482",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0341,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "13 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +50 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5873",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.1155,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 - 10 ألف/اليوم",
+    "avgTime": "1 ساعة 28 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5848",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.1155,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 - 10 ألف/اليوم",
+    "avgTime": "53 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5931",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.121,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 - 10 ألف/اليوم",
+    "avgTime": "3 ساعات 46 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5932",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.132,
+    "min": 10,
+    "max": 300000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 - 10 ألف/اليوم",
+    "avgTime": "1 ساعة 1 دقيقة",
+    "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "4352",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0121,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "18 ساعات 43 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +100 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "4099",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.0618,
+    "min": 10,
+    "max": 20000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "5 ساعات 2 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +50 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "4098",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.165,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "1 ساعة 33 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "4095",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.044,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "52 دقائق",
+    "description": "إعجابات تيك توك |⚡السرعه +100 ألف/اليوم |🔥بداية فورية |✅365 يوم ضمان"
+  },
+  {
+    "id": "5006",
+    "platform": "TikTok",
+    "category": "إعجابات",
+    "price": 0.1622,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "4 ساعات 55 دقائق",
+    "description": "إعجابات تيك توك |🔥نقص قليل |⚡السرعة +20 ألف/اليوم |🔥أفضل العروض"
+  },
+  {
+    "id": "4586",
+    "platform": "TikTok",
+    "category": "تعليقات",
+    "price": 0.715,
+    "min": 1,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+ 50 ألف/اليوم",
+    "avgTime": "32 دقائق",
+    "description": "تعليقات تيك توك عشوائية |⚡السرعة + 50 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "5507",
+    "platform": "TikTok",
+    "category": "تعليقات",
+    "price": 7.7,
+    "min": 10,
+    "max": 30000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 30 ألف/اليوم",
+    "avgTime": "134 ساعات 28 دقائق",
+    "description": "تعليقات تيك توك إيموجى |⚡السرعة + 30 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5508",
+    "platform": "TikTok",
+    "category": "تعليقات",
+    "price": 8.8,
+    "min": 10,
+    "max": 5000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 5 ألف/اليوم",
+    "avgTime": "5 ساعات 3 دقائق",
+    "description": "تعليقات تيك توك مخصصة |⚡السرعة + 5 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5505",
+    "platform": "TikTok",
+    "category": "تعليقات",
+    "price": 2.97,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 5 ألف/اليوم",
+    "avgTime": "5 دقائق",
+    "description": "تعليقات تيك توك إيموجى |⚡السرعة + 5 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5506",
+    "platform": "TikTok",
+    "category": "تعليقات",
+    "price": 3.3,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 5 ألف/اليوم",
+    "avgTime": "1 ساعة 27 دقائق",
+    "description": "تعليقات تيك توك مخصصة |⚡السرعة + 5 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان"
+  },
+  {
+    "id": "5961",
+    "platform": "TikTok",
+    "category": "تعليقات",
+    "price": 3.85,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+ 20 ألف/اليوم",
+    "avgTime": "35 دقائق",
+    "description": "تعليقات تيك توك مخصصة |⚡السرعة + 20 ألف/اليوم |🔥بداية فورية |✅365 يوم ضمان"
+  },
+  {
+    "id": "5121",
+    "platform": "TikTok",
+    "category": "حفظ",
+    "price": 0.132,
+    "min": 10,
+    "max": 217545811,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "13 دقائق",
+    "description": "حفظ فيديو تيك توك |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "1919",
+    "platform": "TikTok",
+    "category": "حفظ",
+    "price": 0.1114,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "189 ساعات 41 دقائق",
+    "description": "حفظ فيديو تيك توك |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5333",
+    "platform": "TikTok",
+    "category": "حفظ",
+    "price": 0.143,
+    "min": 10,
+    "max": 217545811,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريع",
+    "avgTime": "55 دقائق",
+    "description": "حفظ فيديو تيك توك |🔥 عدد غير محدود |🔥 +100% زيادة |✅30 يوم ضمان"
+  },
+  {
+    "id": "4101",
+    "platform": "TikTok",
+    "category": "مشاركات",
+    "price": 0.099,
+    "min": 10,
+    "max": 217545811,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "1 ساعة 8 دقائق",
+    "description": "مشاركات تيك توك |🔥بدون نقص |⚡سريعة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "633",
+    "platform": "TikTok",
+    "category": "تحميل فيديو",
+    "price": 0.011,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "193 ساعات 54 دقائق",
+    "description": "تحميل فيديو تيك توك |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "631",
+    "platform": "TikTok",
+    "category": "تحميل فيديو",
+    "price": 0.0825,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "سريعة",
+    "avgTime": "186 ساعات 51 دقائق",
+    "description": "تحميل فيديو تيك توك |🔥بدون نقص |⚡سريعة |✅30 يوم ضمان"
+  },
+  {
+    "id": "5509",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 1.1,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "1 ساعة 19 دقائق",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 15 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5510",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 2.2,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "7 دقائق",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 30 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5511",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 4.4,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 60 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5512",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 6.6,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 90 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5513",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 8.8,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 120 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5514",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 13.2,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 180 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5515",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 19.8,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 240 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "5516",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 49.5,
+    "min": 50,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر تيكتوك عرب |📊 مشاهدة لمدة 360 دقيقة |✨حد أقصى 10 ألف"
+  },
+  {
+    "id": "4525",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 0.5049,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "25 دقائق",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 15 دقيقة"
+  },
+  {
+    "id": "4526",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 1.056,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "36 دقائق",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 30 دقيقة"
+  },
+  {
+    "id": "4527",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 2.112,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "1 ساعة 13 دقائق",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 60 دقيقة"
+  },
+  {
+    "id": "4528",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 3.168,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 90 دقيقة"
+  },
+  {
+    "id": "4529",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 4.224,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "36 ساعات 2 دقائق",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 120 دقيقة"
+  },
+  {
+    "id": "4530",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 6.336,
+    "min": 10,
+    "max": 200000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 180 دقيقة"
+  },
+  {
+    "id": "4531",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 8.448,
+    "min": 10,
+    "max": 200000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 240 دقيقة"
+  },
+  {
+    "id": "5750",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 26.4,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "20 ساعات 26 دقائق",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 300 دقيقة"
+  },
+  {
+    "id": "5751",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 3.432,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 360 دقيقة"
+  },
+  {
+    "id": "5752",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر",
+    "price": 13.728,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك |⚡بدء فورى | البقاء لمدة 1440 دقيقة"
+  },
+  {
+    "id": "5266",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 0.55,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "3 ساعات 30 دقائق",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 15 دقيقة"
+  },
+  {
+    "id": "5267",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 1.1,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "33 دقائق",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 30 دقيقة"
+  },
+  {
+    "id": "5268",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 2.2,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 60 دقيقة"
+  },
+  {
+    "id": "5269",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 8.58,
+    "min": 50,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 90 دقيقة"
+  },
+  {
+    "id": "5270",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 4.4,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 120 دقيقة"
+  },
+  {
+    "id": "5271",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 6.6,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 180 دقيقة"
+  },
+  {
+    "id": "5272",
+    "platform": "TikTok",
+    "category": "مشاهدات بث مباشر + نقاط معركة",
+    "price": 8.8,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "بث مباشر تيك توك + نقاط معركه |⚡بدء فورى | البقاء لمدة 240 دقيقة"
+  },
+  {
+    "id": "5291",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.077,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "2 دقائق",
+    "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 5 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5292",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.088,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "1 دقيقة",
+    "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 3 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5293",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.099,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "1 دقيقة",
+    "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 1 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "4533",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.07,
+    "min": 10,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "25 دقائق",
+    "description": "إعجابات بث مباشر تيك توك❤️ |🔥بدء فورى |⚡السرعة +100 ألف/اليوم"
+  },
+  {
+    "id": "5295",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.044,
+    "min": 50,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 1 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5296",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.099,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 10 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5297",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.605,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 5 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "4534",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.231,
+    "min": 50,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "20 ساعات 27 دقائق",
+    "description": "شير بث مباشر تيك توك⬆️|🔥بدء فورى |⚡السرعة +100 ألف/اليوم"
+  },
+  {
+    "id": "4535",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.902,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "شير بث مباشر تيك توك⬆️|🔥بدء فورى |⚡السرعة +100 ألف/اليوم"
+  },
+  {
+    "id": "5298",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 1.65,
+    "min": 10,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "5 دقائق",
+    "description": "تعليقات إيموجى بث مباشر تيك توك |🔥بدء 0 - 1 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "5299",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 5.5,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تعليقات إيموجى بث مباشر تيك توك |🔥بدء 0 - 10 دقائق |⚡السرعة +500 ألف/اليوم"
+  },
+  {
+    "id": "4532",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.0209,
+    "min": 10,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "49 دقائق",
+    "description": "إعجابات بث مباشر تيك توك❤️ |🔥بدء فورى |⚡السرعة +100 ألف/اليوم"
+  },
+  {
+    "id": "4536",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 3.63,
+    "min": 5,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تعليقات بث مباشر تيك توك عشوائية 💬|🔥بدء فورى |⚡السرعة 100 ألف/اليوم"
+  },
+  {
+    "id": "6030",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.748,
+    "min": 10,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تيكتوك تعليقات بث مباشر ( إيموجى ) |🔥بدون نقص |⚡السرعة +100 ألف/اليوم"
+  },
+  {
+    "id": "4537",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 13.684,
+    "min": 5,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "27 ساعات 10 دقائق",
+    "description": "تعليقات بث مباشر تيك توك مخصصة 💬|🔥بدء فورى |⚡السرعة 100 ألف/اليوم"
+  },
+  {
+    "id": "6031",
+    "platform": "TikTok",
+    "category": "تفاعل بث مباشر",
+    "price": 0.748,
+    "min": 10,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تيكتوك تعليقات بث مباشر ( عشوائيه) |🔥بدون نقص |⚡السرعة +100 ألف/اليوم"
+  },
+  {
+    "id": "261",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 0.198,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "1 دقيقة",
+    "description": "مشتركين يوتيوب |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "262",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 0.253,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "1 ساعة 4 دقائق",
+    "description": "مشتركين يوتيوب |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "556",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 0.275,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "1 ساعة 51 دقائق",
+    "description": "مشتركين يوتيوب |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "5091",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 0.253,
+    "min": 10,
+    "max": 50000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |✨جودة بوتات |⚡السرعة 10 ألف/اليوم |⛔ بدون ضمان"
+  },
+  {
+    "id": "4454",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 0.308,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |✨جودة بوتات |⚡السرعة 10 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4506",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 16.5,
+    "min": 50,
+    "max": 8000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 - 200/اليوم",
+    "avgTime": "9 ساعات 32 دقائق",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة 100 - 200/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "3798",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 16.104,
+    "min": 50,
+    "max": 30000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "200 - 300/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة 200 - 300/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4879",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 17.16,
+    "min": 50,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "200 - 500/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة 200 - 500/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4707",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 22,
+    "min": 50,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500 - 3 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +500 - 3 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "3841",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 22,
+    "min": 50,
+    "max": 15000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+2 - 3 ألف/اليوم",
+    "avgTime": "10 ساعات 44 دقائق",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +2 - 3 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4446",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 28.237,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 - 10ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +5 - 10ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "3870",
+    "platform": "YouTube",
+    "category": "مشتركين",
+    "price": 27.5,
+    "min": 50,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5248",
+    "platform": "YouTube",
+    "category": "ساعات مشاهدة",
+    "price": 7.15,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "10 ساعات 42 دقائق",
+    "description": "ساعات مشاهدة يوتيوب |📊فيديو +60 دقيقة |⛔بدون ضمان"
+  },
+  {
+    "id": "4664",
+    "platform": "YouTube",
+    "category": "ساعات مشاهدة",
+    "price": 20.7,
+    "min": 100,
+    "max": 2000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "15 ساعات 1 دقيقة",
+    "description": "ساعات مشاهدة يوتيوب |🔥 بدون نقص |📊فيديو +60 دقيقة |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم"
+  },
+  {
+    "id": "5943",
+    "platform": "YouTube",
+    "category": "ساعات مشاهدة",
+    "price": 15.4,
+    "min": 4000,
+    "max": 4000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+2 - 3 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "ساعات مشاهدة يوتيوب (📢 باكدج 4 ألف ساعة مشاهده ) |📊فيديو +60 دقيقة |⚡السرعة +2 - 3 ألف/اليوم |✅ضمان 30 يوم"
+  },
+  {
+    "id": "4603",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.989,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 1 ألف/اليوم",
+    "avgTime": "6 ساعات 21 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 1 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4597",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.034,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "3-4 ألف/اليوم",
+    "avgTime": "34 ساعات 20 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 3-4 ألف/اليوم |🔥 بدون سقوط |✅ضمان 90 يوم"
+  },
+  {
+    "id": "5350",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.081,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "2 - 5 ألف/اليوم",
+    "avgTime": "13 ساعات 44 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 2 - 5 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4630",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.375,
+    "min": 500,
+    "max": 100000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "4 - 8 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب |⚡السرعة 4 - 8 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5096",
+    "platform": "YouTube",
+    "category": "مشاهدات + لايكات",
+    "price": 0.913,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "18 ساعات 4 دقائق",
+    "description": "مشاهدات يوتيوب + 1-3% لايكات |🔥 ننصح بها |⚡السرعة 500 - 2 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5117",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.979,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "13 ساعات 55 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5423",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.913,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "21 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4629",
+    "platform": "YouTube",
+    "category": "مشاهدات + لايكات",
+    "price": 0.671,
+    "min": 50,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "11 ساعات 7 دقائق",
+    "description": "مشاهدات يوتيوب + 1- 3% لايكات |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5119",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.045,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "2 - 5 ألف/اليوم",
+    "avgTime": "7 ساعات 52 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 2 - 5 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5424",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.001,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "77 ساعات 50 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4595",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.9471,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "1 ساعة 9 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان 365 يوم"
+  },
+  {
+    "id": "5349",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.001,
+    "min": 100,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "13 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان 365 يوم"
+  },
+  {
+    "id": "5118",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.9471,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "500 - 2 ألف/اليوم",
+    "avgTime": "2 ساعات 4 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5579",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.946,
+    "min": 3000,
+    "max": 100000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "7 - 15 ألف/اليوم",
+    "avgTime": "8 ساعات 49 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 7 - 15 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5351",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.946,
+    "min": 10000,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 - 500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب |⚡السرعة 100 - 500 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4631",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 1.056,
+    "min": 10000,
+    "max": 20000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 - 200 ألف/اليوم",
+    "avgTime": "33 ساعات 39 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 100 - 200 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5120",
+    "platform": "YouTube",
+    "category": "مشاهدات",
+    "price": 0.858,
+    "min": 40000,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "250 - 500 ألف/اليوم",
+    "avgTime": "13 ساعات 3 دقائق",
+    "description": "مشاهدات يوتيوب |⚡السرعة 250 - 500 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4777",
+    "platform": "YouTube",
+    "category": "مشاهدات مدة عالية",
+    "price": 2.7083,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5-10 ألف/اليوم",
+    "avgTime": "23 دقائق",
+    "description": "مشاهدات يوتيوب |📊مدة المشاهدة: تصل الى 1 دقيقة |⚡السرعة +5-10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4778",
+    "platform": "YouTube",
+    "category": "مشاهدات مدة عالية",
+    "price": 5.4165,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5-10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب |📊مدة المشاهدة: تصل الى 2 دقيقة |⚡السرعة +5-10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4590",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.1,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "133 ساعات 37 دقائق",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دول مكس |⚡السرعة+1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4591",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة مصر |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4598",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة الأردن |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4599",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة قطر |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4592",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة العراق |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4600",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة تونس |⚡السرعة+1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4593",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة المغرب |⚡السرعة +1 - 10 ألف/اليوم|✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4601",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة عمان |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4594",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة الجزائر |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4602",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة لبنان |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4704",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 1.32,
+    "min": 500,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة اليمن |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5904",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.869,
+    "min": 40000,
+    "max": 20000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 مليون/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +1 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5905",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.627,
+    "min": 1000000,
+    "max": 20000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+2 مليون/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +2 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5906",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.66,
+    "min": 500000,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 مليون/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +1 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5907",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.902,
+    "min": 30000,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 مليون/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +1 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5908",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.869,
+    "min": 20000,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +50 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5909",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.88,
+    "min": 20000,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +500 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5910",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 1.001,
+    "min": 10000,
+    "max": 100000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+200 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +200 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5911",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 0.935,
+    "min": 2000,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+200 ألف/اليوم",
+    "avgTime": "58 ساعات 38 دقائق",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +200 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5912",
+    "platform": "YouTube",
+    "category": "مشاهدات إعلانات",
+    "price": 1.133,
+    "min": 3000,
+    "max": 100000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "39 ساعات 59 دقائق",
+    "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +100 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5746",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 0.209,
+    "min": 500000,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "24 - 30 ساعة",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |⚡بدء وإكتمال من 24 - 30 ساعة"
+  },
+  {
+    "id": "5747",
+    "platform": "YouTube",
+    "category": "مشاهدات ادوردز",
+    "price": 0.275,
+    "min": 500000,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "0 - 12 ساعة",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات ادوردز يوتيوب |⚡بدء 0 - 12 ساعة"
+  },
+  {
+    "id": "3985",
+    "platform": "YouTube",
+    "category": "فيديوهات قصيرة",
+    "price": 1.045,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات فيديوهات قصيرة يوتيوب |🎯 مصدر متنوع |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "3982",
+    "platform": "YouTube",
+    "category": "فيديوهات قصيرة",
+    "price": 1.045,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات فيديوهات قصيرة يوتيوب |🎯 مصدر متنوع |⚡السرعة +10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4804",
+    "platform": "YouTube",
+    "category": "فيديوهات قصيرة",
+    "price": 0.715,
+    "min": 10,
+    "max": 60000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات فيديوهات قصيرة يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4805",
+    "platform": "YouTube",
+    "category": "فيديوهات قصيرة",
+    "price": 0.682,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات فيديوهات قصيرة يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4806",
+    "platform": "YouTube",
+    "category": "فيديوهات قصيرة",
+    "price": 5.071,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تعليقات يوتيوب مخصصة للفيديوهات القصيرة |✨جودة حقيقية |⚡السرعة +10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5918",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.165,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "58 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5920",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.176,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "5922",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.187,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "5996",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.198,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅180 يوم ضمان"
+  },
+  {
+    "id": "5997",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.207,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "24 ساعات 12 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5998",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.216,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "8 ساعات 34 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4519",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.506,
+    "min": 10,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 - 50 ألف/اليوم",
+    "avgTime": "3 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 - 50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4549",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.55,
+    "min": 10,
+    "max": 5000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 5 ألف/اليوم",
+    "avgTime": "2 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدون نقص |⚡السرعة +1 - 5 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5915",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.209,
+    "min": 10,
+    "max": 200000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "8 دقائق",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5916",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.308,
+    "min": 10,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5917",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.165,
+    "min": 10,
+    "max": 80000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5921",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.198,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4518",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.363,
+    "min": 20,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4351",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.121,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "3 دقائق",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3999",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.275,
+    "min": 10,
+    "max": 80000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4656",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.66,
+    "min": 10,
+    "max": 75000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "6 دقائق",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4349",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.748,
+    "min": 10,
+    "max": 75000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+30 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +30 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4350",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.627,
+    "min": 10,
+    "max": 60000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4524",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.649,
+    "min": 10,
+    "max": 60000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+70 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +70 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4212",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.506,
+    "min": 10,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4523",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.935,
+    "min": 10,
+    "max": 60000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+40 ألف/اليوم",
+    "avgTime": "5 دقائق",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +40 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4000",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.968,
+    "min": 20,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +500 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4521",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.4945,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "4 دقائق",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4522",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.99,
+    "min": 20,
+    "max": 400000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+20 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +20 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4520",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.572,
+    "min": 50,
+    "max": 400000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+250 ألف/اليوم",
+    "avgTime": "5 دقائق",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +250 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5007",
+    "platform": "YouTube",
+    "category": "إعجابات",
+    "price": 0.495,
+    "min": 100,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "29 دقائق",
+    "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4011",
+    "platform": "YouTube",
+    "category": "تعليقات",
+    "price": 5.071,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "9 ساعات 25 دقائق",
+    "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |⚡السرعة +10 ألف/اليوم|✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4012",
+    "platform": "YouTube",
+    "category": "تعليقات",
+    "price": 3.564,
+    "min": 10,
+    "max": 20000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "1 ساعة 54 دقائق",
+    "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |⚡السرعة +5 ألف/اليوم|✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4013",
+    "platform": "YouTube",
+    "category": "تعليقات",
+    "price": 5.5,
+    "min": 10,
+    "max": 100,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |⚡السرعة +5 ألف/اليوم|✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4002",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 1.6088,
+    "min": 500,
+    "max": 150000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 ألف/اليوم",
+    "avgTime": "3 ساعات 53 دقائق",
+    "description": "يوتيوب مشاركات | ✨ جودة حقيقية | ⚡ السرعة 1 ألف/اليوم | ✅ ضمان مدى الحياة"
+  },
+  {
+    "id": "4006",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 0.2574,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب مشاركات | ✨ من تويتر | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة"
+  },
+  {
+    "id": "4622",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 0.2574,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب مشاركات | ✨ من بينترست | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة"
+  },
+  {
+    "id": "4766",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 0.2574,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب مشاركات | ✨ من رديت | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة"
+  },
+  {
+    "id": "4767",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 0.2574,
+    "min": 100,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب مشاركات | ✨ من فكونتاكتي | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة"
+  },
+  {
+    "id": "5122",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الطبخ |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "5123",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الألعاب |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "5124",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في التعليم |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "5125",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأفلام |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "5126",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأغانى |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "5127",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأخبار |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "5128",
+    "platform": "YouTube",
+    "category": "مشاركات",
+    "price": 3.3,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في المقالب |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة"
+  },
+  {
+    "id": "4014",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 0.44,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "25 دقائق",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +15 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4015",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 0.88,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +30 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4016",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 1.76,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +60 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4017",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 2.64,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +90 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4018",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 3.52,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +120 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4019",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 4.4,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +150 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4020",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 5.28,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +180 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5281",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 10.56,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +360 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5282",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 16.5,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +720 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5283",
+    "platform": "YouTube",
+    "category": "بث مباشر",
+    "price": 33,
+    "min": 50,
+    "max": 500000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +1440 دقيقة |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4516",
+    "platform": "Instagram",
+    "category": "متابعين مصريين",
+    "price": 3.1625,
+    "min": 1000,
+    "max": 1000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "37 ساعات 43 دقائق",
+    "description": "متابعين إنستغرام | 🎯حسابات عربية أكونتات نشطة 100٪ |🔥ممول من الاعلانات"
+  },
+  {
+    "id": "5808",
+    "platform": "Instagram",
+    "category": "متابعين مصريين",
+    "price": 4.35,
+    "min": 1000,
+    "max": 25000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+1 - 3 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🎯حسابات مصرية |⚡السرعة +1 - 3 ألف/اليوم |✅ضمان مدى الحياة [0 - 48 ساعة]"
+  },
+  {
+    "id": "3053",
+    "platform": "Instagram",
+    "category": "متابعين مصريين",
+    "price": 3,
+    "min": 1000,
+    "max": 25000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500 - 1 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🎯حسابات مصرية |⚡السرعة +500 - 1 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "3480",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 1.375,
+    "min": 50,
+    "max": 1000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "13 ساعات 43 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +1 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3481",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 1.485,
+    "min": 50,
+    "max": 5000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "26 ساعات",
+    "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3482",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 1.65,
+    "min": 50,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "12 ساعات 12 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3483",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 1.98,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "5 ساعات 22 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "3484",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 1.243,
+    "min": 50,
+    "max": 1000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+1 ألف/اليوم",
+    "avgTime": "7 ساعات 54 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +1 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3485",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 1.5255,
+    "min": 50,
+    "max": 5000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+5 ألف/اليوم",
+    "avgTime": "19 ساعات 57 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3486",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 2.034,
+    "min": 50,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "2 ساعات 15 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "3487",
+    "platform": "Instagram",
+    "category": "لايكات",
+    "price": 2.26,
+    "min": 20,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "72 ساعات 41 دقائق",
+    "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "3054",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 5.5,
+    "min": 100,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "44 ساعات 53 دقائق",
+    "description": "إعجابات إنستغرام |🎯حسابات مصرية |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5274",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 5.5,
+    "min": 100,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "10 ساعات 15 دقائق",
+    "description": "إعجابات إنستغرام |🎯حسابات مصرية إناث |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "5696",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 5.5,
+    "min": 20,
+    "max": 1000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "45 ساعات 54 دقائق",
+    "description": "إعجابات إنستغرام |🎯حسابات سعودية |⚡السرعة 10 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "5718",
+    "platform": "Instagram",
+    "category": "مشاهدات ستوري",
+    "price": 0.099,
+    "min": 20,
+    "max": 2000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات إستورى إنستغرام جميع الإستوريز |🎯100% حسابات مصرية وعريبة |🔥بداية فورية"
+  },
+  {
+    "id": "3055",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0061,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 مليون",
+    "avgTime": "56 دقائق",
+    "description": "مشاهدات إنستغرام |🎯حسابات مصرية |⚡السرعة 1 مليون |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4724",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0061,
+    "min": 100,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "1 مليون",
+    "avgTime": "1 ساعة 6 دقائق",
+    "description": "مشاهدات إنستغرام |🎯حسابات عربية |⚡السرعة 1 مليون |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4666",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 11,
+    "min": 30,
+    "max": 20000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "30 ساعات 2 دقائق",
+    "description": "تعليقات إنستغرام عشوائية |🎯حسابات مصرية |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4663",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 11,
+    "min": 30,
+    "max": 20000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "28 ساعات 13 دقائق",
+    "description": "تعليقات إنستغرام مخصصة |🎯حسابات مصرية |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "4057",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 0.616,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "1 ساعة 37 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4215",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 0.66,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "4 ساعات 23 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4058",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.0171,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "4060",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.842,
+    "min": 50,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "9 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "5440",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.068,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "180",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 2.695,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "5 ساعات 49 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان"
+  },
+  {
+    "id": "181",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 2.915,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "19 ساعات 43 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "182",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 2.97,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "183",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.025,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "7 ساعات 57 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "184",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.135,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "22 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "185",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.245,
+    "min": 10,
+    "max": 5000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "2 ساعات 34 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4217",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 3.63,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان (إلغاء تلقائى عند تفعيل الإبلاغ للمراجعه)"
+  },
+  {
+    "id": "4501",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.18,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان (إلغاء تلقائى عند تفعيل الإبلاغ للمراجعه)"
+  },
+  {
+    "id": "4499",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.29,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان (إلغاء تلقائى عند تفعيل الإبلاغ للمراجعه)"
+  },
+  {
+    "id": "5492",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.4,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان (إلغاء تلقائى عند تفعيل الإبلاغ للمراجعه)"
+  },
+  {
+    "id": "4490",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.565,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "52 دقائق",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان (إلغاء تلقائى عند تفعيل الإبلاغ للمراجعه)"
+  },
+  {
+    "id": "5343",
+    "platform": "Instagram",
+    "category": "متابعين",
+    "price": 4.73,
+    "min": 10,
+    "max": 10000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة (إلغاء تلقائى عند تفعيل الإبلاغ للمراجعه)"
+  },
+  {
+    "id": "4551",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.1198,
+    "min": 10,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "1 ساعة 50 دقائق",
+    "description": "إعجابات إنستغرام سريعة | 🔥بداية فورية"
+  },
+  {
+    "id": "3813",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.1318,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "2 ساعات 5 دقائق",
+    "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅30 يوم ضمان"
+  },
+  {
+    "id": "3238",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.1395,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "1 ساعة",
+    "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅60 يوم ضمان"
+  },
+  {
+    "id": "3814",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.1439,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "11 ساعات 47 دقائق",
+    "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅90 يوم ضمان"
+  },
+  {
+    "id": "3815",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.1483,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "1 ساعة 56 دقائق",
+    "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅365 يوم ضمان"
+  },
+  {
+    "id": "3237",
+    "platform": "Instagram",
+    "category": "إعجابات",
+    "price": 0.1538,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "30 دقائق",
+    "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "4078",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 4.025,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "2 ساعات 11 دقائق",
+    "description": "تعليقات إيموجى إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "5023",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 3.85,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "4 ساعات 4 دقائق",
+    "description": "تعليقات إيموجى إنستغرام إيجابى | 💚🥰🌺👍🏼👑 |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "5024",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 6.05,
+    "min": 5,
+    "max": 10000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "6 دقائق",
+    "description": "تعليقات إيموجى إنستغرام سلبى | 😔🤮💔😈🥵 |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "4077",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 3.52,
+    "min": 10,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "6 ساعات 33 دقائق",
+    "description": "تعليقات عشوائية إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "4079",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 5.5,
+    "min": 10,
+    "max": 50000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "2 ساعات 19 دقائق",
+    "description": "تعليقات عشوائية إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "4080",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 0.77,
+    "min": 20,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "5 ساعات 26 دقائق",
+    "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "4578",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 0.825,
+    "min": 20,
+    "max": 100000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "1 ساعة 53 دقائق",
+    "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "4577",
+    "platform": "Instagram",
+    "category": "تعليقات",
+    "price": 5.5,
+    "min": 10,
+    "max": 20000,
+    "guarantee": true,
+    "refill": true,
+    "speed": "+500",
+    "avgTime": "174 ساعات 59 دقائق",
+    "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان"
+  },
+  {
+    "id": "5021",
+    "platform": "Instagram",
+    "category": "تعليقات موثقة",
+    "price": 0.165,
+    "min": 1,
+    "max": 1,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "4 ساعات 51 دقائق",
+    "description": "كومنتات انستغرام |✅حساب موثق بالعلامة الزرقاء | 1 كومنت | 🔥أرخص سعر"
+  },
+  {
+    "id": "5022",
+    "platform": "Instagram",
+    "category": "تعليقات موثقة",
+    "price": 0.198,
+    "min": 1,
+    "max": 1,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "كومنتات انستغرام |✅حساب موثق بالعلامة الزرقاء | 2 كومنت | 🔥أرخص سعر"
+  },
+  {
+    "id": "4545",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0015,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "1 مليون",
+    "avgTime": "2 ساعات 40 دقائق",
+    "description": "مشاهدات إنستغرام |🔥بداية فورية |⚡السرعة 1 مليون |🔥جميع أنواع الفيديوهات"
+  },
+  {
+    "id": "5338",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0018,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "46 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥جميع أنواع الفيديوهات"
+  },
+  {
+    "id": "4455",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0019,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "4 ساعات 16 دقائق",
+    "description": "مشاهدات إنستغرام |🔥 جميع الروابط |⚡ بداية فورية"
+  },
+  {
+    "id": "4065",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.002,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "2 ساعات 12 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4070",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0021,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "28 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4066",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0022,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "36 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4067",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0071,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "36 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4546",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0083,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "57 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4068",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0087,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "20 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4069",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0093,
+    "min": 50,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "27 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4860",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0099,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "26 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "5805",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0105,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "1 ساعة 1 دقيقة",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4861",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.011,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "27 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4862",
+    "platform": "Instagram",
+    "category": "مشاهدات",
+    "price": 0.0121,
+    "min": 100,
+    "max": 217545811,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "32 دقائق",
+    "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى"
+  },
+  {
+    "id": "4001",
+    "platform": "Instagram",
+    "category": "إعادة نشر",
+    "price": 0.4394,
+    "min": 1,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "4 ساعات 5 دقائق",
+    "description": "إعاده نشر إنستجرام |⚡السرعة +50 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "4102",
+    "platform": "Instagram",
+    "category": "إعادة نشر",
+    "price": 0.4758,
+    "min": 1,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+10 ألف/اليوم",
+    "avgTime": "6 ساعات 32 دقائق",
+    "description": "إعاده نشر إنستجرام |⚡السرعة +10 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "4758",
+    "platform": "Instagram",
+    "category": "مشاهدات ستوري",
+    "price": 0.11,
+    "min": 100,
+    "max": 5000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "5 ألف/اليوم",
+    "avgTime": "1 ساعة 27 دقائق",
+    "description": "مشاهدات إستوري إنستغرام |✨أخر إستورى فقط |⚡السرعة 5 ألف/اليوم |🔥 بداية فورية"
+  },
+  {
+    "id": "4759",
+    "platform": "Instagram",
+    "category": "تصويت ستوري",
+    "price": 1.188,
+    "min": 100,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تصويت إستورى إنستجرام = 1 | ✨حد أقصى 1 مليون |🔥بداية فورية"
+  },
+  {
+    "id": "4760",
+    "platform": "Instagram",
+    "category": "تصويت ستوري",
+    "price": 1.188,
+    "min": 100,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "تصويت إستورى إنستجرام = 2 | ✨حد أقصى 1 مليون |🔥بداية فورية"
+  },
+  {
+    "id": "4762",
+    "platform": "Instagram",
+    "category": "ستوري",
+    "price": 1.771,
+    "min": 100,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "10 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "انستقرام ستوري رفع الشاشة للأعلى |✨حد أقصى 1 مليون |⚡السرعة 10 ألف/اليوم |🔥 سريعة"
+  },
+  {
+    "id": "218",
+    "platform": "Instagram",
+    "category": "مشاركات",
+    "price": 0.022,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "52 دقائق",
+    "description": "مشاراكات منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "5994",
+    "platform": "Instagram",
+    "category": "مشاركات",
+    "price": 0.0275,
+    "min": 100,
+    "max": 2147483647,
+    "guarantee": true,
+    "refill": true,
+    "speed": "فوري",
+    "avgTime": "9 دقائق",
+    "description": "مشاراكات منشور إنستجرام |🔥بداية فورية |✅ضمان مدى الحياة"
+  },
+  {
+    "id": "419",
+    "platform": "Instagram",
+    "category": "مشاركات",
+    "price": 0.44,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاراكات منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "437",
+    "platform": "Instagram",
+    "category": "مشاركات + انطباعات",
+    "price": 0.4004,
+    "min": 100,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "2 دقائق",
+    "description": "مشاراكات + إنطباعات منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "692",
+    "platform": "Instagram",
+    "category": "مشاركات + انطباعات + وصول",
+    "price": 0.8134,
+    "min": 100,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاراكات + إنطباعات + وصول منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "693",
+    "platform": "Instagram",
+    "category": "مشاركات + انطباعات + وصول + زيارات",
+    "price": 0.84,
+    "min": 100,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "1 دقيقة",
+    "description": "مشاراكات + إنطباعات + وصول + زيارات حساب منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "539",
+    "platform": "Instagram",
+    "category": "انطباعات",
+    "price": 0.0275,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "4 ساعات 41 دقائق",
+    "description": "إنطباعات منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "569",
+    "platform": "Instagram",
+    "category": "انطباعات",
+    "price": 0.0483,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إنطباعات منشور إنستجرام |⚡50 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "680",
+    "platform": "Instagram",
+    "category": "انطباعات",
+    "price": 0.0438,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إنطباعات منشور إنستجرام |⚡100 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "580",
+    "platform": "Instagram",
+    "category": "انطباعات",
+    "price": 0.0957,
+    "min": 10,
+    "max": 200000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إنطباعات منشور إنستجرام | صور + إكسبلور + الصفحة الرئيسية |🔥بداية فورية"
+  },
+  {
+    "id": "614",
+    "platform": "Instagram",
+    "category": "انطباعات + وصول",
+    "price": 0.33,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "2 ساعات 47 دقائق",
+    "description": "إنطباعات + وصول منشور إنستجرام 🔥جودة مرتفعة"
+  },
+  {
+    "id": "699",
+    "platform": "Instagram",
+    "category": "انطباعات + وصول",
+    "price": 0.4833,
+    "min": 100,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "100 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "إنطباعات + وصول منشور إنستجرام |⚡100 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "672",
+    "platform": "Instagram",
+    "category": "وصول",
+    "price": 0.11,
+    "min": 10,
+    "max": 100000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "30 دقائق",
+    "description": "وصول منشور إنستجرام |🔥بداية فورية [الأرخص]"
+  },
+  {
+    "id": "543",
+    "platform": "Instagram",
+    "category": "وصول",
+    "price": 0.22,
+    "min": 10,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "12 دقائق",
+    "description": "وصول منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "583",
+    "platform": "Instagram",
+    "category": "وصول + انطباعات",
+    "price": 0.0966,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "وصول + إنطباعات منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "700",
+    "platform": "Instagram",
+    "category": "وصول + انطباعات",
+    "price": 0.1089,
+    "min": 100,
+    "max": 250000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "51 دقائق",
+    "description": "وصول + 100% إنطباعات منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "636",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.0028,
+    "min": 5,
+    "max": 50000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "4 ساعات 38 دقائق",
+    "description": "حفظ منشور إنستجرام |🔥بداية فورية [الأرخص]"
+  },
+  {
+    "id": "4462",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.11,
+    "min": 10,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "3 ساعات 57 دقائق",
+    "description": "حفظ منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "4463",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.066,
+    "min": 10,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "7 ساعات 46 دقائق",
+    "description": "حفظ منشور إنستجرام |🔥بداية فورية"
+  },
+  {
+    "id": "533",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.0033,
+    "min": 5,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "4 ساعات 50 دقائق",
+    "description": "حفظ منشور إنستجرام |⚡السرعة +50 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "545",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.0025,
+    "min": 5,
+    "max": 1000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+100 ألف/اليوم",
+    "avgTime": "5 ساعات 3 دقائق",
+    "description": "حفظ منشور إنستجرام |⚡السرعة +100 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "596",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.0028,
+    "min": 10,
+    "max": 80000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+80 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "حفظ منشور إنستجرام |⚡السرعة +80 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "637",
+    "platform": "Instagram",
+    "category": "حفظ",
+    "price": 0.0044,
+    "min": 5,
+    "max": 30000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+30 ألف/اليوم",
+    "avgTime": "3 ساعات 58 دقائق",
+    "description": "حفظ منشور إنستجرام |⚡السرعة +30 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "271",
+    "platform": "Instagram",
+    "category": "زيارات للحساب",
+    "price": 0.0253,
+    "min": 100,
+    "max": 500000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "زيارات إنستجرام للحسابات |🔥بداية فورية [الأرخص]"
+  },
+  {
+    "id": "279",
+    "platform": "Instagram",
+    "category": "زيارات للحساب",
+    "price": 0.0968,
+    "min": 100,
+    "max": 5000000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "زيارات إنستجرام للحسابات |🔥بداية فورية"
+  },
+  {
+    "id": "272",
+    "platform": "Instagram",
+    "category": "زيارات للحساب",
+    "price": 0.1203,
+    "min": 10,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "زيارات إنستجرام للحسابات |⚡السرعة +50 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "273",
+    "platform": "Instagram",
+    "category": "زيارات للحساب + وصول + انطباعات",
+    "price": 0.5192,
+    "min": 100,
+    "max": 100000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "+50 ألف/اليوم",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "زيارات إنستجرام للحسابات + وصول + إنطباعات |⚡السرعة +50 ألف/اليوم |🔥بداية فورية"
+  },
+  {
+    "id": "270",
+    "platform": "Instagram",
+    "category": "لايك لتعليق",
+    "price": 5.0731,
+    "min": 20,
+    "max": 10000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "فوري",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "لايكات لتعليقات إنستجرام |🔥بداية فورية [الأرخص]"
+  },
+  {
+    "id": "5496",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 1.386,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 30 دقيقة ] ✨"
+  },
+  {
+    "id": "5497",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 2.772,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 60 دقيقة ] ✨"
+  },
+  {
+    "id": "5498",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 4.158,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "1 دقيقة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 90 دقيقة ] ✨"
+  },
+  {
+    "id": "5499",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 5.544,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 120 دقيقة ] ✨"
+  },
+  {
+    "id": "5500",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 8.316,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 180 دقيقة ] ✨"
+  },
+  {
+    "id": "5501",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 11.088,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 240 دقيقة ] ✨"
+  },
+  {
+    "id": "5502",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 16.632,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "6 دقائق",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 360 دقيقة ] ✨"
+  },
+  {
+    "id": "5503",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 33.264,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "21 دقائق",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 720 دقيقة ] ✨"
+  },
+  {
+    "id": "5504",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 66.528,
+    "min": 10,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 1440 دقيقة ] ✨"
+  },
+  {
+    "id": "4971",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 1.3673,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 15 دقيقة ] ✨"
+  },
+  {
+    "id": "4972",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 2.7346,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 30 دقيقة ] ✨"
+  },
+  {
+    "id": "4973",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 5.4692,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 60 دقيقة ] ✨"
+  },
+  {
+    "id": "4974",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 8.2038,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 90 دقيقة ] ✨"
+  },
+  {
+    "id": "4975",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 10.9384,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 120 دقيقة ] ✨"
+  },
+  {
+    "id": "4976",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 16.4076,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 180 دقيقة ] ✨"
+  },
+  {
+    "id": "4977",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 21.8768,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 240 دقيقة ] ✨"
+  },
+  {
+    "id": "4978",
+    "platform": "Instagram",
+    "category": "بث مباشر",
+    "price": 32.8152,
+    "min": 100,
+    "max": 20000,
+    "guarantee": false,
+    "refill": false,
+    "speed": "سريع",
+    "avgTime": "المعلومات غير كاملة",
+    "description": "مشاهدات بث مباشر إنستجرام لمدة [ 360 دقيقة ] ✨"
+  }
+]
