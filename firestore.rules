@@ -3,62 +3,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --- Helper Functions ---
-
-    // Admin check: List of admin emails
-    function isAdmin() {
-      let adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
-      return request.auth != null && request.auth.token.email in adminEmails;
-    }
-
-    // Ownership check
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    // --- Rules for Specific Collections ---
-
-    // USERS collection:
-    // Read: Admins can read any user profile. Users can only read their own.
-    // Create: Users can create their own profile.
-    // Update: Admins can update any field. Users can only update specific, non-critical fields.
-    // Delete: Only admins can delete user profiles.
-    match /users/{userId} {
-      allow read: if isAdmin() || isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isAdmin() || 
-                       (isOwner(userId) && request.resource.data.keys().hasOnly(['name', 'avatarUrl', 'notificationPreferences'])) ||
-                       (isOwner(userId) && request.resource.data.keys().hasAll(['balance', 'adBalance']) && request.resource.data.size() == 2 && request.resource.data.balance < resource.data.balance);
-      allow delete: if isAdmin();
-
-      // USER Subcollections:
-      // Admins have full access. Users can only access their own subcollections.
-      match /{subcollection}/{docId} {
-        allow read, write: if isAdmin() || isOwner(userId);
-      }
-    }
-
-    // SERVICES, BLOGS, SETTINGS:
-    // Read: Any authenticated user can read.
-    // Write: Only admins can write.
-    match /services/{serviceId} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-    match /blogPosts/{blogPostId} {
-        allow read: if request.auth != null;
-        allow write: if isAdmin();
-    }
-    match /settings/{settingId} {
-        allow read: if request.auth != null;
-        allow write: if isAdmin();
-    }
-
-    // SYSTEM LOGS:
-    // Read/Write: Only admins can access.
-    match /systemLogs/{logId} {
-        allow read, write: if isAdmin();
+    // Allow read/write access to all authenticated users
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
