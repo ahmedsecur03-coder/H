@@ -90,7 +90,7 @@ function Header() {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href} passHref>
+                    <Link href={item.href} passHref legacyBehavior>
                         <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), pathname === item.href ? 'text-primary' : '')}>
                            <a>{item.label}</a>
                         </NavigationMenuLink>
