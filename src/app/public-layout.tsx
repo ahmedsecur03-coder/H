@@ -78,20 +78,16 @@ function Header() {
                       <NavigationMenuContent>
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                           {item.children.map((component) => (
-                            <ListItem
-                              key={component.label}
-                              title={component.label}
-                              href={component.href}
-                            >
-                              {/* You can add descriptions for each item here if you want */}
-                            </ListItem>
+                             <Link key={component.label} href={component.href} legacyBehavior passHref>
+                                <ListItem title={component.label} />
+                             </Link>
                           ))}
                         </ul>
                       </NavigationMenuContent>
                     </>
                   ) : (
                     <Link href={item.href} legacyBehavior passHref>
-                        <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), pathname === item.href ? 'text-primary' : '')}>
+                        <NavigationMenuLink active={pathname === item.href} className={navigationMenuTriggerStyle()}>
                            {item.label}
                         </NavigationMenuLink>
                     </Link>
