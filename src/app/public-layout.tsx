@@ -78,9 +78,7 @@ function Header() {
                       <NavigationMenuContent>
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                           {item.children.map((component) => (
-                             <Link key={component.label} href={component.href} legacyBehavior passHref>
-                                <ListItem title={component.label} />
-                             </Link>
+                             <ListItem key={component.label} href={component.href} title={component.label} />
                           ))}
                         </ul>
                       </NavigationMenuContent>
