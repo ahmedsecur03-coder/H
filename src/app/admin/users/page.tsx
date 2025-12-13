@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Shield } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { EditUserDialog } from './_components/edit-user-dialog';
@@ -42,7 +42,7 @@ export default function AdminUsersPage() {
      if (isLoading) {
       return Array.from({length: 5}).map((_, i) => (
          <TableRow key={i}>
-            {Array.from({length: 7}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+            {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
          </TableRow>
       ));
     }
@@ -50,7 +50,7 @@ export default function AdminUsersPage() {
     if (!filteredUsers || filteredUsers.length === 0) {
         return (
             <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">لا يوجد مستخدمون يطابقون بحثك.</TableCell>
+                <TableCell colSpan={8} className="h-24 text-center">لا يوجد مستخدمون يطابقون بحثك.</TableCell>
             </TableRow>
         );
     }
@@ -60,6 +60,12 @@ export default function AdminUsersPage() {
         <TableCell>
           <div className="font-medium">{user.name}</div>
           <div className="text-sm text-muted-foreground">{user.email}</div>
+        </TableCell>
+        <TableCell>
+            <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
+              {user.role === 'admin' ? <Shield className="w-3 h-3 ml-1" /> : null}
+              {user.role || 'user'}
+            </Badge>
         </TableCell>
         <TableCell>
             <Badge variant="secondary">{user.rank}</Badge>
@@ -103,6 +109,7 @@ export default function AdminUsersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>المستخدم</TableHead>
+                <TableHead>الدور</TableHead>
                 <TableHead>الرتبة</TableHead>
                 <TableHead>الرصيد</TableHead>
                 <TableHead>رصيد الإعلانات</TableHead>

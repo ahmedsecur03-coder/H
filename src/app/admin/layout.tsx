@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from 'next/link';
@@ -20,13 +19,14 @@ import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { UserNav } from '@/app/(dashboard)/_components/user-nav';
-import { useUser } from '@/firebase';
+import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { doc } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 
-const ADMIN_EMAILS = ['hagaaty@gmail.com', 'admin@gmail.com'];
 
 function AdminHeader() {
   const { user } = useUser();
@@ -87,21 +87,25 @@ export default function AdminLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
 
   useEffect(() => {
-    if (!isUserLoading) {
+    if (!isUserLoading && !isUserDataLoading) {
       if (!user) {
-        // If not logged in, redirect to login page
         router.push('/login');
-      } else if (!ADMIN_EMAILS.includes(user.email || '')) {
-        // If logged in but not an admin, redirect to user dashboard
+      } else if (userData?.role !== 'admin') {
         router.push('/dashboard');
       }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, userData, isUserLoading, isUserDataLoading, router]);
+
+  const isLoading = isUserLoading || isUserDataLoading;
 
   // Show a loading skeleton while checking auth and permissions
-  if (isUserLoading || !user || !ADMIN_EMAILS.includes(user.email || '')) {
+  if (isLoading || !user || userData?.role !== 'admin') {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden md:block w-64 bg-muted/40 border-l p-4">

@@ -5,6 +5,7 @@ export type User = {
   email: string;
   avatarUrl?: string;
   rank: 'مستكشف نجمي' | 'قائد صاروخي' | 'سيد المجرة' | 'سيد كوني';
+  role?: 'admin' | 'user';
   balance: number;
   adBalance: number;
   totalSpent: number;

@@ -19,17 +19,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
-import type { NestedNavItem } from '@/lib/types';
+import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BottomNavBar } from './_components/bottom-nav';
 import { MobileHeader } from './_components/mobile-header';
 import { ChevronDown, Shield } from 'lucide-react';
+import { doc } from 'firebase/firestore';
 
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
@@ -113,14 +114,20 @@ export default function DashboardLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
         router.push('/login');
     }
   }, [user, isUserLoading, router]);
+  
+  const isLoading = isUserLoading || isUserDataLoading;
 
-  if (isUserLoading || !user) {
+  if (isLoading || !user) {
     return (
         <div className="flex min-h-screen w-full">
             <div className="hidden md:block w-64 bg-muted/40 border-l p-4">
@@ -149,8 +156,7 @@ export default function DashboardLayout({
     );
   }
   
-  const adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
-  const isAdmin = adminEmails.includes(user.email || '');
+  const isAdmin = userData?.role === 'admin';
 
   return (
     <SidebarProvider>

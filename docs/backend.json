@@ -44,6 +44,11 @@
           "type": "string",
           "description": "User's rank in the system (e.g., مستكشف نجمي, قائد صاروخي, سيد المجرة, سيد كوني)."
         },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "User's role in the system."
+        },
         "referralCode": {
           "type": "string",
           "description": "Unique referral code for the user."

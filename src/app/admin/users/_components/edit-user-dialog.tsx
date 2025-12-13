@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFirestore } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
@@ -16,6 +16,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
 const RANKS: User['rank'][] = ['مستكشف نجمي', 'قائد صاروخي', 'سيد المجرة', 'سيد كوني'];
+const ROLES: Exclude<User['role'], undefined>[] = ['user', 'admin'];
 
 export function EditUserDialog({ user, children, onUserUpdate }: { user: User, children: React.ReactNode, onUserUpdate: () => void }) {
     const firestore = useFirestore();
@@ -25,6 +26,17 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
     const [balance, setBalance] = useState(String(user.balance ?? 0));
     const [adBalance, setAdBalance] = useState(String(user.adBalance ?? 0));
     const [rank, setRank] = useState(user.rank);
+    const [role, setRole] = useState(user.role || 'user');
+
+    useEffect(() => {
+        if (open) {
+            setBalance(String(user.balance ?? 0));
+            setAdBalance(String(user.adBalance ?? 0));
+            setRank(user.rank);
+            setRole(user.role || 'user');
+        }
+    }, [user, open]);
+
 
     const handleSave = async () => {
         if (!firestore) return;
@@ -43,6 +55,7 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
             balance: balanceValue,
             adBalance: adBalanceValue,
             rank: rank,
+            role: role,
         };
 
         try {
@@ -85,6 +98,15 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
                             <SelectTrigger id="rank"><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 {RANKS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="role">الدور</Label>
+                        <Select value={role} onValueChange={(value) => setRole(value as Exclude<User['role'], undefined>)}>
+                            <SelectTrigger id="role"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {ROLES.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
