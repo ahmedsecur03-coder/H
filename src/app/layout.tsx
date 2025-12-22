@@ -4,13 +4,22 @@ import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
-import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { WhatsAppIcon } from '@/components/ui/icons';
+
 
 const fontSans = Tajawal({
   subsets: ['arabic'],
-  weight: ['400', '700'],
+  weight: ['400', '500', '700', '800'],
   variable: '--font-sans',
+});
+
+const fontHeadline = Tajawal({
+  subsets: ['arabic'],
+  weight: ['800'],
+  variable: '--font-headline',
 });
 
 
@@ -25,6 +34,24 @@ export const viewport: Viewport = {
   themeColor: '#0c1222',
 };
 
+function WhatsappSupportButton() {
+  // In a real app, this would be fetched from a global settings/config
+  const whatsappLink = "https://wa.me/201000000000"; // Replace with your number
+
+  return (
+    <Button
+      asChild
+      className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 text-white hover:scale-110 transition-transform duration-300"
+      size="icon"
+    >
+      <Link href={whatsappLink} target="_blank">
+        <WhatsAppIcon className="h-7 w-7" />
+        <span className="sr-only">تواصل معنا عبر واتساب</span>
+      </Link>
+    </Button>
+  );
+}
+
 
 export default function RootLayout({
   children,
@@ -36,7 +63,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
-      <body className={cn('font-sans antialiased bg-background', fontSans.variable)}>
+      <body className={cn('font-sans antialiased bg-background', fontSans.variable, fontHeadline.variable)}>
          <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -45,7 +72,7 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             {children}
-            <DynamicAiAssistant />
+            <WhatsappSupportButton />
             <Toaster />
           </FirebaseClientProvider>
         </ThemeProvider>

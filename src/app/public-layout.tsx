@@ -21,7 +21,9 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { ThemeProvider } from '@/components/theme-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
+
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -139,7 +141,7 @@ export default function PublicLayout({
 }) {
 
   return (
-    <div className="flex flex-col min-h-screen">
+     <div className="flex min-h-screen flex-col font-sans antialiased">
        <CosmicBackground />
       <Header />
       <main className="flex-1 z-10">
