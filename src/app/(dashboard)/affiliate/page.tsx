@@ -1,4 +1,5 @@
 
+'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,7 @@ import { cn } from "@/lib/utils";
 import React from 'react';
 import { AFFILIATE_LEVELS } from '@/lib/service';
 import { WithdrawalDialog } from "./_components/withdrawal-dialog";
-import { getAuthenticatedUser } from "@/firebase/server-auth";
-import { initializeFirebaseServer } from "@/firebase/server";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, orderBy, limit, getDoc, getDocs } from "firebase/firestore";
 import { CopyButton } from "./_components/copy-button";
 
@@ -83,13 +83,28 @@ function NetworkTree({ userData }: { userData: UserType }) {
     );
 }
 
-async function TransactionHistoryTable({ userId }: { userId: string }) {
-    const { firestore } = initializeFirebaseServer();
-    if(!firestore) return null;
+function TransactionHistoryTable({ userId }: { userId: string }) {
+    const firestore = useFirestore();
 
-    const transactionsQuery = query(collection(firestore, `users/${userId}/affiliateTransactions`), orderBy('transactionDate', 'desc'), limit(10));
-    const snapshot = await getDocs(transactionsQuery);
-    const transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as AffiliateTransaction);
+    const transactionsQuery = useMemoFirebase(() => 
+        firestore ? query(collection(firestore, `users/${userId}/affiliateTransactions`), orderBy('transactionDate', 'desc'), limit(10)) : null,
+        [firestore, userId]
+    );
+    const { data: transactions, isLoading } = useCollection<AffiliateTransaction>(transactionsQuery);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-4 w-3/4 mt-2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-40" />
+                </CardContent>
+            </Card>
+        );
+    }
 
 
     return (
@@ -132,27 +147,17 @@ async function TransactionHistoryTable({ userId }: { userId: string }) {
     );
 }
 
-async function getData(userId: string) {
-    const { firestore } = initializeFirebaseServer();
-    if(!firestore) return { userData: null };
+export default function AffiliatePage() {
+    const { user: authUser, isUserLoading } = useUser();
+    const firestore = useFirestore();
 
-    const userDocRef = doc(firestore, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
+    const userDocRef = useMemoFirebase(() => (authUser ? doc(firestore, 'users', authUser.uid) : null), [authUser, firestore]);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<UserType>(userDocRef);
 
-    return {
-        userData: userDoc.exists() ? { id: userDoc.id, ...userDoc.data() } as UserType : null
-    }
-}
+    const isLoading = isUserLoading || isUserDataLoading;
 
-
-export default async function AffiliatePage() {
-    const { user: authUser } = await getAuthenticatedUser();
-    if (!authUser) return null;
-
-    const { userData } = await getData(authUser.uid);
-
-    if (!userData) {
-        return <p>لا يمكن تحميل بيانات المستخدم.</p>
+    if (isLoading || !userData) {
+        return <AffiliateSkeleton />;
     }
     
     const referralLink = `https://hajaty.com/signup?ref=${userData.referralCode}`;
@@ -255,9 +260,9 @@ export default async function AffiliatePage() {
                 <NetworkTree userData={userData} />
             </div>
         </div>
-
-        <TransactionHistoryTable userId={authUser.uid} />
-
+        {authUser && <TransactionHistoryTable userId={authUser.uid} />}
     </div>
   );
 }
+
+    

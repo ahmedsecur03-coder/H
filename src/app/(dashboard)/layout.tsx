@@ -1,4 +1,5 @@
 
+'use client';
 
 import Link from 'next/link';
 import {
@@ -19,21 +20,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { useRouter, usePathname } from 'next/navigation';
-import { UserNav } from './_components/user-nav';
+import { UserNav } from '@/app/(dashboard)/_components/user-nav';
 import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { BottomNavBar } from './_components/bottom-nav';
-import { MobileHeader } from './_components/mobile-header';
+import { BottomNavBar } from '@/app/(dashboard)/_components/bottom-nav';
+import { MobileHeader } from '@/app/(dashboard)/_components/mobile-header';
 import { ChevronDown, Shield } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
 import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
-import { getAuthenticatedUser } from '@/firebase/server-auth';
-import { initializeFirebaseServer } from '@/firebase/server';
+import { redirect, usePathname } from 'next/navigation';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+
 
 function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
   const appUser = {
@@ -68,7 +68,7 @@ function NavItems() {
 
     if (item.children) {
       return (
-        <SidebarMenuItem key={`${item.label}-${index}`} asChild>
+        <SidebarMenuItem key={`${item.label}-${index}`}>
             <SidebarMenuSub>
                 <SidebarMenuSubTrigger>
                     <div className='flex items-center gap-2'>
@@ -93,7 +93,7 @@ function NavItems() {
     }
 
     return (
-      <SidebarMenuItem key={`${item.label}-${index}`} asChild>
+      <SidebarMenuItem key={`${item.label}-${index}`}>
         <Link href={item.href || '#'} passHref>
           <SidebarMenuButton isActive={isActive}>
             {Icon && <Icon />}
@@ -108,74 +108,75 @@ function NavItems() {
 }
 
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = await getAuthenticatedUser();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
 
-  if (!user) {
-    // In a real app, you'd redirect here
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center">
-        <p>يرجى تسجيل الدخول للوصول إلى لوحة التحكم.</p>
-      </div>
-    );
-  }
+    const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
+    
+    React.useEffect(() => {
+        if(!isUserLoading && !user) {
+            redirect('/login');
+        }
+    }, [isUserLoading, user]);
 
-  const { firestore } = initializeFirebaseServer();
-  let userData: User | null = null;
-  if(firestore) {
-    const userDocRef = doc(firestore, `users/${user.uid}`);
-    const userDoc = await getDoc(userDocRef);
-    if(userDoc.exists()) {
-        userData = userDoc.data() as User;
-    }
-  }
-
-  const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
-  const rank = getRankForSpend(userData?.totalSpent ?? 0);
-
-  return (
-    <SidebarProvider>
-      <Sidebar side="right" collapsible="icon" className="hidden md:block">
-        <SidebarHeader>
-          <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
-             <Logo />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            <NavItems />
-          </SidebarMenu>
-        </SidebarContent>
-         <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
-             <div className="flex items-center gap-3 p-2">
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
-                    <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                 <div>
-                    <p className="font-semibold text-sm">{user.displayName}</p>
-                    <p className="text-xs text-muted-foreground">{rank.name}</p>
-                 </div>
+    if (isUserLoading || isUserDataLoading || !user || !userData) {
+      return (
+           <div className="flex min-h-screen w-full items-center justify-center">
+                <p>جاري التحميل...</p>
             </div>
-        </SidebarFooter>
-      </Sidebar>
-      
-      <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
-        <MobileHeader isAdmin={isAdmin} />
-        <DesktopHeader isAdmin={isAdmin} user={user} />
-        
-        <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
-          {children}
-        </main>
-        
-        <BottomNavBar />
-        <DynamicAiAssistant />
-      </div>
+      )
+    }
+  
+    const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
+    const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
-    </SidebarProvider>
-  );
+    return (
+        <SidebarProvider>
+        <Sidebar side="right" collapsible="icon" className="hidden md:block">
+            <SidebarHeader>
+            <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
+                <Logo />
+            </div>
+            </SidebarHeader>
+            <SidebarContent>
+            <SidebarMenu>
+                <NavItems />
+            </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
+                <div className="flex items-center gap-3 p-2">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold text-sm">{user.displayName}</p>
+                        <p className="text-xs text-muted-foreground">{rank.name}</p>
+                    </div>
+                </div>
+            </SidebarFooter>
+        </Sidebar>
+        
+        <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
+            <MobileHeader isAdmin={isAdmin} />
+            <DesktopHeader isAdmin={isAdmin} user={user} />
+            
+            <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
+            {children}
+            </main>
+            
+            <BottomNavBar />
+            <DynamicAiAssistant />
+        </div>
+
+        </SidebarProvider>
+    );
 }
+
+    

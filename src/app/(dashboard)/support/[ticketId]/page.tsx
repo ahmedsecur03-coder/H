@@ -1,5 +1,7 @@
 
-import { notFound } from 'next/navigation';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -9,13 +11,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import type { Ticket } from '@/lib/types';
 import Link from 'next/link';
-import { getAuthenticatedUser } from '@/firebase/server-auth';
-import { initializeFirebaseServer } from '@/firebase/server';
-import { doc, getDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { TicketChat } from './_components/ticket-chat';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const statusVariant = {
@@ -24,25 +26,50 @@ const statusVariant = {
   'قيد المراجعة': 'default',
 } as const;
 
-async function getTicket(userId: string, ticketId: string): Promise<Ticket | null> {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) return null;
-    
-    const ticketDocRef = doc(firestore, `users/${userId}/tickets`, ticketId);
-    const ticketDoc = await getDoc(ticketDocRef);
 
-    if (!ticketDoc.exists()) {
-        return null;
-    }
-    return { id: ticketDoc.id, ...ticketDoc.data() } as Ticket;
+function TicketDetailsSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <Skeleton className="h-8 w-36" />
+             <Card className="flex flex-col h-[calc(100vh-14rem)]">
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <Skeleton className="h-8 w-64" />
+                            <Skeleton className="h-4 w-48 mt-2" />
+                        </div>
+                        <Skeleton className="h-8 w-24 rounded-full" />
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-6">
+                    <div className="flex justify-end"><Skeleton className="h-16 w-1/2 rounded-lg" /></div>
+                    <div className="flex justify-start"><Skeleton className="h-20 w-2/3 rounded-lg" /></div>
+                </CardContent>
+                 <CardFooter className="pt-4 border-t">
+                    <Skeleton className="h-20 w-full" />
+                 </CardFooter>
+            </Card>
+        </div>
+    );
 }
 
+export default function TicketDetailsPage() {
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  const params = useParams();
+  const ticketId = params.ticketId as string;
 
-export default async function TicketDetailsPage({ params }: { params: { ticketId: string } }) {
-  const { user } = await getAuthenticatedUser();
-  if (!user) return notFound();
+  const ticketDocRef = useMemoFirebase(
+      () => (firestore && user ? doc(firestore, `users/${user.uid}/tickets`, ticketId) : null),
+      [firestore, user, ticketId]
+  );
+  const { data: ticket, isLoading: isTicketLoading } = useDoc<Ticket>(ticketDocRef);
+  
+  const isLoading = isUserLoading || isTicketLoading;
 
-  const ticket = await getTicket(user.uid, params.ticketId);
+  if (isLoading) {
+    return <TicketDetailsSkeleton />;
+  }
 
   if (!ticket) {
     return (
@@ -82,3 +109,5 @@ export default async function TicketDetailsPage({ params }: { params: { ticketId
     </div>
   );
 }
+
+    

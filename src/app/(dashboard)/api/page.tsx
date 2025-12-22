@@ -1,31 +1,38 @@
 
+'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
-import { getAuthenticatedUser } from "@/firebase/server-auth";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import type { User as UserType } from '@/lib/types';
-import { initializeFirebaseServer } from "@/firebase/server";
-import { doc, getDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 import { ApiKeyCard } from "./_components/api-key-card";
 import { CodeExample } from "./_components/code-example";
+import { Skeleton } from "@/components/ui/skeleton";
 
-async function getData(userId: string) {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) return { userData: null };
-
-    const userDocRef = doc(firestore, 'users', userId);
-    const userDoc = await getDoc(userDocRef);
-
-    return {
-        userData: userDoc.exists() ? { id: userDoc.id, ...userDoc.data() } as UserType : null
-    }
+function ApiPageSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-9 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    );
 }
 
+export default function ApiPage() {
+    const { user } = useUser();
+    const firestore = useFirestore();
 
-export default async function ApiPage() {
-    const { user } = await getAuthenticatedUser();
-    if (!user) return null;
+    const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, 'users', user.uid) : null), [firestore, user]);
+    const { data: userData, isLoading } = useDoc<UserType>(userDocRef);
 
-    const { userData } = await getData(user.uid);
+    if (isLoading || !userData) {
+        return <ApiPageSkeleton />;
+    }
+
     const apiKey = userData?.apiKey || 'YOUR_API_KEY';
 
     const addOrderExample = `{
@@ -95,3 +102,5 @@ export default async function ApiPage() {
         </div>
     );
 }
+
+    

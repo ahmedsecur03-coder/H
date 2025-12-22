@@ -1,4 +1,5 @@
 
+'use client';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -9,13 +10,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MessageSquare } from 'lucide-react';
+import { PlusCircle, MessageSquare, Loader2 } from 'lucide-react';
 import type { Ticket } from '@/lib/types';
 import Link from 'next/link';
-import { getAuthenticatedUser } from '@/firebase/server-auth';
-import { initializeFirebaseServer } from '@/firebase/server';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { NewTicketDialog } from './_components/new-ticket-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const statusVariant = {
@@ -25,23 +26,49 @@ const statusVariant = {
 } as const;
 
 
-async function getData(userId: string) {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) return { tickets: [] };
-
-    const ticketsQuery = query(collection(firestore, `users/${userId}/tickets`), orderBy('createdDate', 'desc'));
-    const snapshot = await getDocs(ticketsQuery);
-    const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Ticket);
-
-    return { tickets };
+function SupportPageSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div className="flex justify-between items-center">
+                 <div>
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-5 w-64 mt-2" />
+                </div>
+                <Skeleton className="h-10 w-36" />
+            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-7 w-1/3" />
+                    <Skeleton className="h-4 w-1/2 mt-1" />
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <Skeleton className="h-20 w-full" />
+                        <Skeleton className="h-20 w-full" />
+                        <Skeleton className="h-20 w-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
+export default function SupportPage() {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
 
-export default async function SupportPage() {
-    const { user } = await getAuthenticatedUser();
-    if (!user) return null;
+    const ticketsQuery = useMemoFirebase(
+        () => (firestore && user ? query(collection(firestore, `users/${user.uid}/tickets`), orderBy('createdDate', 'desc')) : null),
+        [firestore, user]
+    );
 
-    const { tickets } = await getData(user.uid);
+    const { data: tickets, isLoading: isTicketsLoading } = useCollection<Ticket>(ticketsQuery);
+
+    const isLoading = isUserLoading || isTicketsLoading;
+
+    if (isLoading) {
+        return <SupportPageSkeleton />;
+    }
 
 
   return (
@@ -102,3 +129,5 @@ export default async function SupportPage() {
     </div>
   );
 }
+
+    
