@@ -68,7 +68,7 @@ export type Campaign = {
     id: string;
     userId: string;
     name: string;
-    platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat' | 'API';
+    platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
     goal: 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
     targetAudience: string;
     startDate: string;
@@ -76,11 +76,11 @@ export type Campaign = {
     budget: number;
     spend: number;
     status: 'نشط' | 'متوقف' | 'مكتمل' | 'بانتظار المراجعة';
-    impressions?: number;
-    clicks?: number;
-    ctr?: number;
-    cpc?: number;
-    results?: number;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    cpc: number;
+    results: number;
 };
 
 export type Deposit = {
