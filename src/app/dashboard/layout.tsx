@@ -103,24 +103,26 @@ function NavItems() {
     }
 
     return (
-      <SidebarMenuItem key={`${item.label}-${index}`} asChild>
-          <Link href={item.href || '#'}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton isActive={isActive}>
+      <SidebarMenuItem key={`${item.label}-${index}`}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={item.href || '#'} passHref>
+                <SidebarMenuButton isActive={isActive} asChild>
+                  <div>
                     {Icon && <Icon />}
                     <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                {isCollapsed && (
-                  <TooltipContent side="left" align="center">
-                    {item.label}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          </Link>
+                  </div>
+                </SidebarMenuButton>
+              </Link>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="left" align="center">
+                {item.label}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </SidebarMenuItem>
     );
   };
