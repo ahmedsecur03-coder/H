@@ -1,4 +1,5 @@
 
+'use client';
 
 import Link from 'next/link';
 import {
@@ -30,9 +31,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
 import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
-import { getAuthenticatedUser } from '@/firebase/server-auth';
-import { initializeFirebaseServer } from '@/firebase/server';
-import { redirect } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 
 
 function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
@@ -60,126 +60,64 @@ function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
 }
 
 function NavItems() {
-  return <>{dashboardNavItems.map((item, index) => <NavItem item={item} key={index} />)}</>;
-}
+  const pathname = usePathname();
 
-function NavItem({ item }: { item: NestedNavItem }) {
-    const Icon = item.icon;
-    const pathname = usePathname();
+  const renderNavItem = (item: NestedNavItem, index: number) => {
     const isActive = item.href ? pathname === item.href : false;
+    const Icon = item.icon;
 
     if (item.children) {
-        return (
-            <SidebarMenuItem>
-                <SidebarMenuSub>
-                    <SidebarMenuSubTrigger>
-                        <div className="flex items-center gap-2">
+      return (
+        <SidebarMenuItem key={`${item.label}-${index}`}>
+            <SidebarMenuSub>
+                <SidebarMenuSubTrigger>
+                    <div className='flex items-center gap-2'>
                         {Icon && <Icon />}
                         <span>{item.label}</span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
-                    </SidebarMenuSubTrigger>
-                    <SidebarMenuSubContent>
-                        {item.children.map((child) => (
-                            <Link key={child.href} href={child.href || '#'} passHref>
-                                <SidebarMenuSubButton isActive={pathname === child.href}>
-                                    {child.icon && <child.icon className="w-4 h-4" />}
-                                    <span>{child.label}</span>
-                                </SidebarMenuSubButton>
-                            </Link>
-                        ))}
-                    </SidebarMenuSubContent>
-                </SidebarMenuSub>
-            </SidebarMenuItem>
-        );
-    }
-    
-    return (
-        <SidebarMenuItem>
-            <Link href={item.href || '#'} passHref>
-                <SidebarMenuButton isActive={isActive}>
-                    {Icon && <Icon />}
-                    <span>{item.label}</span>
-                </SidebarMenuButton>
-            </Link>
+                    </div>
+                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
+                </SidebarMenuSubTrigger>
+                <SidebarMenuSubContent>
+                    {item.children.map((child) => (
+                        <Link key={child.href} href={child.href || '#'} passHref>
+                            <SidebarMenuSubButton isActive={pathname === child.href}>
+                                {child.icon && <child.icon className="w-4 h-4" />}
+                                <span>{child.label}</span>
+                            </SidebarMenuSubButton>
+                        </Link>
+                    ))}
+                </SidebarMenuSubContent>
+            </SidebarMenuSub>
         </SidebarMenuItem>
+      );
+    }
+
+    return (
+      <SidebarMenuItem key={`${item.label}-${index}`}>
+        <Link href={item.href || '#'} passHref>
+          <SidebarMenuButton isActive={isActive}>
+            {Icon && <Icon />}
+            <span>{item.label}</span>
+          </SidebarMenuButton>
+        </Link>
+      </SidebarMenuItem>
     );
+  };
+
+  return <>{dashboardNavItems.map((item, index) => renderNavItem(item, index))}</>;
 }
 
-// Re-import usePathname for client-side usage in NavItem
-'use client';
-import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, userData, rank, isAdmin } = useDashboardData();
-
-  if (!user || !userData) {
-      return (
-           <div className="flex min-h-screen w-full items-center justify-center">
-                <p>جاري التحميل أو يلزم تسجيل الدخول...</p>
-            </div>
-      )
-  }
-
-  return (
-    <SidebarProvider>
-      <Sidebar side="right" collapsible="icon" className="hidden md:block">
-        <SidebarHeader>
-          <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
-             <Logo />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            <NavItems />
-          </SidebarMenu>
-        </SidebarContent>
-         <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
-             <div className="flex items-center gap-3 p-2">
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
-                    <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                 <div>
-                    <p className="font-semibold text-sm">{user.displayName}</p>
-                    <p className="text-xs text-muted-foreground">{rank.name}</p>
-                 </div>
-            </div>
-        </SidebarFooter>
-      </Sidebar>
-      
-      <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
-        <MobileHeader isAdmin={isAdmin} />
-        <DesktopHeader isAdmin={isAdmin} user={user} />
-        
-        <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
-          {children}
-        </main>
-        
-        <BottomNavBar />
-        <DynamicAiAssistant />
-      </div>
-
-    </SidebarProvider>
-  );
-}
-
-// A custom hook to fetch data on the client side, falling back if server-side data is not available
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-
-function useDashboardData() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
     const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
-    
-    const rank = getRankForSpend(userData?.totalSpent ?? 0);
-    const isAdmin = !isUserDataLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
     
     React.useEffect(() => {
         if(!isUserLoading && !user) {
@@ -187,5 +125,56 @@ function useDashboardData() {
         }
     }, [isUserLoading, user]);
 
-    return { user, userData, rank, isAdmin };
+    if (isUserLoading || isUserDataLoading || !user || !userData) {
+      return (
+           <div className="flex min-h-screen w-full items-center justify-center">
+                <p>جاري التحميل...</p>
+            </div>
+      )
+    }
+  
+    const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
+    const rank = getRankForSpend(userData?.totalSpent ?? 0);
+
+    return (
+        <SidebarProvider>
+        <Sidebar side="right" collapsible="icon" className="hidden md:block">
+            <SidebarHeader>
+            <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
+                <Logo />
+            </div>
+            </SidebarHeader>
+            <SidebarContent>
+            <SidebarMenu>
+                <NavItems />
+            </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
+                <div className="flex items-center gap-3 p-2">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold text-sm">{user.displayName}</p>
+                        <p className="text-xs text-muted-foreground">{rank.name}</p>
+                    </div>
+                </div>
+            </SidebarFooter>
+        </Sidebar>
+        
+        <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
+            <MobileHeader isAdmin={isAdmin} />
+            <DesktopHeader isAdmin={isAdmin} user={user} />
+            
+            <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
+            {children}
+            </main>
+            
+            <BottomNavBar />
+            <DynamicAiAssistant />
+        </div>
+
+        </SidebarProvider>
+    );
 }
