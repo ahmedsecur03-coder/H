@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy, where, Query } from 'firebase/firestore';
+import { collection, query, orderBy, where, Query as FirestoreQuery } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -32,6 +32,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ListFilter } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Pagination,
   PaginationContent,
@@ -98,13 +99,15 @@ function OrdersPageSkeleton() {
     );
 }
 
-export default function OrdersPage() {
+function OrdersPageComponent() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchTerm = searchParams.get('search') || '';
+  const statusFilter = searchParams.get('status') || 'all';
+  const currentPage = Number(searchParams.get('page')) || 1;
   
   const baseQuery = useMemoFirebase(
     () => (firestore && user ? collection(firestore, `users/${user.uid}/orders`) : null),
@@ -113,12 +116,10 @@ export default function OrdersPage() {
   
   const ordersQuery = useMemoFirebase(() => {
     if (!baseQuery) return null;
-    let q: Query = query(baseQuery, orderBy('orderDate', 'desc'));
+    let q: FirestoreQuery = query(baseQuery, orderBy('orderDate', 'desc'));
     if (statusFilter !== 'all') {
         q = query(q, where('status', '==', statusFilter));
     }
-    // Note: Firestore doesn't support full-text search natively on multiple fields.
-    // The search term filter will be applied on the client-side for simplicity here.
     return q;
   }, [baseQuery, statusFilter]);
 
@@ -146,26 +147,30 @@ export default function OrdersPage() {
     return filteredOrders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredOrders, currentPage]);
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+  const handleFilterChange = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== 'all') {
+      params.set(key, value);
+    } else {
+      params.delete(key);
     }
+    params.set('page', '1'); // Reset to first page on filter change
+    router.push(`?${params.toString()}`);
   };
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
-
-  if (isLoading && !allOrders) {
-    return <OrdersPageSkeleton />;
-  }
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('page', String(page));
+      router.push(`?${params.toString()}`);
+    }
+  };
 
   const renderPaginationItems = () => {
     if (totalPages <= 1) return null;
     
     const pageNumbers: (number | 'ellipsis')[] = [];
-    const visiblePages = 2; // Pages around current page
+    const visiblePages = 2; 
 
     pageNumbers.push(1);
 
@@ -199,6 +204,10 @@ export default function OrdersPage() {
     });
   };
 
+  if (isLoading && !allOrders) {
+    return <OrdersPageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -216,11 +225,11 @@ export default function OrdersPage() {
               <Input
                 placeholder="ابحث بالمعرف، الخدمة، أو الرابط..."
                 className="pr-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                defaultValue={searchTerm}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select defaultValue={statusFilter} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="فلترة حسب الحالة" />
               </SelectTrigger>
@@ -322,4 +331,13 @@ export default function OrdersPage() {
 
     </div>
   );
+}
+
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<OrdersPageSkeleton />}>
+      <OrdersPageComponent />
+    </Suspense>
+  )
 }

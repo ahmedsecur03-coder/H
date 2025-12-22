@@ -1,9 +1,5 @@
 
-'use client';
 
-import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, query, orderBy, addDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,25 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, MessageSquare, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { PlusCircle, MessageSquare } from 'lucide-react';
 import type { Ticket } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { getAuthenticatedUser } from '@/firebase/server-auth';
+import { initializeFirebaseServer } from '@/firebase/server';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { NewTicketDialog } from './_components/new-ticket-dialog';
+
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -39,127 +25,24 @@ const statusVariant = {
 } as const;
 
 
-function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicketCreated: (id: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  const firestore = useFirestore();
+async function getData(userId: string) {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return { tickets: [] };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subject || !message || !firestore) return;
+    const ticketsQuery = query(collection(firestore, `users/${userId}/tickets`), orderBy('createdDate', 'desc'));
+    const snapshot = await getDocs(ticketsQuery);
+    const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Ticket);
 
-    setIsSubmitting(true);
-    
-    const newTicket: Omit<Ticket, 'id'> = {
-      userId,
-      subject,
-      message,
-      status: 'مفتوحة',
-      createdDate: new Date().toISOString(),
-      messages: [{
-        sender: 'user',
-        text: message,
-        timestamp: new Date().toISOString(),
-      }],
-    };
-
-    const ticketsColRef = collection(firestore, `users/${userId}/tickets`);
-    addDoc(ticketsColRef, newTicket)
-        .then(docRef => {
-            toast({
-                title: 'تم فتح التذكرة بنجاح',
-                description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
-            });
-            setSubject('');
-            setMessage('');
-            setOpen(false);
-            onTicketCreated(docRef.id);
-        })
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({
-                path: ticketsColRef.path,
-                operation: 'create',
-                requestResourceData: newTicket
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => {
-            setIsSubmitting(false);
-        });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="ml-2 h-4 w-4" />
-          فتح تذكرة جديدة
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>تذكرة دعم جديدة</DialogTitle>
-          <DialogDescription>
-            صف مشكلتك بالتفصيل وسيقوم فريقنا بالرد عليك.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="subject">
-              الموضوع
-            </Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="col-span-3"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="message">
-              الرسالة
-            </Label>
-            <Textarea
-              id="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="col-span-3"
-              required
-            />
-          </div>
-           <DialogFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال التذكرة'}
-                </Button>
-            </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
+    return { tickets };
 }
 
-export default function SupportPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
-  const router = useRouter();
 
-  const ticketsQuery = useMemoFirebase(
-    () =>
-      user && firestore
-        ? query(collection(firestore, `users/${user.uid}/tickets`), orderBy('createdDate', 'desc'))
-        : null,
-    [user, firestore]
-  );
+export default async function SupportPage() {
+    const { user } = await getAuthenticatedUser();
+    if (!user) return null;
 
-  const { data: tickets, isLoading } = useCollection<Ticket>(ticketsQuery);
+    const { tickets } = await getData(user.uid);
 
-  const handleTicketCreated = (ticketId: string) => {
-    router.push(`/dashboard/support/${ticketId}`);
-  };
 
   return (
     <div className="space-y-6 pb-8">
@@ -170,7 +53,12 @@ export default function SupportPage() {
             تواصل مع فريق الدعم لدينا. نحن هنا لمساعدتك.
           </p>
         </div>
-        {user && <NewTicketDialog userId={user.uid} onTicketCreated={handleTicketCreated} />}
+        <NewTicketDialog>
+            <Button>
+              <PlusCircle className="ml-2 h-4 w-4" />
+              فتح تذكرة جديدة
+            </Button>
+        </NewTicketDialog>
       </div>
 
       <Card>
@@ -179,13 +67,7 @@ export default function SupportPage() {
           <CardDescription>هنا يمكنك متابعة جميع تذاكر الدعم التي قمت بفتحها.</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="space-y-4">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-            </div>
-          ) : tickets && tickets.length > 0 ? (
+          {tickets && tickets.length > 0 ? (
             <div className="space-y-4">
               {tickets.map((ticket) => (
                 <Link key={ticket.id} href={`/dashboard/support/${ticket.id}`} className="block">

@@ -1,5 +1,4 @@
 
-'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,16 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Copy, DollarSign, Users, Crown, Loader2, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { useUser, useDoc, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, collection, query, orderBy, limit } from "firebase/firestore";
 import type { User as UserType, AffiliateTransaction } from "@/lib/types";
-import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import React from 'react';
-import { AFFILIATE_LEVELS, getRankForSpend } from '@/lib/service';
+import { AFFILIATE_LEVELS } from '@/lib/service';
 import { WithdrawalDialog } from "./_components/withdrawal-dialog";
+import { getAuthenticatedUser } from "@/firebase/server-auth";
+import { initializeFirebaseServer } from "@/firebase/server";
+import { doc, collection, query, orderBy, limit, getDoc, getDocs } from "firebase/firestore";
+import { CopyButton } from "./_components/copy-button";
 
 
 function AffiliateSkeleton() {
@@ -38,15 +37,7 @@ function AffiliateSkeleton() {
     );
 }
 
-function NetworkTree() {
-    const { user: authUser } = useUser();
-    const firestore = useFirestore();
-    const userDocRef = useMemoFirebase(
-        () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
-        [firestore, authUser]
-    );
-    const { data: userData } = useDoc<UserType>(userDocRef);
-    
+function NetworkTree({ userData }: { userData: UserType }) {
     // Placeholder data for 5 levels. Level 1 is dynamic.
     const treeData = {
         level: 0,
@@ -92,14 +83,14 @@ function NetworkTree() {
     );
 }
 
-function TransactionHistoryTable({ userId }: { userId: string }) {
-    const firestore = useFirestore();
-    const transactionsQuery = useMemoFirebase(
-        () => firestore ? query(collection(firestore, `users/${userId}/affiliateTransactions`), orderBy('transactionDate', 'desc'), limit(10)) : null,
-        [firestore, userId]
-    );
+async function TransactionHistoryTable({ userId }: { userId: string }) {
+    const { firestore } = initializeFirebaseServer();
+    if(!firestore) return null;
 
-    const { data: transactions, isLoading } = useCollection<AffiliateTransaction>(transactionsQuery);
+    const transactionsQuery = query(collection(firestore, `users/${userId}/affiliateTransactions`), orderBy('transactionDate', 'desc'), limit(10));
+    const snapshot = await getDocs(transactionsQuery);
+    const transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as AffiliateTransaction);
+
 
     return (
         <Card>
@@ -119,17 +110,7 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {isLoading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                                    <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
-                                </TableRow>
-                            ))
-                        ) : transactions && transactions.length > 0 ? (
+                        {transactions && transactions.length > 0 ? (
                             transactions.map((tx) => (
                                 <TableRow key={tx.id}>
                                     <TableCell>{new Date(tx.transactionDate).toLocaleDateString('ar-EG')}</TableCell>
@@ -151,46 +132,34 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
     );
 }
 
+async function getData(userId: string) {
+    const { firestore } = initializeFirebaseServer();
+    if(!firestore) return { userData: null };
 
-export default function AffiliatePage() {
-    const { user: authUser, isUserLoading: isAuthLoading } = useUser();
-    const firestore = useFirestore();
-    const { toast } = useToast();
-    const [referralLink, setReferralLink] = useState('');
+    const userDocRef = doc(firestore, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
 
-    const userDocRef = useMemoFirebase(
-        () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
-        [firestore, authUser]
-    );
-    const { data: userData, isLoading: isUserDocLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
+    return {
+        userData: userDoc.exists() ? { id: userDoc.id, ...userDoc.data() } as UserType : null
+    }
+}
 
-    useEffect(() => {
-        if (typeof window !== 'undefined' && userData?.referralCode) {
-            setReferralLink(`${window.location.origin}/signup?ref=${userData.referralCode}`);
-        }
-    }, [userData?.referralCode]);
 
-    const isLoading = isAuthLoading || isUserDocLoading;
+export default async function AffiliatePage() {
+    const { user: authUser } = await getAuthenticatedUser();
+    if (!authUser) return null;
 
-    const copyToClipboard = () => {
-        if (!referralLink) return;
-        navigator.clipboard.writeText(referralLink);
-        toast({
-            title: "تم النسخ!",
-            description: "تم نسخ رابط الإحالة الخاص بك إلى الحافظة.",
-        });
-    };
-    
-    if (isLoading || !authUser || !userData) {
-        return <AffiliateSkeleton />;
+    const { userData } = await getData(authUser.uid);
+
+    if (!userData) {
+        return <p>لا يمكن تحميل بيانات المستخدم.</p>
     }
     
+    const referralLink = `https://hajaty.com/signup?ref=${userData.referralCode}`;
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
     const nextLevelKey = null; // This logic needs updating to be dynamic
     const nextLevel = null;
-
-    
     const referralsCount = userData?.referralsCount ?? 0;
     const progressToNextLevel = 0;
 
@@ -214,7 +183,7 @@ export default function AffiliatePage() {
                     <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
                 </CardContent>
                  <CardFooter>
-                    <WithdrawalDialog user={userData} onWithdrawalRequest={forceDocUpdate}>
+                    <WithdrawalDialog user={userData}>
                        <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
                     </WithdrawalDialog>
                 </CardFooter>
@@ -279,13 +248,11 @@ export default function AffiliatePage() {
                 </CardHeader>
                 <CardContent className="flex items-center gap-2">
                     <Input readOnly value={referralLink} placeholder="جاري تحميل الرابط..." />
-                    <Button size="icon" variant="outline" onClick={copyToClipboard} disabled={!referralLink}>
-                        <Copy className="h-4 w-4" />
-                    </Button>
+                    <CopyButton textToCopy={referralLink} />
                 </CardContent>
             </Card>
             <div className="lg:col-span-2">
-                <NetworkTree />
+                <NetworkTree userData={userData} />
             </div>
         </div>
 

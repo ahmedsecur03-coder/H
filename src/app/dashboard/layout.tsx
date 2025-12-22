@@ -1,5 +1,4 @@
 
-"use client";
 
 import Link from 'next/link';
 import {
@@ -14,51 +13,44 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubContent,
-  useSidebar,
   SidebarFooter,
   SidebarMenuSubTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from '@/app/(dashboard)/_components/user-nav';
 import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { BottomNavBar } from '@/app/(dashboard)/_components/bottom-nav';
 import { MobileHeader } from '@/app/(dashboard)/_components/mobile-header';
 import { ChevronDown, Shield } from 'lucide-react';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
 import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
+import { getAuthenticatedUser } from '@/firebase/server-auth';
+import { initializeFirebaseServer } from '@/firebase/server';
+import { redirect } from 'next/navigation';
 
 
-function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
-  const { user } = useUser();
-  const router = useRouter();
-   const appUser = {
+function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
+  const appUser = {
       name: user?.displayName || `مستخدم`,
       email: user?.email || "مستخدم مجهول",
       avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
       id: user?.uid || 'N/A'
   };
 
-  const handleAdminNav = () => {
-    router.push('/admin/dashboard');
-  };
-
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="flex items-center gap-2 font-body ml-auto">
              {isAdmin && (
-                <Button variant="outline" size="sm" onClick={handleAdminNav}>
-                    <Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول
+                <Button variant="outline" size="sm" asChild>
+                    <Link href="/admin/dashboard">
+                        <Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول
+                    </Link>
                 </Button>
              )}
             <UserNav user={appUser} isAdmin={isAdmin} />
@@ -68,119 +60,69 @@ function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
 }
 
 function NavItems() {
-  const { state } = useSidebar();
-  const pathname = usePathname();
-  const isCollapsed = state === "collapsed";
-
-  const renderNavItem = (item: NestedNavItem, index: number) => {
-    const isActive = item.href ? pathname === item.href : false;
-    const Icon = item.icon;
-
-    if (item.children) {
-      return (
-        <SidebarMenuItem key={`${item.label}-${index}`}>
-          <SidebarMenuSub>
-            <SidebarMenuSubTrigger>
-              <div className='flex items-center gap-2'>
-                {Icon && <Icon />}
-                <span>{item.label}</span>
-              </div>
-              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
-            </SidebarMenuSubTrigger>
-            <SidebarMenuSubContent>
-              {item.children.map((child, childIndex) => (
-                <Link key={child.href} href={child.href || '#'} passHref>
-                  <SidebarMenuSubButton isActive={pathname === child.href}>
-                    {child.icon && <child.icon className="w-4 h-4" />}
-                    <span>{child.label}</span>
-                  </SidebarMenuSubButton>
-                </Link>
-              ))}
-            </SidebarMenuSubContent>
-          </SidebarMenuSub>
-        </SidebarMenuItem>
-      );
-    }
-
-    return (
-      <SidebarMenuItem key={`${item.label}-${index}`}>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={item.href || '#'} passHref>
-                <SidebarMenuButton isActive={isActive} asChild>
-                  <div>
-                    {Icon && <Icon />}
-                    <span>{item.label}</span>
-                  </div>
-                </SidebarMenuButton>
-              </Link>
-            </TooltipTrigger>
-            {isCollapsed && (
-              <TooltipContent side="left" align="center">
-                {item.label}
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-      </SidebarMenuItem>
-    );
-  };
-
-  return <>{dashboardNavItems.map((item, index) => renderNavItem(item, index))}</>;
+  return <>{dashboardNavItems.map((item, index) => <NavItem item={item} key={index} />)}</>;
 }
 
+function NavItem({ item }: { item: NestedNavItem }) {
+    const Icon = item.icon;
+    const pathname = usePathname();
+    const isActive = item.href ? pathname === item.href : false;
+
+    if (item.children) {
+        return (
+            <SidebarMenuItem>
+                <SidebarMenuSub>
+                    <SidebarMenuSubTrigger>
+                        <div className="flex items-center gap-2">
+                        {Icon && <Icon />}
+                        <span>{item.label}</span>
+                        </div>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
+                    </SidebarMenuSubTrigger>
+                    <SidebarMenuSubContent>
+                        {item.children.map((child) => (
+                            <Link key={child.href} href={child.href || '#'} passHref>
+                                <SidebarMenuSubButton isActive={pathname === child.href}>
+                                    {child.icon && <child.icon className="w-4 h-4" />}
+                                    <span>{child.label}</span>
+                                </SidebarMenuSubButton>
+                            </Link>
+                        ))}
+                    </SidebarMenuSubContent>
+                </SidebarMenuSub>
+            </SidebarMenuItem>
+        );
+    }
+    
+    return (
+        <SidebarMenuItem>
+            <Link href={item.href || '#'} passHref>
+                <SidebarMenuButton isActive={isActive}>
+                    {Icon && <Icon />}
+                    <span>{item.label}</span>
+                </SidebarMenuButton>
+            </Link>
+        </SidebarMenuItem>
+    );
+}
+
+// Re-import usePathname for client-side usage in NavItem
+'use client';
+import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-  const firestore = useFirestore();
+  const { user, userData, rank, isAdmin } = useDashboardData();
 
-  const userDocRef = useMemo(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
-  const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-        router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-  
-  const isLoading = isUserLoading || isUserDataLoading;
-  
-  const isAdmin = !isLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
-  const rank = getRankForSpend(userData?.totalSpent ?? 0);
-
-  if (isLoading || !user) {
-    return (
-        <div className="flex min-h-screen w-full">
-            <div className="hidden md:block w-64 bg-sidebar border-l p-4">
-                <div className="flex h-12 items-center justify-center px-4 mb-4">
-                     <Logo />
-                </div>
-                <div className="flex flex-col gap-2">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <Skeleton key={i} className="h-10 w-full" />
-                    ))}
-                </div>
+  if (!user || !userData) {
+      return (
+           <div className="flex min-h-screen w-full items-center justify-center">
+                <p>جاري التحميل أو يلزم تسجيل الدخول...</p>
             </div>
-            <div className="flex-1">
-                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                    <Skeleton className="h-8 w-8 md:hidden" />
-                    <div className="flex items-center gap-2 ml-auto">
-                        <Skeleton className="h-10 w-24" />
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                    </div>
-                </header>
-                <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                   <Skeleton className="w-full h-[80vh]" />
-                </main>
-            </div>
-        </div>
-    );
+      )
   }
 
   return (
@@ -212,7 +154,7 @@ export default function DashboardLayout({
       
       <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
         <MobileHeader isAdmin={isAdmin} />
-        <DesktopHeader isAdmin={isAdmin} />
+        <DesktopHeader isAdmin={isAdmin} user={user} />
         
         <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
           {children}
@@ -224,4 +166,26 @@ export default function DashboardLayout({
 
     </SidebarProvider>
   );
+}
+
+// A custom hook to fetch data on the client side, falling back if server-side data is not available
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+
+function useDashboardData() {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
+    
+    const rank = getRankForSpend(userData?.totalSpent ?? 0);
+    const isAdmin = !isUserDataLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
+    
+    React.useEffect(() => {
+        if(!isUserLoading && !user) {
+            redirect('/login');
+        }
+    }, [isUserLoading, user]);
+
+    return { user, userData, rank, isAdmin };
 }

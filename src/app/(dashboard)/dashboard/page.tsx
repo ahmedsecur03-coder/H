@@ -1,13 +1,10 @@
 
-'use client';
-
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -18,7 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   DollarSign,
   Users,
@@ -30,137 +26,45 @@ import {
   Diamond,
   ShoppingCart,
   Gift,
-  Loader2
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
+import { initializeFirebaseServer } from '@/firebase/server';
+import { doc, collection, query, orderBy, limit, getDoc, getDocs } from 'firebase/firestore';
 import type { User as UserType, Order } from '@/lib/types';
-import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend } from '@/lib/service';
-import { claimDailyRewardAndGenerateArticle } from '@/lib/actions';
-import Link from 'next/link';
 import { QuickOrderForm } from '../_components/quick-order-form';
-import { useToast } from '@/hooks/use-toast';
-import { useSearchParams } from 'next/navigation';
+import { DailyRewardCard } from './_components/daily-reward-card';
+import { getAuthenticatedUser } from '@/firebase/server-auth';
 
 
-function DashboardSkeleton() {
-    return (
-      <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
-        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className='mb-4'>
-                <Skeleton className="h-8 w-1/4 mb-2" />
-                <Skeleton className="h-5 w-1/2" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[120px]" />)}
-            </div>
-             <Skeleton className="h-96" />
-        </div>
-        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-          <Skeleton className="h-[150px]" />
-          <Skeleton className="h-[300px]" />
-        </div>
-      </div>
-    );
+async function getData(userId: string) {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return { userData: null, recentOrders: [] };
+
+    const userDocRef = doc(firestore, 'users', userId);
+    const ordersQuery = query(collection(firestore, `users/${userId}/orders`), orderBy('orderDate', 'desc'), limit(5));
+    
+    const [userDoc, ordersSnapshot] = await Promise.all([
+        getDoc(userDocRef),
+        getDocs(ordersQuery)
+    ]);
+    
+    const userData = userDoc.exists() ? { id: userDoc.id, ...userDoc.data() } as UserType : null;
+    const recentOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Order);
+
+    return { userData, recentOrders };
 }
 
-function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: () => void }) {
-    const { toast } = useToast();
-    const [isClaiming, setIsClaiming] = useState(false);
-    const [timeLeft, setTimeLeft] = useState('');
 
-    const canClaim = useMemo(() => {
-        if (!user.lastRewardClaimedAt) return true;
-        const lastClaimedTime = new Date(user.lastRewardClaimedAt).getTime();
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        return Date.now() - lastClaimedTime > twentyFourHours;
-    }, [user.lastRewardClaimedAt]);
+export default async function DashboardPage() {
+  const { user: authUser } = await getAuthenticatedUser();
+  if (!authUser) return null; // Or a redirect
 
-    useEffect(() => {
-        if (canClaim || !user.lastRewardClaimedAt) return;
-
-        const intervalId = setInterval(() => {
-            const lastClaimedTime = new Date(user.lastRewardClaimedAt!).getTime();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            const nextClaimTime = lastClaimedTime + twentyFourHours;
-            const now = Date.now();
-            const remaining = nextClaimTime - now;
-
-            if (remaining <= 0) {
-                setTimeLeft('');
-                clearInterval(intervalId);
-            } else {
-                const hours = Math.floor(remaining / (1000 * 60 * 60));
-                const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-                setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-            }
-        }, 1000);
-
-        return () => clearInterval(intervalId);
-    }, [canClaim, user.lastRewardClaimedAt]);
-
-    const handleClaim = async () => {
-        setIsClaiming(true);
-        toast({ title: 'جاري طلب المكافأة...', description: 'يقوم الذكاء الاصطناعي بإنشاء المحتوى الآن.' });
-        try {
-            await claimDailyRewardAndGenerateArticle(user.id);
-            toast({ title: '🎉 تم بنجاح!', description: 'تمت إضافة 1$ لرصيد إعلاناتك ونشر مقال جديد في المدونة!' });
-            onClaim();
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        } finally {
-            setIsClaiming(false);
-        }
-    };
-
-    return (
-        <Card className="bg-gradient-to-br from-secondary/30 to-background">
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between font-headline">
-                    <span>المكافأة الكونية اليومية</span>
-                    <Gift className="text-primary"/>
-                </CardTitle>
-                <CardDescription>
-                    اطلب مكافأتك اليومية: 1$ رصيد إعلانات + مقال جديد للمدونة يولده الذكاء الاصطناعي!
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Button className="w-full text-lg" onClick={handleClaim} disabled={!canClaim || isClaiming}>
-                    {isClaiming ? <Loader2 className="animate-spin" /> : canClaim ? 'اطلب مكافأتك الآن!' : `عد بعد: ${timeLeft}`}
-                </Button>
-            </CardContent>
-        </Card>
-    );
-}
-
-export default function DashboardPage() {
-  const { user: authUser, isUserLoading: isAuthLoading } = useUser();
-  const firestore = useFirestore();
-  const searchParams = useSearchParams();
-  const platformFromUrl = searchParams.get('platform');
-
-
-  const userDocRef = useMemoFirebase(
-    () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
-    [firestore, authUser]
-  );
-  const { data: userData, isLoading: isUserLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
-
-  const ordersQuery = useMemoFirebase(
-    () => (firestore && authUser ? query(collection(firestore, 'users', authUser.uid, 'orders'), orderBy('orderDate', 'desc'), limit(5)) : null),
-    [firestore, authUser]
-  );
-  const { data: recentOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
-
-  const isLoading = isAuthLoading || isUserLoading || isOrdersLoading;
+  const { userData, recentOrders } = await getData(authUser.uid);
   
-  if (isLoading || !userData || !authUser) {
-    return <DashboardSkeleton />;
+  if (!userData) {
+    return <p>لا يمكن تحميل بيانات المستخدم.</p>;
   }
   
   const rank = getRankForSpend(userData?.totalSpent ?? 0);
@@ -258,7 +162,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-         <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+         <DailyRewardCard user={userData} />
          <Card>
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">

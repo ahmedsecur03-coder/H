@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { addDoc, runTransaction, doc, collection } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import type { Withdrawal, User as UserType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -26,10 +27,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { requestWithdrawal } from '../actions';
 
-export function WithdrawalDialog({ children, user, onWithdrawalRequest }: { children: React.ReactNode; user: UserType, onWithdrawalRequest: () => void; }) {
+export function WithdrawalDialog({ children, user }: { children: React.ReactNode; user: UserType }) {
     const { user: authUser } = useUser();
-    const firestore = useFirestore();
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +40,7 @@ export function WithdrawalDialog({ children, user, onWithdrawalRequest }: { chil
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firestore || !authUser) return;
+        if (!authUser) return;
 
         const withdrawalAmount = parseFloat(amount);
         if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
@@ -63,36 +64,22 @@ export function WithdrawalDialog({ children, user, onWithdrawalRequest }: { chil
         }
 
         setIsSubmitting(true);
-
-        const newWithdrawalRequest: Omit<Withdrawal, 'id'> = {
-            userId: authUser.uid,
-            amount: withdrawalAmount,
-            method: method,
-            details: method === 'فودافون كاش' ? { phoneNumber: details } : { binanceId: details },
-            requestDate: new Date().toISOString(),
-            status: 'معلق',
-        };
-
-        const withdrawalsColRef = collection(firestore, `users/${authUser.uid}/withdrawals`);
-        addDoc(withdrawalsColRef, newWithdrawalRequest)
-            .then(() => {
-                toast({ title: 'تم استلام طلبك', description: 'سيتم مراجعة طلب السحب الخاص بك في أقرب وقت.' });
-                onWithdrawalRequest();
-                setOpen(false);
-                setAmount('');
-                setDetails('');
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({
-                    path: withdrawalsColRef.path,
-                    operation: 'create',
-                    requestResourceData: newWithdrawalRequest,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                setIsSubmitting(false);
+        try {
+            await requestWithdrawal({
+                amount: withdrawalAmount,
+                method,
+                details: method === 'فودافون كاش' ? { phoneNumber: details } : { binanceId: details },
             });
+
+            toast({ title: 'تم استلام طلبك', description: 'سيتم مراجعة طلب السحب الخاص بك في أقرب وقت.' });
+            setOpen(false);
+            setAmount('');
+            setDetails('');
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
   return (

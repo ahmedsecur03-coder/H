@@ -1,5 +1,4 @@
 
-"use client";
 
 import Link from 'next/link';
 import {
@@ -14,17 +13,13 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubContent,
-  useSidebar,
   SidebarFooter,
   SidebarMenuSubTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
 import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
@@ -32,33 +27,30 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { BottomNavBar } from './_components/bottom-nav';
 import { MobileHeader } from './_components/mobile-header';
 import { ChevronDown, Shield } from 'lucide-react';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
 import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
+import { getAuthenticatedUser } from '@/firebase/server-auth';
+import { initializeFirebaseServer } from '@/firebase/server';
 
-
-function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
-  const { user } = useUser();
-  const router = useRouter();
-   const appUser = {
+function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
+  const appUser = {
       name: user?.displayName || `مستخدم`,
       email: user?.email || "مستخدم مجهول",
       avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
       id: user?.uid || 'N/A'
   };
 
-  const handleAdminNav = () => {
-    router.push('/admin/dashboard');
-  };
-
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="flex items-center gap-2 font-body ml-auto">
              {isAdmin && (
-                <Button variant="outline" size="sm" onClick={handleAdminNav}>
-                    <Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول
+                <Button variant="outline" size="sm" asChild>
+                    <Link href="/admin/dashboard">
+                        <Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول
+                    </Link>
                 </Button>
              )}
             <UserNav user={appUser} isAdmin={isAdmin} />
@@ -68,9 +60,7 @@ function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
 }
 
 function NavItems() {
-  const { state } = useSidebar();
   const pathname = usePathname();
-  const isCollapsed = state === "collapsed";
 
   const renderNavItem = (item: NestedNavItem, index: number) => {
     const isActive = item.href ? pathname === item.href : false;
@@ -78,51 +68,38 @@ function NavItems() {
 
     if (item.children) {
       return (
-        <SidebarMenuItem key={`${item.label}-${index}`}>
-          <SidebarMenuSub>
-            <SidebarMenuSubTrigger>
-              <div className='flex items-center gap-2'>
-                {Icon && <Icon />}
-                <span>{item.label}</span>
-              </div>
-              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
-            </SidebarMenuSubTrigger>
-            <SidebarMenuSubContent>
-              {item.children.map((child, childIndex) => (
-                <Link key={child.href} href={child.href || '#'} passHref>
-                  <SidebarMenuSubButton isActive={pathname === child.href}>
-                    {child.icon && <child.icon className="w-4 h-4" />}
-                    <span>{child.label}</span>
-                  </SidebarMenuSubButton>
-                </Link>
-              ))}
-            </SidebarMenuSubContent>
-          </SidebarMenuSub>
+        <SidebarMenuItem key={`${item.label}-${index}`} asChild>
+            <SidebarMenuSub>
+                <SidebarMenuSubTrigger>
+                    <div className='flex items-center gap-2'>
+                        {Icon && <Icon />}
+                        <span>{item.label}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
+                </SidebarMenuSubTrigger>
+                <SidebarMenuSubContent>
+                    {item.children.map((child) => (
+                        <Link key={child.href} href={child.href || '#'} passHref>
+                            <SidebarMenuSubButton isActive={pathname === child.href}>
+                                {child.icon && <child.icon className="w-4 h-4" />}
+                                <span>{child.label}</span>
+                            </SidebarMenuSubButton>
+                        </Link>
+                    ))}
+                </SidebarMenuSubContent>
+            </SidebarMenuSub>
         </SidebarMenuItem>
       );
     }
 
     return (
-      <SidebarMenuItem key={`${item.label}-${index}`}>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href={item.href || '#'} passHref>
-                <SidebarMenuButton isActive={isActive} asChild>
-                  <div>
-                    {Icon && <Icon />}
-                    <span>{item.label}</span>
-                  </div>
-                </SidebarMenuButton>
-              </Link>
-            </TooltipTrigger>
-            {isCollapsed && (
-              <TooltipContent side="left" align="center">
-                {item.label}
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+      <SidebarMenuItem key={`${item.label}-${index}`} asChild>
+        <Link href={item.href || '#'} passHref>
+          <SidebarMenuButton isActive={isActive}>
+            {Icon && <Icon />}
+            <span>{item.label}</span>
+          </SidebarMenuButton>
+        </Link>
       </SidebarMenuItem>
     );
   };
@@ -131,57 +108,34 @@ function NavItems() {
 }
 
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-  const firestore = useFirestore();
+  const { user } = await getAuthenticatedUser();
 
-  const userDocRef = useMemo(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
-  const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-        router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-  
-  const isLoading = isUserLoading || isUserDataLoading;
-  
-  const isAdmin = !isLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
-  const rank = getRankForSpend(userData?.totalSpent ?? 0);
-
-  if (isLoading || !user) {
+  if (!user) {
+    // In a real app, you'd redirect here
     return (
-        <div className="flex min-h-screen w-full">
-            <div className="hidden md:block w-64 bg-sidebar border-l p-4">
-                <div className="flex h-12 items-center justify-center px-4 mb-4">
-                     <Logo />
-                </div>
-                <div className="flex flex-col gap-2">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <Skeleton key={i} className="h-10 w-full" />
-                    ))}
-                </div>
-            </div>
-            <div className="flex-1">
-                <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                    <Skeleton className="h-8 w-8 md:hidden" />
-                    <div className="flex items-center gap-2 ml-auto">
-                        <Skeleton className="h-10 w-24" />
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                    </div>
-                </header>
-                <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                   <Skeleton className="w-full h-[80vh]" />
-                </main>
-            </div>
-        </div>
+      <div className="flex min-h-screen w-full items-center justify-center">
+        <p>يرجى تسجيل الدخول للوصول إلى لوحة التحكم.</p>
+      </div>
     );
   }
+
+  const { firestore } = initializeFirebaseServer();
+  let userData: User | null = null;
+  if(firestore) {
+    const userDocRef = doc(firestore, `users/${user.uid}`);
+    const userDoc = await getDoc(userDocRef);
+    if(userDoc.exists()) {
+        userData = userDoc.data() as User;
+    }
+  }
+
+  const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
+  const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
   return (
     <SidebarProvider>
@@ -212,7 +166,7 @@ export default function DashboardLayout({
       
       <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
         <MobileHeader isAdmin={isAdmin} />
-        <DesktopHeader isAdmin={isAdmin} />
+        <DesktopHeader isAdmin={isAdmin} user={user} />
         
         <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
           {children}

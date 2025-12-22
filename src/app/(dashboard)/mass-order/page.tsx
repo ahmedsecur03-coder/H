@@ -27,6 +27,7 @@ type ProcessedLine = {
     error?: string;
     cost?: number;
     finalCost?: number;
+
     service?: Service;
 };
 
