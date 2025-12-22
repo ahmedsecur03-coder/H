@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, query, orderBy, addDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,14 +30,13 @@ import type { Ticket } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
   'مغلقة': 'destructive',
   'قيد المراجعة': 'default',
 } as const;
+
 
 function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicketCreated: (id: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -56,7 +55,7 @@ function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicket
     const newTicket: Omit<Ticket, 'id'> = {
       userId,
       subject,
-      message, // The initial message from the user
+      message,
       status: 'مفتوحة',
       createdDate: new Date().toISOString(),
       messages: [{
@@ -107,8 +106,8 @@ function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicket
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="subject" className="text-right">
+          <div className="space-y-2">
+            <Label htmlFor="subject">
               الموضوع
             </Label>
             <Input
@@ -119,8 +118,8 @@ function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicket
               required
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="message" className="text-right">
+          <div className="space-y-2">
+            <Label htmlFor="message">
               الرسالة
             </Label>
             <Textarea
@@ -131,9 +130,11 @@ function NewTicketDialog({ userId, onTicketCreated }: { userId: string, onTicket
               required
             />
           </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال التذكرة'}
-          </Button>
+           <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'إرسال التذكرة'}
+                </Button>
+            </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
