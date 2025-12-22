@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
@@ -36,6 +36,7 @@ import { ChevronDown, Shield } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
+import { cn } from '@/lib/utils';
 
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
@@ -67,6 +68,7 @@ function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
 
 function NavItems() {
   const { state } = useSidebar();
+  const pathname = usePathname();
   const isCollapsible = state === "collapsed";
 
   const renderNavItems = (items: NestedNavItem[]) => {
@@ -83,12 +85,12 @@ function NavItems() {
             </SidebarMenuSubTrigger>
             <SidebarMenuSubContent>
               {item.children.map((child) => (
-                 <SidebarMenuSubButton key={child.href} asChild>
-                    <Link href={child.href}>
+                 <Link key={child.href} href={child.href} passHref>
+                    <SidebarMenuSubButton isActive={pathname === child.href}>
                         {child.icon && <child.icon className="w-4 h-4" />}
                         <span>{child.label}</span>
-                    </Link>
-                </SidebarMenuSubButton>
+                    </SidebarMenuSubButton>
+                </Link>
               ))}
             </SidebarMenuSubContent>
           </SidebarMenuSub>
@@ -96,12 +98,12 @@ function NavItems() {
            <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                 <SidebarMenuButton asChild>
-                    <Link href={item.href || '#'}>
-                        {item.icon && <item.icon />}
-                        <span>{item.label}</span>
-                    </Link>
-                </SidebarMenuButton>
+                 <Link href={item.href || '#'} passHref>
+                  <SidebarMenuButton isActive={pathname === item.href}>
+                    {item.icon && <item.icon />}
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
               </TooltipTrigger>
                {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
             </Tooltip>

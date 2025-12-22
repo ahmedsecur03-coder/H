@@ -11,6 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import Link from 'next/link'
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -680,21 +681,25 @@ const SidebarMenuSubContent = ({ ...props }: React.ComponentProps<typeof Collaps
 
 const SidebarMenuSubButton = React.forwardRef<
     HTMLAnchorElement,
-    React.ComponentProps<"a"> & { asChild?: boolean; isActive?: boolean }
->(({ asChild = false, isActive, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a";
-  return (
-    <Comp
-      ref={ref}
-      data-active={isActive}
-      className={cn(
-        "flex h-7 items-center rounded-md px-2 text-sm text-sidebar-foreground/70 outline-none ring-sidebar-ring hover:text-sidebar-accent-foreground focus-visible:ring-2 data-[active=true]:text-sidebar-primary",
-        className
-      )}
-      {...props}
-    />
-  );
-});
+    Omit<React.ComponentPropsWithoutRef<typeof Link>, "href"> & {
+      isActive?: boolean
+      href: string
+    }
+  >(({ isActive, className, children, ...props }, ref) => {
+    return (
+      <Link
+        ref={ref}
+        data-active={isActive}
+        className={cn(
+          "flex h-7 items-center rounded-md px-2 text-sm text-sidebar-foreground/70 outline-none ring-sidebar-ring hover:text-sidebar-accent-foreground focus-visible:ring-2 data-[active=true]:text-sidebar-primary",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </Link>
+    )
+  })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
 
 
