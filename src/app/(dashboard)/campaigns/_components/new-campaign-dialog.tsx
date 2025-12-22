@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -165,5 +164,6 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                     </DialogFooter>
                 </form>
             </DialogContent>
+        </Dialog>
     )
 }

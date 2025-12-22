@@ -29,7 +29,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ListFilter } from 'lucide-react';
 import {
@@ -130,7 +129,7 @@ export default function OrdersPage() {
     return allOrders.filter(order => 
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.link.toLowerCase().includes(searchTerm.toLowerCase())
+      (order.link && order.link.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [allOrders, searchTerm]);
 
@@ -323,5 +322,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-
-    
