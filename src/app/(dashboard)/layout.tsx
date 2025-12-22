@@ -24,7 +24,7 @@ import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserNav } from './_components/user-nav';
 import type { NestedNavItem, User } from '@/lib/types';
@@ -124,7 +124,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const firestore = useFirestore();
 
-  const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
+  const userDocRef = useMemo(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
   const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
 
   useEffect(() => {
