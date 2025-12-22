@@ -1,3 +1,4 @@
+
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -45,19 +46,11 @@ export const publicNavItems: NestedNavItem[] = [
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  {
-    label: 'الخدمات',
-    icon: Rocket,
-    children: [
-        { href: '/services', label: 'خدمات SMM', icon: Users },
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
-        { href: '/agency-accounts', label: 'حسابات إعلانية وكالة', icon: Briefcase },
-    ]
-  },
   { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
   { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
+  { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { href: '/dashboard/api', label: 'API', icon: Code2 },
   { href: '/blog', label: 'المدونة', icon: BookOpen },
@@ -79,3 +72,5 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/system-log', label: 'سجل النظام', icon: History },
     { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];
+
+    

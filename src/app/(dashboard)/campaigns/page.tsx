@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, errorEmi
 import { runTransaction, collection, query, doc, addDoc, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Loader2, Code, Facebook, Search, BarChart, Eye, MousePointerClick, Target } from "lucide-react";
+import { PlusCircle, Rocket, Loader2, BarChart, Eye, MousePointerClick, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
