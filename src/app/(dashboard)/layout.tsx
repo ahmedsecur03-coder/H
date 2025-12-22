@@ -69,51 +69,64 @@ function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
 function NavItems() {
   const { state } = useSidebar();
   const pathname = usePathname();
-  const isCollapsible = state === "collapsed";
+  const isCollapsed = state === "collapsed";
 
-  const renderNavItems = (items: NestedNavItem[]) => {
-    return items.map((item) => (
-      <SidebarMenuItem key={item.label}>
-        {item.children ? (
+  const renderNavItem = (item: NestedNavItem, index: number) => {
+    const isActive = item.href ? pathname === item.href : false;
+    const Icon = item.icon;
+
+    if (item.children) {
+      return (
+        <SidebarMenuItem key={`${item.label}-${index}`}>
           <SidebarMenuSub>
             <SidebarMenuSubTrigger>
-                <div className='flex items-center gap-2'>
-                    {item.icon && <item.icon />}
-                    <span>{item.label}</span>
-                </div>
-                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
+              <div className='flex items-center gap-2'>
+                {Icon && <Icon />}
+                <span>{item.label}</span>
+              </div>
+              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
             </SidebarMenuSubTrigger>
             <SidebarMenuSubContent>
-              {item.children.map((child) => (
-                 <Link key={child.href} href={child.href} passHref>
-                    <SidebarMenuSubButton isActive={pathname === child.href}>
-                        {child.icon && <child.icon className="w-4 h-4" />}
-                        <span>{child.label}</span>
-                    </SidebarMenuSubButton>
+              {item.children.map((child, childIndex) => (
+                <Link key={child.href} href={child.href || '#'} passHref>
+                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                    {child.icon && <child.icon className="w-4 h-4" />}
+                    <span>{child.label}</span>
+                  </SidebarMenuSubButton>
                 </Link>
               ))}
             </SidebarMenuSubContent>
           </SidebarMenuSub>
-        ) : (
-           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                 <Link href={item.href || '#'} passHref>
-                  <SidebarMenuButton isActive={pathname === item.href}>
-                    {item.icon && <item.icon />}
+        </SidebarMenuItem>
+      );
+    }
+
+    return (
+      <SidebarMenuItem key={`${item.label}-${index}`}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href={item.href || '#'} passHref>
+                <SidebarMenuButton isActive={isActive} asChild>
+                  <div>
+                    {Icon && <Icon />}
                     <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </TooltipTrigger>
-               {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
-            </Tooltip>
-           </TooltipProvider>
-        )}
+                  </div>
+                </SidebarMenuButton>
+              </Link>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="left" align="center">
+                {item.label}
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </SidebarMenuItem>
-    ));
+    );
   };
 
-  return <>{renderNavItems(dashboardNavItems)}</>;
+  return <>{dashboardNavItems.map((item, index) => renderNavItem(item, index))}</>;
 }
 
 
