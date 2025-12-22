@@ -152,9 +152,10 @@ function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { us
                     userId: user.uid,
                     name,
                     platform: platform as Campaign['platform'],
-                    goal,
+                    goal: goal as Goal,
                     targetAudience,
                     startDate: new Date().toISOString(),
+                    endDate: undefined,
                     budget: budgetAmount,
                     spend: 0,
                     status: 'بانتظار المراجعة',
@@ -240,7 +241,6 @@ function NewCampaignDialog({ userData, user, onCampaignCreated, children }: { us
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
     )
 }
 
@@ -380,5 +380,7 @@ export default function CampaignsPage() {
     </div>
   );
 }
+
+    
 
     
