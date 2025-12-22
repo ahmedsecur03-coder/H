@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from 'next/link';
@@ -37,6 +36,8 @@ import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
+import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
+
 
 function DesktopHeader({ isAdmin }: { isAdmin: boolean }) {
   const { user } = useUser();
@@ -218,6 +219,7 @@ export default function DashboardLayout({
         </main>
         
         <BottomNavBar />
+        <DynamicAiAssistant />
       </div>
 
     </SidebarProvider>
