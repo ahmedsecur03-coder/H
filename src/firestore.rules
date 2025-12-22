@@ -3,9 +3,83 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to all authenticated users
+
+    // Helper functions
+    function isUserAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isUserAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+
+    function isAdmin() {
+      return isUserAuthenticated() && getUserData(request.auth.uid).role == 'admin';
+    }
+
+    // Default Deny: No access unless explicitly allowed by a rule below
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Admins can read any user profile
+      allow get: if isAdmin() || isOwner(userId);
+      // Users can only read their own profile
+      allow list: if isAdmin(); // Only admins can list all users
+
+      // Users can create their own document (on signup)
+      // We don't check role here because it's being set for the first time.
+      allow create: if isOwner(userId);
+
+      // Users can update their own non-sensitive data
+      // Admins can update any user's data
+      allow update: if isAdmin() || (isOwner(userId) && !(
+        'balance' in request.resource.data ||
+        'adBalance' in request.resource.data ||
+        'totalSpent' in request.resource.data ||
+        'rank' in request.resource.data ||
+        'role' in request.resource.data ||
+        'affiliateEarnings' in request.resource.data
+      ));
+      
+      // Nobody can delete user documents for now
+      allow delete: if false;
+    }
+
+    // Services: Publicly readable, but only writable by admins.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Blog Posts: Publicly readable, but only writable by admins.
+    match /blogPosts/{postId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+    
+    // Settings: Readable by all authenticated users, writable only by admins
+    match /settings/global {
+      allow read: if isUserAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // User-owned subcollections
+    match /users/{userId}/{collection}/{docId} {
+      // Admins can read/write to any user's subcollections.
+      // Users can only read/write to their own subcollections.
+      allow read, write: if isAdmin() || isOwner(userId);
+    }
+    
+    // System Logs: Only readable and writable by admins
+    match /systemLogs/{logId} {
+      allow read, write: if isAdmin();
     }
   }
 }
