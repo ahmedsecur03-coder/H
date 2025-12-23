@@ -20,11 +20,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { UserNav } from '@/app/(dashboard)/_components/user-nav';
+import { UserNav } from '@/app/dashboard/_components/user-nav';
 import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
-import { BottomNavBar } from '@/app/(dashboard)/_components/bottom-nav';
-import { MobileHeader } from '@/app/(dashboard)/_components/mobile-header';
+import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
+import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
 import { ChevronDown, Shield } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
