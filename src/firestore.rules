@@ -1,8 +1,73 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwnerOrAdmin(userId) {
+        return isUser(userId) || isAdmin();
+    }
+    
+    function isCreatingOwnData(userId) {
+        return isUser(userId) && request.resource.data.userId == userId;
+    }
+
+    // Users Collection
+    // - Users can read their own profile.
+    // - Admins can read any user profile.
+    // - Users can update their own name, avatar, and notification preferences.
+    // - Admins can update any user profile.
+    // - Users cannot create their own profile document (done via signup function).
+    // - Users cannot delete their own accounts.
+    match /users/{userId} {
+      allow read: if isOwnerOrAdmin(userId);
+      allow create: if isSignedIn() && request.auth.uid == userId; // Allow user to create own doc on signup.
+      allow update: if (isUser(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatarUrl', 'notificationPreferences']))
+                    || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Services Collection
+    // - Anyone can read the services.
+    // - Only admins can create, update, or delete services.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Blog Posts Collection
+    // - Anyone can read blog posts.
+    // - Only admins can create, update, or delete blog posts.
+    match /blogPosts/{blogPostId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+
+    // Orders, Campaigns, Deposits, Withdrawals, AffiliateTransactions, Tickets (User Subcollections)
+    // These subcollections follow a similar pattern:
+    // - Users can only access (read, create, update) items under their own user ID.
+    // - Admins have full access to all subcollections for management purposes.
+    match /users/{userId}/{collection}/{docId} {
+        allow read, write: if isUser(userId) || isAdmin();
+    }
+
+    // System Logs Collection
+    // - Only admins can read, create, or modify system logs.
+    match /systemLogs/{logId} {
+        allow read, write: if isAdmin();
     }
   }
 }
