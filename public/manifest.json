@@ -1,7 +1,7 @@
 {
   "name": "Hajaty Hub",
   "short_name": "Hajaty",
-  "description": "منصة حاجتي للخدمات الرقمية",
+  "description": "منصة حاجتي هي مركزك المتكامل للخدمات الرقمية.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0c1222",

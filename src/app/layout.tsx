@@ -28,6 +28,7 @@ export const metadata: Metadata = {
   title: 'Hajaty Hub - منصة حاجتي للخدمات الرقمية',
   description: 'منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك.',
   keywords: ['SMM', 'تسويق رقمي', 'حملات إعلانية', 'زيادة متابعين', 'خدمات رقمية', 'فيسبوك', 'انستغرام', 'تيك توك', 'Hajaty'],
+  manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
@@ -62,7 +63,6 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={cn('font-sans antialiased bg-background', fontSans.variable, fontHeadline.variable)}>
          <ThemeProvider
