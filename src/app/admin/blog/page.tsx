@@ -93,11 +93,15 @@ export default function AdminBlogPage() {
         if (!posts || posts.length === 0) {
             return (
                 <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                    <TableCell colSpan={4}>
+                         <div className="text-center py-10">
                             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 font-headline text-2xl">لا توجد منشورات بعد</h3>
                             <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لإعلام المستخدمين بآخر الأخبار.</p>
+                            <div className="mt-6 flex justify-center gap-2">
+                                <AiPostDialog onArticleGenerated={handleArticleGenerated} />
+                                <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                            </div>
                         </div>
                     </TableCell>
                 </TableRow>

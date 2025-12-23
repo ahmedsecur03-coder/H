@@ -68,7 +68,7 @@ export default function BlogPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20">
+        <div className="text-center py-20 bg-card border rounded-lg">
           <BookOpen className="mx-auto h-16 w-16 text-muted-foreground" />
           <h2 className="mt-4 text-2xl font-bold">لا توجد منشورات بعد</h2>
           <p className="mt-2 text-muted-foreground">

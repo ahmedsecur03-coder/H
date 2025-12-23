@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -117,10 +118,16 @@ export default function SupportPage() {
           ) : (
              <div className="text-center py-10">
                 <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-medium">لا توجد تذاكر دعم</h3>
+                <h3 className="mt-4 text-xl font-medium">ليس لديك تذاكر دعم</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                     يمكنك فتح تذكرة جديدة للحصول على المساعدة.
                 </p>
+                 <NewTicketDialog>
+                    <Button className="mt-4">
+                        <PlusCircle className="ml-2 h-4 w-4" />
+                        فتح تذكرة جديدة
+                    </Button>
+                 </NewTicketDialog>
             </div>
           )}
         </CardContent>

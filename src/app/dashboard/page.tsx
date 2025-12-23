@@ -29,10 +29,11 @@ import {
   Gift,
   PlusCircle,
   Briefcase,
+  ChevronLeft,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit, getDoc, getDocs } from 'firebase/firestore';
-import type { User as UserType, Order } from '@/lib/types';
+import type { User as UserType, Order, Service } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend } from '@/lib/service';
@@ -42,6 +43,56 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+function DealOfTheDay() {
+    const firestore = useFirestore();
+
+    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
+    const { data: settingsData, isLoading: settingsLoading } = useDoc<any>(settingsDocRef);
+    
+    const serviceId = settingsData?.dealOfTheDay;
+
+    const serviceDocRef = useMemoFirebase(() => (firestore && serviceId) ? doc(firestore, 'services', serviceId) : null, [firestore, serviceId]);
+    const { data: serviceData, isLoading: serviceLoading } = useDoc<Service>(serviceDocRef);
+
+    const isLoading = settingsLoading || serviceLoading;
+
+    if (isLoading) {
+        return <Skeleton className="h-44 w-full" />;
+    }
+    
+    if (!serviceData) {
+        return null; // Don't render if no deal is set
+    }
+    
+    const prefillUrl = `/dashboard/mass-order?prefill=${encodeURIComponent(`${serviceData.id}| |`)}`;
+
+
+    return (
+        <Card className="bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent border-primary/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-headline">
+                    <Star className="text-yellow-400" />
+                    <span>صفقة اليوم الكونية</span>
+                </CardTitle>
+                <CardDescription>
+                    {serviceData.platform} - {serviceData.category}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+                <p className="text-4xl font-bold font-mono">${serviceData.price.toFixed(3)}</p>
+                <p className="text-sm text-muted-foreground">/ لكل 1000</p>
+            </CardContent>
+             <CardContent>
+                <Button asChild className="w-full">
+                   <Link href={prefillUrl}>
+                     <ChevronLeft className="h-4 w-4 ml-2" />
+                        اطلب الآن
+                   </Link>
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
 
 function DashboardSkeleton() {
     return (
@@ -58,6 +109,7 @@ function DashboardSkeleton() {
                 <Skeleton className="h-64" />
             </div>
              <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+                 <Skeleton className="h-44 w-full" />
                 <Skeleton className="h-40" />
                 <Skeleton className="h-64" />
              </div>
@@ -112,22 +164,31 @@ export default function DashboardPage() {
             
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الأساسي</CardDescription>
-                            <CardTitle className="text-3xl">${(userData?.balance ?? 0).toFixed(2)}</CardTitle>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
+                        <CardContent>
+                             <div className="text-3xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
+                        </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
+                         <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الإعلاني</CardDescription>
-                            <CardTitle className="text-3xl">${(userData?.adBalance ?? 0).toFixed(2)}</CardTitle>
+                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</div>
+                        </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>إجمالي الإنفاق</CardDescription>
-                            <CardTitle className="text-3xl">${(userData?.totalSpent ?? 0).toFixed(2)}</CardTitle>
+                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
+                        </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
@@ -164,8 +225,12 @@ export default function DashboardPage() {
                         ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={3} className="text-center h-24">
-                            لا توجد طلبات لعرضها.
+                            <TableCell colSpan={3} className="h-24 text-center">
+                                <div className="flex flex-col items-center justify-center py-4">
+                                    <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground" />
+                                    <h3 className="mt-4 font-headline text-xl">لم تقم بأي طلبات بعد</h3>
+                                    <p className="mt-1 text-sm text-muted-foreground">ابدأ بتقديم طلبك الأول من منطقة الإطلاق أعلاه.</p>
+                                </div>
                             </TableCell>
                         </TableRow>
                         )}
@@ -176,6 +241,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+                <DealOfTheDay />
                 <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 <Card>
                     <CardHeader>
@@ -210,4 +276,3 @@ export default function DashboardPage() {
     );
 }
 
-    
