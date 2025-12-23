@@ -1,3 +1,5 @@
+'use server';
+
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -36,6 +38,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ dataUri });
   } catch (error: any) {
+    console.error('Image Proxy Error:', error);
     return NextResponse.json({ error: error.message || 'An unknown error occurred' }, { status: 500 });
   }
 }
