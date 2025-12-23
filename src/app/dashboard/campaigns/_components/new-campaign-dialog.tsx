@@ -106,7 +106,7 @@ export function NewCampaignDialog({ userData, children, onCampaignCreated }: { u
             onCampaignCreated();
 
         } catch (error: any) {
-             if(error.message.includes('رصيد')) {
+             if(error.message.includes('رصيد') || error.message.includes('المستخدم')) {
                  toast({ variant: 'destructive', title: 'فشل تفعيل الحملة', description: error.message });
             } else {
                 const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });

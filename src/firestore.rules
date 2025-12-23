@@ -29,10 +29,11 @@ service cloud.firestore {
               (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData(request.auth.uid).role == 'admin'));
     }
     
-    // Checks if a user is trying to change a protected field.
-    // Returns true if a protected field is being modified.
-    function isModifyingProtectedUserField() {
-        let protectedFields = ['balance', 'totalSpent', 'rank', 'role', 'affiliateEarnings', 'referralsCount', 'affiliateLevel', 'referralCode', 'referrerId', 'createdAt'];
+    // Checks if a user is trying to change a field that should ONLY be changed by an admin.
+    function isModifyingAdminOnlyFields() {
+        // Only role and rank are admin-only. Balance is updated via transactions,
+        // and other fields are updated by the user in their profile.
+        let protectedFields = ['role', 'rank', 'totalSpent', 'referralCode', 'referrerId', 'createdAt'];
         let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
         // Returns true if any of the changed keys is in the protectedFields list.
         return changedKeys.hasAny(protectedFields);
@@ -72,8 +73,9 @@ service cloud.firestore {
 
       // UPDATE:
       // Admins can update any user profile.
-      // A user can update their own profile IF they are not modifying a protected field.
-      allow update: if isAdmin() || (isOwner(userId) && !isModifyingProtectedUserField());
+      // A user can update their own profile IF they are not modifying admin-only fields.
+      // Balance fields are updated via transactions which are checked by the rules on subcollections.
+      allow update: if isAdmin() || (isOwner(userId) && !isModifyingAdminOnlyFields());
       
       // DELETE: No one can delete user accounts through the client.
       allow delete: if false;
@@ -81,9 +83,9 @@ service cloud.firestore {
 
     // This rule covers all subcollections within a user's document
     // (e.g., orders, campaigns, deposits, tickets, etc.).
+    // This allows transactions from the client to update the user's own subcollections
+    // and, by extension, their balance during those transactions.
     match /users/{userId}/{collection}/{docId} {
-      // Admins can read/write to any user's subcollections.
-      // Users can only read/write to their own subcollections.
       allow read, write: if isAdmin() || isOwner(userId);
     }
     
@@ -93,13 +95,6 @@ service cloud.firestore {
     
     match /systemLogs/{logId} {
       allow read, write: if isAdmin();
-    }
-    
-    // Default Deny All / Allow Admins to List
-    // This is crucial for collectionGroup queries in the admin panel.
-    match /{document=**} {
-      allow read, write: if false;
-      allow list: if isAdmin();
     }
   }
 }
