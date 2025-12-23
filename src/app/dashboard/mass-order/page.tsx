@@ -141,7 +141,7 @@ export default function MassOrderPage() {
             return;
         }
 
-        // 3. Execute transaction
+        // 3. Execute transaction - This must be awaited as it's a batch operation
         let promotionToast: { title: string; description: string } | null = null;
         try {
             await runTransaction(firestore, async (transaction) => {

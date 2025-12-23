@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Gift, Loader2 } from 'lucide-react';
 import type { User as UserType } from '@/lib/types';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, runTransaction } from 'firebase/firestore';
 
 
@@ -57,6 +57,7 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
         setIsClaiming(true);
         const userRef = doc(firestore, 'users', authUser.uid);
         
+        // This is a transaction, so we await it. The non-blocking refactor is for simple writes.
         try {
             await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userRef);
@@ -81,6 +82,8 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
             onClaim();
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+            const permissionError = new FirestorePermissionError({ path: userRef.path, operation: 'update' });
+            errorEmitter.emit('permission-error', permissionError);
         } finally {
             setIsClaiming(false);
         }

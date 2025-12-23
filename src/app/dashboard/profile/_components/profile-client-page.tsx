@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from '@/components/ui/badge';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -64,21 +64,30 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     const handleProfileUpdate = (values: z.infer<typeof profileSchema>) => {
         if (!authUser || !firestore) return;
         
-        const userDocRef = doc(firestore, 'users', authUser.uid);
-        
-        // Optimistic UI update
-        onUpdate();
+        profileForm.formState.isSubmitting = true;
         toast({ title: 'جاري تحديث الملف الشخصي...' });
 
-        // Non-blocking operations
+        // Update auth profile (non-blocking by nature)
         updateProfile(authUser, { displayName: values.name, photoURL: values.avatarUrl });
-        updateDoc(userDocRef, { name: values.name, avatarUrl: values.avatarUrl })
+
+        // Update firestore doc (non-blocking)
+        const userDocRef = doc(firestore, 'users', authUser.uid);
+        const updateData = { name: values.name, avatarUrl: values.avatarUrl };
+        updateDoc(userDocRef, updateData)
             .then(() => {
+                onUpdate(); // Force re-fetch to reflect changes
                 toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
             })
             .catch(error => {
-                toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-                // Optionally revert UI changes here
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                 profileForm.formState.isSubmitting = false;
             });
     };
     
@@ -94,7 +103,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
             toast({ title: 'نجاح', description: 'تم تغيير كلمة المرور بنجاح.' });
         } catch (error: any) {
              let message = 'فشل تغيير كلمة المرور.';
-             if(error.code === 'auth/wrong-password') {
+             if(error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                  message = 'كلمة المرور الحالية غير صحيحة.';
              } else if (error.code === 'auth/too-many-requests') {
                 message = 'تم إجراء العديد من المحاولات. يرجى المحاولة مرة أخرى لاحقًا.';

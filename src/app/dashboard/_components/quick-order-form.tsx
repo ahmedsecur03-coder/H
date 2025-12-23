@@ -83,6 +83,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         setIsSubmitting(true);
         let promotionToast: { title: string; description: string } | null = null;
         try {
+             // This is a complex transaction, it MUST be awaited.
              await runTransaction(firestore, async (transaction) => {
                 const orderData: Omit<Order, 'id'> = {
                     userId: user.uid,
@@ -198,5 +199,3 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         </Card>
     );
 }
-
-    

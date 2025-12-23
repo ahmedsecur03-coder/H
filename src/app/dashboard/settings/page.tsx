@@ -36,23 +36,23 @@ export default function SettingsPage() {
             return;
         }
         
-        forceDocUpdate(); // Optimistic update
+        const updateData = { notificationPreferences: preferences };
         toast({ title: 'جاري حفظ التفضيلات...' });
-
-        updateDoc(userDocRef, {
-          notificationPreferences: preferences,
-        })
-        .then(() => {
-            toast({ title: 'نجاح', description: 'تم حفظ تفضيلاتك بنجاح.' });
-        })
-        .catch((error: any) => {
-             const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'update',
-                requestResourceData: { notificationPreferences: preferences }
+        
+        // Non-blocking update
+        updateDoc(userDocRef, updateData)
+            .then(() => {
+                forceDocUpdate(); // Force a re-fetch to update the UI optimistically
+                toast({ title: 'نجاح', description: 'تم حفظ تفضيلاتك بنجاح.' });
+            })
+            .catch((error: any) => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData
+                });
+                errorEmitter.emit('permission-error', permissionError);
             });
-            errorEmitter.emit('permission-error', permissionError);
-        });
     };
 
 
