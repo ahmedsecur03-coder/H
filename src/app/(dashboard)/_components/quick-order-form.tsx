@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Flame, Loader2 } from 'lucide-react';
+import { Flame, Loader2, Rocket } from 'lucide-react';
 import type { Service, Order, User } from '@/lib/types';
 import { collection, query, where, getDocs, runTransaction, doc, addDoc } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
