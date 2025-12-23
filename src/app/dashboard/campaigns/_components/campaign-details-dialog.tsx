@@ -1,12 +1,57 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Campaign } from '@/lib/types';
 import { BarChart, Eye, MousePointerClick, Target, Clock, DollarSign } from "lucide-react";
 
-export function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
+export function CampaignDetailsDialog({ campaign: initialCampaign }: { campaign: Campaign }) {
+    const [open, setOpen] = useState(false);
+    const [campaign, setCampaign] = useState(initialCampaign);
+
+    useEffect(() => {
+        setCampaign(initialCampaign); // Reset campaign data when dialog is opened or initialCampaign changes
+
+        if (initialCampaign.status !== 'نشط' || !open) {
+            return;
+        }
+
+        const interval = setInterval(() => {
+            setCampaign(prevCampaign => {
+                const newImpressions = (prevCampaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
+                const newClicks = (prevCampaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80)); // Simulate a realistic CTR
+                const newSpend = Math.min(prevCampaign.budget, (prevCampaign.spend || 0) + (newClicks - (prevCampaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
+                const newResults = (prevCampaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
+
+                const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
+                const cpc = newClicks > 0 ? newSpend / newClicks : 0;
+                
+                let status = prevCampaign.status;
+                if (newSpend >= prevCampaign.budget) {
+                    status = 'مكتمل';
+                }
+
+                return {
+                    ...prevCampaign,
+                    impressions: newImpressions,
+                    clicks: newClicks,
+                    spend: newSpend,
+                    results: newResults,
+                    ctr: ctr,
+                    cpc: cpc,
+                    status: status,
+                };
+            });
+        }, 3000); // Update every 3 seconds
+
+        return () => {
+            clearInterval(interval);
+            setCampaign(initialCampaign); // Reset to original data when closing
+        };
+    }, [open, initialCampaign]);
+
     const statusVariant = {
         'نشط': 'default',
         'متوقف': 'secondary',
@@ -15,7 +60,7 @@ export function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
     } as const;
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">عرض التفاصيل</Button>
             </DialogTrigger>
