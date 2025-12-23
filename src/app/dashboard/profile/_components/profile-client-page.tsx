@@ -24,6 +24,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
+import { isAiConfigured } from '@/ai/client';
+import { GenerateAvatarDialog } from './generate-avatar-dialog';
 
 
 const profileSchema = z.object({
@@ -42,9 +44,9 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     const { user: authUser } = useUser();
     const firestore = useFirestore();
 
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [isProxying, setIsProxying] = useState(false);
     
-    const aiConfigured = false;
+    const aiConfigured = isAiConfigured();
 
     const profileForm = useForm<z.infer<typeof profileSchema>>({
         resolver: zodResolver(profileSchema),
@@ -61,18 +63,41 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     
     const currentAvatarUrl = profileForm.watch('avatarUrl');
 
-    const handleProfileUpdate = (values: z.infer<typeof profileSchema>) => {
+    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         if (!authUser || !firestore) return;
         
         profileForm.formState.isSubmitting = true;
         toast({ title: 'جاري تحديث الملف الشخصي...' });
 
+        let finalAvatarUrl = values.avatarUrl || '';
+
+        // If the URL is not a data URI and not empty, proxy it to convert to a data URI
+        if (finalAvatarUrl && !finalAvatarUrl.startsWith('data:')) {
+            setIsProxying(true);
+            try {
+                const response = await fetch('/api/image-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl: finalAvatarUrl })
+                });
+                const { dataUri, error } = await response.json();
+                if (!response.ok) throw new Error(error || 'Failed to proxy image.');
+                finalAvatarUrl = dataUri;
+            } catch (e: any) {
+                toast({ variant: 'destructive', title: 'فشل معالجة الصورة', description: e.message });
+                setIsProxying(false);
+                profileForm.formState.isSubmitting = false;
+                return;
+            }
+            setIsProxying(false);
+        }
+        
         // Update auth profile (non-blocking by nature)
-        updateProfile(authUser, { displayName: values.name, photoURL: values.avatarUrl });
+        updateProfile(authUser, { displayName: values.name, photoURL: finalAvatarUrl });
 
         // Update firestore doc (non-blocking)
         const userDocRef = doc(firestore, 'users', authUser.uid);
-        const updateData = { name: values.name, avatarUrl: values.avatarUrl };
+        const updateData = { name: values.name, avatarUrl: finalAvatarUrl };
         updateDoc(userDocRef, updateData)
             .then(() => {
                 onUpdate(); // Force re-fetch to reflect changes
@@ -112,6 +137,10 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         }
     };
 
+    const handleAvatarGenerated = (dataUri: string) => {
+        profileForm.setValue('avatarUrl', dataUri, { shouldValidate: true });
+    };
+
     const infoBadges = [
         { label: 'الرتبة', value: userData.rank },
         { label: 'كود الإحالة', value: userData.referralCode },
@@ -134,7 +163,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             <AvatarImage src={currentAvatarUrl || undefined} alt={userData.name} />
                             <AvatarFallback className="text-4xl"><UserIcon /></AvatarFallback>
                         </Avatar>
-                        {isGenerating && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
+                        {(profileForm.formState.isSubmitting || isProxying) && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
                     </div>
                     <div className="flex-1 text-center md:text-right">
                         
@@ -183,9 +212,11 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                                 <Input placeholder="https://example.com/image.png" {...field} />
                                             </FormControl>
                                             {aiConfigured && (
-                                                <Button type="button" variant="outline" size="icon" disabled={true} title="توليد صورة بالذكاء الاصطناعي (معطل حالياً)">
-                                                    {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                                                </Button>
+                                                <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
+                                                    <Button type="button" variant="outline" size="icon" title="إنشاء صورة بالذكاء الاصطناعي">
+                                                        <Wand2 />
+                                                    </Button>
+                                                </GenerateAvatarDialog>
                                             )}
                                         </div>
                                         <FormMessage />
@@ -194,8 +225,8 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     />
                             </CardContent>
                             <CardFooter>
-                                <Button type="submit" disabled={profileForm.formState.isSubmitting}>
-                                    {profileForm.formState.isSubmitting && <Loader2 className="ml-2 animate-spin" />}
+                                <Button type="submit" disabled={profileForm.formState.isSubmitting || isProxying}>
+                                    {(profileForm.formState.isSubmitting || isProxying) && <Loader2 className="ml-2 animate-spin" />}
                                     حفظ التغييرات
                                 </Button>
                             </CardFooter>

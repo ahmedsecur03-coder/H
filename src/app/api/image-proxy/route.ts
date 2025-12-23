@@ -12,7 +12,8 @@ export async function POST(request: Request) {
 
     // Validate the URL to prevent potential SSRF attacks
     const url = new URL(imageUrl);
-    const validHosts = ['i.pravatar.cc', 'images.unsplash.com', 'lh3.googleusercontent.com', 'placehold.co', 'picsum.photos'];
+    // Added 'i.pravatar.cc' for the default avatars
+    const validHosts = ['i.pravatar.cc', 'images.unsplash.com', 'lh3.googleusercontent.com', 'placehold.co', 'picsum.photos', 'oaidalleapiprodscus.blob.core.windows.net'];
     if (!validHosts.includes(url.hostname)) {
         // Allow data URIs to pass through
         if (!url.protocol.startsWith('data:')) {
