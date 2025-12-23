@@ -82,7 +82,7 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                     endDate: undefined,
                     budget: budgetAmount,
                     spend: 0,
-                    status: 'بانتظار المراجعة',
+                    status: 'نشط',
                     impressions: 0,
                     clicks: 0,
                     results: 0,
@@ -94,7 +94,7 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                 transaction.set(newCampaignDoc, newCampaignData);
             });
 
-            toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
+            toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وتفعيلها تلقائياً.' });
             onCampaignCreated();
             setOpen(false);
             // Reset form
@@ -160,7 +160,7 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading} className="w-full">
-                            {loading ? <Loader2 className="animate-spin" /> : 'إنشاء ومراجعة'}
+                            {loading ? <Loader2 className="animate-spin" /> : 'إنشاء وتفعيل'}
                         </Button>
                     </DialogFooter>
                 </form>

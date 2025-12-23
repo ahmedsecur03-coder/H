@@ -84,7 +84,7 @@ export default function AdminCampaignsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الحملات</h1>
         <p className="text-muted-foreground">
-          مراجعة الحملات الإعلانية للمستخدمين والموافقة عليها أو رفضها.
+          مراقبة وإدارة الحملات النشطة للمستخدمين.
         </p>
       </div>
 
