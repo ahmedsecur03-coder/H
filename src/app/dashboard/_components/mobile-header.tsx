@@ -2,7 +2,7 @@
 'use client';
 
 import Logo from "@/components/logo"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { PanelLeft, Shield } from "lucide-react"
 import Link from "next/link";
@@ -37,8 +37,13 @@ export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="sm:max-w-xs">
+              <SheetHeader className="text-right mb-6">
+                <SheetTitle><Logo /></SheetTitle>
+                <SheetDescription>
+                  قائمة التنقل الرئيسية في لوحة التحكم
+                </SheetDescription>
+              </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium">
-                <Logo />
                 {dashboardNavItems.map(item => (
                     <Link
                         key={item.label}
