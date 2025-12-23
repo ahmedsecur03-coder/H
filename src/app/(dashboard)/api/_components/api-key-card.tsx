@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -18,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { regenerateApiKey } from '@/app/(dashboard)/api/actions';
+// import { regenerateApiKey } from '../actions';
 import { useRouter } from 'next/navigation';
 
 function CopyButton({ textToCopy }: { textToCopy: string }) {
@@ -48,9 +47,9 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
     const handleRegenerate = async () => {
         setIsRegenerating(true);
         try {
-            await regenerateApiKey();
-            toast({ title: "تم إنشاء مفتاح جديد بنجاح!", description: "المفتاح القديم لم يعد صالحاً." });
-            router.refresh();
+            // await regenerateApiKey();
+            toast({ title: "هذه الميزة قيد التطوير حاليًا.", description: "تم تعطيل إعادة إنشاء المفتاح مؤقتًا." });
+            // router.refresh();
         } catch (error) {
             toast({ variant: 'destructive', title: "خطأ", description: "فشل إنشاء مفتاح جديد." });
         } finally {
@@ -73,7 +72,7 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
              <CardFooter>
                  <AlertDialog>
                   <AlertDialogTrigger asChild>
-                     <Button variant="destructive" disabled={isRegenerating}>
+                     <Button variant="destructive" disabled={true}>
                         {isRegenerating ? <Loader2 className="ml-2 animate-spin" /> : <RefreshCw className="ml-2 h-4 w-4" />}
                          إعادة توليد المفتاح
                     </Button>
@@ -87,7 +86,9 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleRegenerate}>نعم، قم بإنشاء مفتاح جديد</AlertDialogAction>
+                      <AlertDialogAction onClick={() => {
+                          toast({ title: 'تحت الإنشاء', description: 'هذه الميزة معطلة مؤقتًا.' });
+                      }}>نعم، قم بإنشاء مفتاح جديد</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
