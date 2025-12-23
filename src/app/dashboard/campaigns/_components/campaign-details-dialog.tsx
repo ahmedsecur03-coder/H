@@ -12,22 +12,38 @@ export function CampaignDetailsDialog({ campaign: initialCampaign }: { campaign:
     const [campaign, setCampaign] = useState(initialCampaign);
 
     useEffect(() => {
-        setCampaign(initialCampaign); // Reset campaign data when dialog is opened or initialCampaign changes
+        // Reset campaign data to the original state from props when the dialog is opened or the underlying data changes.
+        setCampaign(initialCampaign);
 
+        // If the campaign is not active or the dialog is closed, do nothing.
         if (initialCampaign.status !== 'نشط' || !open) {
             return;
         }
 
+        // Set up an interval to simulate live campaign data updates.
         const interval = setInterval(() => {
             setCampaign(prevCampaign => {
+                // Prevent further updates if the campaign is no longer active (e.g., manually stopped or completed).
+                if (prevCampaign.status !== 'نشط') {
+                    clearInterval(interval);
+                    return prevCampaign;
+                }
+                
+                // Simulate new impressions and clicks with some randomness.
                 const newImpressions = (prevCampaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
                 const newClicks = (prevCampaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80)); // Simulate a realistic CTR
+                
+                // Simulate the cost of new clicks and update the total spend, ensuring it doesn't exceed the budget.
                 const newSpend = Math.min(prevCampaign.budget, (prevCampaign.spend || 0) + (newClicks - (prevCampaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
+
+                // Simulate results based on clicks.
                 const newResults = (prevCampaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
 
+                // Recalculate metrics.
                 const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
                 const cpc = newClicks > 0 ? newSpend / newClicks : 0;
                 
+                // If the budget is fully spent, mark the campaign as complete.
                 let status = prevCampaign.status;
                 if (newSpend >= prevCampaign.budget) {
                     status = 'مكتمل';
@@ -46,9 +62,10 @@ export function CampaignDetailsDialog({ campaign: initialCampaign }: { campaign:
             });
         }, 3000); // Update every 3 seconds
 
+        // Cleanup: clear the interval and reset the campaign state when the component unmounts or the dialog is closed.
         return () => {
             clearInterval(interval);
-            setCampaign(initialCampaign); // Reset to original data when closing
+            setCampaign(initialCampaign); 
         };
     }, [open, initialCampaign]);
 
