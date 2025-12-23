@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useAuth, useFirestore, useMemoFirebase } from '@/firebase';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import AuthLogo from '../_components/auth-logo';
+import AuthLogo from '../auth/_components/auth-logo';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';

@@ -8,7 +8,7 @@ import { PanelLeft, Shield } from "lucide-react"
 import Link from "next/link";
 import { dashboardNavItems } from "@/lib/placeholder-data";
 import { usePathname } from "next/navigation";
-import { UserNav } from "./user-nav";
+import { UserNav } from "../_components/user-nav";
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from 'firebase/firestore';
 import type { User as UserType } from '@/lib/types';
