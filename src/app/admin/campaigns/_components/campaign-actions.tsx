@@ -136,7 +136,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                     <p><strong>المستخدم:</strong> <span className="font-mono text-xs">{campaign.userId}</span></p>
                     <p><strong>الميزانية / الإنفاق:</strong> ${campaign.budget.toFixed(2)} / <span className="text-destructive">${(campaign.spend || 0).toFixed(2)}</span></p>
                     <p><strong>المنصة:</strong> {campaign.platform}</p>
-                    <p><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></p>
+                    <div className="flex items-center gap-2"><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></div>
 
                     {campaign.status === 'نشط' && (
                         <div className="space-y-2 pt-4 border-t">
