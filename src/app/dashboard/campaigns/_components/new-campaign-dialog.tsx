@@ -25,8 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, addDoc, collection } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
+import { doc, runTransaction, collection, addDoc } from 'firebase/firestore';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
 type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
@@ -91,44 +90,65 @@ export function NewCampaignDialog({
       setLoading(false);
       return;
     }
-
-    const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
     
-    const newCampaignData: Omit<Campaign, 'id'> = {
-        userId: user.uid,
-        name: campaignData.name,
-        platform: campaignData.platform,
-        goal: campaignData.goal,
-        targetAudience: campaignData.targetAudience,
-        budget: campaignData.budget,
-        durationDays: campaignData.durationDays,
-        startDate: new Date().toISOString(), // Ensure start date is set
-        endDate: undefined,
-        spend: 0,
-        status: 'بانتظار المراجعة',
-        impressions: 0,
-        clicks: 0,
-        results: 0,
-        ctr: 0,
-        cpc: 0,
-    };
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
 
     try {
-      // Temporarily disable the actual Firestore write operation to prevent permission errors.
-      // await addDoc(campaignsColRef, newCampaignData);
-      
-      // Simulate success for UI purposes
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+      await runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) {
+          throw new Error("المستخدم غير موجود.");
+        }
+        
+        const currentAdBalance = userDoc.data().adBalance ?? 0;
+        if (currentAdBalance < campaignData.budget) {
+          throw new Error('رصيد الإعلانات غير كافٍ لهذه الميزانية.');
+        }
 
-      toast({ title: 'نجاح!', description: 'تم استلام طلب حملتك وهي الآن قيد المراجعة.' });
+        // 1. Update user's ad balance
+        transaction.update(userDocRef, { adBalance: currentAdBalance - campaignData.budget });
+        
+        // 2. Create the new campaign document
+        const newCampaignData: Omit<Campaign, 'id'> = {
+            userId: user.uid,
+            name: campaignData.name,
+            platform: campaignData.platform,
+            goal: campaignData.goal,
+            targetAudience: campaignData.targetAudience,
+            budget: campaignData.budget,
+            durationDays: campaignData.durationDays,
+            startDate: new Date().toISOString(), // Ensure start date is set
+            endDate: undefined,
+            spend: 0,
+            status: 'بانتظار المراجعة',
+            impressions: 0,
+            clicks: 0,
+            results: 0,
+            ctr: 0,
+            cpc: 0,
+        };
+        // We let Firestore generate the ID by creating a new doc reference inside the transaction
+        const newCampaignRef = doc(campaignsColRef);
+        transaction.set(newCampaignRef, newCampaignData);
+      });
+      
+      toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
       onCampaignCreated(); // This will trigger forceCollectionUpdate in the parent
       setOpen(false);
       (event.target as HTMLFormElement).reset();
 
     } catch (error: any) {
-       // Catch potential errors from addDoc, although it's less likely to be a permission issue here.
-       const permissionError = new FirestorePermissionError({ path: campaignsColRef.path, operation: 'create', requestResourceData: newCampaignData });
-       errorEmitter.emit('permission-error', permissionError);
+        if (error.message.includes('رصيد') || error.message.includes('المستخدم')) {
+             toast({ variant: "destructive", title: "فشل إنشاء الحملة", description: error.message });
+        } else {
+             const permissionError = new FirestorePermissionError({ 
+                path: `users/${user.uid}/campaigns`, 
+                operation: 'create',
+                requestResourceData: { budget: campaignData.budget } // Include relevant data
+             });
+             errorEmitter.emit('permission-error', permissionError);
+        }
     } finally {
       setLoading(false);
     }
