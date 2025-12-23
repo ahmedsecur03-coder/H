@@ -17,6 +17,7 @@ import {
   ShoppingCart,
   ChevronLeft,
   Star,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -26,6 +27,7 @@ import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/icons';
 
 function FeaturedServices() {
     const firestore = useFirestore();
@@ -115,6 +117,26 @@ function Testimonials() {
     );
 }
 
+function Partners() {
+    const partners = [
+        { name: "Meta", icon: MetaIcon },
+        { name: "Google", icon: GoogleIcon },
+        { name: "TikTok", icon: TikTokIcon },
+        { name: "Snapchat", icon: SnapchatIcon },
+    ];
+
+    return (
+        <div className="bg-muted/50 rounded-xl border border-border/50 py-8 px-4">
+            <h3 className="text-center text-lg font-semibold text-muted-foreground mb-6">شريك معتمد لدى أكبر المنصات العالمية</h3>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+                {partners.map(partner => (
+                     <partner.icon key={partner.name} className="h-8 text-foreground/80" />
+                ))}
+            </div>
+        </div>
+    )
+}
+
 export default function HomePage() {
   return (
     <div className="space-y-24 pb-8">
@@ -123,7 +145,7 @@ export default function HomePage() {
             <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background to-primary/10"></div>
             
             <h1 className="text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400">
-                بوابتك إلى الكون الرقمي
+                شريكك المعتمد للنمو الرقمي
             </h1>
             <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
                 منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
@@ -143,6 +165,8 @@ export default function HomePage() {
                 </Button>
             </div>
         </section>
+        
+        <Partners />
 
         <section>
             <div className="text-center mb-12">
@@ -198,4 +222,3 @@ export default function HomePage() {
     </div>
   );
 }
-
