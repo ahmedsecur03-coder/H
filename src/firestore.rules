@@ -1,60 +1,11 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    function isAdmin() {
-      // In a real app, this would be a more secure check, e.g., using custom claims.
-      // For this prototype, we'll allow a specific email to be the admin.
-      return request.auth != null && request.auth.token.email == 'hagaaty@gmail.com';
-    }
-
-    // Publicly readable collections
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    
-    match /blogPosts/{postId} {
-        allow read: if true;
-        allow write: if isAdmin();
-    }
-    
-    match /settings/global {
-        allow read: if true;
-        allow write: if isAdmin();
-    }
-
-    // User-specific data
-    match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      // Allow user to update their own document. Admin can also update.
-      allow update: if isOwner(userId) || isAdmin();
-      // Admin can create/delete any user document.
-      allow create, delete: if isAdmin();
-    }
-
-    match /users/{userId}/{subcollection}/{docId} {
-       // A user can create their own documents (orders, tickets, etc.)
-       allow create: if isOwner(userId);
-       
-       // A user can read or delete their own subcollection documents.
-       allow read, delete: if isOwner(userId);
-
-       // A user can update their own tickets (e.g., add messages).
-       allow update: if (isOwner(userId) && subcollection == 'tickets');
-
-       // Admin has full access to all user subcollections.
-       allow read, write, update, delete: if isAdmin();
-    }
-    
-    match /systemLogs/{logId} {
-      allow read, write: if isAdmin();
+    // WARNING: This rule allows any authenticated user to read and write any data.
+    // This is insecure and should only be used for initial development.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
