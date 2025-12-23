@@ -37,7 +37,7 @@ export const publicNavItems: NestedNavItem[] = [
       children: [
         { href: '/services', label: 'جميع خدمات SMM', description: 'تصفح كل خدمات التسويق عبر وسائل التواصل الاجتماعي.', icon: Users },
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك على جوجل، فيسبوك، وتيك توك.', icon: Megaphone },
-        { href: '/agency-accounts', label: 'حسابات إعلانية (وكالة)', description: 'حسابات قوية وموثوقة للإنفاق العالي.', icon: Briefcase },
+        { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية (وكالة)', description: 'شراء وإدارة حسابات قوية وموثوقة للإنفاق العالي.', icon: Briefcase },
         { href: '/#', label: 'تصميم المواقع والتطبيقات', description: 'اطلب تصميم موقع أو تطبيق احترافي. (قريباً)', icon: AppWindow },
       ]
     },
@@ -55,7 +55,14 @@ export const dashboardNavItems: NestedNavItem[] = [
         { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
     ]
   },
-  { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+   { 
+    label: 'الحملات الإعلانية',
+    icon: Megaphone,
+     children: [
+        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حساباتي الإعلانية', icon: Briefcase },
+    ]
+  },
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { 
@@ -84,3 +91,5 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/system-log', label: 'سجل النظام', icon: History },
     { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];
+
+    

@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Clock } from "lucide-react";
+import { PlusCircle, Rocket, Clock, Briefcase } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { NewCampaignDialog } from './_components/new-campaign-dialog';
 import { UserCampaignActions } from './_components/user-campaign-actions';
+import Link from 'next/link';
 
 function CampaignsSkeleton() {
     return (
@@ -22,9 +23,8 @@ function CampaignsSkeleton() {
                 <Skeleton className="h-8 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Skeleton className="h-28" />
-                 <Skeleton className="h-28" />
                  <Skeleton className="h-28" />
             </div>
             <Card>
@@ -137,12 +137,20 @@ export default function CampaignsPage() {
             </p>
         </div>
 
-        <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
-            <Button className="w-full text-lg py-6">
-                <PlusCircle className="ml-2 h-5 w-5" />
-                إنشاء حملة إعلانية جديدة
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
+                <Button className="w-full text-lg py-7">
+                    <PlusCircle className="ml-2 h-5 w-5" />
+                    إنشاء حملة إعلانية جديدة
+                </Button>
+            </NewCampaignDialog>
+             <Button variant="outline" className="w-full text-lg py-7" asChild>
+                <Link href="/dashboard/agency-accounts">
+                    <Briefcase className="ml-2 h-5 w-5" />
+                    إدارة حساباتي الإعلانية
+                </Link>
             </Button>
-        </NewCampaignDialog>
+        </div>
         
         <Card>
             <CardHeader>
@@ -206,3 +214,5 @@ export default function CampaignsPage() {
     </div>
   );
 }
+
+    

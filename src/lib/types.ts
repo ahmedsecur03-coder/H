@@ -84,6 +84,16 @@ export type Campaign = {
     results: number;
 };
 
+export type AgencyAccount = {
+    id: string;
+    userId: string;
+    platform: 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
+    accountName: string;
+    status: 'Active' | 'Suspended';
+    createdAt: string;
+    balance: number;
+};
+
 export type Deposit = {
     id: string;
     userId: string;
@@ -145,3 +155,5 @@ export type SystemLog = {
     timestamp: string;
     metadata: Record<string, any>;
 }
+
+    

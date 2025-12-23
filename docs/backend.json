@@ -275,6 +275,22 @@
         "status"
       ]
     },
+    "AgencyAccount": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Agency Account",
+        "type": "object",
+        "description": "Represents a purchased agency advertising account.",
+        "properties": {
+            "id": { "type": "string" },
+            "userId": { "type": "string" },
+            "platform": { "type": "string", "enum": ["Meta", "Google", "TikTok", "Snapchat"] },
+            "accountName": { "type": "string" },
+            "status": { "type": "string", "enum": ["Active", "Suspended"] },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "balance": { "type": "number" }
+        },
+        "required": ["id", "userId", "platform", "accountName", "status", "createdAt", "balance"]
+    },
     "Deposit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Deposit",
@@ -531,6 +547,12 @@
       },
       "description": "Stores advertising campaigns created by users. Includes denormalized 'userId' for authorization independence."
     },
+    "/users/{userId}/agencyAccounts/{accountId}": {
+        "schema": {
+            "$ref": "#/entities/AgencyAccount"
+        },
+        "description": "Stores purchased agency accounts for a user."
+    },
     "/users/{userId}/deposits/{depositId}": {
       "schema": {
         "$ref": "#/entities/Deposit"
@@ -569,3 +591,5 @@
     }
   }
 }
+
+    
