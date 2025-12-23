@@ -64,14 +64,15 @@ export default function CampaignsPage() {
     }, [initialCampaigns]);
 
     useEffect(() => {
-        const interval = setInterval(() => {
+        const updateCampaigns = () => {
             setCampaigns(prevCampaigns => {
                 if (!prevCampaigns) return null;
 
-                return prevCampaigns.map(campaign => {
+                const updatedCampaigns = prevCampaigns.map(campaign => {
                     if (campaign.status !== 'نشط') {
                         return campaign;
                     }
+                    
                     const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
                     const newClicks = (campaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80));
                     const newSpend = Math.min(campaign.budget, (campaign.spend || 0) + (newClicks - (campaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
@@ -83,20 +84,7 @@ export default function CampaignsPage() {
                         status = 'مكتمل';
                     }
 
-                    if(firestore && authUser) {
-                        const campaignRef = doc(firestore, `users/${authUser.uid}/campaigns/${campaign.id}`);
-                        updateDoc(campaignRef, {
-                            impressions: newImpressions,
-                            clicks: newClicks,
-                            spend: newSpend,
-                            results: newResults,
-                            ctr: ctr,
-                            cpc: cpc,
-                            status: status
-                        });
-                    }
-
-                    return {
+                    const updatedCampaign = {
                         ...campaign,
                         impressions: newImpressions,
                         clicks: newClicks,
@@ -106,9 +94,33 @@ export default function CampaignsPage() {
                         cpc: cpc,
                         status: status,
                     };
+
+                    if(firestore && authUser) {
+                        const campaignRef = doc(firestore, `users/${authUser.uid}/campaigns/${campaign.id}`);
+                        // Update Firestore document without awaiting to avoid blocking UI thread
+                        updateDoc(campaignRef, {
+                            impressions: updatedCampaign.impressions,
+                            clicks: updatedCampaign.clicks,
+                            spend: updatedCampaign.spend,
+                            results: updatedCampaign.results,
+                            ctr: updatedCampaign.ctr,
+                            cpc: updatedCampaign.cpc,
+                            status: updatedCampaign.status
+                        }).catch(err => console.error("Failed to update campaign in background", err));
+                    }
+                    
+                    return updatedCampaign;
                 });
+                
+                return updatedCampaigns;
             });
-        }, 1800000); // 30 minutes
+        };
+
+        // Run once immediately on load
+        updateCampaigns(); 
+        
+        // Then run every 30 minutes
+        const interval = setInterval(updateCampaigns, 1800000); 
 
         return () => clearInterval(interval);
     }, [firestore, authUser]);
@@ -214,5 +226,3 @@ export default function CampaignsPage() {
     </div>
   );
 }
-
-    
