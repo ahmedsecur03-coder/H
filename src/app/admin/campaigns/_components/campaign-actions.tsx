@@ -73,15 +73,16 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
             setOpen(false);
 
         } catch (error: any) {
-            if (error instanceof FirestorePermissionError) {
-                 errorEmitter.emit('permission-error', error);
-            } else {
-                 toast({
-                    variant: 'destructive',
-                    title: 'فشل تفعيل الحملة',
-                    description: error.message,
-                });
-            }
+             toast({
+                variant: 'destructive',
+                title: 'فشل تفعيل الحملة',
+                description: error.message,
+            });
+            const permissionError = new FirestorePermissionError({
+              path: userDocRef.path, 
+              operation: 'update',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         } finally {
             setLoading(false);
         }

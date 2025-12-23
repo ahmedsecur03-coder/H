@@ -26,7 +26,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
 type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
@@ -86,15 +85,8 @@ export function NewCampaignDialog({
       return;
     }
     
-    // Temporarily disabling balance check as well to avoid any server interaction
-    /*
-    if ((userData.adBalance ?? 0) < campaignData.budget) {
-      toast({ variant: 'destructive', title: 'خطأ', description: 'رصيدك الإعلاني غير كافٍ لهذه الميزانية.' });
-      setLoading(false);
-      return;
-    }
-    */
-
+    // We no longer check or deduct balance here. This will be handled by the admin.
+    
     const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
     const newCampaignData: Omit<Campaign, 'id'> = {
         userId: user.uid,
@@ -115,21 +107,10 @@ export function NewCampaignDialog({
         cpc: 0,
     };
 
-    // TEMPORARY FIX: Simulate success without writing to Firestore
-    setTimeout(() => {
-        toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة (محاكاة).' });
-        onCampaignCreated();
-        setOpen(false);
-        (event.target as HTMLFormElement).reset();
-        setLoading(false);
-    }, 1000);
-
-    /*
-    // Original code that is failing
     try {
       await addDoc(campaignsColRef, newCampaignData);
       
-      toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة.' });
+      toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة بنجاح.' });
       onCampaignCreated();
       setOpen(false);
       (event.target as HTMLFormElement).reset();
@@ -145,7 +126,6 @@ export function NewCampaignDialog({
     } finally {
       setLoading(false);
     }
-    */
   };
 
   return (
@@ -155,7 +135,7 @@ export function NewCampaignDialog({
         <DialogHeader>
           <DialogTitle>حملة إعلانية جديدة</DialogTitle>
           <DialogDescription>
-            اختر المنصة وحدد ميزانية حملتك ومدتها للبدء. سيتم خصم الميزانية من رصيد الإعلانات عند الموافقة.
+            اختر المنصة وحدد ميزانية حملتك ومدتها للبدء. سيتم خصم الميزانية من رصيد الإعلانات عند موافقة المسؤول.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
