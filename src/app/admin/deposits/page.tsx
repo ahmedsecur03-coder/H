@@ -10,7 +10,8 @@ import {
   doc,
   runTransaction,
   orderBy,
-  Query
+  Query,
+  collection
 } from 'firebase/firestore';
 import type { Deposit, User } from '@/lib/types';
 
