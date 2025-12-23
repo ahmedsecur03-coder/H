@@ -95,19 +95,22 @@ export default function AdminSettingsPage() {
     const fiveDaysAgoTimestamp = Timestamp.fromDate(fiveDaysAgo);
 
     let collectionName = '';
+    let dateField = '';
     let statusWhereClause: any = null;
 
     if (type === 'orders') {
         collectionName = 'orders';
+        dateField = 'orderDate';
     } else if (type === 'deposits') {
         collectionName = 'deposits';
+        dateField = 'depositDate';
         statusWhereClause = where('status', '==', 'مرفوض');
     }
 
     try {
         let q = query(
             collectionGroup(firestore, collectionName),
-            where('orderDate', '<', fiveDaysAgoTimestamp.toDate().toISOString())
+            where(dateField, '<', fiveDaysAgoTimestamp.toDate().toISOString())
         );
 
         if (statusWhereClause) {
@@ -245,7 +248,7 @@ export default function AdminSettingsPage() {
                     
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive" className="w-full" disabled={isCleaning === 'orders'}>
+                            <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
                                 {isCleaning === 'orders' ? <Loader2 className="ml-2 animate-spin" /> : <Trash2 className="ml-2"/>}
                                 حذف الطلبات القديمة
                             </Button>
@@ -257,14 +260,14 @@ export default function AdminSettingsPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleCleanup('orders')}>متابعة الحذف</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleCleanup('orders')} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
 
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive" className="w-full" disabled={isCleaning === 'deposits'}>
+                            <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
                                 {isCleaning === 'deposits' ? <Loader2 className="ml-2 animate-spin" /> : <Trash2 className="ml-2"/>}
                                 حذف الإيداعات المرفوضة
                             </Button>
@@ -276,7 +279,7 @@ export default function AdminSettingsPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleCleanup('deposits')}>متابعة الحذف</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleCleanup('deposits')} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
