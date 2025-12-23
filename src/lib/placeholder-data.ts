@@ -52,7 +52,6 @@ export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/dashboard/api', label: 'API', icon: Code2 },
   { href: '/blog', label: 'المدونة', icon: BookOpen },
   { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
   { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
