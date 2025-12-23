@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { updatePasswordAction, updateProfileAction } from '../actions';
 import { useRouter } from 'next/navigation';
+import type { UserRecord } from 'firebase-admin/auth';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),
@@ -34,7 +36,7 @@ const passwordSchema = z.object({
 });
 
 
-export function ProfileClientPage({ serverUser, userData }: { serverUser: any, userData: UserType }) {
+export function ProfileClientPage({ serverUser, userData }: { serverUser: UserRecord, userData: UserType }) {
     const { toast } = useToast();
     const router = useRouter();
     const [isGenerating, setIsGenerating] = useState(false);
@@ -45,8 +47,8 @@ export function ProfileClientPage({ serverUser, userData }: { serverUser: any, u
     const profileForm = useForm<z.infer<typeof profileSchema>>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
-            name: serverUser.displayName || userData.name,
-            avatarUrl: serverUser.photoURL || userData.avatarUrl || '',
+            name: userData.name,
+            avatarUrl: userData.avatarUrl || '',
         },
     });
 
