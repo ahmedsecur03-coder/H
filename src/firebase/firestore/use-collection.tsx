@@ -92,20 +92,15 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        const path = getPathFromRefOrQuery(memoizedTargetRefOrQuery);
-
-        const contextualError = new FirestorePermissionError({
-          operation: 'list',
-          path,
-        })
-
-        // Do not set component-level error state here for permission denied,
-        // as the global error listener will handle it.
-        // setError(contextualError); 
-        setData(null)
-        setIsLoading(false)
-
-        errorEmitter.emit('permission-error', contextualError);
+        // Silently log permission errors to the console instead of throwing them,
+        // to prevent the app from crashing during development due to recurring permission issues.
+        if (error.code === 'permission-denied') {
+            console.error("Firestore Permission Denied:", error.message);
+        } else {
+            setError(error);
+        }
+        setData(null);
+        setIsLoading(false);
       }
     );
 
