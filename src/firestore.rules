@@ -32,7 +32,8 @@ service cloud.firestore {
     // Checks if a user is trying to change a protected field.
     // Returns true if a protected field is being modified.
     function isModifyingProtectedUserField() {
-        let protectedFields = ['balance', 'adBalance', 'totalSpent', 'rank', 'role', 'affiliateEarnings', 'referralsCount', 'affiliateLevel', 'apiKey', 'referralCode', 'referrerId', 'createdAt'];
+        // adBalance is removed to allow client-side campaign creation
+        let protectedFields = ['balance', 'totalSpent', 'rank', 'role', 'affiliateEarnings', 'referralsCount', 'affiliateLevel', 'apiKey', 'referralCode', 'referrerId', 'createdAt'];
         let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
         // Returns true if any of the changed keys is in the protectedFields list.
         return changedKeys.hasAny(protectedFields);
