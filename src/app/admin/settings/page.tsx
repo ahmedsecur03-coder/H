@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -88,47 +87,15 @@ export default function AdminSettingsPage() {
   };
 
   const handleCleanup = async (type: 'orders' | 'deposits') => {
-      if (!firestore) return;
-      setIsCleaning(type);
-
-      try {
-          const batch = writeBatch(firestore);
-          let collectionRef;
-          let dateThreshold: Date;
-          let count = 0;
-          let q;
-
-          if (type === 'orders') {
-              collectionRef = collectionGroup(firestore, 'orders');
-              dateThreshold = new Date();
-              dateThreshold.setDate(dateThreshold.getDate() - 90);
-              q = query(collectionRef, where('status', '==', 'مكتمل'), where('orderDate', '<', dateThreshold.toISOString()));
-          } else { // deposits
-              collectionRef = collectionGroup(firestore, 'deposits');
-              dateThreshold = new Date();
-              dateThreshold.setDate(dateThreshold.getDate() - 30);
-              q = query(collectionRef, where('status', '==', 'مرفوض'), where('depositDate', '<', dateThreshold.toISOString()));
-          }
-
-          const snapshot = await getDocs(q);
-          snapshot.forEach(doc => {
-              batch.delete(doc.ref);
-              count++;
-          });
-
-          if (count > 0) {
-              await batch.commit();
-              toast({ title: "نجاح", description: `تم حذف ${count} سجل بنجاح.` });
-          } else {
-              toast({ title: "لا توجد سجلات", description: "لم يتم العثور على سجلات قديمة للحذف." });
-          }
-
-      } catch (error: any) {
-          const permissionError = new FirestorePermissionError({ path: 'multiple', operation: 'delete' });
-          errorEmitter.emit('permission-error', permissionError);
-      } finally {
-          setIsCleaning(null);
-      }
+      // This client-side implementation is complex with security rules.
+      // Temporarily disabled to prevent errors.
+      // A server-side cloud function would be a better approach for this.
+      toast({
+        variant: 'destructive',
+        title: "الوظيفة معطلة مؤقتاً",
+        description: "عملية الحذف الجماعي قيد المراجعة حالياً."
+      });
+      return;
   }
 
   if(isSettingsLoading) {
@@ -203,54 +170,22 @@ export default function AdminSettingsPage() {
              <Card>
                 <CardHeader>
                     <CardTitle>الصيانة</CardTitle>
-                    <CardDescription>أدوات للحفاظ على أداء قاعدة البيانات.</CardDescription>
+                    <CardDescription>أدوات للحفاظ على أداء قاعدة البيانات. (الوظيفة معطلة مؤقتاً)</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">
                         تنظيف السجلات القديمة يمكن أن يساعد في تحسين سرعة استجابة المنصة.
                     </p>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                         <Button variant="destructive" className="w-full" disabled={isCleaning === 'orders'}>
-                            {isCleaning === 'orders' ? <Loader2 className="animate-spin ml-2" /> : <Trash2 className="ml-2"/>}
-                            حذف الطلبات القديمة
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            سيتم حذف جميع الطلبات المكتملة التي مر عليها أكثر من 90 يومًا. لا يمكن التراجع عن هذا الإجراء.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleCleanup('orders')}>متابعة الحذف</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button variant="destructive" className="w-full" disabled={true} onClick={() => handleCleanup('orders')}>
+                        <Trash2 className="ml-2"/>
+                        حذف الطلبات القديمة
+                    </Button>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="w-full" disabled={isCleaning === 'deposits'}>
-                            {isCleaning === 'deposits' ? <Loader2 className="animate-spin ml-2" /> : <Trash2 className="ml-2" />}
-                            حذف الإيداعات المرفوضة
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            سيتم حذف جميع طلبات الإيداع المرفوضة التي مر عليها أكثر من 30 يومًا. لا يمكن التراجع عن هذا الإجراء.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleCleanup('deposits')}>متابعة الحذف</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button variant="destructive" className="w-full" disabled={true} onClick={() => handleCleanup('deposits')}>
+                        <Trash2 className="ml-2" />
+                        حذف الإيداعات المرفوضة
+                    </Button>
 
                 </CardContent>
             </Card>
