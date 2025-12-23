@@ -32,6 +32,7 @@ const levelConfig = {
   },
   warning: {
     variant: 'default' as const,
+    className: 'bg-yellow-500/80 text-yellow-foreground hover:bg-yellow-500/90',
     icon: AlertTriangle,
   },
   error: {
@@ -90,13 +91,13 @@ export default function SystemLogPage() {
     }
     
     return logs.map((log) => {
-        const config = levelConfig[log.level];
+        const config = levelConfig[log.level] || levelConfig.info;
         const Icon = config.icon;
         return (
             <TableRow key={log.id}>
                 <TableCell>
-                    <Badge variant={config.variant} className="gap-1">
-                        <Icon className="h-3 w-3" />
+                    <Badge variant={config.variant} className={config.className}>
+                        <Icon className="h-3 w-3 ml-1" />
                         {log.level.toUpperCase()}
                     </Badge>
                 </TableCell>
@@ -123,7 +124,7 @@ export default function SystemLogPage() {
           <CardTitle>آخر 100 حدث</CardTitle>
            <CardDescription>يتم عرض الأحداث من الأحدث إلى الأقدم.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>

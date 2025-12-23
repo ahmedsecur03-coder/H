@@ -153,7 +153,5 @@ export type SystemLog = {
     level: 'info' | 'warning' | 'error';
     message: string;
     timestamp: string;
-    metadata: Record<string, any>;
-}
-
-    
+    metadata?: Record<string, any>;
+};
