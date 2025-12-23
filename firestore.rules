@@ -3,8 +3,52 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper functions
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // In a real app, this would be a more secure check, e.g., using custom claims.
+      // For this prototype, we'll allow a specific email to be the admin.
+      return request.auth != null && request.auth.token.email == 'hagaaty@gmail.com';
+    }
+    
+    // Admin has god-mode access. This rule must come first to be evaluated.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if isAdmin();
+    }
+
+    // Publicly readable collections
+    match /services/{serviceId} {
+      allow read: if true;
+      // Write is covered by the admin rule above
+    }
+    
+    match /blogPosts/{postId} {
+        allow read: if true;
+    }
+    
+    match /settings/global {
+        allow read: if true;
+    }
+
+    // User-specific data - these rules apply only if the user is NOT an admin.
+    match /users/{userId} {
+      allow read, update: if isOwner(userId);
+    }
+
+    match /users/{userId}/{subcollection}/{docId} {
+       allow create: if isOwner(userId);
+       allow read, delete: if isOwner(userId);
+       // Allow user to update their own tickets (e.g., add messages).
+       allow update: if (isOwner(userId) && subcollection == 'tickets');
+    }
+    
+    // This collection is admin-only anyway because of the wildcard rule above.
+    match /systemLogs/{logId} {
+      allow read, write: if isAdmin();
     }
   }
 }
