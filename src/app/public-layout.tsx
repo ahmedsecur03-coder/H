@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { LogIn, UserPlus } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
-import { UserNav } from './dashboard/_components/user-nav';
+import { UserNav } from './(dashboard)/_components/user-nav';
 import React, { useState, useEffect } from 'react';
 import CosmicBackground from '@/components/cosmic-background';
 import { publicNavItems } from '@/lib/placeholder-data';
