@@ -15,6 +15,7 @@ import {
   SidebarMenuSubButton,
   SidebarFooter,
   SidebarMenuSubTrigger,
+  SidebarMenuSubContent,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
