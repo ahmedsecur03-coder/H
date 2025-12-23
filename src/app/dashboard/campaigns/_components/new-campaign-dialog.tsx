@@ -33,7 +33,7 @@ const goals: { name: Goal; title: string }[] = [
     { name: 'تحويلات', title: 'تحويلات' },
 ];
 
-export function NewCampaignDialog({ userData, children }: { userData: UserType, children: React.ReactNode }) {
+export function NewCampaignDialog({ userData, children, onCampaignCreated }: { userData: UserType, children: React.ReactNode, onCampaignCreated: () => void }) {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -103,7 +103,7 @@ export function NewCampaignDialog({ userData, children }: { userData: UserType, 
             toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وتفعيلها.' });
             setOpen(false);
             setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget(''); setDurationDays('');
-            router.refresh();
+            onCampaignCreated();
 
         } catch (error: any) {
              if(error.message.includes('رصيد')) {

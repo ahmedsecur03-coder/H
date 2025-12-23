@@ -80,7 +80,7 @@ export default function CampaignsPage() {
             </p>
         </div>
 
-        <NewCampaignDialog userData={userData}>
+        <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
             <Button className="w-full text-lg py-6">
                 <PlusCircle className="ml-2 h-5 w-5" />
                 إنشاء حملة إعلانية جديدة
@@ -134,7 +134,7 @@ export default function CampaignsPage() {
                         <p className="mt-2 text-sm text-muted-foreground">
                             ليس لديك أي حملات إعلانية حتى الآن. أنشئ حملة جديدة لتبدأ.
                         </p>
-                         <NewCampaignDialog userData={userData}>
+                         <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
                            <Button className="mt-4">
                                 <PlusCircle className="ml-2 h-4 w-4" />
                                 إنشاء حملة جديدة
