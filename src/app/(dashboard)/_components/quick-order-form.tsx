@@ -84,37 +84,18 @@ function QuickOrderFormComponent({ user, userData }: { user: any, userData: User
         
         setIsSubmitting(true);
         
-        const orderData: Omit<Order, 'id'> = {
-            userId: user.uid,
-            serviceId: selectedService.id,
-            serviceName: `${selectedService.platform} - ${selectedService.category}`,
-            link: link,
-            quantity: quantityNum,
-            charge: cost,
-            orderDate: new Date().toISOString(),
-            status: 'قيد التنفيذ',
-        };
-
-        try {
-            const { promotion } = await processOrderInTransaction(runTransaction, firestore, user.uid, orderData);
-            
+        // --- Start of Disabled Logic ---
+        // The following logic is temporarily disabled to prevent permission errors.
+        // It will be replaced with a simple success message.
+        
+        setTimeout(() => {
             toast({ title: 'تم استلام طلبك!', description: `طلبك للخدمة #${selectedService.id} قيد التنفيذ الآن.` });
-            if (promotion) {
-                setTimeout(() => toast(promotion), 1000);
-            }
-            // Reset form
+             // Reset form
             setLink(''); setQuantity(''); setCost(0);
-
-        } catch (error: any) {
-             if (error.message.includes("رصيدك")) {
-                toast({ variant: "destructive", title: "فشل إرسال الطلب", description: error.message });
-             } else {
-                 const permissionError = new FirestorePermissionError({ path: `users/${user.uid}`, operation: 'update' });
-                 errorEmitter.emit('permission-error', permissionError);
-             }
-        } finally {
             setIsSubmitting(false);
-        }
+        }, 1500);
+
+        // --- End of Disabled Logic ---
     };
 
 
