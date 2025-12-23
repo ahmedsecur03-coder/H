@@ -48,7 +48,7 @@ export default function AdminUsersPage() {
 
         if (newPage > page && pageCursors[page]) {
             q = query(q, startAfter(pageCursors[page]));
-        } else if (newPage < page && pageCursors[newPage -1]) {
+        } else if (newPage < page && pageCursors[newPage - 1]) {
             // This is tricky without knowing the exact previous cursor. A full-featured pagination would require more state.
             // For simplicity, we'll reset and go to the target page. This is a simplification for this context.
             let tempQuery = query(collection(firestore, 'users'), orderBy('email', 'desc'));
