@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -98,7 +97,7 @@ export function NewCampaignDialog({
 
 
     try {
-        const newCampaignDocData: Omit<Campaign, 'id'> = {
+        const newCampaignData: Omit<Campaign, 'id'> = {
             userId: user.uid,
             name: campaignData.name,
             platform: campaignData.platform,
@@ -132,7 +131,7 @@ export function NewCampaignDialog({
         // transaction.update(userDocRef, { adBalance: currentAdBalance - campaignData.budget });
         
         const newCampaignRef = doc(campaignsColRef); // Create a new doc ref in the subcollection
-        transaction.set(newCampaignRef, newCampaignDocData);
+        transaction.set(newCampaignRef, newCampaignData);
       });
       
       toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
