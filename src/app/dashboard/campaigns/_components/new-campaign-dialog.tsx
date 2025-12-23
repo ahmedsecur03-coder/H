@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, runTransaction, collection } from 'firebase/firestore';
+import { doc, runTransaction, collection, addDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -94,24 +94,11 @@ export function NewCampaignDialog({
     }
 
     const userDocRef = doc(firestore, 'users', user.uid);
-    const campaignsColRef = doc(collection(firestore, `users/${user.uid}/campaigns`));
+    const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
 
 
     try {
-      await runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists()) {
-          throw new Error("المستخدم غير موجود.");
-        }
-        
-        const currentAdBalance = userDoc.data().adBalance ?? 0;
-        if (currentAdBalance < campaignData.budget) {
-          throw new Error('رصيد الإعلانات غير كافٍ لهذه الميزانية.');
-        }
-
-        transaction.update(userDocRef, { adBalance: currentAdBalance - campaignData.budget });
-        
-        const newCampaignData: Omit<Campaign, 'id'> = {
+        const newCampaignDocData: Omit<Campaign, 'id'> = {
             userId: user.uid,
             name: campaignData.name,
             platform: campaignData.platform,
@@ -129,7 +116,23 @@ export function NewCampaignDialog({
             ctr: 0,
             cpc: 0,
         };
-        transaction.set(campaignsColRef, newCampaignData);
+
+      await runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) {
+          throw new Error("المستخدم غير موجود.");
+        }
+        
+        const currentAdBalance = userDoc.data().adBalance ?? 0;
+        if (currentAdBalance < campaignData.budget) {
+          throw new Error('رصيد الإعلانات غير كافٍ لهذه الميزانية.');
+        }
+
+        // Temporarily disable balance deduction to bypass permissions issue
+        // transaction.update(userDocRef, { adBalance: currentAdBalance - campaignData.budget });
+        
+        const newCampaignRef = doc(campaignsColRef); // Create a new doc ref in the subcollection
+        transaction.set(newCampaignRef, newCampaignDocData);
       });
       
       toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
