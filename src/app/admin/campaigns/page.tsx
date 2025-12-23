@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, where, Query } from 'firebase/firestore';
+import { useMemo, useState, useEffect } from 'react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { collectionGroup, query, where, getDocs, Query } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
 import {
   Card,
@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CampaignActions } from './_components/campaign-actions';
+import { useToast } from '@/hooks/use-toast';
 
 const statusVariant = {
   'نشط': 'default',
@@ -34,18 +35,39 @@ type Status = keyof typeof statusVariant;
 
 export default function AdminCampaignsPage() {
   const firestore = useFirestore();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<Status | 'all'>('all');
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const campaignsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    const campaignsCollection = collectionGroup(firestore, 'campaigns');
-    if (filter !== 'all') {
-      return query(campaignsCollection, where('status', '==', filter));
+  const fetchCampaigns = async () => {
+    if (!firestore) return;
+    setIsLoading(true);
+
+    try {
+      let campaignsQuery: Query = collectionGroup(firestore, 'campaigns');
+      if (filter !== 'all') {
+        campaignsQuery = query(campaignsQuery, where('status', '==', filter));
+      }
+      
+      const querySnapshot = await getDocs(campaignsQuery);
+      const fetchedCampaigns: Campaign[] = [];
+      querySnapshot.forEach(doc => {
+        fetchedCampaigns.push({ id: doc.id, ...doc.data() } as Campaign);
+      });
+      setCampaigns(fetchedCampaigns);
+
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات.' });
+    } finally {
+      setIsLoading(false);
     }
-    return campaignsCollection;
-  }, [firestore, filter]);
+  };
 
-  const { data: campaigns, isLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+  useEffect(() => {
+    fetchCampaigns();
+  }, [firestore, filter]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -73,7 +95,7 @@ export default function AdminCampaignsPage() {
         <TableCell>${(campaign.spend || 0).toFixed(2)}</TableCell>
         <TableCell>${campaign.budget.toFixed(2)}</TableCell>
         <TableCell className="text-right">
-          <CampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
+          <CampaignActions campaign={campaign} forceCollectionUpdate={fetchCampaigns} />
         </TableCell>
       </TableRow>
     ));
