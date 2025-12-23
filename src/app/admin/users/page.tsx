@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getDocs, limit, orderBy, startAfter, DocumentData, Query } from 'firebase/firestore';
+import { collection, query, getDocs, limit, orderBy, startAfter, endBefore, limitToLast, where, DocumentData, Query, getCountFromServer } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,30 +15,52 @@ import { Button } from '@/components/ui/button';
 import { EditUserDialog } from './_components/edit-user-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from 'use-debounce';
 
-const ITEMS_PER_PAGE = 25;
+const ITEMS_PER_PAGE = 15;
 
 export default function AdminUsersPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [paginatedUsers, setPaginatedUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
-  const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  // Memoize this function
-  const fetchUsers = useMemo(() => async (direction: 'next' | 'initial' = 'initial') => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const [page, setPage] = useState(1);
+  const [pageCursors, setPageCursors] = useState<(DocumentData | null)[]>([null]); // Array to store cursors for each page start
+
+  const fetchUsers = useCallback(async (newPage: number) => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-        let q: Query = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+        let q: Query = collection(firestore, 'users');
 
-        if (direction === 'next' && lastVisible) {
-            q = query(q, startAfter(lastVisible));
+        // Note: Firestore doesn't support case-insensitive search or searching across multiple fields with OR.
+        // We will do a basic prefix search on email which is a common use case.
+        if (debouncedSearchTerm) {
+             q = query(q, where('email', '>=', debouncedSearchTerm), where('email', '<=', debouncedSearchTerm + '\uf8ff'));
+        }
+
+        q = query(q, orderBy('email', 'desc'));
+
+        if (newPage > page && pageCursors[page]) {
+            q = query(q, startAfter(pageCursors[page]));
+        } else if (newPage < page && pageCursors[newPage -1]) {
+            // This is tricky without knowing the exact previous cursor. A full-featured pagination would require more state.
+            // For simplicity, we'll reset and go to the target page. This is a simplification for this context.
+            let tempQuery = query(collection(firestore, 'users'), orderBy('email', 'desc'));
+             if (debouncedSearchTerm) {
+                tempQuery = query(tempQuery, where('email', '>=', debouncedSearchTerm), where('email', '<=', debouncedSearchTerm + '\uf8ff'));
+            }
+            if (newPage > 1) {
+                 tempQuery = query(tempQuery, limit((newPage - 1) * ITEMS_PER_PAGE));
+                 const prevDocs = await getDocs(tempQuery);
+                 const lastPrevDoc = prevDocs.docs[prevDocs.docs.length - 1];
+                 q = query(q, startAfter(lastPrevDoc));
+            }
         }
         
         q = query(q, limit(ITEMS_PER_PAGE));
@@ -46,21 +68,15 @@ export default function AdminUsersPage() {
         const documentSnapshots = await getDocs(q);
         const newUsers: User[] = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
 
-        if (newUsers.length === 0 && direction === 'next') {
-            toast({ title: "هذه هي الصفحة الأخيرة." });
-            setIsLastPage(true);
-            setIsLoading(false);
-            return;
-        }
+        setUsers(newUsers);
 
-        setAllUsers(prev => direction === 'initial' ? newUsers : [...prev, ...newUsers]);
-        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
+        if (documentSnapshots.docs.length > 0) {
+            const newCursors = [...pageCursors];
+            newCursors[newPage] = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+            setPageCursors(newCursors);
+        }
         
-        if (direction === 'initial') {
-            setPage(1);
-        }
-
-        setIsLastPage(newUsers.length < ITEMS_PER_PAGE);
+        setPage(newPage);
 
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -68,41 +84,23 @@ export default function AdminUsersPage() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, lastVisible]);
-
+  }, [firestore, toast, debouncedSearchTerm, page, pageCursors]);
 
   useEffect(() => {
-    fetchUsers('initial');
-  }, [firestore]); // Only refetch if firestore instance changes
+    // Reset and fetch when search term changes
+    setPage(1);
+    setPageCursors([null]);
+    fetchUsers(1);
+  }, [debouncedSearchTerm, firestore]);
 
-  const filteredUsers = useMemo(() => {
-    if (!searchTerm) return allUsers;
-    const lowerCaseSearch = searchTerm.toLowerCase();
-    return allUsers.filter(user => 
-        (user.name && user.name.toLowerCase().includes(lowerCaseSearch)) ||
-        (user.email && user.email.toLowerCase().includes(lowerCaseSearch)) ||
-        user.id.toLowerCase().includes(lowerCaseSearch)
-    );
-  }, [allUsers, searchTerm]);
-  
-  // Since we are fetching all users and then filtering, pagination should be on the filtered list
-  const currentUsers = useMemo(() => {
-     const startIndex = (page - 1) * ITEMS_PER_PAGE;
-     return filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredUsers, page]);
-
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage > page && newPage > totalPages && !isLastPage) {
-        // We need to fetch more data
-        fetchUsers('next');
-    }
-    setPage(newPage);
+  const handleManualFetch = () => {
+    setPage(1);
+    setPageCursors([null]);
+    fetchUsers(1);
   }
 
   const renderContent = () => {
-     if (isLoading && page === 1) {
+     if (isLoading) {
       return Array.from({length: 10}).map((_, i) => (
          <TableRow key={i}>
             {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
@@ -110,7 +108,7 @@ export default function AdminUsersPage() {
       ));
     }
     
-    if (!currentUsers || currentUsers.length === 0) {
+    if (!users || users.length === 0) {
         return (
             <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center">لا يوجد مستخدمون يطابقون بحثك.</TableCell>
@@ -118,7 +116,7 @@ export default function AdminUsersPage() {
         );
     }
 
-    return currentUsers.map((user) => (
+    return users.map((user) => (
       <TableRow key={user.id}>
         <TableCell>
           <div className="flex items-center gap-3">
@@ -146,7 +144,7 @@ export default function AdminUsersPage() {
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
         <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'غير متوفر'}</TableCell>
         <TableCell className="text-right">
-            <EditUserDialog user={user} onUserUpdate={() => fetchUsers('initial')}>
+            <EditUserDialog user={user} onUserUpdate={handleManualFetch}>
                 <Button variant="outline" size="sm">تعديل</Button>
             </EditUserDialog>
         </TableCell>
@@ -168,7 +166,7 @@ export default function AdminUsersPage() {
           <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."
+                placeholder="ابحث بالبريد الإلكتروني..."
                 className="pr-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -195,12 +193,12 @@ export default function AdminUsersPage() {
           </Table>
         </CardContent>
          <CardFooter className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">صفحة {page} من {totalPages > 0 ? totalPages : 1}</span>
+            <span className="text-sm text-muted-foreground">صفحة {page}</span>
             <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
+                <Button variant="outline" size="icon" onClick={() => fetchUsers(page - 1)} disabled={page <= 1}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>
+                <Button variant="outline" size="icon" onClick={() => fetchUsers(page + 1)} disabled={users.length < ITEMS_PER_PAGE}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
             </div>
