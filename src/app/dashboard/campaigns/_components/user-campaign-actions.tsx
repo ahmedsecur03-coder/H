@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -30,6 +29,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CampaignDetailsDialog } from './campaign-details-dialog';
 
@@ -122,5 +122,3 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
        </div>
     );
 }
-
-    
