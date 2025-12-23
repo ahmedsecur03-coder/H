@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -46,13 +47,59 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+    const { data: initialCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
     const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
+
+    const [campaigns, setCampaigns] = useState<Campaign[] | null>(initialCampaigns);
+
+    useEffect(() => {
+        if (initialCampaigns) {
+            setCampaigns(initialCampaigns);
+        }
+    }, [initialCampaigns]);
+
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCampaigns(prevCampaigns => {
+                if (!prevCampaigns) return null;
+
+                return prevCampaigns.map(campaign => {
+                    if (campaign.status !== 'نشط') {
+                        return campaign;
+                    }
+                     const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
+                    const newClicks = (campaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80));
+                    const newSpend = Math.min(campaign.budget, (campaign.spend || 0) + (newClicks - (campaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
+                    const newResults = (campaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
+                    const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
+                    const cpc = newClicks > 0 ? newSpend / newClicks : 0;
+                    let status = campaign.status;
+                    if (newSpend >= campaign.budget) {
+                        status = 'مكتمل';
+                    }
+
+                    return {
+                        ...campaign,
+                        impressions: newImpressions,
+                        clicks: newClicks,
+                        spend: newSpend,
+                        results: newResults,
+                        ctr: ctr,
+                        cpc: cpc,
+                        status: status,
+                    };
+                });
+            });
+        }, 1800000); // 30 minutes
+
+        return () => clearInterval(interval);
+    }, []);
 
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
@@ -61,7 +108,6 @@ export default function CampaignsPage() {
         return <CampaignsSkeleton />;
     }
     
-
     const statusVariant = {
         'نشط': 'default',
         'متوقف': 'secondary',

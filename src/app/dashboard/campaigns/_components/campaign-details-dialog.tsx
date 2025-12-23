@@ -8,67 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import type { Campaign } from '@/lib/types';
 import { BarChart, Eye, MousePointerClick, Target, Clock, DollarSign } from "lucide-react";
 
-export function CampaignDetailsDialog({ campaign: initialCampaign }: { campaign: Campaign }) {
+export function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
     const [open, setOpen] = useState(false);
-    const [campaign, setCampaign] = useState(initialCampaign);
-
-    useEffect(() => {
-        // Reset campaign data to the original state from props when the dialog is opened or the underlying data changes.
-        setCampaign(initialCampaign);
-
-        // If the campaign is not active or the dialog is closed, do nothing.
-        if (initialCampaign.status !== 'نشط' || !open) {
-            return;
-        }
-
-        // Set up an interval to simulate live campaign data updates.
-        const interval = setInterval(() => {
-            setCampaign(prevCampaign => {
-                // Prevent further updates if the campaign is no longer active (e.g., manually stopped or completed).
-                if (prevCampaign.status !== 'نشط') {
-                    clearInterval(interval);
-                    return prevCampaign;
-                }
-                
-                // Simulate new impressions and clicks with some randomness.
-                const newImpressions = (prevCampaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
-                const newClicks = (prevCampaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80)); // Simulate a realistic CTR
-                
-                // Simulate the cost of new clicks and update the total spend, ensuring it doesn't exceed the budget.
-                const newSpend = Math.min(prevCampaign.budget, (prevCampaign.spend || 0) + (newClicks - (prevCampaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
-
-                // Simulate results based on clicks.
-                const newResults = (prevCampaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
-
-                // Recalculate metrics.
-                const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
-                const cpc = newClicks > 0 ? newSpend / newClicks : 0;
-                
-                // If the budget is fully spent, mark the campaign as complete.
-                let status = prevCampaign.status;
-                if (newSpend >= prevCampaign.budget) {
-                    status = 'مكتمل';
-                }
-
-                return {
-                    ...prevCampaign,
-                    impressions: newImpressions,
-                    clicks: newClicks,
-                    spend: newSpend,
-                    results: newResults,
-                    ctr: ctr,
-                    cpc: cpc,
-                    status: status,
-                };
-            });
-        }, 1800000); // Update every 30 minutes (30 * 60 * 1000 ms)
-
-        // Cleanup: clear the interval and reset the campaign state when the component unmounts or the dialog is closed.
-        return () => {
-            clearInterval(interval);
-            setCampaign(initialCampaign); 
-        };
-    }, [open, initialCampaign]);
 
     const statusVariant = {
         'نشط': 'default',
