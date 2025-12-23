@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -21,9 +20,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from '@/components/ui/badge';
-import { updatePasswordAction, updateProfileAction } from '../actions';
-import { useRouter } from 'next/navigation';
-import type { UserRecord } from 'firebase-admin/auth';
+import { useAuth, useFirestore, useUser } from '@/firebase';
+import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
+
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),
@@ -36,12 +36,13 @@ const passwordSchema = z.object({
 });
 
 
-export function ProfileClientPage({ serverUser, userData }: { serverUser: UserRecord, userData: UserType }) {
+export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, onUpdate: () => void }) {
     const { toast } = useToast();
-    const router = useRouter();
+    const { user: authUser } = useUser();
+    const firestore = useFirestore();
+
     const [isGenerating, setIsGenerating] = useState(false);
     
-    // AI feature is disabled as per user request.
     const aiConfigured = false;
 
     const profileForm = useForm<z.infer<typeof profileSchema>>({
@@ -60,22 +61,43 @@ export function ProfileClientPage({ serverUser, userData }: { serverUser: UserRe
     const currentAvatarUrl = profileForm.watch('avatarUrl');
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
+        if (!authUser || !firestore) return;
+        
         try {
-            await updateProfileAction(values);
+            const userDocRef = doc(firestore, 'users', authUser.uid);
+            // Update auth profile and firestore doc in parallel
+            await Promise.all([
+                updateProfile(authUser, { displayName: values.name, photoURL: values.avatarUrl }),
+                updateDoc(userDocRef, { name: values.name, avatarUrl: values.avatarUrl })
+            ]);
+            
             toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
-            router.refresh();
+            onUpdate(); // This will re-fetch the document via the parent component's hook
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
         }
     };
     
     const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
+        if (!authUser || !authUser.email) return;
+
+        const credential = EmailAuthProvider.credential(authUser.email, values.currentPassword);
+
         try {
-            await updatePasswordAction(values);
+            // Re-authenticate user before changing password
+            await reauthenticateWithCredential(authUser, credential);
+            // Now change the password
+            await updatePassword(authUser, values.newPassword);
             passwordForm.reset();
             toast({ title: 'نجاح', description: 'تم تغيير كلمة المرور بنجاح.' });
         } catch (error: any) {
-             toast({ variant: 'destructive', title: 'فشل تغيير كلمة المرور', description: error.message });
+             let message = 'فشل تغيير كلمة المرور.';
+             if(error.code === 'auth/wrong-password') {
+                 message = 'كلمة المرور الحالية غير صحيحة.';
+             } else if (error.code === 'auth/too-many-requests') {
+                message = 'تم إجراء العديد من المحاولات. يرجى المحاولة مرة أخرى لاحقًا.';
+             }
+             toast({ variant: 'destructive', title: 'خطأ', description: message });
         }
     };
 
@@ -101,7 +123,7 @@ export function ProfileClientPage({ serverUser, userData }: { serverUser: UserRe
                         <Badge variant="secondary" className="mb-2">{userData.rank}</Badge>
                         <h2 className="text-3xl font-bold font-headline">{profileForm.watch('name')}</h2>
                         <p className="text-muted-foreground">{userData.email}</p>
-                        <p className="text-muted-foreground font-mono text-sm mt-1">#{serverUser.uid}</p>
+                        <p className="text-muted-foreground font-mono text-sm mt-1">#{userData.id}</p>
                     </div>
                 </div>
             </Card>
