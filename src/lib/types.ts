@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   name: string;
@@ -73,6 +72,7 @@ export type Campaign = {
     startDate: string;
     endDate?: string;
     budget: number;
+    durationDays: number;
     spend: number;
     status: 'نشط' | 'متوقف' | 'مكتمل' | 'بانتظار المراجعة';
     impressions: number;

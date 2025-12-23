@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -6,14 +5,14 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket } from "lucide-react";
+import { PlusCircle, Rocket, Clock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { NewCampaignDialog } from './_components/new-campaign-dialog';
-import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
+import { UserCampaignActions } from './_components/user-campaign-actions';
 
 function CampaignsSkeleton() {
     return (
@@ -99,7 +98,7 @@ export default function CampaignsPage() {
                             <TableRow>
                                 <TableHead>اسم الحملة</TableHead>
                                 <TableHead>الحالة</TableHead>
-                                <TableHead>الإنفاق / الميزانية</TableHead>
+                                <TableHead>المدة</TableHead>
                                 <TableHead className="text-right">الإجراءات</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -114,15 +113,13 @@ export default function CampaignsPage() {
                                     </TableCell>
                                     <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
                                     <TableCell>
-                                        <div className='flex flex-col gap-1'>
-                                            <span className='font-mono'>${(campaign.spend ?? 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
-                                            <div className="w-full bg-muted rounded-full h-1.5">
-                                                <div className="bg-primary h-1.5 rounded-full" style={{width: `${(campaign.spend / (campaign.budget || 1)) * 100}%`}}></div>
-                                            </div>
+                                        <div className='flex items-center gap-1 text-muted-foreground'>
+                                            <Clock className="w-3.5 h-3.5" />
+                                            <span>{campaign.durationDays} أيام</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <CampaignDetailsDialog campaign={campaign} />
+                                        <UserCampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
                                     </TableCell>
                                 </TableRow>
                                 )

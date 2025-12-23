@@ -1,11 +1,10 @@
-
 'use client';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Campaign } from '@/lib/types';
-import { BarChart, Eye, MousePointerClick, Target } from "lucide-react";
+import { BarChart, Eye, MousePointerClick, Target, Clock, DollarSign } from "lucide-react";
 
 export function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
     const statusVariant = {
@@ -59,17 +58,14 @@ export function CampaignDetailsDialog({ campaign }: { campaign: Campaign }) {
                             <p className="text-xl font-bold">{(campaign.ctr || 0).toFixed(2)}%</p>
                         </div>
                     </div>
-                     <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">تكلفة النقرة (CPC):</span>
+                     <div className="flex items-center justify-between text-sm col-span-2">
+                        <span className="text-muted-foreground flex items-center gap-1"><DollarSign className="w-4 h-4"/> تكلفة النقرة (CPC):</span>
                         <span className="font-mono font-bold">${(campaign.cpc || 0).toFixed(3)}</span>
                     </div>
-                     <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">الإنفاق / الميزانية:</span>
-                        <span className="font-mono font-bold">${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
+                    <div className="flex items-center justify-between text-sm col-span-2">
+                        <span className="text-muted-foreground flex items-center gap-1"><Clock className="w-4 h-4"/> المدة:</span>
+                        <span className="font-mono font-bold">{campaign.durationDays} أيام</span>
                     </div>
-                </div>
-                 <div className="w-full bg-muted rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full" style={{width: `${(campaign.spend / (campaign.budget || 1)) * 100}%`}}></div>
                 </div>
             </DialogContent>
         </Dialog>

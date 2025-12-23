@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -41,13 +40,15 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
     const [goal, setGoal] = useState<Goal | undefined>();
     const [targetAudience, setTargetAudience] = useState('');
     const [budget, setBudget] = useState('');
+    const [durationDays, setDurationDays] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const budgetAmount = parseFloat(budget);
+        const duration = parseInt(durationDays, 10);
 
-        if (!firestore || !user || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0) {
+        if (!firestore || !user || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0 || !duration || duration <= 0) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول بشكل صحيح.' });
             return;
         }
@@ -81,6 +82,7 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                     startDate: new Date().toISOString(),
                     endDate: undefined,
                     budget: budgetAmount,
+                    durationDays: duration,
                     spend: 0,
                     status: 'بانتظار المراجعة',
                     impressions: 0,
@@ -98,7 +100,7 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
             onCampaignCreated();
             setOpen(false);
             // Reset form
-            setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget('');
+            setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget(''); setDurationDays('');
         } catch (error: any) {
             if(error.message.includes('رصيد')) {
                  toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
@@ -123,7 +125,7 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                 <DialogHeader>
                     <DialogTitle>حملة إعلانية جديدة</DialogTitle>
                     <DialogDescription>
-                        اختر المنصة وحدد ميزانية حملتك للبدء. سيتم خصم الميزانية من رصيد الإعلانات.
+                        اختر المنصة وحدد ميزانية حملتك ومدتها للبدء. سيتم خصم الميزانية من رصيد الإعلانات.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -153,11 +155,17 @@ export function NewCampaignDialog({ userData, user, onCampaignCreated, children 
                         <Label htmlFor="target-audience">وصف الجمهور المستهدف</Label>
                         <Textarea id="target-audience" value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} required placeholder="مثال: شباب في مصر مهتمون بكرة القدم والألعاب الإلكترونية" />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="budget">الميزانية ($)</Label>
-                        <Input id="budget" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} required min="5" />
-                         <p className="text-xs text-muted-foreground">رصيدك الإعلاني الحالي: ${userData.adBalance?.toFixed(2) ?? '0.00'}</p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="budget">الميزانية ($)</Label>
+                            <Input id="budget" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} required min="5" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="duration">المدة (أيام)</Label>
+                            <Input id="duration" type="number" value={durationDays} onChange={(e) => setDurationDays(e.target.value)} required min="1" />
+                        </div>
                     </div>
+                     <p className="text-xs text-muted-foreground">رصيدك الإعلاني الحالي: ${userData.adBalance?.toFixed(2) ?? '0.00'}</p>
                     <DialogFooter>
                         <Button type="submit" disabled={loading} className="w-full">
                             {loading ? <Loader2 className="animate-spin" /> : 'إنشاء ومراجعة'}
