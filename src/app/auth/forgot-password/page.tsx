@@ -10,7 +10,6 @@ import Link from 'next/link';
 import AuthLogo from '../_components/auth-logo';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, MailCheck } from 'lucide-react';
-import CosmicBackground from '@/components/cosmic-background';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -49,13 +48,12 @@ export default function ForgotPasswordPage() {
   
     if (submitted) {
         return (
-             <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 overflow-hidden">
-                <CosmicBackground />
+             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
                 <div className="w-full max-w-sm space-y-8 z-10 text-center">
                     <div className="flex justify-center text-green-400">
                         <MailCheck className="h-16 w-16" />
                     </div>
-                     <h1 className="text-2xl font-headline font-bold text-primary-foreground">تحقق من بريدك الإلكتروني</h1>
+                     <h1 className="text-2xl font-headline font-bold">تحقق من بريدك الإلكتروني</h1>
                     <p className="text-muted-foreground">
                         إذا كان هناك حساب مرتبط بـ <span className="font-bold text-primary">{email}</span>، فقد أرسلنا إليه رابطًا لإعادة تعيين كلمة المرور.
                     </p>
@@ -68,14 +66,13 @@ export default function ForgotPasswordPage() {
     }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 overflow-hidden">
-      <CosmicBackground />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-8 z-10">
         <div className="flex justify-center">
           <AuthLogo />
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-headline font-bold text-primary-foreground">هل نسيت كلمة المرور؟</h1>
+          <h1 className="text-2xl font-headline font-bold">هل نسيت كلمة المرور؟</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             لا تقلق. أدخل بريدك الإلكتروني أدناه وسنرسل لك رابطًا لإعادة تعيينها.
           </p>

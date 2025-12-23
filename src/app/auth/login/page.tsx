@@ -11,7 +11,6 @@ import Link from 'next/link';
 import AuthLogo from '../_components/auth-logo';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import CosmicBackground from '@/components/cosmic-background';
 
 
 export default function LoginPage() {
@@ -49,14 +48,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 overflow-hidden">
-        <CosmicBackground />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <div className="w-full max-w-sm space-y-8 z-10">
             <div className="flex justify-center">
                 <AuthLogo />
             </div>
             <div className="text-center">
-                 <h1 className="text-2xl font-headline font-bold text-primary-foreground">تسجيل الدخول</h1>
+                 <h1 className="text-2xl font-headline font-bold">تسجيل الدخول</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
                     أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك
                 </p>

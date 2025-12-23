@@ -13,7 +13,6 @@ import AuthLogo from '@/app/auth/_components/auth-logo';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
-import CosmicBackground from '@/components/cosmic-background';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
@@ -131,14 +130,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4 overflow-hidden">
-      <CosmicBackground />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-8 z-10">
             <div className="flex justify-center">
                 <AuthLogo />
             </div>
             <div className="text-center">
-                 <h1 className="text-2xl font-headline font-bold text-primary-foreground">إنشاء حساب جديد</h1>
+                 <h1 className="text-2xl font-headline font-bold">إنشاء حساب جديد</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
                     {referralCode ? `أنت على وشك الانضمام عبر دعوة. أكمل التسجيل!` : 'انضم إلى منصة حاجاتي وابدأ في تنمية أعمالك'}
                 </p>

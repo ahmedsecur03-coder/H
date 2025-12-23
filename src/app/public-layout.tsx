@@ -8,7 +8,6 @@ import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
 import React, { useState, useEffect } from 'react';
-import CosmicBackground from '@/components/cosmic-background';
 import { publicNavItems } from '@/lib/placeholder-data';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -148,9 +147,8 @@ export default function PublicLayout({
 }) {
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
-       <CosmicBackground />
        <Header />
-      <main className="flex-1 z-10">
+      <main className="flex-1">
         <div className="container mx-auto px-4 md:px-6 py-8">
             {children}
         </div>
