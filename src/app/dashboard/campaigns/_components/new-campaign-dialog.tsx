@@ -79,14 +79,43 @@ export function NewCampaignDialog({
       durationDays: parseInt(formData.get('durationDays') as string, 10),
     };
     
-    // Simulate success without actual database write
-    setTimeout(() => {
-        toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة بنجاح. (محاكاة)' });
-        onCampaignCreated();
+    const newCampaignData: Omit<Campaign, 'id'> = {
+        userId: user.uid,
+        name: campaignData.name,
+        platform: campaignData.platform,
+        goal: campaignData.goal,
+        targetAudience: campaignData.targetAudience,
+        budget: campaignData.budget,
+        durationDays: campaignData.durationDays,
+        startDate: new Date().toISOString(),
+        spend: 0,
+        status: 'بانتظار المراجعة',
+        impressions: 0,
+        clicks: 0,
+        results: 0,
+        ctr: 0,
+        cpc: 0,
+    };
+
+    try {
+        const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
+        await addDoc(campaignsColRef, newCampaignData);
+
+        toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة بنجاح.' });
+        onCampaignCreated(); // This will re-fetch the campaigns
         setOpen(false);
         (event.target as HTMLFormElement).reset();
-        setLoading(false);
-    }, 1000);
+    } catch (error: any) {
+       // Catch potential errors from addDoc
+       const permissionError = new FirestorePermissionError({ 
+          path: `users/${user.uid}/campaigns`, 
+          operation: 'create',
+          requestResourceData: newCampaignData
+       });
+       errorEmitter.emit('permission-error', permissionError);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
