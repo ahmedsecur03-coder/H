@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -60,7 +61,7 @@ export function CampaignDetailsDialog({ campaign: initialCampaign }: { campaign:
                     status: status,
                 };
             });
-        }, 3000); // Update every 3 seconds
+        }, 1800000); // Update every 30 minutes (30 * 60 * 1000 ms)
 
         // Cleanup: clear the interval and reset the campaign state when the component unmounts or the dialog is closed.
         return () => {
