@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-// import { regenerateApiKey } from '../actions';
+import { regenerateApiKey } from '@/app/(dashboard)/api/actions';
 import { useRouter } from 'next/navigation';
 
 function CopyButton({ textToCopy }: { textToCopy: string }) {
@@ -25,7 +25,6 @@ function CopyButton({ textToCopy }: { textToCopy: string }) {
     const [copied, setCopied] = useState(false);
   
     const handleCopy = () => {
-        if (!textToCopy) return;
         navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         toast({ title: "تم نسخ مفتاح API!" });
@@ -33,7 +32,7 @@ function CopyButton({ textToCopy }: { textToCopy: string }) {
     };
   
     return (
-        <Button size="icon" variant="outline" onClick={handleCopy} disabled={!textToCopy}>
+        <Button size="icon" variant="outline" onClick={handleCopy}>
             {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
         </Button>
     );
@@ -47,9 +46,9 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
     const handleRegenerate = async () => {
         setIsRegenerating(true);
         try {
-            // await regenerateApiKey();
-            toast({ title: "هذه الميزة قيد التطوير حاليًا.", description: "تم تعطيل إعادة إنشاء المفتاح مؤقتًا." });
-            // router.refresh();
+            await regenerateApiKey();
+            toast({ title: "تم إنشاء مفتاح جديد بنجاح!", description: "المفتاح القديم لم يعد صالحاً." });
+            router.refresh();
         } catch (error) {
             toast({ variant: 'destructive', title: "خطأ", description: "فشل إنشاء مفتاح جديد." });
         } finally {
@@ -72,7 +71,7 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
              <CardFooter>
                  <AlertDialog>
                   <AlertDialogTrigger asChild>
-                     <Button variant="destructive" disabled={true}>
+                     <Button variant="destructive" disabled={isRegenerating}>
                         {isRegenerating ? <Loader2 className="ml-2 animate-spin" /> : <RefreshCw className="ml-2 h-4 w-4" />}
                          إعادة توليد المفتاح
                     </Button>
@@ -86,9 +85,7 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => {
-                          toast({ title: 'تحت الإنشاء', description: 'هذه الميزة معطلة مؤقتًا.' });
-                      }}>نعم، قم بإنشاء مفتاح جديد</AlertDialogAction>
+                      <AlertDialogAction onClick={handleRegenerate}>نعم، قم بإنشاء مفتاح جديد</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
