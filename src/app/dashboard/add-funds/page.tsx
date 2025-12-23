@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { runTransaction, doc, addDoc, collection } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
+import { runTransaction, doc, addDoc, collection, query, where } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Loader2, Copy, Check, Clock } from 'lucide-react';
 import type { Deposit, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -57,12 +57,20 @@ export default function AddFundsPage() {
 
     const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
     const { data: settingsData, isLoading: settingsLoading } = useDoc<any>(settingsDocRef);
+    
+    const depositsQuery = useMemoFirebase(() => 
+        user ? query(collection(firestore, `users/${user.uid}/deposits`), where('status', '==', 'معلق')) : null,
+        [user, firestore]
+    );
+    const { data: pendingDeposits, isLoading: depositsLoading } = useCollection<Deposit>(depositsQuery);
 
     const [amount, setAmount] = useState('');
     const [phone, setPhone] = useState('');
     const [transactionId, setTransactionId] = useState('');
     const [binanceTxId, setBinanceTxId] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const hasPendingDeposit = useMemo(() => (pendingDeposits?.length ?? 0) > 0, [pendingDeposits]);
 
     const calculatedAmountEGP = useMemo(() => {
         if (!settingsData) return 0;
@@ -90,7 +98,7 @@ export default function AddFundsPage() {
             return;
         }
 
-        setIsLoading(true);
+        setIsSubmitting(true);
 
         const newDeposit: Omit<Deposit, 'id'> = {
             userId: user.uid,
@@ -122,11 +130,11 @@ export default function AddFundsPage() {
                 errorEmitter.emit('permission-error', permissionError);
             })
             .finally(() => {
-                setIsLoading(false);
+                setIsSubmitting(false);
             });
     };
     
-    if (userLoading || settingsLoading || !userData || !settingsData) {
+    if (userLoading || settingsLoading || depositsLoading || !userData || !settingsData) {
         return (
             <div className="space-y-6 pb-8">
                 <div>
@@ -198,8 +206,8 @@ export default function AddFundsPage() {
                                         </div>
                                     </CardContent>
                                     <CardFooter>
-                                        <Button type="submit" disabled={isLoading} className="w-full">
-                                            {isLoading ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
+                                        <Button type="submit" disabled={isSubmitting || hasPendingDeposit} className="w-full">
+                                            {isSubmitting ? <Loader2 className="animate-spin" /> : hasPendingDeposit ? <><Clock className="ml-2"/>لديك طلب قيد المراجعة</> : 'تأكيد الإيداع'}
                                         </Button>
                                     </CardFooter>
                                 </form>
@@ -229,8 +237,8 @@ export default function AddFundsPage() {
                                         </div>
                                     </CardContent>
                                     <CardFooter>
-                                        <Button type="submit" disabled={isLoading} className="w-full">
-                                            {isLoading ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
+                                        <Button type="submit" disabled={isSubmitting || hasPendingDeposit} className="w-full">
+                                             {isSubmitting ? <Loader2 className="animate-spin" /> : hasPendingDeposit ? <><Clock className="ml-2"/>لديك طلب قيد المراجعة</> : 'تأكيد الإيداع'}
                                         </Button>
                                     </CardFooter>
                                 </form>
