@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { useFirestore, useUser } from '@/firebase';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,9 +23,31 @@ export default function AdminBlogPage() {
     const { toast } = useToast();
     const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState<BlogPost | undefined>(undefined);
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts')) : null, [firestore]);
-    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
+    const fetchPosts = async () => {
+        if (!firestore) return;
+        setIsLoading(true);
+        try {
+            const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+            const querySnapshot = await getDocs(postsQuery);
+            const fetchedPosts: BlogPost[] = [];
+            querySnapshot.forEach(doc => {
+                fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
+            });
+            setPosts(fetchedPosts);
+        } catch (error) {
+            console.error("Error fetching blog posts:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب المنشورات.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPosts();
+    }, [firestore]);
 
     const handleOpenPostDialog = (post?: BlogPost) => {
         setSelectedPost(post);
@@ -33,7 +55,6 @@ export default function AdminBlogPage() {
     };
 
     const handleArticleGenerated = (article: { title: string; content: string }) => {
-        // Create a temporary "new post" object and open the dialog
         const newPost: Partial<BlogPost> = {
             title: article.title,
             content: article.content,
@@ -48,16 +69,22 @@ export default function AdminBlogPage() {
         if (selectedPost && selectedPost.id) { // Editing
             const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
             await updateDoc(postDocRef, data)
-                .then(() => toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' }))
+                .then(() => {
+                    toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
+                    fetchPosts(); // Refresh data
+                })
                 .catch(serverError => {
                     const permissionError = new FirestorePermissionError({ path: postDocRef.path, operation: 'update', requestResourceData: data });
                     errorEmitter.emit('permission-error', permissionError);
                 });
-        } else { // Adding new post (either manually or from AI)
+        } else { // Adding new post
             const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
             const postsColRef = collection(firestore, 'blogPosts');
             await addDoc(postsColRef, newPostData)
-                .then(() => toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' }))
+                .then(() => {
+                    toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
+                    fetchPosts(); // Refresh data
+                })
                 .catch(serverError => {
                     const permissionError = new FirestorePermissionError({ path: postsColRef.path, operation: 'create', requestResourceData: newPostData });
                     errorEmitter.emit('permission-error', permissionError);
@@ -72,6 +99,7 @@ export default function AdminBlogPage() {
         deleteDoc(postDocRef)
             .then(() => {
                 toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
+                fetchPosts(); // Refresh data
             })
             .catch(serverError => {
                  const permissionError = new FirestorePermissionError({
