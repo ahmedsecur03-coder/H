@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User } from '@/lib/types';
@@ -46,5 +45,3 @@ export default function SettingsPage() {
         </div>
     );
 }
-
-    

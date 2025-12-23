@@ -1,4 +1,3 @@
-
 'use client';
 import type { User as UserType } from '@/lib/types';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
@@ -37,5 +36,3 @@ export default function ProfilePage() {
 
     return <ProfileClientPage serverUser={user} userData={userData} />;
 }
-
-    
