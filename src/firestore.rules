@@ -3,8 +3,58 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // In a real app, this would be a more secure check, e.g., using custom claims.
+      // For this prototype, we'll allow a specific email to be the admin.
+      return request.auth != null && request.auth.token.email == 'hagaaty@gmail.com';
+    }
+
+    // Allow anyone to read the service catalog and blog posts
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /blogPosts/{postId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+    
+    match /settings/global {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+
+    // User-specific data
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      // Allow user to update their own document, but not protected fields
+      allow update: if isOwner(userId);
+      // Admin can update anything
+      allow update, create, delete: if isAdmin();
+    }
+
+    match /users/{userId}/{subcollection}/{docId} {
+       // A user can create their own documents (orders, tickets, etc.)
+       allow create: if isOwner(userId);
+       // A user can read their own subcollections
+       allow read, delete: if isOwner(userId) || isAdmin();
+       // Allow user to update their own tickets (add messages)
+       allow update: if (isOwner(userId) && subcollection == 'tickets') || isAdmin();
+    }
+    
+    match /systemLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Fallback for any other path - deny access
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

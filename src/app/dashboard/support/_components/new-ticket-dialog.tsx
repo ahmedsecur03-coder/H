@@ -17,7 +17,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { createTicket } from '../actions';
+import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import type { Ticket } from '@/lib/types';
+
 
 export function NewTicketDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -26,15 +29,35 @@ export function NewTicketDialog({ children }: { children: React.ReactNode }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const firestore = useFirestore();
+  const { user } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !message) return;
+    if (!subject || !message || !firestore || !user) {
+        toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول.' });
+        return;
+    }
 
     setIsSubmitting(true);
     
+    const newTicketData: Omit<Ticket, 'id'> = {
+        userId: user.uid,
+        subject: subject,
+        message: message,
+        status: 'مفتوحة',
+        createdDate: new Date().toISOString(),
+        messages: [{
+            sender: 'user',
+            text: message,
+            timestamp: new Date().toISOString()
+        }]
+    };
+
+    const ticketsColRef = collection(firestore, `users/${user.uid}/tickets`);
+
     try {
-        const ticketId = await createTicket({ subject, message });
+        const docRef = await addDoc(ticketsColRef, newTicketData);
         toast({
             title: 'تم فتح التذكرة بنجاح',
             description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
@@ -42,9 +65,14 @@ export function NewTicketDialog({ children }: { children: React.ReactNode }) {
         setSubject('');
         setMessage('');
         setOpen(false);
-        router.push(`/dashboard/support/${ticketId}`);
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+        router.push(`/dashboard/support/${docRef.id}`);
+    } catch (error) {
+        const permissionError = new FirestorePermissionError({
+            path: ticketsColRef.path,
+            operation: 'create',
+            requestResourceData: newTicketData
+        });
+        errorEmitter.emit('permission-error', permissionError);
     } finally {
         setIsSubmitting(false);
     }
