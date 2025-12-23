@@ -79,22 +79,6 @@ export function NewCampaignDialog({
       durationDays: parseInt(formData.get('durationDays') as string, 10),
     };
     
-    // Temporarily disable database write to avoid permission errors.
-    // This will simulate a successful submission for UI/UX development purposes.
-    
-    // Simulate a short delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة بنجاح. (محاكاة)' });
-    onCampaignCreated();
-    setOpen(false);
-    (event.target as HTMLFormElement).reset();
-    setLoading(false);
-
-    return;
-
-    /*
-    // --- DISABLED DATABASE LOGIC ---
     const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
     const newCampaignData: Omit<Campaign, 'id'> = {
         userId: user.uid,
@@ -134,7 +118,6 @@ export function NewCampaignDialog({
     } finally {
       setLoading(false);
     }
-    */
   };
 
   return (
