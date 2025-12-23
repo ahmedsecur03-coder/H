@@ -48,7 +48,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[14px_24px]"></div>
+        <div className="absolute left-0 top-1/3 h-32 w-32 bg-primary/50 rounded-full filter blur-3xl animate-blob"></div>
+        <div className="absolute right-0 bottom-1/3 h-32 w-32 bg-fuchsia-500/50 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
+
         <div className="w-full max-w-sm space-y-8 z-10">
             <div className="flex justify-center">
                 <AuthLogo />
@@ -85,7 +89,7 @@ export default function LoginPage() {
                 />
               </div>
                <div>
-                  <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/70 text-primary-foreground hover:brightness-110 transition-all duration-300" disabled={loading}>
+                  <Button type="submit" className="w-full bg-gradient-to-r from-primary to-fuchsia-500 text-primary-foreground hover:brightness-110 transition-all duration-300" disabled={loading}>
                      {loading ? <Loader2 className="animate-spin" /> : 'تسجيل الدخول'}
                   </Button>
                </div>
@@ -100,3 +104,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

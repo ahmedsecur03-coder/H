@@ -225,7 +225,7 @@ export default function DashboardPage() {
                         ))
                         ) : (
                         <TableRow>
-                            <TableCell colSpan={3} className="h-24 text-center">
+                            <TableCell colSpan={3} className="text-center h-24">
                                 <div className="flex flex-col items-center justify-center py-4">
                                     <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground" />
                                     <h3 className="mt-4 font-headline text-xl">لم تقم بأي طلبات بعد</h3>
@@ -275,4 +275,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
 

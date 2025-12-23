@@ -3,7 +3,7 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Rocket, Clock } from "lucide-react";
@@ -63,7 +63,6 @@ export default function CampaignsPage() {
         }
     }, [initialCampaigns]);
 
-
     useEffect(() => {
         const interval = setInterval(() => {
             setCampaigns(prevCampaigns => {
@@ -73,7 +72,7 @@ export default function CampaignsPage() {
                     if (campaign.status !== 'نشط') {
                         return campaign;
                     }
-                     const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
+                    const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
                     const newClicks = (campaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80));
                     const newSpend = Math.min(campaign.budget, (campaign.spend || 0) + (newClicks - (campaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
                     const newResults = (campaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
@@ -82,6 +81,19 @@ export default function CampaignsPage() {
                     let status = campaign.status;
                     if (newSpend >= campaign.budget) {
                         status = 'مكتمل';
+                    }
+
+                    if(firestore && authUser) {
+                        const campaignRef = doc(firestore, `users/${authUser.uid}/campaigns/${campaign.id}`);
+                        updateDoc(campaignRef, {
+                            impressions: newImpressions,
+                            clicks: newClicks,
+                            spend: newSpend,
+                            results: newResults,
+                            ctr: ctr,
+                            cpc: cpc,
+                            status: status
+                        });
                     }
 
                     return {
@@ -99,7 +111,7 @@ export default function CampaignsPage() {
         }, 1800000); // 30 minutes
 
         return () => clearInterval(interval);
-    }, []);
+    }, [firestore, authUser]);
 
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;

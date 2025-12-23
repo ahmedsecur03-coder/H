@@ -44,3 +44,4 @@ export default function ProfilePage() {
     
     return <ProfileClientPage userData={{...userData, id: authUser.uid}} onUpdate={forceDocUpdate} />;
 }
+

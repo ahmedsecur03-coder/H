@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -15,13 +16,16 @@ import {
   Sparkles,
   ShoppingCart,
   ChevronLeft,
+  Star,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, limit, getDocs } from 'firebase/firestore';
+import { collection, query, limit } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function FeaturedServices() {
     const firestore = useFirestore();
@@ -50,7 +54,7 @@ function FeaturedServices() {
             {featuredServices.map(service => {
                 const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
                 return (
-                    <Card key={service.id} className="flex flex-col hover:border-primary/50 transition-colors duration-300">
+                    <Card key={service.id} className="flex flex-col bg-card/50 hover:bg-card hover:border-primary/50 transition-all duration-300 group">
                         <CardHeader className="flex-row items-center gap-4">
                             <div className="p-3 bg-muted rounded-full">
                                 <Icon className="w-6 h-6 text-foreground" />
@@ -65,7 +69,7 @@ function FeaturedServices() {
                                 <p className="text-3xl font-bold text-primary">${service.price.toFixed(3)}</p>
                                 <p className="text-xs text-muted-foreground">/ لكل 1000</p>
                             </div>
-                            <Button asChild variant="outline" className="mt-4 w-full">
+                            <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                 <Link href="/login">
                                     <ChevronLeft className="h-4 w-4 ml-2" />
                                     اطلب الآن
@@ -79,18 +83,52 @@ function FeaturedServices() {
     );
 }
 
-export default function HomePage() {
+function Testimonials() {
+    const testimonials = [
+        { name: "أحمد المصري", role: "مسوق رقمي", text: "منصة حاجاتي غيرت طريقة عملي بالكامل. السرعة والدعم الفني لا يعلى عليهما. أنصح بها بشدة!", avatar: PlaceHolderImages.find(p => p.id === 'avatar1')?.imageUrl },
+        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: PlaceHolderImages.find(p => p.id === 'avatar2')?.imageUrl },
+        { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: PlaceHolderImages.find(p => p.id === 'avatar3')?.imageUrl },
+    ];
 
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((t, i) => (
+                <Card key={i} className="bg-card/50 border-border/50">
+                    <CardHeader>
+                        <div className="flex items-center gap-4">
+                            <Avatar>
+                                <AvatarImage src={t.avatar} alt={t.name} />
+                                <AvatarFallback>{t.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <CardTitle className="text-base">{t.name}</CardTitle>
+                                <CardDescription>{t.role}</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground italic">"{t.text}"</p>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
+}
+
+export default function HomePage() {
   return (
-    <div className="space-y-16 pb-8">
-        <section className="text-center py-20">
-            <h1 className="text-5xl lg:text-6xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-r from-primary via-secondary to-primary">
+    <div className="space-y-24 pb-8">
+        <section className="relative text-center py-20 overflow-hidden">
+            <div className="absolute inset-0 -z-10 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
+            <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background to-primary/10"></div>
+            
+            <h1 className="text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400">
                 بوابتك إلى الكون الرقمي
             </h1>
-            <p className="mt-4 text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
                 منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
             </p>
-            <div className="mt-8 flex justify-center gap-4">
+            <div className="mt-10 flex justify-center gap-4">
                 <Button size="lg" asChild className="text-lg py-7">
                     <Link href="/signup">
                         <Rocket className="ml-2" />
@@ -107,33 +145,33 @@ export default function HomePage() {
         </section>
 
         <section>
-            <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold font-headline">لماذا تختار حاجاتي؟</h2>
-                <p className="text-muted-foreground">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</p>
+            <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold font-headline">لماذا تختار حاجاتي؟</h2>
+                <p className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card>
-                    <CardHeader className="items-center text-center">
-                        <div className="p-3 bg-primary/20 rounded-full mb-2">
-                        <DollarSign className="h-8 w-8 text-primary" />
+                <Card className="text-center bg-card/50 hover:bg-card transition-colors">
+                    <CardHeader className="items-center">
+                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
+                            <DollarSign className="h-8 w-8 text-primary" />
                         </div>
                         <CardTitle>أسعار تنافسية</CardTitle>
                         <CardDescription>أفضل الأسعار في السوق مع الحفاظ على أعلى جودة للخدمات.</CardDescription>
                     </CardHeader>
                 </Card>
-                <Card>
-                    <CardHeader className="items-center text-center">
-                        <div className="p-3 bg-primary/20 rounded-full mb-2">
-                        <Shield className="h-8 w-8 text-primary" />
+                <Card className="text-center bg-card/50 hover:bg-card transition-colors">
+                    <CardHeader className="items-center">
+                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
+                            <Shield className="h-8 w-8 text-primary" />
                         </div>
                         <CardTitle>دعم فني فوري</CardTitle>
                         <CardDescription>فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة تواجهك.</CardDescription>
                     </CardHeader>
                 </Card>
-                <Card>
-                    <CardHeader className="items-center text-center">
-                        <div className="p-3 bg-primary/20 rounded-full mb-2">
-                        <Sparkles className="h-8 w-8 text-primary" />
+                <Card className="text-center bg-card/50 hover:bg-card transition-colors">
+                    <CardHeader className="items-center">
+                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
+                            <Sparkles className="h-8 w-8 text-primary" />
                         </div>
                         <CardTitle>نظام متكامل</CardTitle>
                         <CardDescription>كل ما تحتاجه في مكان واحد، من خدمات SMM إلى إدارة الحملات ونظام الإحالة.</CardDescription>
@@ -143,12 +181,21 @@ export default function HomePage() {
         </section>
 
         <section>
-            <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold font-headline">نظرة على خدماتنا الكونية</h2>
-                <p className="text-muted-foreground">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</p>
+            <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold font-headline">نظرة على خدماتنا الكونية</h2>
+                <p className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</p>
             </div>
             <FeaturedServices />
+        </section>
+
+         <section>
+            <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</h2>
+                <p className="text-muted-foreground mt-2">آراء عملائنا هي النجوم التي نهتدي بها.</p>
+            </div>
+            <Testimonials />
         </section>
     </div>
   );
 }
+
