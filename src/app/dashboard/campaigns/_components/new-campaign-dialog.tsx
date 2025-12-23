@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { createCampaign } from '../actions';
 
 type Platform = Campaign['platform'];
 type Goal = Campaign['goal'];
@@ -33,7 +34,6 @@ const goals: { name: Goal; title: string }[] = [
 
 export function NewCampaignDialog({ userData, children, onCampaignCreated }: { userData: UserType, children: React.ReactNode, onCampaignCreated: () => void }) {
     const { user } = useUser();
-    const firestore = useFirestore();
     const { toast } = useToast();
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -50,7 +50,7 @@ export function NewCampaignDialog({ userData, children, onCampaignCreated }: { u
         const budgetAmount = parseFloat(budget);
         const duration = parseInt(durationDays, 10);
 
-        if (!user || !firestore || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0 || !duration || duration <= 0) {
+        if (!user || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0 || !duration || duration <= 0) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول بشكل صحيح.' });
             return;
         }
@@ -61,21 +61,29 @@ export function NewCampaignDialog({ userData, children, onCampaignCreated }: { u
         }
 
         setLoading(true);
-
-        // --- Start of Disabled Logic ---
-        // The following code is temporarily disabled to prevent permission errors.
-        // It will be replaced with a simple success message.
         
-        // Simulate a successful operation for demonstration purposes
-        setTimeout(() => {
-            toast({ title: 'نجاح!', description: 'تم استلام طلب حملتك بنجاح.' });
-            setOpen(false);
-            setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget(''); setDurationDays('');
-            onCampaignCreated();
-            setLoading(false);
-        }, 1500);
+        try {
+            const result = await createCampaign({
+                name,
+                platform,
+                goal,
+                targetAudience,
+                budgetAmount,
+                duration,
+            });
 
-        // --- End of Disabled Logic ---
+            if (result.success) {
+                 toast({ title: 'نجاح!', description: result.message });
+                 setOpen(false);
+                 setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget(''); setDurationDays('');
+                 // onCampaignCreated is implicitly handled by revalidatePath in the server action
+            }
+
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
