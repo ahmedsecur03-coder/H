@@ -9,7 +9,8 @@ import { Send, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { replyToTicket } from '../actions';
+import { useFirestore } from '@/firebase';
+import { doc, arrayUnion, updateDoc } from 'firebase/firestore';
 
 function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'admin' }) {
     const isUser = sender === 'user';
@@ -28,6 +29,7 @@ export function TicketChat({ ticket }: { ticket: Ticket }) {
   const { toast } = useToast();
   const router = useRouter();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const firestore = useFirestore();
   
   const [replyMessage, setReplyMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,16 +49,27 @@ export function TicketChat({ ticket }: { ticket: Ticket }) {
 
   const handleReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyMessage.trim() || !ticket) return;
+    if (!replyMessage.trim() || !ticket || !firestore) return;
 
     setIsSubmitting(true);
+    
+    const ticketDocRef = doc(firestore, `users/${ticket.userId}/tickets`, ticket.id);
+    const newMessage = {
+        sender: 'user' as const,
+        text: replyMessage,
+        timestamp: new Date().toISOString()
+    };
+
     try {
-        await replyToTicket(ticket.id, replyMessage);
+        await updateDoc(ticketDocRef, {
+            messages: arrayUnion(newMessage),
+            status: 'قيد المراجعة'
+        });
         setReplyMessage('');
         toast({ title: 'تم إرسال ردك بنجاح.' });
-        router.refresh(); // Refresh the page to show new message
+        router.refresh();
     } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+        toast({ variant: 'destructive', title: 'خطأ', description: "فشل إرسال الرد." });
     } finally {
         setIsSubmitting(false);
     }
