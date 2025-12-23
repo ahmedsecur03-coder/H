@@ -114,17 +114,17 @@
       display: block;
     }
     .stars {
-      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="0.4" fill="hsl(210 20% 98% / 0.5)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
+      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><polygon points="5,0 6,4 10,4 7,6 8,10 5,8 2,10 3,6 0,4 4,4" fill="hsl(210 20% 98% / 0.5)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
       background-size: 200px 200px;
       animation: sparkle 15s linear infinite;
     }
     .stars2 {
-      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="0.6" fill="hsl(210 20% 98% / 0.7)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
+      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><polygon points="5,0 6,4 10,4 7,6 8,10 5,8 2,10 3,6 0,4 4,4" fill="hsl(210 20% 98% / 0.7)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
       background-size: 300px 300px;
       animation: sparkle 20s linear infinite;
     }
     .stars3 {
-      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="0.8" fill="hsl(210 20% 98%)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
+      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><polygon points="5,0 6,4 10,4 7,6 8,10 5,8 2,10 3,6 0,4 4,4" fill="hsl(210 20% 98%)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
       background-size: 500px 500px;
       animation: sparkle 25s linear infinite;
     }
