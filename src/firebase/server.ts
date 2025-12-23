@@ -22,8 +22,10 @@ export function initializeFirebaseServer() {
   // If service account is not available, we can't initialize the admin app.
   // Return null for services to be handled gracefully by the calling function.
   if (!serviceAccount) {
-    // The console.warn message has been removed to avoid clutter in the development console.
-    // The original warning was: 'FIREBASE_SERVICE_ACCOUNT env var not set...'
+    // This warning is crucial for debugging deployments on platforms like Vercel
+    console.warn(
+      'FIREBASE_SERVICE_ACCOUNT env var not set or invalid. Server-side Firebase features will be disabled.'
+    );
     return { firebaseApp: null, firestore: null };
   }
 
