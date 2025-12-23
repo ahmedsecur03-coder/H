@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend } from '@/lib/service';
 import { QuickOrderForm } from '@/app/dashboard/_components/quick-order-form';
-import { DailyRewardCard } from '../dashboard/_components/daily-reward-card';
+import { DailyRewardCard } from '../_components/daily-reward-card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
@@ -108,22 +108,31 @@ export default function DashboardPage() {
             
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الأساسي</CardDescription>
-                            <CardTitle className="text-3xl">${(userData?.balance ?? 0).toFixed(2)}</CardTitle>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
+                        <CardContent>
+                             <div className="text-3xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
+                        </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
+                         <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الإعلاني</CardDescription>
-                            <CardTitle className="text-3xl">${(userData?.adBalance ?? 0).toFixed(2)}</CardTitle>
+                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</div>
+                        </CardContent>
                     </Card>
                     <Card>
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>إجمالي الإنفاق</CardDescription>
-                            <CardTitle className="text-3xl">${(userData?.totalSpent ?? 0).toFixed(2)}</CardTitle>
+                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold">${(userData?.totalSpent ?? 0).toFixed(2)}</div>
+                        </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">

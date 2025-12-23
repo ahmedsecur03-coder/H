@@ -96,7 +96,7 @@ function Header() {
                     </>
                   ) : (
                     <NavigationMenuLink asChild active={pathname === item.href} className={navigationMenuTriggerStyle()}>
-                        <Link href={item.href}>
+                        <Link href={item.href || '#'}>
                             {item.label}
                         </Link>
                     </NavigationMenuLink>

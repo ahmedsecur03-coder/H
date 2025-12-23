@@ -23,7 +23,8 @@ import {
   History,
   Home,
   HandCoins,
-  AppWindow
+  AppWindow,
+  UserCircle
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -38,7 +39,7 @@ export const publicNavItems: NestedNavItem[] = [
         { href: '/services', label: 'جميع خدمات SMM', description: 'تصفح كل خدمات التسويق عبر وسائل التواصل الاجتماعي.', icon: Users },
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك على جوجل، فيسبوك، وتيك توك.', icon: Megaphone },
         { href: '/agency-accounts', label: 'حسابات إعلانية (وكالة)', description: 'حسابات قوية وموثوقة للإنفاق العالي.', icon: Briefcase },
-        { href: '/dashboard/support', label: 'تصميم المواقع والتطبيقات', description: 'اطلب تصميم موقع أو تطبيق احترافي.', icon: AppWindow },
+        { href: '#', label: 'تصميم المواقع والتطبيقات', description: 'اطلب تصميم موقع أو تطبيق احترافي. (قريباً)', icon: AppWindow },
       ]
     },
     { href: '/blog', label: 'المدونة', icon: BookOpen },
@@ -46,15 +47,28 @@ export const publicNavItems: NestedNavItem[] = [
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { href: '/dashboard/orders', label: 'الطلبات', icon: ShoppingCart },
-  { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
+  { 
+    label: 'الطلبات',
+    icon: ShoppingCart,
+    children: [
+        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ShoppingCart },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
+    ]
+  },
   { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+  { href: '/dashboard/affiliate', label: 'برنامج الإحالة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/blog', label: 'المدونة', icon: BookOpen },
-  { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
-  { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
+  { 
+      label: 'الحساب',
+      icon: UserCircle,
+      children: [
+        { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
+        { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
+        { href: '/dashboard/api', label: 'API', icon: Code2 },
+      ]
+   },
+   { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
 ];
 
 export const adminNavItems: NestedNavItem[] = [

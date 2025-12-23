@@ -45,6 +45,10 @@
           "enum": ["user", "admin"],
           "description": "User's role in the system."
         },
+        "apiKey": {
+            "type": "string",
+            "description": "User's unique API key for integrations."
+        },
         "referralCode": {
           "type": "string",
           "description": "Unique referral code for the user."
@@ -92,6 +96,7 @@
         "adBalance",
         "totalSpent",
         "rank",
+        "apiKey",
         "referralCode",
         "createdAt"
       ]
@@ -160,7 +165,8 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the order (e.g., pending, processing, completed)."
+          "enum": ["مكتمل", "قيد التنفيذ", "ملغي", "جزئي"],
+          "description": "Status of the order."
         }
       },
       "required": [
@@ -195,11 +201,13 @@
         },
         "platform": {
           "type": "string",
-          "description": "Platform the campaign is running on (e.g., Google Ads, Facebook)."
+          "enum": ["Google", "Facebook", "TikTok", "Snapchat"],
+          "description": "Platform the campaign is running on."
         },
         "goal": {
           "type": "string",
-          "description": "The objective of the campaign (e.g., website traffic, video views, conversions)."
+          "enum": ["زيارات للموقع", "مشاهدات فيديو", "تفاعل مع المنشور", "زيادة الوعي", "تحويلات"],
+          "description": "The objective of the campaign."
         },
         "targetAudience": {
             "type": "string",
@@ -219,13 +227,18 @@
           "type": "number",
           "description": "Budget allocated to the campaign."
         },
+        "durationDays": {
+            "type": "number",
+            "description": "Duration of the campaign in days."
+        },
         "spend": {
             "type": "number",
             "description": "Amount of the budget already spent."
         },
         "status": {
           "type": "string",
-          "description": "Current status of the campaign (e.g., active, paused, completed)."
+          "enum": ["نشط", "متوقف", "مكتمل", "بانتظار المراجعة"],
+          "description": "Current status of the campaign."
         },
         "impressions": {
             "type": "number",
@@ -257,6 +270,7 @@
         "targetAudience",
         "startDate",
         "budget",
+        "durationDays",
         "spend",
         "status"
       ]
@@ -281,7 +295,8 @@
         },
         "paymentMethod": {
           "type": "string",
-          "description": "Payment method used for the deposit (e.g., Vodafone Cash, Binance Pay)."
+          "enum": ["فودافون كاش", "Binance Pay"],
+          "description": "Payment method used for the deposit."
         },
         "details": {
           "type": "object",
@@ -294,7 +309,8 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the deposit (e.g., pending, approved, rejected)."
+          "enum": ["معلق", "مقبول", "مرفوض"],
+          "description": "Status of the deposit."
         }
       },
       "required": [
@@ -429,7 +445,8 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the ticket (e.g., open, closed, in progress)."
+          "enum": ["مفتوحة", "قيد المراجعة", "مغلقة"],
+          "description": "Status of the ticket."
         },
         "createdDate": {
           "type": "string",
