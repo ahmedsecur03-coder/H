@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collectionGroup,
@@ -11,7 +11,9 @@ import {
   runTransaction,
   orderBy,
   Query,
-  collection
+  collection,
+  getDocs,
+  limit
 } from 'firebase/firestore';
 import type { Deposit, User } from '@/lib/types';
 
@@ -44,25 +46,43 @@ function DepositTable({ status }: { status: Status }) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Memoize the query to prevent re-creating it on every render
   const depositsQuery = useMemoFirebase(
     () => {
         if (!firestore) return null;
-        const depositsCollection = collectionGroup(firestore, 'deposits');
         return query(
-            depositsCollection, 
+            collectionGroup(firestore, 'deposits'), 
             where('status', '==', status), 
-            orderBy('depositDate', 'desc')
+            orderBy('depositDate', 'desc'),
+            limit(100) // Limit to a reasonable number for display
         );
     },
     [firestore, status]
   );
   
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
-  const { data: usersData } = useCollection<User>(usersQuery);
-  const usersMap = useMemo(() => usersData ? new Map(usersData.map(u => [u.id, u])) : new Map(), [usersData]);
+  useEffect(() => {
+    if (!depositsQuery) {
+        setIsLoading(false);
+        return;
+    };
+    setIsLoading(true);
 
-  const { data: deposits, isLoading } = useCollection<Deposit>(depositsQuery);
+    getDocs(depositsQuery)
+        .then(snapshot => {
+            const fetchedDeposits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Deposit));
+            setDeposits(fetchedDeposits);
+        })
+        .catch(err => {
+            console.error("Error fetching deposits: ", err);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب طلبات الإيداع.' });
+        })
+        .finally(() => setIsLoading(false));
+
+  }, [depositsQuery, toast]);
+
 
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
     if (!firestore) return;
@@ -84,6 +104,9 @@ function DepositTable({ status }: { status: Status }) {
         
         transaction.update(depositDocRef, { status: newStatus });
       });
+      
+      // Manually update local state to reflect the change immediately
+      setDeposits(prev => prev.filter(d => d.id !== deposit.id));
 
       toast({
         title: 'نجاح',
@@ -138,7 +161,7 @@ function DepositTable({ status }: { status: Status }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>المستخدم</TableHead>
+          <TableHead>معرف المستخدم</TableHead>
           <TableHead>المبلغ</TableHead>
           <TableHead>طريقة الدفع</TableHead>
           <TableHead>التفاصيل</TableHead>
@@ -147,12 +170,9 @@ function DepositTable({ status }: { status: Status }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {deposits.map((deposit) => {
-          const user = usersMap.get(deposit.userId);
-          return (
+        {deposits.map((deposit) => (
           <TableRow key={deposit.id}>
             <TableCell>
-              <div className="font-medium">{user?.name || 'مستخدم غير معروف'}</div>
               <div className="font-mono text-xs text-muted-foreground">{deposit.userId}</div>
             </TableCell>
             <TableCell>${deposit.amount.toFixed(2)}</TableCell>
@@ -178,7 +198,7 @@ function DepositTable({ status }: { status: Status }) {
               </TableCell>
             )}
           </TableRow>
-        )})}
+        ))}
       </TableBody>
     </Table>
   )
