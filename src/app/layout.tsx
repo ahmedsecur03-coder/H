@@ -9,7 +9,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
-import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
 
 
 const fontSans = Tajawal({

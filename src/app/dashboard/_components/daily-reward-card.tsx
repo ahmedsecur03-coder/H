@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -7,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Gift, Loader2 } from 'lucide-react';
-import { claimDailyRewardAndGenerateArticle } from '@/lib/actions';
+import { claimDailyReward } from '@/lib/actions';
 import type { User as UserType } from '@/lib/types';
 
 
@@ -50,10 +49,9 @@ export function DailyRewardCard({ user }: { user: UserType }) {
 
     const handleClaim = async () => {
         setIsClaiming(true);
-        toast({ title: 'جاري طلب المكافأة...', description: 'يقوم الذكاء الاصطناعي بإنشاء المحتوى الآن.' });
         try {
-            await claimDailyRewardAndGenerateArticle(user.id);
-            toast({ title: '🎉 تم بنجاح!', description: 'تمت إضافة 1$ لرصيد إعلاناتك ونشر مقال جديد في المدونة!' });
+            await claimDailyReward(user.id);
+            toast({ title: '🎉 تم بنجاح!', description: 'تمت إضافة 1$ لرصيد إعلاناتك!' });
             router.refresh(); // Refresh server components
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
@@ -70,7 +68,7 @@ export function DailyRewardCard({ user }: { user: UserType }) {
                     <Gift className="text-primary"/>
                 </CardTitle>
                 <CardDescription>
-                    اطلب مكافأتك اليومية: 1$ رصيد إعلانات + مقال جديد للمدونة يولده الذكاء الاصطناعي!
+                    اطلب مكافأتك اليومية واحصل على 1$ في رصيد الإعلانات.
                 </CardDescription>
             </CardHeader>
             <CardContent>

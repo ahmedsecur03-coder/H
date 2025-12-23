@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -30,7 +29,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
-import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 
@@ -172,7 +170,6 @@ export default function DashboardLayout({
             </main>
             
             <BottomNavBar />
-            <DynamicAiAssistant />
         </div>
 
         </SidebarProvider>

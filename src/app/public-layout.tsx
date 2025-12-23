@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,6 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { ThemeToggle } from '@/components/theme-toggle';
-import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
 
 
 const ListItem = React.forwardRef<
@@ -156,7 +154,6 @@ export default function PublicLayout({
             {children}
         </div>
       </main>
-      <DynamicAiAssistant />
       <footer className="bg-card/50 border-t border-border z-10">
         <div className="container mx-auto py-6 px-4 md:px-6 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>
