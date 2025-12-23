@@ -1,21 +1,155 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, DollarSign, Users, Crown, Loader2, Target } from "lucide-react";
+import { Copy, DollarSign, Users, Crown, Loader2, Target, Check } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import type { User as UserType, AffiliateTransaction } from "@/lib/types";
+import type { User as UserType, AffiliateTransaction, Withdrawal } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import React from 'react';
+import React, { useState } from 'react';
 import { AFFILIATE_LEVELS } from '@/lib/service';
-import { WithdrawalDialog } from "./_components/withdrawal-dialog";
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, collection, query, orderBy, limit, getDoc, getDocs } from "firebase/firestore";
-import { CopyButton } from "./_components/copy-button";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, errorEmitter, FirestorePermissionError } from "@/firebase";
+import { doc, collection, query, orderBy, limit, addDoc } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+// Inlined CopyButton component
+function CopyButton({ textToCopy }: { textToCopy: string }) {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+      navigator.clipboard.writeText(textToCopy);
+      setCopied(true);
+      toast({ title: "تم نسخ الرابط بنجاح!" });
+      setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+      <Button size="icon" variant="outline" onClick={handleCopy}>
+          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+      </Button>
+  );
+}
+
+// Inlined WithdrawalDialog component
+function WithdrawalDialog({ user, children }: { user: UserType, children: React.ReactNode }) {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [open, setOpen] = useState(false);
+    const [method, setMethod] = useState<'فودافون كاش' | 'Binance Pay' | undefined>();
+    const [details, setDetails] = useState('');
+    const [amount, setAmount] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const withdrawalAmount = parseFloat(amount);
+        if (!firestore || !user || !method || !details || !withdrawalAmount) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول.' });
+            return;
+        }
+
+        if (withdrawalAmount < 10) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الحد الأدنى للسحب هو 10$.' });
+            return;
+        }
+        
+        if ((user.affiliateEarnings ?? 0) < withdrawalAmount) {
+             toast({ variant: 'destructive', title: 'خطأ', description: 'رصيد أرباحك غير كافٍ.' });
+            return;
+        }
+
+        setLoading(true);
+
+        const newWithdrawal: Omit<Withdrawal, 'id'> = {
+            userId: user.id,
+            amount: withdrawalAmount,
+            method,
+            details: method === 'فودافون كاش' ? { phoneNumber: details } : { binanceId: details },
+            requestDate: new Date().toISOString(),
+            status: 'معلق',
+        };
+
+        try {
+            const withdrawalColRef = collection(firestore, `users/${user.id}/withdrawals`);
+            await addDoc(withdrawalColRef, newWithdrawal);
+            toast({ title: 'تم إرسال طلب السحب', description: 'سيتم مراجعة طلبك وإرسال أرباحك قريباً.' });
+            setOpen(false);
+            setAmount('');
+            setDetails('');
+            setMethod(undefined);
+        } catch (error) {
+             const permissionError = new FirestorePermissionError({
+                path: `users/${user.id}/withdrawals`,
+                operation: 'create',
+                requestResourceData: newWithdrawal,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>طلب سحب أرباح التسويق</DialogTitle>
+                    <DialogDescription>
+                        أدخل المبلغ وتفاصيل طريقة الدفع. الحد الأدنى للسحب هو 10$.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="amount">المبلغ ($)</Label>
+                        <Input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} required min="10" max={user.affiliateEarnings} />
+                         <p className="text-xs text-muted-foreground">رصيدك الحالي: ${user.affiliateEarnings?.toFixed(2) ?? '0.00'}</p>
+                    </div>
+                     <div className="space-y-2">
+                        <Label>طريقة السحب</Label>
+                        <RadioGroup onValueChange={(v) => setMethod(v as any)} value={method} className="flex gap-4">
+                            <Label htmlFor="vf-cash" className="flex items-center gap-2 border p-3 rounded-md has-[:checked]:border-primary flex-1 cursor-pointer">
+                                <RadioGroupItem value="فودافون كاش" id="vf-cash" />
+                                فودافون كاش
+                            </Label>
+                             <Label htmlFor="binance" className="flex items-center gap-2 border p-3 rounded-md has-[:checked]:border-primary flex-1 cursor-pointer">
+                                <RadioGroupItem value="Binance Pay" id="binance" />
+                                Binance Pay
+                            </Label>
+                        </RadioGroup>
+                    </div>
+                     {method && (
+                         <div className="space-y-2">
+                            <Label htmlFor="details">{method === 'فودافون كاش' ? 'رقم فودافون كاش' : 'معرف Binance Pay'}</Label>
+                            <Input id="details" value={details} onChange={e => setDetails(e.target.value)} required placeholder={method === 'فودافون كاش' ? '01xxxxxxxxx' : '12345678'} />
+                        </div>
+                     )}
+                     <DialogFooter>
+                        <Button type="submit" disabled={loading} className="w-full">
+                            {loading ? <Loader2 className="animate-spin" /> : 'تأكيد طلب السحب'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 
 function AffiliateSkeleton() {

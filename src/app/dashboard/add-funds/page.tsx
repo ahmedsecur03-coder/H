@@ -10,16 +10,54 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy } from 'lucide-react';
+import { Loader2, Copy, Check } from 'lucide-react';
 import type { Deposit, User as UserType } from '@/lib/types';
-import { CopyButton } from '@/app/(dashboard)/affiliate/_components/copy-button';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
-function AddFundsClientPage({ userData, settingsData }: { userData: UserType, settingsData: any }) {
+function CopyButton({ textToCopy }: { textToCopy: string }) {
+    const { toast } = useToast();
+    const [copied, setCopied] = useState(false);
+  
+    const handleCopy = () => {
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        toast({ title: "تم نسخ النص بنجاح!" });
+        setTimeout(() => setCopied(false), 2000);
+    };
+  
+    return (
+        <Button size="icon" variant="outline" onClick={handleCopy}>
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+        </Button>
+    );
+}
+
+function AddFundsSkeleton() {
+    return (
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-2">
+                <Card><CardContent className="p-4"><Skeleton className="h-96" /></CardContent></Card>
+            </div>
+            <div className="space-y-6">
+                <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
+                <Card><CardContent className="p-4"><Skeleton className="h-40" /></CardContent></Card>
+            </div>
+       </div>
+    )
+}
+
+export default function AddFundsPage() {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+
+    const userDocRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+    const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
+
+    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
+    const { data: settingsData, isLoading: settingsLoading } = useDoc<any>(settingsDocRef);
+
     const [amount, setAmount] = useState('');
     const [phone, setPhone] = useState('');
     const [transactionId, setTransactionId] = useState('');
@@ -27,13 +65,14 @@ function AddFundsClientPage({ userData, settingsData }: { userData: UserType, se
     const [isLoading, setIsLoading] = useState(false);
 
     const calculatedAmountEGP = useMemo(() => {
+        if (!settingsData) return 0;
         const usdAmount = parseFloat(amount);
         const rate = parseFloat(settingsData.usdRate);
         if (isNaN(usdAmount) || isNaN(rate) || usdAmount <= 0) {
             return 0;
         }
         return usdAmount * rate;
-    }, [amount, settingsData.usdRate]);
+    }, [amount, settingsData]);
 
     const handleSubmit = async (e: React.FormEvent, method: 'فودافون كاش' | 'Binance Pay') => {
         e.preventDefault();
@@ -86,161 +125,141 @@ function AddFundsClientPage({ userData, settingsData }: { userData: UserType, se
                 setIsLoading(false);
             });
     };
-
-    return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-2">
-                <Tabs defaultValue="vodafone" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="vodafone">فودافون كاش</TabsTrigger>
-                        <TabsTrigger value="binance">Binance Pay</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="vodafone">
-                        <Card>
-                             <form onSubmit={(e) => handleSubmit(e, 'فودافون كاش')}>
-                                <CardHeader>
-                                    <CardTitle>الدفع عبر فودافون كاش</CardTitle>
-                                    <CardDescription>
-                                        لإضافة الرصيد، قم بتحويل المبلغ المطلوب إلى الرقم أدناه ثم أدخل بيانات التحويل.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                     <Alert>
-                                        <AlertTitle className="flex items-center gap-2">خطوات التحويل</AlertTitle>
-                                        <AlertDescription>
-                                             <ol className="list-decimal list-inside space-y-1 mt-2">
-                                                <li>اطلب <code className="font-mono bg-muted p-1 rounded-md text-sm">*9*7#</code> من هاتفك.</li>
-                                                <li>اختر "تحويل أموال" وأدخل الرقم <strong>{settingsData.vodafoneNumber}</strong>.</li>
-                                                 <li>أدخل المبلغ بالجنيه المصري (EGP).</li>
-                                                <li>أدخل الرقم السري لتأكيد العملية.</li>
-                                                 <li>بعد التحويل، املأ الحقول أدناه.</li>
-                                            </ol>
-                                        </AlertDescription>
-                                    </Alert>
-                                     <div className="flex items-center gap-2">
-                                        <Input readOnly value={settingsData.vodafoneNumber} className="font-mono text-lg tracking-widest"/>
-                                        <CopyButton textToCopy={settingsData.vodafoneNumber} />
-                                     </div>
-                                     <div>
-                                        <Label htmlFor="amount-usd-vf">المبلغ بالدولار ($)</Label>
-                                        <Input id="amount-usd-vf" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="مثال: 10" required />
-                                     </div>
-                                      <div className="p-4 bg-muted rounded-md text-center">
-                                        <p className="text-sm text-muted-foreground">المبلغ المطلوب تحويله بالجنيه المصري (EGP)</p>
-                                        <p className="text-2xl font-bold font-mono">{calculatedAmountEGP.toFixed(2)}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">سعر الصرف: 1$ = {settingsData.usdRate} جنيه</p>
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="phone">رقم هاتفك الذي تم التحويل منه</Label>
-                                        <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01xxxxxxxxx" required />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="transactionId">آخر 4 أرقام من رقم المعاملة (اختياري)</Label>
-                                        <Input id="transactionId" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="1234" />
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button type="submit" disabled={isLoading} className="w-full">
-                                        {isLoading ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
-                                    </Button>
-                                </CardFooter>
-                            </form>
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="binance">
-                         <Card>
-                            <form onSubmit={(e) => handleSubmit(e, 'Binance Pay')}>
-                                <CardHeader>
-                                    <CardTitle>الدفع عبر Binance Pay</CardTitle>
-                                    <CardDescription>
-                                        لإضافة الرصيد، قم بتحويل مبلغ USDT المطلوب إلى معرف Binance Pay أدناه.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                     <div className="flex items-center gap-2">
-                                        <Input readOnly value={settingsData.binanceId} className="font-mono text-lg tracking-widest"/>
-                                        <CopyButton textToCopy={settingsData.binanceId} />
-                                     </div>
-                                      <div>
-                                        <Label htmlFor="amount-usdt">المبلغ بالدولار (USDT)</Label>
-                                        <Input id="amount-usdt" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="مثال: 10" required />
-                                     </div>
-                                     <div>
-                                        <Label htmlFor="binance-txid">معرف المعاملة (Transaction ID)</Label>
-                                        <Input id="binance-txid" type="text" value={binanceTxId} onChange={(e) => setBinanceTxId(e.target.value)} placeholder="M123456789..." required />
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button type="submit" disabled={isLoading} className="w-full">
-                                        {isLoading ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
-                                    </Button>
-                                </CardFooter>
-                            </form>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </div>
-             <div className="space-y-6">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>رصيدك الحالي</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-4xl font-bold">${userData?.balance.toFixed(2)}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>تعليمات هامة</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground space-y-2">
-                       <p>• يتم مراجعة طلبات الإيداع يدويًا وقد تستغرق بعض الوقت.</p>
-                       <p>• تأكد من إدخال البيانات بشكل صحيح لتجنب تأخير إضافة الرصيد.</p>
-                       <p>• الحد الأدنى للإيداع هو 5$.</p>
-                       <p>• في حال وجود أي مشكلة، تواصل مع الدعم الفني فورًا.</p>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
-}
-
-function AddFundsSkeleton() {
-    return (
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-2">
-                <Card><CardContent className="p-4"><Skeleton className="h-96" /></CardContent></Card>
-            </div>
-            <div className="space-y-6">
-                <Card><CardContent className="p-4"><Skeleton className="h-64" /></CardContent></Card>
-            </div>
-       </div>
-    )
-}
-
-export default function AddFundsPage() {
-    const { user } = useUser();
-    const firestore = useFirestore();
-
-    const userDocRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
-    const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
-
-    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
-    const { data: settingsData, isLoading: settingsLoading } = useDoc<any>(settingsDocRef);
     
-    const isLoading = userLoading || settingsLoading;
-
-    if (isLoading || !userData || !settingsData) return <AddFundsSkeleton />;
+    if (userLoading || settingsLoading || !userData || !settingsData) {
+        return (
+            <div className="space-y-6 pb-8">
+                <div>
+                    <Skeleton className="h-8 w-1/3" />
+                    <Skeleton className="h-5 w-2/3 mt-2" />
+                </div>
+                <AddFundsSkeleton />
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-6 pb-8">
+         <div className="space-y-6 pb-8">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight font-headline">شحن الرصيد</h1>
                 <p className="text-muted-foreground">
                 اختر طريقة الدفع المناسبة لك لإضافة رصيد إلى حسابك.
                 </p>
             </div>
-            <AddFundsClientPage userData={userData} settingsData={settingsData} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="lg:col-span-2">
+                    <Tabs defaultValue="vodafone" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="vodafone">فودافون كاش</TabsTrigger>
+                            <TabsTrigger value="binance">Binance Pay</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="vodafone">
+                            <Card>
+                                <form onSubmit={(e) => handleSubmit(e, 'فودافون كاش')}>
+                                    <CardHeader>
+                                        <CardTitle>الدفع عبر فودافون كاش</CardTitle>
+                                        <CardDescription>
+                                            لإضافة الرصيد، قم بتحويل المبلغ المطلوب إلى الرقم أدناه ثم أدخل بيانات التحويل.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <Alert>
+                                            <AlertTitle className="flex items-center gap-2">خطوات التحويل</AlertTitle>
+                                            <AlertDescription>
+                                                <ol className="list-decimal list-inside space-y-1 mt-2">
+                                                    <li>اطلب <code className="font-mono bg-muted p-1 rounded-md text-sm">*9*7#</code> من هاتفك.</li>
+                                                    <li>اختر "تحويل أموال" وأدخل الرقم <strong>{settingsData.vodafoneNumber}</strong>.</li>
+                                                    <li>أدخل المبلغ بالجنيه المصري (EGP).</li>
+                                                    <li>أدخل الرقم السري لتأكيد العملية.</li>
+                                                    <li>بعد التحويل، املأ الحقول أدناه.</li>
+                                                </ol>
+                                            </AlertDescription>
+                                        </Alert>
+                                        <div className="flex items-center gap-2">
+                                            <Input readOnly value={settingsData.vodafoneNumber} className="font-mono text-lg tracking-widest"/>
+                                            <CopyButton textToCopy={settingsData.vodafoneNumber} />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="amount-usd-vf">المبلغ بالدولار ($)</Label>
+                                            <Input id="amount-usd-vf" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="مثال: 10" required />
+                                        </div>
+                                        <div className="p-4 bg-muted rounded-md text-center">
+                                            <p className="text-sm text-muted-foreground">المبلغ المطلوب تحويله بالجنيه المصري (EGP)</p>
+                                            <p className="text-2xl font-bold font-mono">{calculatedAmountEGP.toFixed(2)}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">سعر الصرف: 1$ = {settingsData.usdRate} جنيه</p>
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="phone">رقم هاتفك الذي تم التحويل منه</Label>
+                                            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01xxxxxxxxx" required />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="transactionId">آخر 4 أرقام من رقم المعاملة (اختياري)</Label>
+                                            <Input id="transactionId" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="1234" />
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button type="submit" disabled={isLoading} className="w-full">
+                                            {isLoading ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
+                                        </Button>
+                                    </CardFooter>
+                                </form>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="binance">
+                            <Card>
+                                <form onSubmit={(e) => handleSubmit(e, 'Binance Pay')}>
+                                    <CardHeader>
+                                        <CardTitle>الدفع عبر Binance Pay</CardTitle>
+                                        <CardDescription>
+                                            لإضافة الرصيد، قم بتحويل مبلغ USDT المطلوب إلى معرف Binance Pay أدناه.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <Input readOnly value={settingsData.binanceId} className="font-mono text-lg tracking-widest"/>
+                                            <CopyButton textToCopy={settingsData.binanceId} />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="amount-usdt">المبلغ بالدولار (USDT)</Label>
+                                            <Input id="amount-usdt" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="مثال: 10" required />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="binance-txid">معرف المعاملة (Transaction ID)</Label>
+                                            <Input id="binance-txid" type="text" value={binanceTxId} onChange={(e) => setBinanceTxId(e.target.value)} placeholder="M123456789..." required />
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button type="submit" disabled={isLoading} className="w-full">
+                                            {isLoading ? <Loader2 className="animate-spin" /> : 'تأكيد الإيداع'}
+                                        </Button>
+                                    </CardFooter>
+                                </form>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>رصيدك الحالي</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-4xl font-bold">${userData?.balance.toFixed(2)}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>تعليمات هامة</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm text-muted-foreground space-y-2">
+                        <p>• يتم مراجعة طلبات الإيداع يدويًا وقد تستغرق بعض الوقت.</p>
+                        <p>• تأكد من إدخال البيانات بشكل صحيح لتجنب تأخير إضافة الرصيد.</p>
+                        <p>• الحد الأدنى للإيداع هو 5$.</p>
+                        <p>• في حال وجود أي مشكلة، تواصل مع الدعم الفني فورًا.</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 }
