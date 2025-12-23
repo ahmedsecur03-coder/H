@@ -14,7 +14,7 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email == 'hagaaty@gmail.com';
     }
 
-    // Allow anyone to read the service catalog and blog posts
+    // Publicly readable collections
     match /services/{serviceId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -33,28 +33,29 @@ service cloud.firestore {
     // User-specific data
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      // Allow user to update their own document, but not protected fields
+      // Allow user to update their own document, but not protected fields.
+      // Rules for specific fields should be added for production.
       allow update: if isOwner(userId);
-      // Admin can update anything
-      allow update, create, delete: if isAdmin();
+      // Admin can update/create/delete any user document.
+      allow create, update, delete: if isAdmin();
     }
 
     match /users/{userId}/{subcollection}/{docId} {
        // A user can create their own documents (orders, tickets, etc.)
        allow create: if isOwner(userId);
-       // A user can read their own subcollections
-       allow read, delete: if isOwner(userId) || isAdmin();
-       // Allow user to update their own tickets (add messages)
-       allow update: if (isOwner(userId) && subcollection == 'tickets') || isAdmin();
+       
+       // A user can read or delete their own subcollection documents.
+       allow read, delete: if isOwner(userId);
+
+       // A user can update their own tickets (e.g., add messages).
+       allow update: if (isOwner(userId) && subcollection == 'tickets');
+
+       // Admin has full access to all user subcollections.
+       allow read, write, update, delete: if isAdmin();
     }
     
     match /systemLogs/{logId} {
       allow read, write: if isAdmin();
-    }
-
-    // Fallback for any other path - deny access
-    match /{document=**} {
-      allow read, write: if false;
     }
   }
 }
