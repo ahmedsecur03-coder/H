@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useState, useMemo, useEffect } from 'react';
+import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   collectionGroup,
   query,
@@ -11,7 +11,7 @@ import {
   runTransaction,
   orderBy,
   Query,
-  collection
+  getDocs
 } from 'firebase/firestore';
 import type { Withdrawal, User } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,8 +28,7 @@ import { Check, X, Loader2, HandCoins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
+
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
@@ -37,13 +36,14 @@ function WithdrawalTable({ status }: { status: Status }) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const withdrawalsQuery = useMemoFirebase(
     () => {
         if (!firestore) return null;
-        const withdrawalsCollection = collectionGroup(firestore, 'withdrawals');
         return query(
-            withdrawalsCollection, 
+            collectionGroup(firestore, 'withdrawals'), 
             where('status', '==', status), 
             orderBy('requestDate', 'desc')
         );
@@ -51,11 +51,28 @@ function WithdrawalTable({ status }: { status: Status }) {
     [firestore, status]
   );
   
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
-  const { data: usersData } = useCollection<User>(usersQuery);
-  const usersMap = useMemo(() => usersData ? new Map(usersData.map(u => [u.id, u])) : new Map(), [usersData]);
+  const fetchWithdrawals = async () => {
+    if (!withdrawalsQuery) {
+        setIsLoading(false);
+        return;
+    }
+    setIsLoading(true);
 
-  const { data: withdrawals, isLoading } = useCollection<Withdrawal>(withdrawalsQuery);
+    try {
+        const snapshot = await getDocs(withdrawalsQuery);
+        const fetchedWithdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Withdrawal));
+        setWithdrawals(fetchedWithdrawals);
+    } catch (err) {
+        console.error("Error fetching withdrawals: ", err);
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب طلبات السحب.' });
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWithdrawals();
+  }, [withdrawalsQuery]);
 
   const handleWithdrawalAction = async (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => {
     if (!firestore) return;
@@ -81,6 +98,8 @@ function WithdrawalTable({ status }: { status: Status }) {
         
         transaction.update(withdrawalDocRef, { status: newStatus });
       });
+      
+      setWithdrawals(prev => prev.filter(w => w.id !== withdrawal.id));
 
       toast({
         title: 'نجاح',
@@ -146,11 +165,9 @@ function WithdrawalTable({ status }: { status: Status }) {
       </TableHeader>
       <TableBody>
         {withdrawals.map((withdrawal) => {
-          const user = usersMap.get(withdrawal.userId);
           return (
           <TableRow key={withdrawal.id}>
             <TableCell>
-              <div className="font-medium">{user?.name || 'مستخدم غير معروف'}</div>
               <div className="font-mono text-xs text-muted-foreground">{withdrawal.userId}</div>
             </TableCell>
             <TableCell>${withdrawal.amount.toFixed(2)}</TableCell>
