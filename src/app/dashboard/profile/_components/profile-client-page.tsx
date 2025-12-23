@@ -20,8 +20,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Badge } from '@/components/ui/badge';
-import { isAiConfigured } from '@/ai/client';
-import { generate } from 'genkit/generate';
 import { updatePasswordAction, updateProfileAction } from '../actions';
 import { useRouter } from 'next/navigation';
 
@@ -35,33 +33,14 @@ const passwordSchema = z.object({
   newPassword: z.string().min(6, "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."),
 });
 
-// Helper function to get data URI from our new API proxy
-async function getDataUriFromProxy(imageUrl: string): Promise<string> {
-    const response = await fetch('/api/image-proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl }),
-    });
-
-    if (!response.ok) {
-        const errorBody = await response.json();
-        throw new Error(errorBody.error || 'Failed to fetch image from proxy');
-    }
-
-    const { dataUri } = await response.json();
-    return dataUri;
-}
-
 
 export function ProfileClientPage({ serverUser, userData }: { serverUser: any, userData: UserType }) {
     const { toast } = useToast();
     const router = useRouter();
     const [isGenerating, setIsGenerating] = useState(false);
-    const [aiConfigured, setAiConfigured] = useState(false);
-
-    useEffect(() => {
-        setAiConfigured(isAiConfigured());
-    }, []);
+    
+    // AI feature is disabled as per user request.
+    const aiConfigured = false;
 
     const profileForm = useForm<z.infer<typeof profileSchema>>({
         resolver: zodResolver(profileSchema),
@@ -77,41 +56,6 @@ export function ProfileClientPage({ serverUser, userData }: { serverUser: any, u
     });
     
     const currentAvatarUrl = profileForm.watch('avatarUrl');
-
-    const handleAvatarGeneration = async () => {
-        if (!currentAvatarUrl) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى تحديد صورة رمزية أولاً.' });
-            return;
-        }
-        setIsGenerating(true);
-        toast({ title: 'جاري استحضار الإبداع الكوني...', description: 'قد تستغرق العملية بضع لحظات.' });
-        try {
-            const dataUri = await getDataUriFromProxy(currentAvatarUrl);
-
-            const { media } = await generate({
-                model: 'googleai/gemini-2.5-flash-image-preview',
-                prompt: [
-                    { text: 'Give this avatar a cosmic, artistic flair. Maybe add nebula-reflecting sunglasses or starry patterns on the clothes. Be creative. Do not change the person. Return only the edited image.' },
-                    { media: { url: dataUri } }
-                ],
-                config: {
-                    responseModalities: ['TEXT', 'IMAGE'],
-                },
-            });
-
-            if (media?.url) {
-                profileForm.setValue('avatarUrl', media.url);
-                toast({ title: '✨ تم!', description: 'تم إنشاء صورة رمزية جديدة!' });
-            } else {
-                throw new Error('لم يتم إرجاع أي صورة من النموذج.');
-            }
-        } catch (error: any) {
-            console.error("AI Avatar Generation Error:", error);
-            toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message || 'حدث خطأ أثناء إنشاء الصورة.' });
-        } finally {
-            setIsGenerating(false);
-        }
-    };
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         try {
@@ -192,7 +136,7 @@ export function ProfileClientPage({ serverUser, userData }: { serverUser: any, u
                                                 <Input placeholder="https://example.com/image.png" {...field} />
                                             </FormControl>
                                             {aiConfigured && (
-                                                <Button type="button" variant="outline" size="icon" onClick={handleAvatarGeneration} disabled={isGenerating} title="توليد صورة بالذكاء الاصطناعي">
+                                                <Button type="button" variant="outline" size="icon" disabled={true} title="توليد صورة بالذكاء الاصطناعي (معطل حالياً)">
                                                     {isGenerating ? <Loader2 className="animate-spin" /> : <Wand2 />}
                                                 </Button>
                                             )}
