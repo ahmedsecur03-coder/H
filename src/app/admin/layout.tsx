@@ -54,6 +54,9 @@ function AdminHeader() {
 function AdminNavItems() {
   const { state } = useSidebar();
   const isCollapsible = state === "collapsed";
+  const { isMobile } = useSidebar();
+  const pathname = useRouter();
+
 
   return (
     <>
@@ -147,9 +150,12 @@ export default function AdminLayout({
     <SidebarProvider>
       <Sidebar side="right" collapsible="icon">
         <SidebarHeader>
-          <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
-            <Logo />
-          </div>
+           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+              <Logo className="group-data-[collapsible=icon]:hidden" />
+              <div className="hidden group-data-[collapsible=icon]:block">
+                <Logo/>
+              </div>
+            </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -157,7 +163,7 @@ export default function AdminLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className="bg-transparent">
+      <SidebarInset className="bg-transparent md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3.5rem] transition-all duration-300 ease-in-out">
         <AdminHeader />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}

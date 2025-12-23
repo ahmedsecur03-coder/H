@@ -13,7 +13,6 @@ import {
   SidebarTrigger,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSubContent,
   SidebarFooter,
   SidebarMenuSubTrigger,
 } from '@/components/ui/sidebar';
@@ -139,8 +138,11 @@ export default function DashboardLayout({
         <SidebarProvider>
         <Sidebar side="right" collapsible="icon" className="hidden md:block">
             <SidebarHeader>
-            <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:hidden">
-                <Logo />
+            <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+                <Logo className="group-data-[collapsible=icon]:hidden" />
+                 <div className="hidden group-data-[collapsible=icon]:block">
+                   <Logo/>
+                </div>
             </div>
             </SidebarHeader>
             <SidebarContent>
@@ -162,7 +164,7 @@ export default function DashboardLayout({
             </SidebarFooter>
         </Sidebar>
         
-        <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3rem] transition-all duration-300 ease-in-out">
+        <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3.5rem] transition-all duration-300 ease-in-out">
             <MobileHeader isAdmin={isAdmin} />
             <DesktopHeader isAdmin={isAdmin} user={user} />
             
