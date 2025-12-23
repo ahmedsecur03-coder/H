@@ -53,7 +53,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 const currentAdBalance = userData.adBalance ?? 0;
 
                 if (currentAdBalance < campaign.budget) {
-                    throw new Error(`رصيد إعلانات المستخدم غير كافٍ. المطلوب: $${campaign.budget}, المتاح: $${currentAdBalance.toFixed(2)}`);
+                    throw new Error(`رصيد إعلانات المستخدم غير كافٍ. المطلوب: $${campaign.budget.toFixed(2)}, المتاح: $${currentAdBalance.toFixed(2)}`);
                 }
 
                 // 1. Deduct budget from user's adBalance
