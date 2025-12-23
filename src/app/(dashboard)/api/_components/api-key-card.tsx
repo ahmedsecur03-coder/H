@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, RefreshCw, Loader2 } from "lucide-react";
+import { Copy, RefreshCw, Loader2, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -18,19 +18,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { regenerateApiKey } from '../actions';
+import { regenerateApiKey } from '@/app/(dashboard)/api/actions';
 import { useRouter } from 'next/navigation';
+
+function CopyButton({ textToCopy }: { textToCopy: string }) {
+    const { toast } = useToast();
+    const [copied, setCopied] = useState(false);
+  
+    const handleCopy = () => {
+        if (!textToCopy) return;
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        toast({ title: "تم نسخ مفتاح API!" });
+        setTimeout(() => setCopied(false), 2000);
+    };
+  
+    return (
+        <Button size="icon" variant="outline" onClick={handleCopy} disabled={!textToCopy}>
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+        </Button>
+    );
+}
 
 export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
     const { toast } = useToast();
     const router = useRouter();
     const [isRegenerating, setIsRegenerating] = useState(false);
-
-    const copyApiKey = () => {
-        if (!apiKey) return;
-        navigator.clipboard.writeText(apiKey);
-        toast({ title: "تم نسخ مفتاح API!" });
-    };
 
     const handleRegenerate = async () => {
         setIsRegenerating(true);
@@ -55,9 +68,7 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
             </CardHeader>
             <CardContent className="flex items-center gap-2">
                 <Input readOnly value={apiKey} className="font-mono" placeholder="جاري تحميل المفتاح..." />
-                <Button size="icon" variant="outline" onClick={copyApiKey} disabled={!apiKey}>
-                    <Copy className="h-4 w-4" />
-                </Button>
+                <CopyButton textToCopy={apiKey} />
             </CardContent>
              <CardFooter>
                  <AlertDialog>
