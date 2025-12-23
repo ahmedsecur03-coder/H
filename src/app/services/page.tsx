@@ -115,8 +115,8 @@ export default function ServicesPage() {
       </div>
 
       <Card>
-        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
+        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="relative sm:col-span-2 md:col-span-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="ابحث بالرقم أو الاسم..."
@@ -211,5 +211,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-
-    

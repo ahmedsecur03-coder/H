@@ -93,6 +93,7 @@ export default function AdminServicesPage() {
 
   const handleSearch = (e: React.FormEvent) => {
       e.preventDefault();
+      setPage(1);
       fetchServices('initial');
   }
   
@@ -212,21 +213,21 @@ export default function AdminServicesPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">إدارة الخدمات</h1>
           <p className="text-muted-foreground">إضافة وتعديل وحذف خدمات المنصة.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 self-end sm:self-center">
            <ImportDialog onImportComplete={() => fetchServices('initial')}>
-             <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد بالجملة</Button>
+             <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
            </ImportDialog>
             <ServiceDialog
                 open={isDialogOpen && !selectedService}
                 onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}
                 onSave={handleSaveService}
             >
-                <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة خدمة</Button>
+                <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
             </ServiceDialog>
         </div>
       </div>
@@ -278,5 +279,3 @@ export default function AdminServicesPage() {
     </div>
   );
 }
-
-    

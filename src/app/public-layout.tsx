@@ -3,9 +3,9 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Menu, X } from 'lucide-react';
 import Logo from '@/components/logo';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
 import React, { useState, useEffect } from 'react';
 import { publicNavItems } from '@/lib/placeholder-data';
@@ -21,6 +21,15 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { ThemeToggle } from '@/components/theme-toggle';
+import { doc } from 'firebase/firestore';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose
+} from '@/components/ui/sheet';
 
 
 const ListItem = React.forwardRef<
@@ -53,13 +62,29 @@ ListItem.displayName = "ListItem"
 
 function Header() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  useEffect(() => {
+      const fetchUserData = async () => {
+          if (user && firestore) {
+              const userDocRef = doc(firestore, 'users', user.uid);
+              const userDoc = await getDoc(userDocRef);
+              if (userDoc.exists()) {
+                  setUserData(userDoc.data());
+              }
+          } else {
+            setUserData(null);
+          }
+      };
+      fetchUserData();
+  }, [user, firestore]);
 
    const appUser = user ? {
       name: user.displayName || `مستخدم`,
@@ -104,34 +129,82 @@ function Header() {
             </NavigationMenuList>
           </NavigationMenu>
         <div className="flex items-center gap-2">
-            <ThemeToggle />
-          {isClient && (
-            isUserLoading ? (
-                <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
-            ) : user ? (
-                <>
-                <Button asChild>
-                    <Link href="/dashboard">لوحة التحكم</Link>
+          <ThemeToggle />
+          <div className="hidden md:flex items-center gap-2">
+            {isClient && (
+              isUserLoading ? (
+                  <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
+              ) : user ? (
+                  <>
+                  <Button asChild>
+                      <Link href="/dashboard">لوحة التحكم</Link>
+                  </Button>
+                  {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
+                  </>
+              ) : (
+                  <>
+                  <Button variant="ghost" asChild>
+                      <Link href="/login">
+                      <LogIn className="ml-2" />
+                      تسجيل الدخول
+                      </Link>
+                  </Button>
+                  <Button asChild>
+                      <Link href="/signup">
+                      <UserPlus className="ml-2" />
+                      ابدأ الآن
+                      </Link>
+                  </Button>
+                  </>
+              )
+            )}
+          </div>
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">فتح القائمة</span>
                 </Button>
-                {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
-                </>
-            ) : (
-                <>
-                <Button variant="ghost" asChild>
-                    <Link href="/login">
-                    <LogIn className="ml-2" />
-                    تسجيل الدخول
-                    </Link>
-                </Button>
-                <Button asChild>
-                    <Link href="/signup">
-                    <UserPlus className="ml-2" />
-                    ابدأ الآن
-                    </Link>
-                </Button>
-                </>
-            )
-          )}
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetHeader>
+                  <SheetTitle><Logo /></SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col space-y-4 py-6">
+                  {publicNavItems.map(item => (
+                     <SheetClose asChild key={item.label}>
+                      <Link href={item.href || '#'} className="text-lg font-medium hover:text-primary">{item.label}</Link>
+                    </SheetClose>
+                  ))}
+                </div>
+                 <div className="mt-auto pt-6 border-t">
+                  {isClient && (
+                    isUserLoading ? (
+                        <div className="h-10 w-full bg-muted rounded-md animate-pulse" />
+                    ) : user ? (
+                         <Button asChild className="w-full">
+                            <Link href="/dashboard">لوحة التحكم</Link>
+                        </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <SheetClose asChild>
+                           <Button asChild className="w-full">
+                              <Link href="/signup"><UserPlus className="ml-2" />ابدأ الآن</Link>
+                          </Button>
+                        </SheetClose>
+                         <SheetClose asChild>
+                          <Button variant="ghost" asChild className="w-full">
+                              <Link href="/login"><LogIn className="ml-2" />تسجيل الدخول</Link>
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    )
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
@@ -144,23 +217,6 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-    const { user, isUserLoading } = useUser();
-    const [userData, setUserData] = React.useState(null); // Add state for user data
-
-    // Fetch user data from Firestore
-    React.useEffect(() => {
-        const fetchUserData = async () => {
-            if (user) {
-                const { getFirestore, doc, getDoc } = await import('firebase/firestore');
-                const db = getFirestore();
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    setUserData(userDoc.data());
-                }
-            }
-        };
-        fetchUserData();
-    }, [user]);
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
        <Header />
@@ -170,7 +226,7 @@ export default function PublicLayout({
         </div>
       </main>
       <footer className="bg-card/50 border-t border-border z-10">
-        <div className="container mx-auto py-6 px-4 md:px-6 flex items-center justify-between">
+        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
             <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>
             <nav className="flex gap-4 sm:gap-6">
                 <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>

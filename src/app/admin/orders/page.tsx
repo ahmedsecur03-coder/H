@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
 
        <Card>
         <CardHeader>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input 
                 placeholder="ابحث بالمعرف، المستخدم، أو الرابط..."
                 value={searchTerm}

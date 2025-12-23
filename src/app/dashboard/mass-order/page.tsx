@@ -259,7 +259,7 @@ export default function MassOrderPage() {
                                 </AlertDescription>
                             </Alert>
                         )}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                             <div className="p-4 bg-muted rounded-lg">
                                 <p className="text-sm text-muted-foreground">الطلبات الناجحة</p>
                                 <p className="text-2xl font-bold">{batchResult.successCount}</p>
