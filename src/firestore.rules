@@ -33,11 +33,10 @@ service cloud.firestore {
     // User-specific data
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      // Allow user to update their own document, but not protected fields.
-      // Rules for specific fields should be added for production.
-      allow update: if isOwner(userId);
-      // Admin can update/create/delete any user document.
-      allow create, update, delete: if isAdmin();
+      // Allow user to update their own document. Admin can also update.
+      allow update: if isOwner(userId) || isAdmin();
+      // Admin can create/delete any user document.
+      allow create, delete: if isAdmin();
     }
 
     match /users/{userId}/{subcollection}/{docId} {
