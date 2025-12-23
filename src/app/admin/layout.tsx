@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -18,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
-import { UserNav } from '@/app/(dashboard)/_components/user-nav';
+import { UserNav } from '@/app/dashboard/_components/user-nav';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
