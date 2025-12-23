@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -38,52 +37,6 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
     const [spendAmount, setSpendAmount] = useState('');
 
 
-    const handleAction = async (newStatus: 'نشط' | 'متوقف') => {
-        if (!firestore) return;
-        setLoading(true);
-        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        updateDoc(campaignDocRef, { status: newStatus })
-            .then(() => {
-                toast({ title: 'نجاح', description: `تم تغيير حالة الحملة إلى ${newStatus}` });
-                forceCollectionUpdate(); // Force re-fetch
-                setOpen(false);
-            })
-            .catch(error => {
-                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { status: newStatus } });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    };
-    
-    const handleReject = async () => {
-        if (!firestore) return;
-        setLoading(true);
-        const userDocRef = doc(firestore, 'users', campaign.userId);
-        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        
-        runTransaction(firestore, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-
-            const currentAdBalance = userDoc.data().adBalance ?? 0;
-            const newAdBalance = currentAdBalance + campaign.budget;
-            
-            transaction.update(userDocRef, { adBalance: newAdBalance });
-            transaction.delete(campaignDocRef);
-        }).then(() => {
-            toast({ title: 'نجاح', description: 'تم رفض الحملة وإعادة الميزانية للمستخدم.' });
-            forceCollectionUpdate(); // Force re-fetch
-            setOpen(false);
-        }).catch(error => {
-             const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
-             errorEmitter.emit('permission-error', permissionError);
-        }).finally(() => {
-            setLoading(false);
-        });
-    };
-
     const handleSimulateSpend = async () => {
         const amount = parseFloat(spendAmount);
         if (!firestore || !amount || amount <= 0) {
@@ -95,7 +48,6 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
         const newSpend = (campaign.spend || 0) + amount;
         
-        // Prevent spending more than the budget
         if (newSpend > campaign.budget) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'مبلغ الإنفاق يتجاوز الميزانية الإجمالية.' });
             setLoading(false);
@@ -104,7 +56,25 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
 
         const newStatus = newSpend >= campaign.budget ? 'مكتمل' : campaign.status;
 
-        updateDoc(campaignDocRef, { spend: newSpend, status: newStatus })
+        // Simulate results based on spend
+        const clicks = (campaign.clicks || 0) + Math.floor(amount * (Math.random() * 10 + 5)); // 5-15 clicks per dollar
+        const impressions = (campaign.impressions || 0) + Math.floor(amount * (Math.random() * 2000 + 1000)); // 1000-3000 impressions per dollar
+        const results = (campaign.results || 0) + Math.floor(amount * (Math.random() * 3 + 1)); // 1-4 results per dollar
+        const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+        const cpc = clicks > 0 ? newSpend / clicks : 0;
+
+
+        const updates = { 
+            spend: newSpend, 
+            status: newStatus,
+            impressions,
+            clicks,
+            results,
+            ctr,
+            cpc
+        };
+
+        updateDoc(campaignDocRef, updates)
             .then(() => {
                 toast({ title: 'نجاح', description: `تمت محاكاة إنفاق ${amount}$ بنجاح.` });
                 setSpendAmount('');
@@ -150,35 +120,20 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                                     placeholder="أدخل مبلغ الإنفاق"
                                     disabled={loading}
                                 />
-                                <Button onClick={handleSimulateSpend} disabled={loading}>
+                                <Button onClick={handleSimulateSpend} disabled={loading || !spendAmount}>
                                      {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <DollarSign className="h-4 w-4" />}
                                 </Button>
                              </div>
-                             <p className="text-xs text-muted-foreground">أضف مبلغًا إلى خانة "الإنفاق" لمحاكاة أداء الحملة.</p>
+                             <p className="text-xs text-muted-foreground">أضف مبلغًا إلى خانة "الإنفاق" لمحاكاة أداء الحملة وتوليد نتائج.</p>
                         </div>
                     )}
                 </div>
                 
-                <DialogFooter className="gap-2 sm:justify-between">
-                    <div className="flex gap-2">
-                         {loading ? <Loader2 className="animate-spin" /> : (
-                            <>
-                                {campaign.status === 'بانتظار المراجعة' && (
-                                    <>
-                                        <Button variant="destructive" onClick={handleReject}>رفض الحملة</Button>
-                                        <Button onClick={() => handleAction('نشط')}>موافقة وتفعيل</Button>
-                                    </>
-                                )}
-                                {campaign.status === 'نشط' && (
-                                    <Button variant="secondary" onClick={() => handleAction('متوقف')}>إيقاف مؤقت</Button>
-                                )}
-                                {campaign.status === 'متوقف' && campaign.spend < campaign.budget && (
-                                    <Button onClick={() => handleAction('نشط')}>إعادة تفعيل</Button>
-                                )}
-                            </>
-                        )}
-                    </div>
-                </DialogFooter>
+                 <DialogFooter className="gap-2 sm:justify-end">
+                     {loading ? <Loader2 className="animate-spin" /> : (
+                         <Button variant="secondary" onClick={() => setOpen(false)}>إغلاق</Button>
+                     )}
+                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );

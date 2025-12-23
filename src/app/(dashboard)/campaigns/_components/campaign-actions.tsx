@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -36,52 +35,43 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
-    const handleAction = async (newStatus: 'نشط' | 'متوقف') => {
-        if (!firestore) return;
-        setLoading(true);
-        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        updateDoc(campaignDocRef, { status: newStatus })
-            .then(() => {
-                toast({ title: 'نجاح', description: `تم تغيير حالة الحملة إلى ${newStatus}` });
-                forceCollectionUpdate(); // Force re-fetch
-                setOpen(false);
-            })
-            .catch(error => {
-                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { status: newStatus } });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    };
-    
-    const handleReject = async () => {
+    const handlePause = async () => {
         if (!firestore) return;
         setLoading(true);
         const userDocRef = doc(firestore, 'users', campaign.userId);
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        
-        runTransaction(firestore, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
 
-            const currentAdBalance = userDoc.data().adBalance ?? 0;
-            const newAdBalance = currentAdBalance + campaign.budget;
-            
-            transaction.update(userDocRef, { adBalance: newAdBalance });
-            transaction.delete(campaignDocRef);
-        }).then(() => {
-            toast({ title: 'نجاح', description: 'تم رفض الحملة وإعادة الميزانية للمستخدم.' });
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+
+                // Calculate remaining budget
+                const remainingBudget = campaign.budget - (campaign.spend || 0);
+
+                // Refund remaining budget to user's adBalance
+                if (remainingBudget > 0) {
+                    const currentAdBalance = userDoc.data().adBalance ?? 0;
+                    const newAdBalance = currentAdBalance + remainingBudget;
+                    transaction.update(userDocRef, { adBalance: newAdBalance });
+                }
+
+                // Update campaign status to 'متوقف' and set spend to budget (as it's "finished")
+                transaction.update(campaignDocRef, { status: 'متوقف', spend: campaign.budget });
+            });
+
+            toast({ title: 'نجاح', description: 'تم إيقاف الحملة وإعادة الرصيد المتبقي.' });
             forceCollectionUpdate(); // Force re-fetch
             setOpen(false);
-        }).catch(error => {
-             const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
-             errorEmitter.emit('permission-error', permissionError);
-        }).finally(() => {
-            setLoading(false);
-        });
-    };
 
+        } catch (error: any) {
+            const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -101,25 +91,20 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                     <p><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></p>
                 </div>
                 
-                <DialogFooter className="gap-2 sm:justify-between">
-                    <div className="flex gap-2">
-                         {loading ? <Loader2 className="animate-spin" /> : (
-                            <>
-                                {campaign.status === 'بانتظار المراجعة' && (
-                                    <>
-                                        <Button variant="destructive" onClick={handleReject}>رفض الحملة</Button>
-                                        <Button onClick={() => handleAction('نشط')}>موافقة وتفعيل</Button>
-                                    </>
-                                )}
-                                {campaign.status === 'نشط' && (
-                                    <Button variant="secondary" onClick={() => handleAction('متوقف')}>إيقاف مؤقت</Button>
-                                )}
-                                {campaign.status === 'متوقف' && campaign.spend < campaign.budget && (
-                                    <Button onClick={() => handleAction('نشط')}>إعادة تفعيل</Button>
-                                )}
-                            </>
-                        )}
-                    </div>
+                <DialogFooter className="gap-2 sm:justify-end">
+                    {loading ? <Loader2 className="animate-spin" /> : (
+                        <>
+                            {campaign.status === 'نشط' && (
+                                <Button variant="secondary" onClick={handlePause}>إيقاف الحملة واسترداد الرصيد</Button>
+                            )}
+                            {campaign.status === 'متوقف' && (
+                                 <p className="text-sm text-muted-foreground">تم إيقاف هذه الحملة.</p>
+                            )}
+                             {campaign.status === 'مكتمل' && (
+                                 <p className="text-sm text-muted-foreground">اكتملت هذه الحملة.</p>
+                            )}
+                        </>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
