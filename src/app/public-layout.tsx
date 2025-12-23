@@ -7,7 +7,7 @@ import { LogIn, UserPlus } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser } from '@/firebase';
 import { UserNav } from './(dashboard)/_components/user-nav';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CosmicBackground from '@/components/cosmic-background';
 import { publicNavItems } from '@/lib/placeholder-data';
 import { usePathname } from 'next/navigation';
@@ -139,11 +139,16 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
        <CosmicBackground />
-      <Header />
+       {isClient && <Header />}
       <main className="flex-1 z-10">
         <div className="container mx-auto px-4 md:px-6 py-8">
             {children}
