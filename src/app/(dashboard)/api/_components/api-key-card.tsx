@@ -4,21 +4,8 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, RefreshCw, Loader2, Check } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { regenerateApiKey } from '@/app/(dashboard)/api/actions';
-import { useRouter } from 'next/navigation';
 
 function CopyButton({ textToCopy }: { textToCopy: string }) {
     const { toast } = useToast();
@@ -39,22 +26,6 @@ function CopyButton({ textToCopy }: { textToCopy: string }) {
 }
 
 export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
-    const { toast } = useToast();
-    const router = useRouter();
-    const [isRegenerating, setIsRegenerating] = useState(false);
-
-    const handleRegenerate = async () => {
-        setIsRegenerating(true);
-        try {
-            await regenerateApiKey();
-            toast({ title: "تم إنشاء مفتاح جديد بنجاح!", description: "المفتاح القديم لم يعد صالحاً." });
-            router.refresh();
-        } catch (error) {
-            toast({ variant: 'destructive', title: "خطأ", description: "فشل إنشاء مفتاح جديد." });
-        } finally {
-            setIsRegenerating(false);
-        }
-    };
 
     return (
          <Card>
@@ -69,26 +40,9 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
                 <CopyButton textToCopy={apiKey} />
             </CardContent>
              <CardFooter>
-                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                     <Button variant="destructive" disabled={isRegenerating}>
-                        {isRegenerating ? <Loader2 className="ml-2 animate-spin" /> : <RefreshCw className="ml-2 h-4 w-4" />}
-                         إعادة توليد المفتاح
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>هل أنت متأكد تماماً؟</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        سيؤدي هذا إلى جعل مفتاح API القديم الخاص بك غير صالح بشكل دائم. ستحتاج إلى تحديث أي تطبيقات تستخدم المفتاح القديم.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleRegenerate}>نعم، قم بإنشاء مفتاح جديد</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                 <p className="text-xs text-muted-foreground">
+                    إذا كنت تعتقد أن مفتاحك قد تم اختراقه، يرجى الاتصال بالدعم لإنشاء مفتاح جديد.
+                 </p>
             </CardFooter>
         </Card>
     )
