@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy, where, Query as FirestoreQuery } from 'firebase/firestore';
+import { collection, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -42,6 +42,8 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination';
+import { Button } from '@/components/ui/button';
+import { useDebounce } from 'use-debounce';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -105,47 +107,59 @@ function OrdersPageComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const searchTerm = searchParams.get('search') || '';
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageCount, setPageCount] = useState(0);
+
+  // Filters state managed by URL
   const statusFilter = searchParams.get('status') || 'all';
+  const searchTerm = searchParams.get('search') || '';
   const currentPage = Number(searchParams.get('page')) || 1;
-  
-  const baseQuery = useMemoFirebase(
-    () => (firestore && user ? collection(firestore, `users/${user.uid}/orders`) : null),
-    [firestore, user]
-  );
-  
-  const ordersQuery = useMemoFirebase(() => {
-    if (!baseQuery) return null;
-    let q: FirestoreQuery = query(baseQuery, orderBy('orderDate', 'desc'));
-    if (statusFilter !== 'all') {
-        q = query(q, where('status', '==', statusFilter));
-    }
-    return q;
-  }, [baseQuery, statusFilter]);
-
-  const { data: allOrders, isLoading } = useCollection<Order>(ordersQuery);
-
-  const filteredOrders = useMemo(() => {
-    if (!allOrders) return [];
-    if (!searchTerm) return allOrders;
-    return allOrders.filter(order => 
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.link && order.link.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [allOrders, searchTerm]);
-
-  const totalPages = useMemo(() => {
-    if (!filteredOrders) return 0;
-    return Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  }, [filteredOrders]);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
 
-  const paginatedOrders = useMemo(() => {
-    if (!filteredOrders) return [];
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredOrders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredOrders, currentPage]);
+  useEffect(() => {
+    if (!firestore || !user) return;
+
+    const fetchPaginatedOrders = async () => {
+        setIsLoading(true);
+        try {
+            // First, get the total count for pagination calculation based on filters
+            let countQuery: FirestoreQuery = query(collection(firestore, `users/${user.uid}/orders`));
+            if (statusFilter !== 'all') {
+                countQuery = query(countQuery, where('status', '==', statusFilter));
+            }
+             // Note: Full text search is not natively supported well in Firestore.
+             // A simple search by ID is feasible but complex searches require 3rd party services.
+             // We will stick to client side filtering for search term for now after getting the full filtered list by status.
+            
+            const totalDocsSnapshot = await getDocs(countQuery);
+            const allFilteredOrders = totalDocsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+
+            const finalFiltered = debouncedSearchTerm
+                ? allFilteredOrders.filter(order =>
+                    order.id.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                    order.serviceName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                    (order.link && order.link.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
+                  )
+                : allFilteredOrders;
+
+
+            setPageCount(Math.ceil(finalFiltered.length / ITEMS_PER_PAGE));
+            
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            setOrders(finalFiltered.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    fetchPaginatedOrders();
+  }, [firestore, user, statusFilter, debouncedSearchTerm, currentPage]);
+
 
   const handleFilterChange = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -158,53 +172,50 @@ function OrdersPageComponent() {
     router.push(`?${params.toString()}`);
   };
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('page', String(page));
-      router.push(`?${params.toString()}`);
-    }
-  };
-
   const renderPaginationItems = () => {
-    if (totalPages <= 1) return null;
+    if (pageCount <= 1) return null;
     
     const pageNumbers: (number | 'ellipsis')[] = [];
-    const visiblePages = 2; 
+    const visiblePages = 1; 
 
-    pageNumbers.push(1);
+    if (pageCount <= 5) {
+      for (let i = 1; i <= pageCount; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      pageNumbers.push(1);
+      if (currentPage > visiblePages + 2) {
+        pageNumbers.push('ellipsis');
+      }
 
-    if (currentPage > visiblePages + 1) {
-      pageNumbers.push('ellipsis');
+      let start = Math.max(2, currentPage - visiblePages);
+      let end = Math.min(pageCount - 1, currentPage + visiblePages);
+      
+      for (let i = start; i <= end; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (currentPage < pageCount - (visiblePages + 1)) {
+        pageNumbers.push('ellipsis');
+      }
+      pageNumbers.push(pageCount);
     }
 
-    for (let i = Math.max(2, currentPage - visiblePages); i <= Math.min(totalPages - 1, currentPage + visiblePages); i++) {
-      pageNumbers.push(i);
-    }
-
-    if (currentPage < totalPages - visiblePages) {
-      pageNumbers.push('ellipsis');
-    }
-    
-    if (totalPages > 1 && !pageNumbers.includes(totalPages)) {
-      pageNumbers.push(totalPages);
-    }
-
-    const uniquePageNumbers = [...new Set(pageNumbers)];
-
-    return uniquePageNumbers.map((page, index) => {
-        if (page === 'ellipsis') {
-            return <PaginationItem key={`ellipsis-${index}`}><PaginationEllipsis /></PaginationItem>;
-        }
-        return (
-            <PaginationItem key={page}>
-                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page); }}>{page}</PaginationLink>
-            </PaginationItem>
-        );
-    });
+    return pageNumbers.map((page, index) => (
+      <PaginationItem key={`${page}-${index}`}>
+        {page === 'ellipsis' ? (
+          <PaginationEllipsis />
+        ) : (
+          <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>
+            {page}
+          </PaginationLink>
+        )}
+      </PaginationItem>
+    ));
   };
 
-  if (isLoading && !allOrders) {
+
+  if (isLoading && orders.length === 0) {
     return <OrdersPageSkeleton />;
   }
 
@@ -244,26 +255,26 @@ function OrdersPageComponent() {
         </CardContent>
       </Card>
 
-      {isLoading && (!paginatedOrders || paginatedOrders.length === 0) ? (
+      {isLoading && orders.length === 0 ? (
         <Card>
-            <CardContent className="p-0">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                                {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                    {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
         </Card>
-      ) : paginatedOrders && paginatedOrders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -279,7 +290,7 @@ function OrdersPageComponent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedOrders.map((order) => (
+                {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
                     <TableCell className="font-medium">{order.serviceName}</TableCell>
@@ -288,25 +299,25 @@ function OrdersPageComponent() {
                     <TableCell className="text-center">
                       <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </CardContent>
-           {totalPages > 1 && (
+           {pageCount > 1 && (
              <CardFooter className="justify-center border-t pt-4">
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
-                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} disabled={currentPage === 1}/>
+                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
                     </PaginationItem>
                     
                     {renderPaginationItems()}
 
                     <PaginationItem>
-                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} disabled={currentPage === totalPages} />
+                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
@@ -325,6 +336,9 @@ function OrdersPageComponent() {
                 <p className="text-muted-foreground">
                     حاول تغيير كلمات البحث أو إزالة الفلاتر لعرض المزيد من النتائج.
                 </p>
+                <Button variant="outline" onClick={() => router.push('/dashboard/orders')} className="mt-4">
+                  إعادة تعيين الفلاتر
+                </Button>
             </CardContent>
         </Card>
       )}
