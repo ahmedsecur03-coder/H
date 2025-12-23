@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,7 +8,7 @@ import { Send, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Ticket } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, arrayUnion, updateDoc } from 'firebase/firestore';
 
 function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'admin' }) {
@@ -69,7 +68,12 @@ export function TicketChat({ ticket }: { ticket: Ticket }) {
         toast({ title: 'تم إرسال ردك بنجاح.' });
         router.refresh();
     } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ', description: "فشل إرسال الرد." });
+        const permissionError = new FirestorePermissionError({
+            path: ticketDocRef.path,
+            operation: 'update',
+            requestResourceData: { messages: arrayUnion(newMessage) }
+        });
+        errorEmitter.emit('permission-error', permissionError);
     } finally {
         setIsSubmitting(false);
     }
