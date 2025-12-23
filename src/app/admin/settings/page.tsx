@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, collection, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -87,16 +87,82 @@ export default function AdminSettingsPage() {
   };
 
   const handleCleanup = async (type: 'orders' | 'deposits') => {
-      // This client-side implementation is complex with security rules.
-      // Temporarily disabled to prevent errors.
-      // A server-side cloud function would be a better approach for this.
-      toast({
-        variant: 'destructive',
-        title: "الوظيفة معطلة مؤقتاً",
-        description: "عملية الحذف الجماعي قيد المراجعة حالياً."
-      });
-      return;
-  }
+    if (!firestore) return;
+    setIsCleaning(type);
+
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    const fiveDaysAgoTimestamp = Timestamp.fromDate(fiveDaysAgo);
+
+    let collectionName = '';
+    let statusWhereClause: any = null;
+
+    if (type === 'orders') {
+        collectionName = 'orders';
+    } else if (type === 'deposits') {
+        collectionName = 'deposits';
+        statusWhereClause = where('status', '==', 'مرفوض');
+    }
+
+    try {
+        let q = query(
+            collectionGroup(firestore, collectionName),
+            where('orderDate', '<', fiveDaysAgoTimestamp.toDate().toISOString())
+        );
+
+        if (statusWhereClause) {
+            q = query(q, statusWhereClause);
+        }
+
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            toast({ title: 'لا يوجد ما يمكن حذفه', description: `لم يتم العثور على أي ${type === 'orders' ? 'طلبات' : 'إيداعات'} قديمة.` });
+            setIsCleaning(null);
+            return;
+        }
+
+        // Firestore allows a maximum of 500 operations in a single batch.
+        const batchArray = [];
+        let currentBatch = writeBatch(firestore);
+        let operationCount = 0;
+
+        snapshot.docs.forEach((doc, index) => {
+            currentBatch.delete(doc.ref);
+            operationCount++;
+            if (operationCount === 499) {
+                batchArray.push(currentBatch);
+                currentBatch = writeBatch(firestore);
+                operationCount = 0;
+            }
+        });
+        batchArray.push(currentBatch);
+
+        await Promise.all(batchArray.map(batch => batch.commit()));
+
+        toast({
+            title: "نجاح!",
+            description: `تم حذف ${snapshot.size} ${type === 'orders' ? 'طلب' : 'إيداع'} قديم بنجاح.`,
+        });
+
+    } catch (error) {
+        console.error(`Error cleaning up ${type}:`, error);
+        toast({
+            variant: 'destructive',
+            title: "فشل التنظيف",
+            description: "حدث خطأ أثناء عملية الحذف. تحقق من صلاحيات الأمان.",
+        });
+        // We can emit a generic error here as we are dealing with multiple paths
+        const permissionError = new FirestorePermissionError({
+            path: `collectionGroup(${collectionName})`,
+            operation: 'delete'
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    } finally {
+        setIsCleaning(null);
+    }
+}
+
 
   if(isSettingsLoading) {
     return (
@@ -170,22 +236,50 @@ export default function AdminSettingsPage() {
              <Card>
                 <CardHeader>
                     <CardTitle>الصيانة</CardTitle>
-                    <CardDescription>أدوات للحفاظ على أداء قاعدة البيانات. (الوظيفة معطلة مؤقتاً)</CardDescription>
+                    <CardDescription>أدوات للحفاظ على أداء قاعدة البيانات.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                        تنظيف السجلات القديمة يمكن أن يساعد في تحسين سرعة استجابة المنصة.
+                        تنظيف السجلات القديمة يمكن أن يساعد في تحسين سرعة استجابة المنصة. سيتم حذف السجلات الأقدم من 5 أيام.
                     </p>
+                    
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" className="w-full" disabled={isCleaning === 'orders'}>
+                                {isCleaning === 'orders' ? <Loader2 className="ml-2 animate-spin" /> : <Trash2 className="ml-2"/>}
+                                حذف الطلبات القديمة
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                                <AlertDialogDescription>سيتم حذف جميع الطلبات (من كل الحالات) الأقدم من 5 أيام بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleCleanup('orders')}>متابعة الحذف</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
-                    <Button variant="destructive" className="w-full" disabled={true} onClick={() => handleCleanup('orders')}>
-                        <Trash2 className="ml-2"/>
-                        حذف الطلبات القديمة
-                    </Button>
-
-                    <Button variant="destructive" className="w-full" disabled={true} onClick={() => handleCleanup('deposits')}>
-                        <Trash2 className="ml-2" />
-                        حذف الإيداعات المرفوضة
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" className="w-full" disabled={isCleaning === 'deposits'}>
+                                {isCleaning === 'deposits' ? <Loader2 className="ml-2 animate-spin" /> : <Trash2 className="ml-2"/>}
+                                حذف الإيداعات المرفوضة
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                                <AlertDialogDescription>سيتم حذف جميع طلبات الإيداع المرفوضة الأقدم من 5 أيام بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleCleanup('deposits')}>متابعة الحذف</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
                 </CardContent>
             </Card>
