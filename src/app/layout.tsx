@@ -1,15 +1,17 @@
 
+'use client';
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
-import { initializeFirebaseServer } from '@/firebase/server';
+import { doc } from 'firebase/firestore';
 
 const fontSans = Tajawal({
   subsets: ['arabic'],
@@ -23,39 +25,25 @@ const fontHeadline = Tajawal({
   variable: '--font-headline',
 });
 
+// We can't set metadata in a client component, but we can leave this here
+// as it will be used by the build process if possible.
+// export const metadata: Metadata = {
+//   title: 'Hajaty Hub - منصة حاجتي للخدمات الرقمية',
+//   description: 'منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك.',
+//   keywords: ['SMM', 'تسويق رقمي', 'حملات إعلانية', 'زيادة متابعين', 'خدمات رقمية', 'فيسبوك', 'انستغرام', 'تيك توك', 'Hajaty'],
+//   manifest: '/manifest.json',
+// };
 
-export const metadata: Metadata = {
-  title: 'Hajaty Hub - منصة حاجتي للخدمات الرقمية',
-  description: 'منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك.',
-  keywords: ['SMM', 'تسويق رقمي', 'حملات إعلانية', 'زيادة متابعين', 'خدمات رقمية', 'فيسبوك', 'انستغرام', 'تيك توك', 'Hajaty'],
-  manifest: '/manifest.json',
-};
+// export const viewport: Viewport = {
+//   themeColor: '#0c1222',
+// };
 
-export const viewport: Viewport = {
-  themeColor: '#0c1222',
-};
-
-// This function now fetches from a cached API endpoint instead of directly from Firestore.
-async function WhatsappSupportButton() {
-  const { firestore } = initializeFirebaseServer();
-  let whatsappLink = "#"; // Default fallback
+function WhatsappSupportButton() {
+  const firestore = useFirestore();
+  const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
+  const { data: settingsData } = useDoc<any>(settingsDocRef);
   
-  if (firestore) {
-      try {
-        // Fetch from firestore directly but using Next.js caching
-        const settingsDoc = await firestore.collection('settings').doc('global').get();
-        
-        if (settingsDoc.exists) {
-          const settingsData = settingsDoc.data();
-          if (settingsData && settingsData.whatsappSupport) {
-            whatsappLink = settingsData.whatsappSupport;
-          }
-        }
-      } catch (error) {
-        console.error("Could not fetch WhatsApp link:", error);
-      }
-  }
-
+  const whatsappLink = settingsData?.whatsappSupport || "#";
 
   return (
     <Button
@@ -70,7 +58,6 @@ async function WhatsappSupportButton() {
   );
 }
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -79,7 +66,10 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <title>Hajaty Hub - منصة حاجتي للخدمات الرقمية</title>
+        <meta name="description" content="منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك." />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={cn('font-sans antialiased bg-background', fontSans.variable, fontHeadline.variable)}>
          <ThemeProvider
