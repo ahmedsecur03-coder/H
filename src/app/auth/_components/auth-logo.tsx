@@ -10,7 +10,7 @@ export default function AuthLogo() {
                 <Sparkles className="h-8 w-8 text-primary" />
             </div>
         </div>
-      <span className="text-2xl font-bold font-headline text-primary-foreground mt-2">حاجاتي</span>
+      <h1 className="text-2xl font-bold font-headline mt-2 animated-gradient-text bg-gradient-to-r from-primary via-secondary to-primary">حاجاتي</h1>
     </div>
   );
 }
