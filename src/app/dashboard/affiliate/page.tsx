@@ -1,0 +1,266 @@
+
+'use client';
+
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Copy, DollarSign, Users, Crown, Loader2, Target } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import type { User as UserType, AffiliateTransaction } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import React from 'react';
+import { AFFILIATE_LEVELS } from '@/lib/service';
+import { WithdrawalDialog } from "./_components/withdrawal-dialog";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
+import { doc, collection, query, orderBy, limit, getDoc, getDocs } from "firebase/firestore";
+import { CopyButton } from "./_components/copy-button";
+
+
+function AffiliateSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40" />)}
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Skeleton className="h-64 lg:col-span-1" />
+                <Skeleton className="h-64 lg:col-span-2" />
+            </div>
+             <Skeleton className="h-64 w-full" />
+        </div>
+    );
+}
+
+function NetworkTree({ userData }: { userData: UserType }) {
+    // Placeholder data for 5 levels. Level 1 is dynamic.
+    const treeData = {
+        level: 0,
+        name: "أنت",
+        children: [
+            { level: 1, name: "دعوة مباشرة", count: userData?.referralsCount || 0 },
+            { level: 2, name: "المستوى الثاني", count: 0 },
+            { level: 3, name: "المستوى الثالث", count: 0 },
+            { level: 4, name: "المستوى الرابع", count: 0 },
+            { level: 5, name: "المستوى الخامس", count: 0 },
+        ]
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>شجرة شبكتك التسويقية</CardTitle>
+                <CardDescription>نظرة عامة على مستويات شبكة الإحالة الخاصة بك (حتى 5 مستويات).</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center h-48 overflow-x-auto">
+                 <div className="flex items-center gap-2 text-center p-4">
+                    <div className="flex flex-col items-center gap-2 shrink-0">
+                        <div className="w-16 h-16 rounded-full bg-primary/20 text-primary flex items-center justify-center border-2 border-primary">
+                            <Target className="h-8 w-8" />
+                        </div>
+                        <p className="text-sm font-bold">{treeData.name}</p>
+                    </div>
+
+                    {treeData.children.map((child, index) => (
+                        <React.Fragment key={index}>
+                            <div className="w-8 h-1 bg-border-muted-foreground/30 shrink-0"></div>
+                             <div className="flex flex-col items-center gap-2 shrink-0">
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                                    <span className="text-2xl font-bold">{child.count}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{child.name}</p>
+                            </div>
+                        </React.Fragment>
+                    ))}
+                 </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function TransactionHistoryTable({ userId }: { userId: string }) {
+    const firestore = useFirestore();
+
+    const transactionsQuery = useMemoFirebase(() => 
+        firestore ? query(collection(firestore, `users/${userId}/affiliateTransactions`), orderBy('transactionDate', 'desc'), limit(10)) : null,
+        [firestore, userId]
+    );
+    const { data: transactions, isLoading } = useCollection<AffiliateTransaction>(transactionsQuery);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                    <Skeleton className="h-4 w-3/4 mt-2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-40" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>سجل معاملات العمولة</CardTitle>
+                <CardDescription>آخر 10 عمولات حصلت عليها من شبكتك.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>تاريخ المعاملة</TableHead>
+                            <TableHead>معرف الطلب</TableHead>
+                             <TableHead>المدعو</TableHead>
+                             <TableHead>المستوى</TableHead>
+                            <TableHead className="text-right">مبلغ العمولة</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {transactions && transactions.length > 0 ? (
+                            transactions.map((tx) => (
+                                <TableRow key={tx.id}>
+                                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString('ar-EG')}</TableCell>
+                                    <TableCell className="font-mono text-xs">{tx.orderId.substring(0,10)}...</TableCell>
+                                    <TableCell className="font-mono text-xs">{tx.referralId.substring(0,10)}...</TableCell>
+                                    <TableCell className="text-center">{tx.level}</TableCell>
+                                    <TableCell className="text-right font-medium text-green-400">+${tx.amount.toFixed(2)}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center h-24">لا توجد معاملات لعرضها.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function AffiliatePage() {
+    const { user: authUser, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => (authUser ? doc(firestore, 'users', authUser.uid) : null), [authUser, firestore]);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<UserType>(userDocRef);
+
+    const isLoading = isUserLoading || isUserDataLoading;
+
+    if (isLoading || !userData) {
+        return <AffiliateSkeleton />;
+    }
+    
+    const referralLink = `https://hajaty.com/signup?ref=${userData.referralCode}`;
+    const currentLevelKey = userData?.affiliateLevel || 'برونزي';
+    const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
+    const nextLevelKey = null; // This logic needs updating to be dynamic
+    const nextLevel = null;
+    const referralsCount = userData?.referralsCount ?? 0;
+    const progressToNextLevel = 0;
+
+  return (
+    <div className="space-y-6 pb-8">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">برنامج الإحالة (Affiliate)</h1>
+            <p className="text-muted-foreground">
+              اكسب المال عن طريق دعوة أصدقائك. نظام عمولات هجين يمنحك أرباح مباشرة وشبكية.
+            </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">أرباحك القابلة للسحب</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${(userData?.affiliateEarnings ?? 0).toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">الحد الأدنى للسحب: $10.00</p>
+                </CardContent>
+                 <CardFooter>
+                    <WithdrawalDialog user={userData}>
+                       <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
+                    </WithdrawalDialog>
+                </CardFooter>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">إجمالي المدعوين</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{userData?.referralsCount ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">في جميع مستويات شبكتك</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">مستواك التسويقي</CardTitle>
+                    <Crown className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className={cn("text-2xl font-bold", 
+                        currentLevelKey === 'ماسي' && "text-primary",
+                        currentLevelKey === 'ذهبي' && "text-yellow-400",
+                        currentLevelKey === 'فضي' && "text-slate-400",
+                    )}>
+                        {userData?.affiliateLevel ?? 'برونزي'}
+                    </div>
+                    <p className="text-xs text-muted-foreground">نسبة العمولة المباشرة: {currentLevel.commission}%</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">الترقية التالية: {nextLevelKey || 'لا يوجد'}</CardTitle>
+                    {nextLevel && referralsCount < 100 /* Update requirement */ ? (
+                        <CardDescription>
+                             ادعُ {100 - referralsCount} شخصًا آخر للوصول للمستوى التالي.
+                        </CardDescription>
+                    ) : (
+                         <CardDescription>
+                            {nextLevel ? `لقد وصلت إلى مستوى ${nextLevelKey}!` : 'لقد وصلت إلى أعلى مستوى!'}
+                         </CardDescription>
+                    )}
+                </CardHeader>
+                <CardContent>
+                     {nextLevel ? (
+                        <>
+                            <Progress value={progressToNextLevel} className="h-2 my-2" />
+                            <p className="text-xs text-muted-foreground text-center">{referralsCount} / {100}</p>
+                        </>
+                     ) : (
+                         <p className="text-sm font-medium text-center text-primary">🎉 أنت في القمة 🎉</p>
+                     )}
+                </CardContent>
+            </Card>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+             <Card className="lg:col-span-1">
+                <CardHeader>
+                    <CardTitle>رابط الإحالة الخاص بك</CardTitle>
+                    <CardDescription>شاركه مع أصدقائك لتبدأ في كسب العمولات.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center gap-2">
+                    <Input readOnly value={referralLink} placeholder="جاري تحميل الرابط..." />
+                    <CopyButton textToCopy={referralLink} />
+                </CardContent>
+            </Card>
+            <div className="lg:col-span-2">
+                <NetworkTree userData={userData} />
+            </div>
+        </div>
+        {authUser && <TransactionHistoryTable userId={authUser.uid} />}
+    </div>
+  );
+}

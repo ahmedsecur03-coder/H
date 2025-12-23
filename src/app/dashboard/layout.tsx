@@ -168,7 +168,7 @@ export default function DashboardLayout({
             <DesktopHeader isAdmin={isAdmin} user={user} />
             
             <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
-                {children}
+            {children}
             </main>
             
             <BottomNavBar />
