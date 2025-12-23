@@ -108,9 +108,11 @@ export default function CampaignsPage() {
                                 const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
                                 return (
                                 <TableRow key={campaign.id}>
-                                    <TableCell className="font-medium flex items-center gap-2">
-                                        <Icon className="w-4 h-4 text-muted-foreground" />
-                                        <span>{campaign.name}</span>
+                                    <TableCell className="font-medium">
+                                        <div className="flex items-center gap-2">
+                                            <Icon className="w-4 h-4 text-muted-foreground" />
+                                            <span>{campaign.name}</span>
+                                        </div>
                                     </TableCell>
                                     <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
                                     <TableCell>
