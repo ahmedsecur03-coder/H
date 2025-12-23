@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useMemo, useState, useEffect } from 'react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import type { SystemLog } from '@/lib/types';
 import {
   Card,
@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, Info, Terminal } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const levelConfig = {
   info: {
@@ -41,13 +42,33 @@ const levelConfig = {
 
 export default function SystemLogPage() {
   const firestore = useFirestore();
+  const { toast } = useToast();
+  const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const logsQuery = useMemoFirebase(
-    () => firestore ? query(collection(firestore, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100)) : null,
-    [firestore]
-  );
+  useEffect(() => {
+    if (!firestore) return;
 
-  const { data: logs, isLoading } = useCollection<SystemLog>(logsQuery);
+    const fetchLogs = async () => {
+        setIsLoading(true);
+        try {
+            const logsQuery = query(collection(firestore, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100));
+            const querySnapshot = await getDocs(logsQuery);
+            const fetchedLogs: SystemLog[] = [];
+            querySnapshot.forEach(doc => {
+                fetchedLogs.push({ id: doc.id, ...doc.data() } as SystemLog);
+            });
+            setLogs(fetchedLogs);
+        } catch (error) {
+            console.error("Error fetching system logs:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب سجلات النظام.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    fetchLogs();
+  }, [firestore, toast]);
   
   const renderContent = () => {
     if (isLoading) {
