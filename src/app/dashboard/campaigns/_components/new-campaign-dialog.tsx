@@ -90,7 +90,7 @@ export function NewCampaignDialog({ userData, children, onCampaignCreated }: { u
                     platform: platform,
                     goal: goal,
                     targetAudience: targetAudience,
-                    startDate: new Date().toISOString(),
+                    startDate: new Date().toISOString(), // Set the start date
                     endDate: undefined,
                     budget: budgetAmount,
                     durationDays: duration,
