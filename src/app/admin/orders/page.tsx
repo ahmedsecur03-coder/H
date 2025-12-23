@@ -52,7 +52,7 @@ export default function AdminOrdersPage() {
             return query(ordersCollection, where('status', '==', statusFilter));
         }
 
-        return query(ordersCollection);
+        return ordersCollection;
     }, [firestore, statusFilter]);
 
     const { data: allOrders, isLoading, forceCollectionUpdate } = useCollection<Order>(ordersQuery);

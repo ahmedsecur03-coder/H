@@ -37,7 +37,10 @@ const getPathFromRefOrQuery = (refOrQuery: CollectionReference | Query): string 
         return (refOrQuery as any)._query.path.segments.join('/');
     }
     // Fallback for collection group or other complex queries
-    return `Query on ${refOrQuery.type}`;
+    if(refOrQuery instanceof CollectionReference) {
+        return refOrQuery.path;
+    }
+    return `Query on collectionGroup`;
 };
 
 /**
@@ -95,7 +98,7 @@ export function useCollection<T = any>(
         // Silently log permission errors to the console instead of throwing them,
         // to prevent the app from crashing during development due to recurring permission issues.
         if (error.code === 'permission-denied') {
-            console.error("Firestore Permission Denied:", error.message);
+            console.error("Firestore Permission Denied on collection query:", error.message);
         } else {
             setError(error);
         }

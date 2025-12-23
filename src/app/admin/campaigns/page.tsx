@@ -42,7 +42,7 @@ export default function AdminCampaignsPage() {
     if (filter !== 'all') {
       return query(campaignsCollection, where('status', '==', filter));
     }
-    return query(campaignsCollection);
+    return campaignsCollection;
   }, [firestore, filter]);
 
   const { data: campaigns, isLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
