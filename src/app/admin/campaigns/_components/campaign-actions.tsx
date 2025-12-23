@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, DollarSign } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 
@@ -35,6 +35,8 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [spendAmount, setSpendAmount] = useState('');
+
 
     const handleAction = async (newStatus: 'نشط' | 'متوقف') => {
         if (!firestore) return;
@@ -82,6 +84,42 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
         });
     };
 
+    const handleSimulateSpend = async () => {
+        const amount = parseFloat(spendAmount);
+        if (!firestore || !amount || amount <= 0) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال مبلغ صحيح للمحاكاة.' });
+            return;
+        }
+
+        setLoading(true);
+        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+        const newSpend = (campaign.spend || 0) + amount;
+        
+        // Prevent spending more than the budget
+        if (newSpend > campaign.budget) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'مبلغ الإنفاق يتجاوز الميزانية الإجمالية.' });
+            setLoading(false);
+            return;
+        }
+
+        const newStatus = newSpend >= campaign.budget ? 'مكتمل' : campaign.status;
+
+        updateDoc(campaignDocRef, { spend: newSpend, status: newStatus })
+            .then(() => {
+                toast({ title: 'نجاح', description: `تمت محاكاة إنفاق ${amount}$ بنجاح.` });
+                setSpendAmount('');
+                forceCollectionUpdate();
+                if(newStatus === 'مكتمل') setOpen(false);
+            })
+            .catch(error => {
+                 const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { spend: newSpend } });
+                 errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                 setLoading(false);
+            });
+    };
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -96,11 +134,31 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <p><strong>المستخدم:</strong> <span className="font-mono text-xs">{campaign.userId}</span></p>
-                    <p><strong>الميزانية:</strong> ${campaign.budget.toFixed(2)}</p>
+                    <p><strong>الميزانية / الإنفاق:</strong> ${campaign.budget.toFixed(2)} / <span className="text-destructive">${(campaign.spend || 0).toFixed(2)}</span></p>
                     <p><strong>المنصة:</strong> {campaign.platform}</p>
                     <p><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></p>
-                </div>
 
+                    {campaign.status === 'نشط' && (
+                        <div className="space-y-2 pt-4 border-t">
+                            <Label htmlFor="spend-simulation">محاكاة الإنفاق</Label>
+                             <div className="flex gap-2">
+                                <Input 
+                                    id="spend-simulation"
+                                    type="number"
+                                    value={spendAmount}
+                                    onChange={(e) => setSpendAmount(e.target.value)}
+                                    placeholder="أدخل مبلغ الإنفاق"
+                                    disabled={loading}
+                                />
+                                <Button onClick={handleSimulateSpend} disabled={loading}>
+                                     {loading ? <Loader2 className="animate-spin h-4 w-4" /> : <DollarSign className="h-4 w-4" />}
+                                </Button>
+                             </div>
+                             <p className="text-xs text-muted-foreground">أضف مبلغًا إلى خانة "الإنفاق" لمحاكاة أداء الحملة.</p>
+                        </div>
+                    )}
+                </div>
+                
                 <DialogFooter className="gap-2 sm:justify-between">
                     <div className="flex gap-2">
                          {loading ? <Loader2 className="animate-spin" /> : (

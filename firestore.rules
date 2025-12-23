@@ -3,9 +3,102 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to all authenticated users
+
+    // =================================
+    // Helper Functions
+    // =================================
+
+    function isUserAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isUserAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Caches the user data to avoid multiple 'get' calls in one evaluation
+    function getUserData(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data;
+    }
+
+    function isAdmin() {
+      // Admins can be defined by a role in their user document.
+      // Also adding a fallback for specific super-admin emails for setup.
+      let adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
+      return isUserAuthenticated() && 
+             (request.auth.token.email in adminEmails || getUserData(request.auth.uid).role == 'admin');
+    }
+    
+    // Checks if a user is trying to change a protected field.
+    // Returns true if a protected field is being modified.
+    function isModifyingProtectedUserField() {
+        let protectedFields = ['balance', 'adBalance', 'totalSpent', 'rank', 'role', 'affiliateEarnings', 'referralsCount', 'affiliateLevel', 'apiKey', 'referralCode', 'referrerId', 'createdAt'];
+        let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
+        // Returns true if any of the changed keys is in the protectedFields list.
+        return changedKeys.hasAny(protectedFields);
+    }
+
+    // =================================
+    // Public Collections
+    // =================================
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /blogPosts/{postId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+    
+    match /settings/global {
+      allow read: if isUserAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // =================================
+    // User-Owned Collections
+    // =================================
+
+    match /users/{userId} {
+      // READ: An admin can read any user profile. A user can only read their own.
+      allow get: if isAdmin() || isOwner(userId);
+      // LIST: Only admins can list all users.
+      allow list: if isAdmin();
+
+      // CREATE: A user can create their own document (on signup).
+      allow create: if isOwner(userId);
+
+      // UPDATE:
+      // Admins can update any user profile.
+      // A user can update their own profile IF they are not modifying a protected field.
+      allow update: if isAdmin() || (isOwner(userId) && !isModifyingProtectedUserField());
+      
+      // DELETE: No one can delete user accounts through the client.
+      allow delete: if false;
+    }
+
+    // This rule covers all subcollections within a user's document
+    // (e.g., orders, campaigns, deposits, tickets, etc.).
+    match /users/{userId}/{collection}/{docId} {
+      // Admins can read/write to any user's subcollections.
+      // Users can only read/write to their own subcollections.
+      allow read, write: if isAdmin() || isOwner(userId);
+    }
+    
+    // =================================
+    // System-Critical Collections
+    // =================================
+    
+    match /systemLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Default Deny All (This rule should be logically unreachable due to the one above,
+    // but acts as a safeguard)
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }
