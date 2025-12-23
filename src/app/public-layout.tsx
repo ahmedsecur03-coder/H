@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -21,7 +21,6 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { ThemeProvider } from '@/components/theme-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 
@@ -139,16 +138,10 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
        <CosmicBackground />
-       {isClient && <Header />}
+       <Header />
       <main className="flex-1 z-10">
         <div className="container mx-auto px-4 md:px-6 py-8">
             {children}
