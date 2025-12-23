@@ -103,41 +103,6 @@
         -webkit-text-fill-color: transparent;
     }
 
-    .stars, .stars2, .stars3 {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .stars {
-      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><polygon points="5,0 6,4 10,4 7,6 8,10 5,8 2,10 3,6 0,4 4,4" fill="hsl(210 20% 98% / 0.5)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
-      background-size: 200px 200px;
-      animation: sparkle 15s linear infinite;
-    }
-    .stars2 {
-      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><polygon points="5,0 6,4 10,4 7,6 8,10 5,8 2,10 3,6 0,4 4,4" fill="hsl(210 20% 98% / 0.7)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
-      background-size: 300px 300px;
-      animation: sparkle 20s linear infinite;
-    }
-    .stars3 {
-      background: transparent url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="star" width="10" height="10" patternUnits="userSpaceOnUse"><polygon points="5,0 6,4 10,4 7,6 8,10 5,8 2,10 3,6 0,4 4,4" fill="hsl(210 20% 98%)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23star)"/></svg>') repeat;
-      background-size: 500px 500px;
-      animation: sparkle 25s linear infinite;
-    }
-
-    @keyframes sparkle {
-      from {
-        transform: translateY(0px);
-      }
-      to {
-        transform: translateY(-500px);
-      }
-    }
-
     .light .stars, .light .stars2, .light .stars3 {
       display: none;
     }
