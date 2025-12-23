@@ -1,52 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Publicly readable collections
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if false; // Only admins should write
-    }
-    match /blogPosts/{blogPostId} {
-        allow read: if true;
-        allow write: if false; // Only admins should write
-    }
-     match /settings/global {
-        allow read: if true;
-        allow write: if false; // Only admins should write
-    }
-
-    // User-specific data
-    match /users/{userId} {
-      // Users can read their own data. Admins can read any user's data.
-      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      
-      // Users can only update their own data.
-      // Admins can update any user's data.
-      allow update: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      
-      // Users can be created during signup.
-      allow create: if request.auth != null && request.auth.uid == userId;
-
-      // Disallow deleting user documents.
-      allow delete: if false;
-    }
-
-    // Rules for user subcollections
-    match /users/{userId}/{collection}/{docId} {
-        // Users can create/read/update/delete documents in their own subcollections.
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Specific rule for admins to manage all subcollections
-    // This is a bit broad, but works for admin actions.
-    match /users/{userId}/{document=**} {
-        allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // System logs are admin-only
-    match /systemLogs/{logId} {
-       allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
