@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { doc, runTransaction, updateDoc } from 'firebase/firestore';
-import type { Campaign } from '@/lib/types';
+import { doc, runTransaction } from 'firebase/firestore';
+import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -38,25 +38,53 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
     const handleApprove = async () => {
         if (!firestore) return;
         setLoading(true);
-        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        const updates = { 
-            status: 'نشط' as const,
-            startDate: new Date().toISOString(), // Set start date on approval
-        };
 
-        updateDoc(campaignDocRef, updates)
-            .then(() => {
-                toast({ title: 'نجاح', description: 'تم تفعيل الحملة بنجاح.' });
-                forceCollectionUpdate();
-                setOpen(false);
-            })
-            .catch(error => {
-                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: updates });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                setLoading(false);
+        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+        const userDocRef = doc(firestore, 'users', campaign.userId);
+
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) {
+                    throw new Error("المستخدم صاحب الحملة غير موجود.");
+                }
+
+                const userData = userDoc.data() as User;
+                const currentAdBalance = userData.adBalance ?? 0;
+
+                if (currentAdBalance < campaign.budget) {
+                    throw new Error(`رصيد إعلانات المستخدم غير كافٍ. المطلوب: $${campaign.budget}, المتاح: $${currentAdBalance.toFixed(2)}`);
+                }
+
+                // 1. Deduct budget from user's adBalance
+                const newAdBalance = currentAdBalance - campaign.budget;
+                transaction.update(userDocRef, { adBalance: newAdBalance });
+
+                // 2. Activate the campaign
+                const updates = { 
+                    status: 'نشط' as const,
+                    startDate: new Date().toISOString(),
+                };
+                transaction.update(campaignDocRef, updates);
             });
+
+            toast({ title: 'نجاح', description: 'تم تفعيل الحملة وخصم الميزانية بنجاح.' });
+            forceCollectionUpdate();
+            setOpen(false);
+
+        } catch (error: any) {
+            if (error instanceof FirestorePermissionError) {
+                 errorEmitter.emit('permission-error', error);
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'فشل تفعيل الحملة',
+                    description: error.message,
+                });
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

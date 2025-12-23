@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, runTransaction, collection, addDoc } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -86,14 +86,11 @@ export function NewCampaignDialog({
       return;
     }
     
-    // Temporarily disable adBalance check to bypass permission issues
-    /*
     if ((userData.adBalance ?? 0) < campaignData.budget) {
-      toast({ variant: 'destructive', title: 'خطأ', description: 'رصيدك الإعلاني غير كافٍ لهذه الميزانية.' });
+      toast({ variant: 'destructive', title: 'خطأ', description: 'رصيدك الإعلاني غير كافٍ لهذه الميزانية. سيتم الخصم عند موافقة المسؤول.' });
       setLoading(false);
       return;
     }
-    */
 
     const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
     const newCampaignData: Omit<Campaign, 'id'> = {
@@ -104,7 +101,7 @@ export function NewCampaignDialog({
         targetAudience: campaignData.targetAudience,
         budget: campaignData.budget,
         durationDays: campaignData.durationDays,
-        startDate: new Date().toISOString(),
+        startDate: new Date().toISOString(), // This will be updated on approval
         endDate: undefined,
         spend: 0,
         status: 'بانتظار المراجعة',
@@ -116,20 +113,19 @@ export function NewCampaignDialog({
     };
 
     try {
-      // Directly add the campaign document, bypassing the transaction that fails.
       await addDoc(campaignsColRef, newCampaignData);
       
-      toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
-      onCampaignCreated();
+      toast({ title: 'نجاح!', description: 'تم إرسال حملتك للمراجعة. سيتم خصم الرصيد عند الموافقة.' });
+      onCampaignCreated(); // This will trigger forceCollectionUpdate in the parent
       setOpen(false);
       (event.target as HTMLFormElement).reset();
 
     } catch (error: any) {
-       // Catch potential errors from addDoc, which is the source of the permission issue.
+       // Catch potential errors from addDoc
        const permissionError = new FirestorePermissionError({ 
           path: `users/${user.uid}/campaigns`, 
           operation: 'create',
-          requestResourceData: { budget: campaignData.budget } // Include relevant data
+          requestResourceData: newCampaignData
        });
        errorEmitter.emit('permission-error', permissionError);
     } finally {
@@ -144,7 +140,7 @@ export function NewCampaignDialog({
         <DialogHeader>
           <DialogTitle>حملة إعلانية جديدة</DialogTitle>
           <DialogDescription>
-            اختر المنصة وحدد ميزانية حملتك ومدتها للبدء. سيتم خصم الميزانية من رصيد الإعلانات.
+            اختر المنصة وحدد ميزانية حملتك ومدتها للبدء. سيتم خصم الميزانية من رصيد الإعلانات عند الموافقة.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -206,7 +202,7 @@ export function NewCampaignDialog({
           </p>
           <DialogFooter>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? <Loader2 className="animate-spin" /> : 'إنشاء وتفعيل'}
+              {loading ? <Loader2 className="animate-spin" /> : 'إرسال للمراجعة'}
             </Button>
           </DialogFooter>
         </form>
