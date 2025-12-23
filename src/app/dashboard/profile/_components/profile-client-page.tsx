@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -101,6 +102,12 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         }
     };
 
+    const infoBadges = [
+        { label: 'الرتبة', value: userData.rank },
+        { label: 'كود الإحالة', value: userData.referralCode },
+        { label: 'معرف المستخدم', value: userData.id, isMono: true },
+    ]
+
     return (
         <div className="space-y-8 pb-8">
             <div>
@@ -120,10 +127,16 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                         {isGenerating && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
                     </div>
                     <div className="flex-1 text-center md:text-right">
-                        <Badge variant="secondary" className="mb-2">{userData.rank}</Badge>
+                        
                         <h2 className="text-3xl font-bold font-headline">{profileForm.watch('name')}</h2>
                         <p className="text-muted-foreground">{userData.email}</p>
-                        <p className="text-muted-foreground font-mono text-sm mt-1">#{userData.id}</p>
+                         <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
+                           {infoBadges.map(badge => (
+                                <Badge key={badge.label} variant="secondary" className={badge.isMono ? 'font-mono' : ''}>
+                                   <span className="font-normal opacity-75 ml-1">{badge.label}:</span> {badge.value}
+                                </Badge>
+                           ))}
+                        </div>
                     </div>
                 </div>
             </Card>
