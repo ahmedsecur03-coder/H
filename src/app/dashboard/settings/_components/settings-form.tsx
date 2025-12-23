@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useTransition } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -27,8 +28,8 @@ export function SettingsForm({ preferences }: { preferences: Preferences }) {
         await updateNotificationPreferences({ newsletter, orderUpdates });
         toast({ title: 'نجاح', description: 'تم حفظ تفضيلاتك بنجاح.' });
         router.refresh();
-      } catch (error) {
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل حفظ التغييرات.' });
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'خطأ', description: error.message || 'فشل حفظ التغييرات.' });
       }
     });
   };
