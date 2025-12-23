@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
+import { initializeFirebaseServer } from '@/firebase/server';
 
 const fontSans = Tajawal({
   subsets: ['arabic'],
@@ -36,26 +37,25 @@ export const viewport: Viewport = {
 
 // This function now fetches from a cached API endpoint instead of directly from Firestore.
 async function WhatsappSupportButton() {
+  const { firestore } = initializeFirebaseServer();
   let whatsappLink = "#"; // Default fallback
   
-  try {
-    // Fetch from the new API route.
-    // The `revalidate` option ensures this request is cached for 1 hour (3600 seconds).
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/settings`, { 
-      next: { revalidate: 3600 } 
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.whatsappSupport) {
-        whatsappLink = data.whatsappSupport;
+  if (firestore) {
+      try {
+        // Fetch from firestore directly but using Next.js caching
+        const settingsDoc = await firestore.collection('settings').doc('global').get();
+        
+        if (settingsDoc.exists) {
+          const settingsData = settingsDoc.data();
+          if (settingsData && settingsData.whatsappSupport) {
+            whatsappLink = settingsData.whatsappSupport;
+          }
+        }
+      } catch (error) {
+        console.error("Could not fetch WhatsApp link:", error);
       }
-    } else {
-       console.error("Could not fetch WhatsApp link: API responded with an error.");
-    }
-  } catch (error) {
-    console.error("Could not fetch WhatsApp link:", error);
   }
+
 
   return (
     <Button
