@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, orderBy } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { collectionGroup, query, orderBy, getDocs } from 'firebase/firestore';
 import type { Ticket } from '@/lib/types';
 import {
   Card,
@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 
 const statusVariant = {
@@ -34,13 +35,38 @@ const statusVariant = {
 
 export default function AdminSupportPage() {
   const firestore = useFirestore();
+  const { toast } = useToast();
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const ticketsQuery = useMemoFirebase(
-    () => firestore ? query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc')) : null,
-    [firestore]
-  );
 
-  const { data: tickets, isLoading } = useCollection<Ticket>(ticketsQuery);
+  useEffect(() => {
+    if (!firestore) return;
+
+    const fetchTickets = async () => {
+        setIsLoading(true);
+        try {
+            const ticketsQuery = query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc'));
+            const querySnapshot = await getDocs(ticketsQuery);
+            const fetchedTickets: Ticket[] = [];
+            querySnapshot.forEach(doc => {
+                // Important: we need to manually add the userId which is not part of the ticket document data itself
+                // The path is users/{userId}/tickets/{ticketId}
+                const pathSegments = doc.ref.path.split('/');
+                const userId = pathSegments[1];
+                fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
+            });
+            setTickets(fetchedTickets);
+        } catch (error) {
+            console.error("Error fetching tickets:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    fetchTickets();
+  }, [firestore, toast]);
   
   const renderContent = () => {
     if (isLoading) {
