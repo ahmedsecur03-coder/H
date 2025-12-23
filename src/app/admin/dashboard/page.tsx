@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -14,11 +15,13 @@ import {
 } from '@/components/ui/chart';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, collectionGroup } from 'firebase/firestore';
-import type { User, Order, Ticket } from '@/lib/types';
-import { useMemo } from 'react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, collectionGroup, where, getDocs, getCountFromServer, Timestamp } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { User, Order, Ticket } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+
 
 const chartConfig = {
   revenue: {
@@ -69,44 +72,94 @@ function processPerformanceData(users: User[], orders: Order[]) {
 
 export default function AdminDashboardPage() {
     const firestore = useFirestore();
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState({
+        totalRevenue: 0,
+        totalUsers: 0,
+        totalOrders: 0,
+        openTickets: 0,
+        newUsersLast7Days: 0,
+    });
+    const [performanceData, setPerformanceData] = useState<any[]>([]);
 
-    const usersQuery = useMemoFirebase(
-      () => (firestore ? query(collection(firestore, 'users')) : null),
-      [firestore]
-    );
-    const { data: allUsers, isLoading: isUsersLoading } = useCollection<User>(usersQuery);
+    useEffect(() => {
+        if (!firestore) return;
 
-    const ordersQuery = useMemoFirebase(
-      () => (firestore ? query(collectionGroup(firestore, 'orders')) : null),
-      [firestore]
-    );
-    const { data: allOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
-    
-    const ticketsQuery = useMemoFirebase(
-        () => (firestore ? query(collectionGroup(firestore, 'tickets')) : null),
-        [firestore]
-    );
-    const { data: allTickets, isLoading: isTicketsLoading } = useCollection<Ticket>(ticketsQuery);
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                // --- Efficient Count Queries ---
+                const usersCol = collection(firestore, 'users');
+                const ordersColGroup = collectionGroup(firestore, 'orders');
+                const ticketsColGroup = collectionGroup(firestore, 'tickets');
 
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                const sevenDaysAgoTimestamp = Timestamp.fromDate(sevenDaysAgo);
 
-    const isLoading = isUsersLoading || isOrdersLoading || isTicketsLoading;
-    
-    const performanceData = useMemo(() => {
-        if (!allUsers || !allOrders) return [];
-        return processPerformanceData(allUsers, allOrders);
-    }, [allUsers, allOrders]);
+                const usersCountQuery = query(usersCol);
+                const newUsersCountQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoTimestamp.toDate().toISOString()));
+                const ordersCountQuery = query(ordersColGroup);
+                const openTicketsCountQuery = query(ticketsColGroup, where('status', '!=', 'مغلقة'));
 
-    const totalRevenue = useMemo(() => allOrders?.reduce((acc, order) => acc + order.charge, 0) ?? 0, [allOrders]);
-    const totalOrders = allOrders?.length ?? 0;
-    const openTicketsCount = allTickets?.filter(t => t.status !== 'مغلقة').length ?? 0;
+                const [
+                    usersSnapshot,
+                    newUsersSnapshot,
+                    ordersSnapshot,
+                    openTicketsSnapshot,
+                ] = await Promise.all([
+                    getCountFromServer(usersCountQuery),
+                    getCountFromServer(newUsersCountQuery),
+                    getCountFromServer(ordersCountQuery),
+                    getCountFromServer(openTicketsCountQuery),
+                ]);
 
-    const totalUsersCount = allUsers?.length ?? 0;
-    const totalNewUsers = useMemo(() => {
-        if (!allUsers) return 0;
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        return allUsers.filter(user => user.createdAt && new Date(user.createdAt) > oneWeekAgo).length;
-    }, [allUsers]);
+                // --- Chart Data Queries (last 7 days) ---
+                const usersChartQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoTimestamp.toDate().toISOString()));
+                const ordersChartQuery = query(ordersColGroup, where('orderDate', '>=', sevenDaysAgoTimestamp.toDate().toISOString()));
+                const revenueQuery = query(ordersColGroup); // still need all for total revenue
+
+                const [
+                    usersChartDocs,
+                    ordersChartDocs,
+                    allOrdersDocs
+                ] = await Promise.all([
+                    getDocs(usersChartQuery),
+                    getDocs(ordersChartQuery),
+                    getDocs(revenueQuery)
+                ]);
+
+                const usersForChart = usersChartDocs.docs.map(doc => doc.data() as User);
+                const ordersForChart = ordersChartDocs.docs.map(doc => doc.data() as Order);
+                
+                const totalRevenue = allOrdersDocs.docs.reduce((acc, doc) => acc + (doc.data() as Order).charge, 0);
+
+                // --- Set State ---
+                setStats({
+                    totalRevenue: totalRevenue,
+                    totalUsers: usersSnapshot.data().count,
+                    totalOrders: ordersSnapshot.data().count,
+                    openTickets: openTicketsSnapshot.data().count,
+                    newUsersLast7Days: newUsersSnapshot.data().count,
+                });
+
+                setPerformanceData(processPerformanceData(usersForChart, ordersForChart));
+
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                toast({
+                    variant: "destructive",
+                    title: "خطأ في جلب البيانات",
+                    description: "فشل تحميل بيانات لوحة التحكم. قد تكون بسبب الصلاحيات.",
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [firestore, toast]);
     
 
   if(isLoading) {
@@ -139,7 +192,7 @@ export default function AdminDashboardPage() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+                    <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
                 </CardContent>
             </Card>
              <Card>
@@ -148,8 +201,8 @@ export default function AdminDashboardPage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{totalUsersCount}</div>
-                    <p className="text-xs text-muted-foreground">+{totalNewUsers} في آخر 7 أيام</p>
+                    <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                    <p className="text-xs text-muted-foreground">+{stats.newUsersLast7Days} في آخر 7 أيام</p>
                 </CardContent>
             </Card>
              <Card>
@@ -158,7 +211,7 @@ export default function AdminDashboardPage() {
                     <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{totalOrders}</div>
+                    <div className="text-2xl font-bold">{stats.totalOrders}</div>
                 </CardContent>
             </Card>
              <Card>
@@ -167,7 +220,7 @@ export default function AdminDashboardPage() {
                     <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{openTicketsCount}</div>
+                    <div className="text-2xl font-bold">{stats.openTickets}</div>
                 </CardContent>
             </Card>
         </div>
@@ -235,3 +288,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
