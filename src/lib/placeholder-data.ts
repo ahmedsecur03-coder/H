@@ -71,5 +71,3 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/system-log', label: 'سجل النظام', icon: History },
     { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];
-
-    
