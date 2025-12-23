@@ -22,6 +22,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { ThemeToggle } from '@/components/theme-toggle';
+import DynamicAiAssistant from '@/components/dynamic-ai-assistant';
 
 
 const ListItem = React.forwardRef<
@@ -55,6 +56,12 @@ ListItem.displayName = "ListItem"
 function Header() {
   const { user, isUserLoading } = useUser();
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
    const appUser = user ? {
       name: user.displayName || `مستخدم`,
@@ -101,30 +108,32 @@ function Header() {
           </NavigationMenu>
         <div className="flex items-center gap-2">
             <ThemeToggle />
-          {isUserLoading ? (
-            <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
-          ) : user ? (
-            <>
-              <Button asChild>
-                <Link href="/dashboard">لوحة التحكم</Link>
-              </Button>
-               {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">
-                  <LogIn className="ml-2" />
-                  تسجيل الدخول
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">
-                  <UserPlus className="ml-2" />
-                  ابدأ الآن
-                </Link>
-              </Button>
-            </>
+          {isClient && (
+            isUserLoading ? (
+                <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
+            ) : user ? (
+                <>
+                <Button asChild>
+                    <Link href="/dashboard">لوحة التحكم</Link>
+                </Button>
+                {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
+                </>
+            ) : (
+                <>
+                <Button variant="ghost" asChild>
+                    <Link href="/login">
+                    <LogIn className="ml-2" />
+                    تسجيل الدخول
+                    </Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/signup">
+                    <UserPlus className="ml-2" />
+                    ابدأ الآن
+                    </Link>
+                </Button>
+                </>
+            )
           )}
         </div>
       </div>
@@ -147,6 +156,7 @@ export default function PublicLayout({
             {children}
         </div>
       </main>
+      <DynamicAiAssistant />
       <footer className="bg-card/50 border-t border-border z-10">
         <div className="container mx-auto py-6 px-4 md:px-6 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>

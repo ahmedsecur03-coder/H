@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -19,7 +20,6 @@ import { initializeFirebaseServer } from '@/firebase/server';
 import { collection, query, limit, getDocs } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import PublicLayout from './public-layout';
 
 
 async function getFeaturedServices(): Promise<Service[]> {
