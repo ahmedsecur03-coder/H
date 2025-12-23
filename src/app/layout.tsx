@@ -9,6 +9,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
+import { initializeFirebaseServer } from '@/firebase/server';
+import { doc } from 'firebase/firestore';
 
 
 const fontSans = Tajawal({
@@ -35,12 +37,27 @@ export const viewport: Viewport = {
   themeColor: '#0c1222',
 };
 
-function WhatsappSupportButton() {
-  // In a real app, this would be fetched from a global settings/config
-  const whatsappLink = "https://wa.me/201000000000"; // Replace with your number
+async function WhatsappSupportButton() {
+  const { firestore } = initializeFirebaseServer();
+  let whatsappLink = "#"; // Default fallback
+
+  if (firestore) {
+    try {
+      const settingsDoc = await firestore.collection('settings').doc('global').get();
+      if (settingsDoc.exists) {
+        const settingsData = settingsDoc.data();
+        if (settingsData?.whatsappSupport) {
+          whatsappLink = settingsData.whatsappSupport;
+        }
+      }
+    } catch (error) {
+      console.error("Could not fetch WhatsApp link:", error);
+    }
+  }
 
   return (
     <Button
+      asChild
       className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 text-white hover:scale-110 transition-transform duration-300"
     >
       <Link href={whatsappLink} target="_blank">
