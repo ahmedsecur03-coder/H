@@ -25,7 +25,8 @@ service cloud.firestore {
       // Admins can be defined by a role in their user document.
       // Also adding a fallback for a specific super-admin email for initial setup.
       return isUserAuthenticated() && 
-             (request.auth.token.email == 'hagaaty@gmail.com' || getUserData(request.auth.uid).role == 'admin');
+             (request.auth.token.email == 'hagaaty@gmail.com' || 
+              (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData(request.auth.uid).role == 'admin'));
     }
     
     // Checks if a user is trying to change a protected field.
@@ -94,9 +95,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
     
-    // Default Deny All
+    // Default Deny All / Allow Admins to List
+    // This is crucial for collectionGroup queries in the admin panel.
     match /{document=**} {
       allow read, write: if false;
+      allow list: if isAdmin();
     }
   }
 }
