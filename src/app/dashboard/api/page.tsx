@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
@@ -81,17 +80,17 @@ export default function ApiPage() {
 
                     <div className="space-y-4">
                         <div>
-                            <h4 className="font-medium">إضافة طلب جديد (`add`)</h4>
+                            <h4 className="font-medium">إضافة طلب جديد ('add')</h4>
                             <p className="text-sm text-muted-foreground mb-2">استخدم هذا الإجراء لوضع طلب جديد في النظام.</p>
                             <CodeExample code={addOrderExample} language="json" />
                         </div>
                          <div>
-                            <h4 className="font-medium">الاستعلام عن حالة طلب (`status`)</h4>
+                            <h4 className="font-medium">الاستعلام عن حالة طلب ('status')</h4>
                             <p className="text-sm text-muted-foreground mb-2">استخدم هذا الإجراء للحصول على حالة طلب معين.</p>
                              <CodeExample code={orderStatusExample} language="json" />
                         </div>
                          <div>
-                            <h4 className="font-medium">الحصول على قائمة الخدمات (`services`)</h4>
+                            <h4 className="font-medium">الحصول على قائمة الخدمات ('services')</h4>
                             <p className="text-sm text-muted-foreground mb-2">استخدم هذا الإجراء للحصول على قائمة بجميع الخدمات المتاحة.</p>
                             <CodeExample code={servicesListExample} language="json" />
                         </div>
