@@ -136,9 +136,9 @@ export default async function HomePage() {
                                         <p className="text-xs text-muted-foreground">/ لكل 1000</p>
                                     </div>
                                     <Button asChild variant="outline" className="mt-4 w-full">
-                                        <Link href="/services">
+                                        <Link href="/login">
                                             <ChevronLeft className="h-4 w-4 ml-2" />
-                                            عرض التفاصيل
+                                            اطلب الآن
                                         </Link>
                                     </Button>
                                 </CardContent>
