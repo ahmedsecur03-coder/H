@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -33,8 +34,8 @@ import type { User as UserType, Order } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getRankForSpend } from '@/lib/service';
-import { QuickOrderForm } from '../_components/quick-order-form';
-import { DailyRewardCard } from './_components/daily-reward-card';
+import { QuickOrderForm } from '@/app/dashboard/_components/quick-order-form';
+import { DailyRewardCard } from '../dashboard/_components/daily-reward-card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
