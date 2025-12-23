@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { createCampaign } from '../actions';
+import { collection, doc, runTransaction } from 'firebase/firestore';
+
 
 type Platform = Campaign['platform'];
 type Goal = Campaign['goal'];
@@ -34,8 +34,8 @@ const goals: { name: Goal; title: string }[] = [
 
 export function NewCampaignDialog({ userData, children, onCampaignCreated }: { userData: UserType, children: React.ReactNode, onCampaignCreated: () => void }) {
     const { user } = useUser();
+    const firestore = useFirestore();
     const { toast } = useToast();
-    const router = useRouter();
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [platform, setPlatform] = useState<Platform | undefined>();
@@ -50,7 +50,7 @@ export function NewCampaignDialog({ userData, children, onCampaignCreated }: { u
         const budgetAmount = parseFloat(budget);
         const duration = parseInt(durationDays, 10);
 
-        if (!user || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0 || !duration || duration <= 0) {
+        if (!user || !firestore || !name || !platform || !goal || !targetAudience || !budgetAmount || budgetAmount <= 0 || !duration || duration <= 0) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول بشكل صحيح.' });
             return;
         }
@@ -61,26 +61,62 @@ export function NewCampaignDialog({ userData, children, onCampaignCreated }: { u
         }
 
         setLoading(true);
-        
-        try {
-            const result = await createCampaign({
-                name,
-                platform,
-                goal,
-                targetAudience,
-                budgetAmount,
-                duration,
-            });
 
-            if (result.success) {
-                 toast({ title: 'نجاح!', description: result.message });
-                 setOpen(false);
-                 setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget(''); setDurationDays('');
-                 // onCampaignCreated is implicitly handled by revalidatePath in the server action
-            }
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
+        const newCampaignRef = doc(campaignsColRef); // Generate a new doc ref with an ID
+
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                 if (!userDoc.exists()) {
+                    throw new Error("المستخدم غير موجود.");
+                }
+
+                const serverUserData = userDoc.data() as UserType;
+                const currentAdBalance = serverUserData.adBalance ?? 0;
+
+                if (currentAdBalance < budgetAmount) {
+                    throw new Error("رصيد الإعلانات غير كافٍ لهذه الميزانية.");
+                }
+                
+                // 1. Deduct budget from user's ad balance
+                transaction.update(userDocRef, { adBalance: currentAdBalance - budgetAmount });
+
+                // 2. Create the new campaign document
+                const newCampaignData: Omit<Campaign, 'id'> = {
+                    userId: user.uid,
+                    name: name,
+                    platform: platform,
+                    goal: goal,
+                    targetAudience: targetAudience,
+                    startDate: new Date().toISOString(),
+                    endDate: undefined,
+                    budget: budgetAmount,
+                    durationDays: duration,
+                    spend: 0,
+                    status: 'بانتظار المراجعة',
+                    impressions: 0,
+                    clicks: 0,
+                    results: 0,
+                    ctr: 0,
+                    cpc: 0,
+                };
+                transaction.set(newCampaignRef, newCampaignData);
+            });
+            
+            toast({ title: 'نجاح!', description: 'تم إنشاء حملتك وهي الآن قيد المراجعة.' });
+            onCampaignCreated(); // This will trigger the forceCollectionUpdate in the parent
+            setOpen(false);
+            setName(''); setPlatform(undefined); setGoal(undefined); setTargetAudience(''); setBudget(''); setDurationDays('');
 
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل إنشاء الحملة', description: error.message });
+            if (error.message.includes("رصيد") || error.message.includes("المستخدم")) {
+                 toast({ variant: "destructive", title: "فشل إنشاء الحملة", description: error.message });
+            } else {
+                 const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
+                 errorEmitter.emit('permission-error', permissionError);
+            }
         } finally {
             setLoading(false);
         }
