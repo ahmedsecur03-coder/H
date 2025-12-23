@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { OrderActions } from './_components/order-actions';
 
 const statusVariant = {
   مكتمل: 'default',
@@ -54,7 +55,7 @@ export default function AdminOrdersPage() {
         return query(ordersCollection);
     }, [firestore, statusFilter]);
 
-    const { data: allOrders, isLoading } = useCollection<Order>(ordersQuery);
+    const { data: allOrders, isLoading, forceCollectionUpdate } = useCollection<Order>(ordersQuery);
 
     const filteredOrders = useMemo(() => {
         if (!allOrders) return [];
@@ -67,7 +68,7 @@ export default function AdminOrdersPage() {
         return allOrders.filter(order => 
             order.id.toLowerCase().includes(lowerCaseSearch) ||
             order.userId.toLowerCase().includes(lowerCaseSearch) ||
-            order.link.toLowerCase().includes(lowerCaseSearch)
+            (order.link && order.link.toLowerCase().includes(lowerCaseSearch))
         );
 
     }, [allOrders, searchTerm]);
@@ -76,7 +77,7 @@ export default function AdminOrdersPage() {
          if (isLoading) {
             return Array.from({length: 10}).map((_, i) => (
                 <TableRow key={i}>
-                    {Array.from({length: 6}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                    {Array.from({length: 7}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
                 </TableRow>
             ));
         }
@@ -84,7 +85,7 @@ export default function AdminOrdersPage() {
         if (!filteredOrders || filteredOrders.length === 0) {
             return (
                 <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">لا توجد طلبات تطابق بحثك.</TableCell>
+                    <TableCell colSpan={7} className="h-24 text-center">لا توجد طلبات تطابق بحثك.</TableCell>
                 </TableRow>
             );
         }
@@ -99,6 +100,9 @@ export default function AdminOrdersPage() {
                     <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
                 </TableCell>
                 <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                <TableCell className="text-right">
+                    <OrderActions order={order} onOrderUpdate={forceCollectionUpdate} />
+                </TableCell>
             </TableRow>
         ));
     };
@@ -141,6 +145,7 @@ export default function AdminOrdersPage() {
                 <TableHead>الرابط</TableHead>
                 <TableHead>الحالة</TableHead>
                 <TableHead className="text-right">التكلفة</TableHead>
+                <TableHead className="text-right">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
