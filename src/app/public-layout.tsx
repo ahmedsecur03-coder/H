@@ -68,15 +68,14 @@ function Header() {
       id: user.uid
   } : null;
 
-  const adminEmails = ['hagaaty@gmail.com', 'admin@gmail.com'];
-  const isAdmin = user ? adminEmails.includes(user.email || '') : false;
+  const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
 
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
-         <NavigationMenu>
+         <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
                {publicNavItems.map((item) => (
                 <NavigationMenuItem key={item.label}>
@@ -145,6 +144,23 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
+    const { user, isUserLoading } = useUser();
+    const [userData, setUserData] = React.useState(null); // Add state for user data
+
+    // Fetch user data from Firestore
+    React.useEffect(() => {
+        const fetchUserData = async () => {
+            if (user) {
+                const { getFirestore, doc, getDoc } = await import('firebase/firestore');
+                const db = getFirestore();
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    setUserData(userDoc.data());
+                }
+            }
+        };
+        fetchUserData();
+    }, [user]);
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
        <Header />

@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -52,7 +53,7 @@ export type Order = {
 };
 
 export type NavItem = {
-  href: string;
+  href?: string;
   label: string;
   icon: React.ElementType;
   description?: string;

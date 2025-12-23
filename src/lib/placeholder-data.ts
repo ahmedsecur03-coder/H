@@ -34,12 +34,11 @@ export const publicNavItems: NestedNavItem[] = [
     { 
       label: 'الخدمات',
       icon: Package,
-      href: '/services',
       children: [
         { href: '/services', label: 'جميع خدمات SMM', description: 'تصفح كل خدمات التسويق عبر وسائل التواصل الاجتماعي.', icon: Users },
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك على جوجل، فيسبوك، وتيك توك.', icon: Megaphone },
         { href: '/agency-accounts', label: 'حسابات إعلانية (وكالة)', description: 'حسابات قوية وموثوقة للإنفاق العالي.', icon: Briefcase },
-        { href: '#', label: 'تصميم المواقع والتطبيقات', description: 'اطلب تصميم موقع أو تطبيق احترافي. (قريباً)', icon: AppWindow },
+        { href: '/#', label: 'تصميم المواقع والتطبيقات', description: 'اطلب تصميم موقع أو تطبيق احترافي. (قريباً)', icon: AppWindow },
       ]
     },
     { href: '/blog', label: 'المدونة', icon: BookOpen },
@@ -52,8 +51,8 @@ export const dashboardNavItems: NestedNavItem[] = [
     label: 'الطلبات',
     icon: ShoppingCart,
     children: [
-        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ShoppingCart },
-        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: ListOrdered },
+        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
     ]
   },
   { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },

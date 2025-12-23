@@ -242,7 +242,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar"
+            className="flex h-full w-full flex-col border-l border-sidebar-border bg-sidebar"
           >
             {children}
           </div>
@@ -520,7 +520,7 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
       },
       isActive: {
-        true: "bg-sidebar-accent font-medium text-sidebar-accent-foreground border-r-2 border-sidebar-primary",
+        true: "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
         false: "text-sidebar-foreground/80",
       },
     },

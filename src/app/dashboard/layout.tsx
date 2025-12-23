@@ -71,7 +71,7 @@ function NavItems() {
             <SidebarMenuSub>
                 <SidebarMenuSubTrigger>
                     <div className='flex items-center gap-2'>
-                        {Icon && <Icon />}
+                        {Icon && <Icon className="h-4 w-4" />}
                         <span>{item.label}</span>
                     </div>
                     <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
@@ -95,7 +95,7 @@ function NavItems() {
       <SidebarMenuItem key={`${item.label}-${index}`}>
         <Link href={item.href || '#'} passHref>
           <SidebarMenuButton isActive={isActive}>
-            {Icon && <Icon />}
+            {Icon && <Icon className="h-4 w-4" />}
             <span>{item.label}</span>
           </SidebarMenuButton>
         </Link>
