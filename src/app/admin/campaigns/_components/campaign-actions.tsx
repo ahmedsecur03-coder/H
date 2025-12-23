@@ -89,6 +89,25 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                  setLoading(false);
             });
     };
+    
+    const handleApprove = async () => {
+        if (!firestore) return;
+        setLoading(true);
+        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+        updateDoc(campaignDocRef, { status: 'نشط' })
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم تفعيل الحملة بنجاح.' });
+                forceCollectionUpdate();
+                setOpen(false);
+            })
+            .catch(error => {
+                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: { status: 'نشط' } });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -107,6 +126,14 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                     <p><strong>الميزانية / الإنفاق:</strong> ${campaign.budget.toFixed(2)} / <span className="text-destructive">${(campaign.spend || 0).toFixed(2)}</span></p>
                     <p><strong>المنصة:</strong> {campaign.platform}</p>
                     <div className="flex items-center gap-2"><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></div>
+
+                     {campaign.status === 'بانتظار المراجعة' && (
+                         <div className="pt-4 border-t">
+                            <Button onClick={handleApprove} disabled={loading} className="w-full">
+                                {loading ? <Loader2 className="animate-spin h-4 w-4" /> : 'الموافقة على الحملة وتفعيلها'}
+                            </Button>
+                         </div>
+                    )}
 
                     {campaign.status === 'نشط' && (
                         <div className="space-y-2 pt-4 border-t">

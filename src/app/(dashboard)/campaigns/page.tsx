@@ -13,7 +13,7 @@ import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { NewCampaignDialog } from './_components/new-campaign-dialog';
-import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
+import { UserCampaignActions } from './_components/user-campaign-actions';
 
 function CampaignsSkeleton() {
     return (
@@ -122,7 +122,7 @@ export default function CampaignsPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <CampaignDetailsDialog campaign={campaign} />
+                                        <UserCampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
                                     </TableCell>
                                 </TableRow>
                                 )
