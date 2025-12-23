@@ -161,8 +161,8 @@ export default function ServicesPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex justify-between border-b pb-2"><span>السعر لكل 1000:</span><span className="font-bold">${selectedService.price.toFixed(4)}</span></div>
                     <div className="flex justify-between border-b pb-2"><span>متوسط الوقت:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>الحد الأدنى للطلب:</span><span className="font-bold">{selectedService.min}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>الحد الأقصى للطلب:</span><span className="font-bold">{selectedService.max}</span></div>
+                    <div className="flex justify-between border-b pb-2"><span>الحد الأدنى للطلب:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
+                    <div className="flex justify-between border-b pb-2"><span>الحد الأقصى للطلب:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
                 </div>
             </CardContent>
              <CardFooter>
@@ -194,7 +194,7 @@ export default function ServicesPage() {
                     <TableCell className="font-medium">{service.category}</TableCell>
                     <TableCell>{service.platform}</TableCell>
                     <TableCell>${service.price.toFixed(4)}</TableCell>
-                    <TableCell>{service.min} / {service.max}</TableCell>
+                    <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                         <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
                             <Info className="h-4 w-4 ml-2"/>
@@ -211,3 +211,5 @@ export default function ServicesPage() {
     </div>
   );
 }
+
+    

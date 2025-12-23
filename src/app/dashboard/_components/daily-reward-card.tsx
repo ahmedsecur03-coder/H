@@ -1,8 +1,8 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Gift, Loader2 } from 'lucide-react';
@@ -10,9 +10,8 @@ import { claimDailyReward } from '@/lib/actions';
 import type { User as UserType } from '@/lib/types';
 
 
-export function DailyRewardCard({ user }: { user: UserType }) {
+export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: () => void }) {
     const { toast } = useToast();
-    const router = useRouter();
     const [isClaiming, setIsClaiming] = useState(false);
     const [timeLeft, setTimeLeft] = useState('');
 
@@ -52,7 +51,7 @@ export function DailyRewardCard({ user }: { user: UserType }) {
         try {
             await claimDailyReward(user.id);
             toast({ title: '🎉 تم بنجاح!', description: 'تمت إضافة 1$ لرصيد إعلاناتك!' });
-            router.refresh(); // Refresh server components
+            onClaim();
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
         } finally {
@@ -79,3 +78,5 @@ export function DailyRewardCard({ user }: { user: UserType }) {
         </Card>
     );
 }
+
+    

@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -13,11 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircle, Briefcase } from 'lucide-react';
 import type { Service, Order, User as UserType } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import Link from 'next/link';
 
 export function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     const firestore = useFirestore();
@@ -123,10 +125,24 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="font-headline">طلب سريع</CardTitle>
+            <CardHeader className="space-y-4">
+                <CardTitle className="font-headline">منطقة الإطلاق</CardTitle>
+                 <div className="grid grid-cols-2 gap-4">
+                     <Button variant="outline" asChild>
+                         <Link href="/dashboard/campaigns">
+                             <PlusCircle className="ml-2 h-4 w-4" />
+                            إنشاء حملة إعلانية
+                         </Link>
+                     </Button>
+                     <Button variant="outline" asChild>
+                         <Link href="/agency-accounts">
+                            <Briefcase className="ml-2 h-4 w-4" />
+                            فتح حساب وكالة
+                         </Link>
+                    </Button>
+                 </div>
                 <CardDescription>
-                    أسرع طريقة لتقديم طلباتك مباشرة من لوحة التحكم.
+                    أو يمكنك تقديم طلب سريع مباشرة من هنا.
                 </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -182,3 +198,5 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         </Card>
     );
 }
+
+    

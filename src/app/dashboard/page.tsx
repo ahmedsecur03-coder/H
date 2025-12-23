@@ -27,6 +27,8 @@ import {
   Diamond,
   ShoppingCart,
   Gift,
+  PlusCircle,
+  Briefcase,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit, getDoc, getDocs } from 'firebase/firestore';
@@ -37,6 +39,8 @@ import { getRankForSpend } from '@/lib/service';
 import { QuickOrderForm } from './_components/quick-order-form';
 import { DailyRewardCard } from './_components/daily-reward-card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 
 function DashboardSkeleton() {
@@ -66,7 +70,7 @@ export default function DashboardPage() {
     const firestore = useFirestore();
     
     const userDocRef = useMemoFirebase(() => authUser ? doc(firestore, 'users', authUser.uid) : null, [authUser, firestore]);
-    const { data: userData, isLoading: isUserDataLoading } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: isUserDataLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
     const ordersQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/orders`), orderBy('orderDate', 'desc'), limit(5)) : null, [authUser, firestore]);
     const { data: recentOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
@@ -172,7 +176,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-                <DailyRewardCard user={userData} />
+                <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center justify-between">
@@ -205,3 +209,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
+    
