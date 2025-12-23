@@ -135,7 +135,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                          </Link>
                      </Button>
                      <Button variant="outline" asChild>
-                         <Link href="/agency-accounts">
+                         <Link href="/dashboard/agency-accounts">
                             <Briefcase className="ml-2 h-4 w-4" />
                             فتح حساب وكالة
                          </Link>
