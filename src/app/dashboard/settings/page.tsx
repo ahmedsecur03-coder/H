@@ -1,7 +1,8 @@
+
 'use client';
 
 import type { User } from '@/lib/types';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { SettingsForm } from './_components/settings-form';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,21 +30,29 @@ export default function SettingsPage() {
 
     const isLoading = isUserLoading || isUserDataLoading;
 
-    const handleUpdatePreferences = async (preferences: { newsletter: boolean; orderUpdates: boolean }) => {
+    const handleUpdatePreferences = (preferences: { newsletter: boolean; orderUpdates: boolean }) => {
         if (!userDocRef) {
             toast({ variant: "destructive", title: "خطأ", description: "المستخدم غير موجود." });
             return;
         }
+        
+        forceDocUpdate(); // Optimistic update
+        toast({ title: 'جاري حفظ التفضيلات...' });
 
-        try {
-            await updateDoc(userDocRef, {
-              notificationPreferences: preferences,
-            });
+        updateDoc(userDocRef, {
+          notificationPreferences: preferences,
+        })
+        .then(() => {
             toast({ title: 'نجاح', description: 'تم حفظ تفضيلاتك بنجاح.' });
-            forceDocUpdate();
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message || 'فشل حفظ التغييرات.' });
-        }
+        })
+        .catch((error: any) => {
+             const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: { notificationPreferences: preferences }
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
     };
 
 

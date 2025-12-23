@@ -61,22 +61,25 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     
     const currentAvatarUrl = profileForm.watch('avatarUrl');
 
-    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
+    const handleProfileUpdate = (values: z.infer<typeof profileSchema>) => {
         if (!authUser || !firestore) return;
         
-        try {
-            const userDocRef = doc(firestore, 'users', authUser.uid);
-            // Update auth profile and firestore doc in parallel
-            await Promise.all([
-                updateProfile(authUser, { displayName: values.name, photoURL: values.avatarUrl }),
-                updateDoc(userDocRef, { name: values.name, avatarUrl: values.avatarUrl })
-            ]);
-            
-            toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
-            onUpdate(); // This will re-fetch the document via the parent component's hook
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'خطأ', description: error.message });
-        }
+        const userDocRef = doc(firestore, 'users', authUser.uid);
+        
+        // Optimistic UI update
+        onUpdate();
+        toast({ title: 'جاري تحديث الملف الشخصي...' });
+
+        // Non-blocking operations
+        updateProfile(authUser, { displayName: values.name, photoURL: values.avatarUrl });
+        updateDoc(userDocRef, { name: values.name, avatarUrl: values.avatarUrl })
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
+            })
+            .catch(error => {
+                toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+                // Optionally revert UI changes here
+            });
     };
     
     const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
@@ -85,9 +88,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         const credential = EmailAuthProvider.credential(authUser.email, values.currentPassword);
 
         try {
-            // Re-authenticate user before changing password
             await reauthenticateWithCredential(authUser, credential);
-            // Now change the password
             await updatePassword(authUser, values.newPassword);
             passwordForm.reset();
             toast({ title: 'نجاح', description: 'تم تغيير كلمة المرور بنجاح.' });

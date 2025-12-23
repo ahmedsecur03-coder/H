@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Loader2 } from 'lucide-react';
 
-export function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: any) => Promise<void>, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
+export function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: any) => void, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
     
     const getInitialData = (service?: Service) => ({
         id: service?.id || '',
@@ -43,15 +43,12 @@ export function ServiceDialog({ service, onSave, children, onOpenChange, open }:
         setData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        try {
-            await onSave(data);
-            onOpenChange(false);
-        } finally {
-            setIsSaving(false);
-        }
+        onSave(data);
+        setIsSaving(false);
+        onOpenChange(false);
     };
     
     return (

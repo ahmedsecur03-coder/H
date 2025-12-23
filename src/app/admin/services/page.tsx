@@ -47,7 +47,7 @@ export default function AdminServicesPage() {
           // Here, we'll order by ID and do a basic filter if a search term is provided.
           // This search is limited and case-sensitive.
           if (searchTerm) {
-             q = query(q, where('id', '>=', searchTerm), where('id', '<=', searchTerm + '\uf8ff'));
+             q = query(q, where('id', '>=', searchTerm), where('id', '<=', searchTerm + 'uf8ff'));
           }
 
           q = query(q, orderBy('id'));
@@ -97,13 +97,13 @@ export default function AdminServicesPage() {
       fetchServices('initial');
   }
   
-  const handleSaveService = async (data: Omit<Service, 'id'> & { id?: string }) => {
+  const handleSaveService = (data: Omit<Service, 'id'> & { id?: string }) => {
     if (!firestore) return;
 
     if (selectedService) { // Editing existing service
         const serviceDocRef = doc(firestore, 'services', selectedService.id);
         const { id, ...updateData } = data; // Don't update the ID
-        await updateDoc(serviceDocRef, updateData)
+        updateDoc(serviceDocRef, updateData)
             .then(() => {
                 toast({ title: 'نجاح', description: 'تم تحديث الخدمة بنجاح.' });
                 fetchServices('initial'); // Refresh data
@@ -117,7 +117,7 @@ export default function AdminServicesPage() {
         if (data.id) { // Use user-provided ID
             const newServiceDocRef = doc(firestore, 'services', data.id);
             const { id, ...newServiceData } = data;
-            await setDoc(newServiceDocRef, newServiceData)
+            setDoc(newServiceDocRef, newServiceData)
                 .then(() => {
                     toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
                     fetchServices('initial'); // Refresh data
@@ -128,7 +128,7 @@ export default function AdminServicesPage() {
                 });
         } else { // Auto-generate ID
              const { id, ...newServiceData } = data;
-             await addDoc(servicesColRef, newServiceData)
+             addDoc(servicesColRef, newServiceData)
                 .then(() => {
                     toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
                     fetchServices('initial'); // Refresh data
@@ -141,7 +141,7 @@ export default function AdminServicesPage() {
     }
   };
 
-  const handleDeleteService = async (id: string) => {
+  const handleDeleteService = (id: string) => {
       if (!firestore) return;
       const serviceDocRef = doc(firestore, 'services', id);
       deleteDoc(serviceDocRef)

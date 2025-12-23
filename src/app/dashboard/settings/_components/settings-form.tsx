@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -11,14 +12,14 @@ type Preferences = {
   orderUpdates?: boolean;
 }
 
-export function SettingsForm({ preferences, onSave }: { preferences: Preferences, onSave: (prefs: Preferences) => Promise<void> }) {
+export function SettingsForm({ preferences, onSave }: { preferences: Preferences, onSave: (prefs: Preferences) => void }) {
   const [isSaving, setIsSaving] = useState(false);
   const [newsletter, setNewsletter] = useState(preferences.newsletter ?? false);
   const [orderUpdates, setOrderUpdates] = useState(preferences.orderUpdates ?? true);
 
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = () => {
     setIsSaving(true);
-    await onSave({ newsletter, orderUpdates });
+    onSave({ newsletter, orderUpdates });
     setIsSaving(false);
   };
 

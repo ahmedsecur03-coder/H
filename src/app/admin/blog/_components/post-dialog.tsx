@@ -14,7 +14,7 @@ interface PostDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     post?: BlogPost;
-    onSave: (data: { title: string; content: string }) => Promise<void>;
+    onSave: (data: { title: string; content: string }) => void;
 }
 
 export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps) {
@@ -29,15 +29,14 @@ export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps
         }
     }, [open, post]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        try {
-            await onSave({ title, content });
-            onOpenChange(false);
-        } finally {
-            setIsSaving(false);
-        }
+        onSave({ title, content });
+        // The parent component is responsible for closing the dialog
+        // and handling the async logic.
+        setIsSaving(false);
+        onOpenChange(false);
     };
 
     return (

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy, serverTimestamp } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -63,12 +63,12 @@ export default function AdminBlogPage() {
     };
 
 
-    const handleSavePost = async (data: { title: string; content: string }) => {
+    const handleSavePost = (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
         
         if (selectedPost && selectedPost.id) { // Editing
             const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-            await updateDoc(postDocRef, data)
+            updateDoc(postDocRef, data)
                 .then(() => {
                     toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
                     fetchPosts(); // Refresh data
@@ -80,7 +80,7 @@ export default function AdminBlogPage() {
         } else { // Adding new post
             const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
             const postsColRef = collection(firestore, 'blogPosts');
-            await addDoc(postsColRef, newPostData)
+            addDoc(postsColRef, newPostData)
                 .then(() => {
                     toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
                     fetchPosts(); // Refresh data
@@ -93,7 +93,7 @@ export default function AdminBlogPage() {
     };
 
 
-    const handleDeletePost = async (id: string) => {
+    const handleDeletePost = (id: string) => {
         if (!firestore) return;
         const postDocRef = doc(firestore, 'blogPosts', id);
         deleteDoc(postDocRef)
