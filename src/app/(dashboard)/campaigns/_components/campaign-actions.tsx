@@ -6,7 +6,6 @@ import { useFirestore } from '@/firebase';
 import { doc, runTransaction, updateDoc } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { simulateCampaignPerformance } from '@/ai/flows/campaign-simulation-flow';
 import {
   Dialog,
   DialogContent,
@@ -35,9 +34,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
     const firestore = useFirestore();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
-    const [simulating, setSimulating] = useState(false);
     const [open, setOpen] = useState(false);
-    const [dailySpend, setDailySpend] = useState('10'); // Default daily spend for simulation
 
     const handleAction = async (newStatus: 'نشط' | 'متوقف') => {
         if (!firestore) return;
@@ -85,65 +82,6 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
         });
     };
 
-    const handleSimulation = async () => {
-        if (!firestore) return;
-        setSimulating(true);
-
-        const dailySpendAmount = parseFloat(dailySpend);
-        if (isNaN(dailySpendAmount) || dailySpendAmount <= 0) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال قيمة إنفاق يومي صالحة.' });
-            setSimulating(false);
-            return;
-        }
-
-        const remainingBudget = campaign.budget - campaign.spend;
-        if(remainingBudget <= 0) {
-             toast({ variant: 'destructive', title: 'تنبيه', description: 'ميزانية الحملة قد استنفدت بالفعل.' });
-             const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-             updateDoc(campaignDocRef, { status: "مكتمل" });
-             forceCollectionUpdate();
-             setSimulating(false);
-             return;
-        }
-
-        try {
-            const { simulatedSpend, simulatedImpressions, simulatedClicks, simulatedResults } = await simulateCampaignPerformance({
-                campaignName: campaign.name,
-                platform: campaign.platform,
-                goal: campaign.goal,
-                remainingBudget: remainingBudget,
-                dailySpend: dailySpendAmount,
-            });
-
-            const newSpend = (campaign.spend || 0) + simulatedSpend;
-            const newImpressions = (campaign.impressions || 0) + simulatedImpressions;
-            const newClicks = (campaign.clicks || 0) + simulatedClicks;
-            const newResults = (campaign.results || 0) + simulatedResults;
-            const newStatus = newSpend >= campaign.budget ? 'مكتمل' : campaign.status;
-
-            const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-            const updateData = {
-                spend: newSpend,
-                impressions: newImpressions,
-                clicks: newClicks,
-                results: newResults,
-                ctr: newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0,
-                cpc: newClicks > 0 ? newSpend / newClicks : 0,
-                status: newStatus 
-            };
-            
-            await updateDoc(campaignDocRef, updateData);
-
-            toast({ title: 'محاكاة ناجحة', description: `تم إنفاق ${simulatedSpend.toFixed(2)}$ من الميزانية.`});
-            forceCollectionUpdate();
-        } catch (error: any) {
-            const permissionError = new FirestorePermissionError({ path: `users/${campaign.userId}/campaigns/${campaign.id}`, operation: 'update' });
-            errorEmitter.emit('permission-error', permissionError);
-        } finally {
-            setSimulating(false);
-        }
-    };
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -162,22 +100,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                     <p><strong>المنصة:</strong> {campaign.platform}</p>
                     <p><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></p>
                 </div>
-
-                {campaign.status === 'نشط' && (
-                    <div className="rounded-md border p-4 space-y-2">
-                        <h4 className="font-semibold">محاكاة الإنفاق</h4>
-                        <p className="text-sm text-muted-foreground">أدخل مبلغ الإنفاق اليومي لمحاكاة أداء الحملة.</p>
-                        <div className="flex items-center gap-2">
-                            <Label htmlFor="daily-spend" className="sr-only">الإنفاق اليومي</Label>
-                            <Input id="daily-spend" type="number" value={dailySpend} onChange={e => setDailySpend(e.target.value)} />
-                            <Button onClick={handleSimulation} disabled={simulating}>
-                                {simulating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-                                <span className="mr-2">تحديث الإنفاق</span>
-                            </Button>
-                        </div>
-                    </div>
-                )}
-
+                
                 <DialogFooter className="gap-2 sm:justify-between">
                     <div className="flex gap-2">
                          {loading ? <Loader2 className="animate-spin" /> : (
