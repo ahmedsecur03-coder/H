@@ -1,11 +1,9 @@
-
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 import type { User as UserType } from "@/lib/types";
 import { AddFundsClientPage } from './_components/add-funds-client';
 
