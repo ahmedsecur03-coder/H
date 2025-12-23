@@ -1,15 +1,15 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, where, Query } from 'firebase/firestore';
+import { useState, useMemo, useEffect } from 'react';
+import { useFirestore } from '@/firebase';
+import { collectionGroup, query, where, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -30,6 +30,9 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderActions } from './_components/order-actions';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const statusVariant = {
   مكتمل: 'default',
@@ -38,40 +41,87 @@ const statusVariant = {
   جزئي: 'outline',
 } as const;
 
+const ITEMS_PER_PAGE = 25;
+
 export default function AdminOrdersPage() {
     const firestore = useFirestore();
+    const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
+    const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
+    const [page, setPage] = useState(1);
 
-    const ordersQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        
-        const ordersCollection = collectionGroup(firestore, 'orders');
+    const fetchOrders = async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+        if (!firestore) return;
+        setIsLoading(true);
 
-        if (statusFilter !== 'all') {
-            return query(ordersCollection, where('status', '==', statusFilter));
+        try {
+            let q: Query = collectionGroup(firestore, 'orders');
+
+            if (statusFilter !== 'all') {
+                q = query(q, where('status', '==', statusFilter));
+            }
+
+            q = query(q, orderBy('orderDate', 'desc'));
+
+            if (direction === 'next' && lastVisible) {
+                q = query(q, startAfter(lastVisible));
+            } else if (direction === 'prev' && firstVisible) {
+                q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
+            }
+            
+            if (direction !== 'prev') {
+               q = query(q, limit(ITEMS_PER_PAGE));
+            }
+
+            const documentSnapshots = await getDocs(q);
+
+            const newOrders: Order[] = [];
+            documentSnapshots.forEach(doc => {
+                newOrders.push({ id: doc.id, ...doc.data() } as Order);
+            });
+
+            if (newOrders.length === 0 && direction !== 'initial') {
+              toast({ title: direction === 'next' ? "هذه هي الصفحة الأخيرة." : "هذه هي الصفحة الأولى." });
+              setIsLoading(false);
+              return;
+            }
+
+            setOrders(newOrders);
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
+            setFirstVisible(documentSnapshots.docs[0]);
+            
+            if (direction === 'next') setPage(p => p + 1);
+            if (direction === 'prev' && page > 1) setPage(p => p - 1);
+            if (direction === 'initial') setPage(1);
+
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الطلبات.' });
+        } finally {
+            setIsLoading(false);
         }
-
-        return ordersCollection;
+    };
+    
+    useEffect(() => {
+        fetchOrders('initial');
     }, [firestore, statusFilter]);
 
-    const { data: allOrders, isLoading, forceCollectionUpdate } = useCollection<Order>(ordersQuery);
-
+    // Note: client-side filtering for search term
     const filteredOrders = useMemo(() => {
-        if (!allOrders) return [];
-        
-        if (!searchTerm) {
-          return allOrders;
-        }
-
+        if (!orders) return [];
+        if (!searchTerm) return orders;
         const lowerCaseSearch = searchTerm.toLowerCase();
-        return allOrders.filter(order => 
+        return orders.filter(order => 
             order.id.toLowerCase().includes(lowerCaseSearch) ||
             order.userId.toLowerCase().includes(lowerCaseSearch) ||
             (order.link && order.link.toLowerCase().includes(lowerCaseSearch))
         );
+    }, [orders, searchTerm]);
 
-    }, [allOrders, searchTerm]);
 
     const renderContent = () => {
          if (isLoading) {
@@ -101,7 +151,7 @@ export default function AdminOrdersPage() {
                 </TableCell>
                 <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
-                    <OrderActions order={order} onOrderUpdate={forceCollectionUpdate} />
+                    <OrderActions order={order} onOrderUpdate={() => fetchOrders('initial')} />
                 </TableCell>
             </TableRow>
         ));
@@ -124,7 +174,7 @@ export default function AdminOrdersPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value)}>
               <SelectTrigger><SelectValue placeholder="فلترة حسب الحالة" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">جميع الحالات</SelectItem>
@@ -153,6 +203,17 @@ export default function AdminOrdersPage() {
             </TableBody>
           </Table>
         </CardContent>
+        <CardFooter className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">صفحة {page}</span>
+            <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={() => fetchOrders('prev')} disabled={page <= 1}>
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => fetchOrders('next')} disabled={orders.length < ITEMS_PER_PAGE}>
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+            </div>
+        </CardFooter>
       </Card>
     </div>
   );
