@@ -10,7 +10,8 @@ import {
   doc,
   runTransaction,
   orderBy,
-  Query
+  Query,
+  collection
 } from 'firebase/firestore';
 import type { Withdrawal, User } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,6 +50,10 @@ function WithdrawalTable({ status }: { status: Status }) {
     },
     [firestore, status]
   );
+  
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
+  const { data: usersData } = useCollection<User>(usersQuery);
+  const usersMap = useMemo(() => usersData ? new Map(usersData.map(u => [u.id, u])) : new Map(), [usersData]);
 
   const { data: withdrawals, isLoading } = useCollection<Withdrawal>(withdrawalsQuery);
 
@@ -98,7 +103,7 @@ function WithdrawalTable({ status }: { status: Status }) {
        <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>معرف المستخدم</TableHead>
+              <TableHead>المستخدم</TableHead>
               <TableHead>المبلغ</TableHead>
               <TableHead>طريقة السحب</TableHead>
               <TableHead>التفاصيل</TableHead>
@@ -131,7 +136,7 @@ function WithdrawalTable({ status }: { status: Status }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>معرف المستخدم</TableHead>
+          <TableHead>المستخدم</TableHead>
           <TableHead>المبلغ</TableHead>
           <TableHead>طريقة السحب</TableHead>
           <TableHead>التفاصيل</TableHead>
@@ -140,10 +145,13 @@ function WithdrawalTable({ status }: { status: Status }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {withdrawals.map((withdrawal) => (
+        {withdrawals.map((withdrawal) => {
+          const user = usersMap.get(withdrawal.userId);
+          return (
           <TableRow key={withdrawal.id}>
             <TableCell>
-              <div className="font-medium font-mono text-xs">{withdrawal.userId}</div>
+              <div className="font-medium">{user?.name || 'مستخدم غير معروف'}</div>
+              <div className="font-mono text-xs text-muted-foreground">{withdrawal.userId}</div>
             </TableCell>
             <TableCell>${withdrawal.amount.toFixed(2)}</TableCell>
             <TableCell>{withdrawal.method}</TableCell>
@@ -168,7 +176,7 @@ function WithdrawalTable({ status }: { status: Status }) {
               </TableCell>
             )}
           </TableRow>
-        ))}
+        )})}
       </TableBody>
     </Table>
   )

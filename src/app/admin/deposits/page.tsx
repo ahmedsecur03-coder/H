@@ -12,7 +12,7 @@ import {
   orderBy,
   Query
 } from 'firebase/firestore';
-import type { Deposit } from '@/lib/types';
+import type { Deposit, User } from '@/lib/types';
 
 import {
   Card,
@@ -56,6 +56,10 @@ function DepositTable({ status }: { status: Status }) {
     },
     [firestore, status]
   );
+  
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
+  const { data: usersData } = useCollection<User>(usersQuery);
+  const usersMap = useMemo(() => usersData ? new Map(usersData.map(u => [u.id, u])) : new Map(), [usersData]);
 
   const { data: deposits, isLoading } = useCollection<Deposit>(depositsQuery);
 
@@ -100,7 +104,7 @@ function DepositTable({ status }: { status: Status }) {
        <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>معرف المستخدم</TableHead>
+              <TableHead>المستخدم</TableHead>
               <TableHead>المبلغ</TableHead>
               <TableHead>طريقة الدفع</TableHead>
               <TableHead>التفاصيل</TableHead>
@@ -133,7 +137,7 @@ function DepositTable({ status }: { status: Status }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>معرف المستخدم</TableHead>
+          <TableHead>المستخدم</TableHead>
           <TableHead>المبلغ</TableHead>
           <TableHead>طريقة الدفع</TableHead>
           <TableHead>التفاصيل</TableHead>
@@ -142,10 +146,13 @@ function DepositTable({ status }: { status: Status }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {deposits.map((deposit) => (
+        {deposits.map((deposit) => {
+          const user = usersMap.get(deposit.userId);
+          return (
           <TableRow key={deposit.id}>
             <TableCell>
-              <div className="font-medium font-mono text-xs">{deposit.userId}</div>
+              <div className="font-medium">{user?.name || 'مستخدم غير معروف'}</div>
+              <div className="font-mono text-xs text-muted-foreground">{deposit.userId}</div>
             </TableCell>
             <TableCell>${deposit.amount.toFixed(2)}</TableCell>
             <TableCell>{deposit.paymentMethod}</TableCell>
@@ -170,7 +177,7 @@ function DepositTable({ status }: { status: Status }) {
               </TableCell>
             )}
           </TableRow>
-        ))}
+        )})}
       </TableBody>
     </Table>
   )

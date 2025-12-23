@@ -13,6 +13,7 @@ import { Search, Shield } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { EditUserDialog } from './_components/edit-user-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function AdminUsersPage() {
   const firestore = useFirestore();
@@ -58,8 +59,16 @@ export default function AdminUsersPage() {
     return filteredUsers.map((user) => (
       <TableRow key={user.id}>
         <TableCell>
-          <div className="font-medium">{user.name}</div>
-          <div className="text-sm text-muted-foreground">{user.email}</div>
+          <div className="flex items-center gap-3">
+             <Avatar className="h-9 w-9">
+                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+             <div>
+                <div className="font-medium">{user.name}</div>
+                <div className="text-sm text-muted-foreground">{user.email}</div>
+             </div>
+          </div>
         </TableCell>
         <TableCell>
             <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>

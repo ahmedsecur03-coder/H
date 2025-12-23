@@ -6,12 +6,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Gift, Loader2 } from 'lucide-react';
-import { claimDailyReward } from '@/lib/actions';
 import type { User as UserType } from '@/lib/types';
+import { useFirestore, useUser } from '@/firebase';
+import { doc, runTransaction } from 'firebase/firestore';
 
 
 export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: () => void }) {
     const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user: authUser } = useUser();
     const [isClaiming, setIsClaiming] = useState(false);
     const [timeLeft, setTimeLeft] = useState('');
 
@@ -47,9 +50,33 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
     }, [canClaim, user.lastRewardClaimedAt]);
 
     const handleClaim = async () => {
+        if (!firestore || !authUser) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'لا يمكن المطالبة بالمكافأة. حاول تسجيل الدخول مرة أخرى.' });
+            return;
+        }
         setIsClaiming(true);
+        const userRef = doc(firestore, 'users', authUser.uid);
+        
         try {
-            await claimDailyReward(user.id);
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) {
+                    throw new Error("المستخدم غير موجود.");
+                }
+
+                const userData = userDoc.data() as UserType;
+                const lastClaimed = userData.lastRewardClaimedAt ? new Date(userData.lastRewardClaimedAt).getTime() : 0;
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+
+                if (Date.now() - lastClaimed < twentyFourHours) {
+                    throw new Error("لقد حصلت على مكافأتك بالفعل اليوم. عد غدًا!");
+                }
+                const newAdBalance = (userData.adBalance || 0) + 1;
+                transaction.update(userRef, { 
+                    adBalance: newAdBalance,
+                    lastRewardClaimedAt: new Date().toISOString() 
+                });
+            });
             toast({ title: '🎉 تم بنجاح!', description: 'تمت إضافة 1$ لرصيد إعلاناتك!' });
             onClaim();
         } catch (error: any) {
@@ -78,5 +105,3 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
         </Card>
     );
 }
-
-    
