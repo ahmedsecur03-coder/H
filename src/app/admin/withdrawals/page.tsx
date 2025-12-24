@@ -81,12 +81,13 @@ function WithdrawalTable({ status }: { status: Status }) {
 
     try {
       await runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) {
+            throw new Error('المستخدم غير موجود.');
+        }
+        const userData = userDoc.data() as User;
+        
         if (newStatus === 'مقبول') {
-           const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) {
-                throw new Error('المستخدم غير موجود.');
-            }
-            const userData = userDoc.data() as User;
             const currentEarnings = userData.affiliateEarnings ?? 0;
             if (currentEarnings < withdrawal.amount) {
                 throw new Error('رصيد أرباح المستخدم غير كافٍ.');
@@ -105,7 +106,6 @@ function WithdrawalTable({ status }: { status: Status }) {
         description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.`,
       });
     } catch (error: any) {
-        toast({ variant: 'destructive', title: 'خطأ في المعاملة', description: error.message });
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',

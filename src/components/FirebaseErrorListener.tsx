@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,19 +6,27 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import type { SystemLog } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 
 export function FirebaseErrorListener() {
   const firestore = useFirestore();
   const { user } = useUser();
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleError = (err: FirestorePermissionError) => {
-      // Log the detailed error to the console instead of throwing it.
-      // This prevents the Next.js error overlay from appearing.
+      // Log the detailed error to the console for debugging
       console.error("Firestore Permission Error Caught:", err);
       
-      // Optionally, still log to the backend for monitoring purposes
+      // Show a user-friendly toast notification
+      toast({
+        variant: 'destructive',
+        title: 'خطأ في الصلاحيات',
+        description: 'فشلت العملية بسبب عدم وجود صلاحيات كافية.',
+      });
+      
+      // Log the error to the backend for monitoring purposes
       if (firestore) {
         const logData: Omit<SystemLog, 'id'> = {
             event: 'permission_denied',
@@ -48,8 +55,8 @@ export function FirebaseErrorListener() {
     return () => {
       errorEmitter.off('permission-error', handleError);
     };
-  }, [firestore, user]);
+  }, [firestore, user, toast]);
 
-  // This component no longer throws errors, so it doesn't render anything that could crash the app.
+  // This component does not render anything.
   return null;
 }

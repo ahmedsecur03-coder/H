@@ -13,7 +13,9 @@ import {
   collection,
   getDocs,
   limit,
-  arrayUnion
+  arrayUnion,
+  increment,
+  Timestamp,
 } from 'firebase/firestore';
 import type { Deposit, User } from '@/lib/types';
 
@@ -91,29 +93,30 @@ function DepositTable({ status }: { status: Status }) {
     const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
 
     try {
-      await runTransaction(firestore, async (transaction) => {
-        let userUpdates: any = {};
-        
-        if (newStatus === 'مقبول') {
+        await runTransaction(firestore, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
             if (!userDoc.exists()) {
                 throw new Error('المستخدم غير موجود.');
             }
-            const currentBalance = userDoc.data().balance ?? 0;
-            userUpdates.balance = currentBalance + deposit.amount;
-            userUpdates.notifications = arrayUnion({
-                id: `dep-${deposit.id}`,
-                message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
-                type: 'success',
-                read: false,
-                createdAt: new Date().toISOString(),
-                href: '/dashboard/add-funds'
-            });
-            transaction.update(userDocRef, userUpdates);
-        }
-        
-        transaction.update(depositDocRef, { status: newStatus });
-      });
+
+            let userUpdates: any = {};
+            
+            if (newStatus === 'مقبول') {
+                const currentBalance = userDoc.data().balance ?? 0;
+                userUpdates.balance = currentBalance + deposit.amount;
+                userUpdates.notifications = arrayUnion({
+                    id: `dep-${deposit.id}`,
+                    message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+                    type: 'success',
+                    read: false,
+                    createdAt: new Date().toISOString(),
+                    href: '/dashboard/add-funds'
+                });
+                transaction.update(userDocRef, userUpdates);
+            }
+            
+            transaction.update(depositDocRef, { status: newStatus });
+        });
       
       setDeposits(prev => prev.filter(d => d.id !== deposit.id));
 
@@ -122,14 +125,11 @@ function DepositTable({ status }: { status: Status }) {
         description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
       });
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'فشل الإجراء',
-            description: error.message || 'حدث خطأ غير متوقع أثناء تحديث الطلب.'
-        });
+        let errorData = newStatus === 'مقبول' ? { balance: '...', notifications: '...' } : { status: newStatus };
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path, // The primary document being operated on
             operation: 'update',
+            requestResourceData: errorData 
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
