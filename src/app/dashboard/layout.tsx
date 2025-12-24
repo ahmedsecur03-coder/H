@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -125,7 +126,6 @@ export default function DashboardLayout({
       )
     }
   
-    // For development, all users are admins.
     const isAdmin = true;
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
