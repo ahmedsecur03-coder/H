@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useAuth } from '@/firebase';
@@ -102,7 +103,7 @@ export default function LoginForm() {
             </form>
              <p className="text-center text-sm text-muted-foreground">
                 ليس لديك حساب؟{' '}
-                <Link href="/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
+                <Link href="/auth/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
                     إنشاء حساب
                 </Link>
             </p>

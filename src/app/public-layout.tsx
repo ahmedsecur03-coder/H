@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -144,13 +145,13 @@ function Header() {
               ) : (
                   <>
                   <Button variant="ghost" asChild>
-                      <Link href="/login">
+                      <Link href="/auth/login">
                       <LogIn className="me-2" />
                       دخول
                       </Link>
                   </Button>
                   <Button asChild>
-                      <Link href="/signup">
+                      <Link href="/auth/signup">
                       <UserPlus className="me-2" />
                       ابدأ الآن
                       </Link>
@@ -191,12 +192,12 @@ function Header() {
                       <div className="space-y-2">
                         <SheetClose asChild>
                            <Button asChild className="w-full">
-                              <Link href="/signup"><UserPlus className="me-2" />ابدأ الآن</Link>
+                              <Link href="/auth/signup"><UserPlus className="me-2" />ابدأ الآن</Link>
                           </Button>
                         </SheetClose>
                          <SheetClose asChild>
                           <Button variant="ghost" asChild className="w-full">
-                              <Link href="/login"><LogIn className="me-2" />دخول</Link>
+                              <Link href="/auth/login"><LogIn className="me-2" />دخول</Link>
                           </Button>
                         </SheetClose>
                       </div>

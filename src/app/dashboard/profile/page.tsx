@@ -7,6 +7,7 @@ import { ProfileClientPage } from './_components/profile-client-page';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
+import { Card } from '@/components/ui/card';
 
 function ProfilePageSkeleton() {
     return (
@@ -53,7 +54,7 @@ export default function ProfilePage() {
     }
     
     if (!authUser || !userData) {
-       redirect('/login');
+       redirect('/auth/login');
     }
     
     return <ProfileClientPage userData={{...userData, id: authUser.uid}} onUpdate={forceDocUpdate} />;

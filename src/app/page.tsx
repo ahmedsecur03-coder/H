@@ -138,7 +138,7 @@ export default function HomePage() {
   const { user, isUserLoading } = useUser();
 
   const primaryAction = {
-    href: isUserLoading ? "#" : user ? "/dashboard" : "/signup",
+    href: isUserLoading ? "#" : user ? "/dashboard" : "/auth/signup",
     label: isUserLoading ? "..." : user ? "الذهاب للوحة التحكم" : "انطلق الآن",
     icon: isUserLoading ? Loader2 : user ? LayoutDashboard : Rocket
   }

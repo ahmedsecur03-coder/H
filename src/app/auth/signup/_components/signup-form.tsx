@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
@@ -182,7 +183,7 @@ export default function SignupForm() {
             </form>
              <p className="text-center text-sm text-muted-foreground">
                 لديك حساب بالفعل؟{' '}
-                <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+                <Link href="/auth/login" className="font-semibold text-primary underline-offset-4 hover:underline">
                     تسجيل الدخول
                 </Link>
             </p>
