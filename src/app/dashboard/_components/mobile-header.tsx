@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Logo from "@/components/logo"
@@ -11,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { UserNav } from "../_components/user-nav";
 import type { User as UserType } from '@/lib/types';
 import { useTranslation } from "react-i18next";
+import { Notifications } from "@/components/notifications";
 
 export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData: UserType }) {
     const { t } = useTranslation();
@@ -63,7 +65,8 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="ms-auto">
+          <div className="ms-auto flex items-center gap-2">
+             <Notifications userData={userData} />
              <UserNav user={appUser} isAdmin={isAdmin} />
           </div>
         </header>

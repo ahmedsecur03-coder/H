@@ -13,7 +13,8 @@ import {
   Query,
   collection,
   getDocs,
-  limit
+  limit,
+  arrayUnion
 } from 'firebase/firestore';
 import type { Deposit, User } from '@/lib/types';
 
@@ -94,16 +95,27 @@ function DepositTable({ status }: { status: Status }) {
 
     try {
       await runTransaction(firestore, async (transaction) => {
+        const userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists()) {
+            throw new Error('المستخدم غير موجود.');
+        }
+
+        const updates: any = {};
         if (newStatus === 'مقبول') {
-           const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) {
-                throw new Error('المستخدم غير موجود.');
-            }
             const currentBalance = userDoc.data().balance ?? 0;
             const newBalance = currentBalance + deposit.amount;
-            transaction.update(userDocRef, { balance: newBalance });
+            updates.balance = newBalance;
+            updates.notifications = arrayUnion({
+              id: `dep-${deposit.id}`,
+              message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+              type: 'success',
+              read: false,
+              createdAt: new Date().toISOString(),
+              href: '/dashboard/add-funds'
+            });
         }
         
+        transaction.update(userDocRef, updates);
         transaction.update(depositDocRef, { status: newStatus });
       });
       

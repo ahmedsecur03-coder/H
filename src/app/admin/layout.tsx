@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from 'next/link';
@@ -27,15 +28,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { LanguageToggle } from '@/components/language-toggle';
+import { Notifications } from '@/components/notifications';
 
 
-function AdminHeader() {
-  const { user } = useUser();
+function AdminHeader({ userData }: { userData: User }) {
   const adminUser = {
-    name: user?.displayName || "Admin",
-    email: user?.email || "admin@example.com",
-    avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
-    id: user?.uid || 'N/A'
+    name: userData.name || "Admin",
+    email: userData.email || "admin@example.com",
+    avatarUrl: userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.id}`,
+    id: userData.id || 'N/A'
   };
 
   return (
@@ -43,10 +44,7 @@ function AdminHeader() {
         <SidebarTrigger className="md:hidden" />
         <div className="ms-auto flex items-center gap-4">
              <LanguageToggle />
-             <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5"/>
-                <span className="sr-only">Notifications</span>
-             </Button>
+             <Notifications userData={userData} />
             <UserNav user={adminUser} isAdmin={true} />
         </div>
     </header>
@@ -112,7 +110,7 @@ export default function AdminLayout({
   }, [user, isAdmin, isLoading, router]);
 
 
-  if (isLoading || !isAdmin) {
+  if (isLoading || !isAdmin || !userData) {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden w-64 border-e bg-muted/40 p-4 md:block">
@@ -159,7 +157,7 @@ export default function AdminLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
-        <AdminHeader />
+        <AdminHeader userData={userData} />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
         </main>

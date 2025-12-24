@@ -43,9 +43,9 @@ service cloud.firestore {
     }
 
     function canUpdateUserProfile(requestData, resourceData) {
-        // User can only update these specific fields.
-        let allowedFields = ['name', 'avatarUrl', 'notificationPreferences'];
-        // Admins can update any field.
+        // User can only update their own name, avatar, and notification preferences.
+        // Admins can update any user field.
+        let allowedFields = ['name', 'avatarUrl', 'notificationPreferences', 'notifications'];
         return (isUser(request.auth.uid) && requestData.keys().hasOnly(allowedFields)) || isAdmin();
     }
     
@@ -109,7 +109,8 @@ service cloud.firestore {
       
       allow create: if isUser(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'user';
       
-      allow update: if (isUser(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatarUrl', 'notificationPreferences']))
+      // Allow users to update a specific set of their own fields, or admins to update any.
+      allow update: if (isUser(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatarUrl', 'notificationPreferences', 'notifications']))
                     || isAdmin();
 
       allow delete: if isAdmin();

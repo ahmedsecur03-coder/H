@@ -86,6 +86,13 @@
                 "newsletter": { "type": "boolean" },
                 "orderUpdates": { "type": "boolean" }
             }
+        },
+        "notifications": {
+            "type": "array",
+            "description": "A list of user notifications.",
+            "items": {
+                "$ref": "#/entities/Notification"
+            }
         }
       },
       "required": [
@@ -100,6 +107,21 @@
         "referralCode",
         "createdAt"
       ]
+    },
+    "Notification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Notification",
+        "type": "object",
+        "description": "Represents an in-app notification for a user.",
+        "properties": {
+            "id": { "type": "string" },
+            "message": { "type": "string" },
+            "type": { "type": "string", "enum": ["info", "success", "warning", "error"] },
+            "read": { "type": "boolean" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "href": { "type": "string", "description": "Optional link for the notification." }
+        },
+        "required": ["id", "message", "type", "read", "createdAt"]
     },
     "Service": {
       "$schema": "http://json-schema.org/draft-07/schema#",

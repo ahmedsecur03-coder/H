@@ -26,7 +26,7 @@ import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
 import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
-import { ChevronDown, Shield } from 'lucide-react';
+import { ChevronDown, Shield, Bell } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
@@ -37,6 +37,7 @@ import { LanguageToggle } from '@/components/language-toggle';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Notifications } from '@/components/notifications';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const { t } = useTranslation();
@@ -54,6 +55,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
         <div className="ms-auto flex items-center gap-2 font-body">
              <ThemeToggle />
              <LanguageToggle />
+             <Notifications userData={userData} />
              {isAdmin && (
                 <Button variant="outline" size="sm" asChild>
                     <Link href="/admin/dashboard">

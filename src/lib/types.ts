@@ -1,5 +1,14 @@
 
 
+export type Notification = {
+  id: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  createdAt: string;
+  href?: string;
+}
+
 export type User = {
   id: string;
   name: string;
@@ -22,6 +31,7 @@ export type User = {
     newsletter?: boolean;
     orderUpdates?: boolean;
   };
+  notifications?: Notification[];
 };
 
 export type Service = {

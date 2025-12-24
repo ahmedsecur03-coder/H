@@ -1,6 +1,7 @@
 
-import type { User, Order, BlogPost } from '@/lib/types';
-import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc } from 'firebase/firestore';
+
+import type { User, Order, BlogPost, Notification } from '@/lib/types';
+import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc, arrayUnion } from 'firebase/firestore';
 
 
 export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number }[] = [
@@ -69,14 +70,6 @@ export async function processOrderInTransaction(
         throw new Error("رصيدك غير كافٍ لإتمام هذا الطلب.");
     }
 
-    // This function will now be much simpler. It prepares the data
-    // and the core logic is handled by the server-side equivalent,
-    // which we will now create/update.
-    // For the client-side, we just need to ensure the balance is deducted
-    // and the order is created. The complex logic (ranks, affiliate)
-    // is better handled server-side for consistency with API orders.
-
-    // 1. Update user's balance and total spent
     const newBalance = userData.balance - cost;
     const newTotalSpent = userData.totalSpent + cost;
     const oldRank = getRankForSpend(userData.totalSpent);
@@ -88,7 +81,7 @@ export async function processOrderInTransaction(
     };
     
     let promotion: { title: string; description: string } | null = null;
-    // 2. Check for rank promotion
+    
     if (newRank.name !== oldRank.name) {
         userUpdates.rank = newRank.name;
         if (newRank.reward > 0) {
@@ -97,6 +90,16 @@ export async function processOrderInTransaction(
                 title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
                 description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
             };
+            // Add a notification for the rank promotion
+            const rankUpNotification: Notification = {
+                id: `rank-${newRank.name}-${Date.now()}`,
+                message: `تهانينا! لقد تمت ترقيتك إلى رتبة ${newRank.name} وحصلت على ${newRank.reward}$ مكافأة.`,
+                type: 'success',
+                read: false,
+                createdAt: new Date().toISOString(),
+                href: '/dashboard/profile'
+            };
+            userUpdates.notifications = arrayUnion(rankUpNotification);
         }
     }
     
