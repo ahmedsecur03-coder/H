@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ import {
   SheetClose
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useTranslation } from 'react-i18next';
 
 
 const ListItem = React.forwardRef<
@@ -62,6 +64,7 @@ ListItem.displayName = "ListItem"
 
 
 function Header() {
+  const { t } = useTranslation();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const pathname = usePathname();
@@ -107,12 +110,12 @@ function Header() {
                 <NavigationMenuItem key={item.label}>
                   {item.children ? (
                     <>
-                      <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
+                      <NavigationMenuTrigger>{t(item.label)}</NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                           {item.children.map((component) => (
-                             <ListItem key={component.label} href={component.href} title={component.label}>
-                               {component.description}
+                             <ListItem key={component.label} href={component.href} title={t(component.label)}>
+                               {t(component.description || '')}
                              </ListItem>
                           ))}
                         </ul>
@@ -121,7 +124,7 @@ function Header() {
                   ) : (
                     <NavigationMenuLink asChild active={pathname === item.href} className={navigationMenuTriggerStyle()}>
                         <Link href={item.href || '#'}>
-                            {item.label}
+                            {t(item.label)}
                         </Link>
                     </NavigationMenuLink>
                   )}
@@ -139,7 +142,7 @@ function Header() {
               ) : user ? (
                   <>
                   <Button asChild>
-                      <Link href="/dashboard">Dashboard</Link>
+                      <Link href="/dashboard">{t('header.dashboard')}</Link>
                   </Button>
                   {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
                   </>
@@ -148,13 +151,13 @@ function Header() {
                   <Button variant="ghost" asChild>
                       <Link href="/login">
                       <LogIn className="me-2" />
-                      Login
+                      {t('header.login')}
                       </Link>
                   </Button>
                   <Button asChild>
                       <Link href="/signup">
                       <UserPlus className="me-2" />
-                      Get Started
+                      {t('header.getStarted')}
                       </Link>
                   </Button>
                   </>
@@ -176,7 +179,7 @@ function Header() {
                 <div className="flex flex-col space-y-4 py-6">
                   {publicNavItems.map(item => (
                      <SheetClose asChild key={item.label}>
-                      <Link href={item.href || '#'} className="text-lg font-medium hover:text-primary">{item.label}</Link>
+                      <Link href={item.href || '#'} className="text-lg font-medium hover:text-primary">{t(item.label)}</Link>
                     </SheetClose>
                   ))}
                 </div>
@@ -186,18 +189,18 @@ function Header() {
                         <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
                     ) : user ? (
                          <Button asChild className="w-full">
-                            <Link href="/dashboard">Dashboard</Link>
+                            <Link href="/dashboard">{t('header.dashboard')}</Link>
                         </Button>
                     ) : (
                       <div className="space-y-2">
                         <SheetClose asChild>
                            <Button asChild className="w-full">
-                              <Link href="/signup"><UserPlus className="me-2" />Get Started</Link>
+                              <Link href="/signup"><UserPlus className="me-2" />{t('header.getStarted')}</Link>
                           </Button>
                         </SheetClose>
                          <SheetClose asChild>
                           <Button variant="ghost" asChild className="w-full">
-                              <Link href="/login"><LogIn className="me-2" />Login</Link>
+                              <Link href="/login"><LogIn className="me-2" />{t('header.login')}</Link>
                           </Button>
                         </SheetClose>
                       </div>
@@ -219,6 +222,7 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
        <Header />
@@ -229,10 +233,10 @@ export default function PublicLayout({
       </main>
       <footer className="bg-card/50 border-t border-border z-10">
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
-            <p className="text-sm text-muted-foreground">&copy; 2024 Hajaty. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {t('footer.rightsReserved')}</p>
             <nav className="flex gap-4 sm:gap-6">
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">Terms of Service</Link>
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">Privacy Policy</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">{t('footer.terms')}</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">{t('footer.privacy')}</Link>
             </nav>
         </div>
       </footer>

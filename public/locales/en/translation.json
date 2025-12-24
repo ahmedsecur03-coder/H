@@ -1,321 +1,98 @@
+
 {
+    "getStarted": "Get Started",
+    "login": "Login",
+    "dashboard": "Dashboard",
     "home": "Home",
     "services": "Services",
     "blog": "Blog",
-    "login": "Login",
-    "getStarted": "Get Started",
-    "goToAdminPanel": "Go to Admin Panel",
-    "page": "Page",
-    "details": "Details",
-    "backToList": "Back to List",
+    "contact": "Contact",
+    "rightsReserved": "All rights reserved. Hajaty © 2024",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
     "edit": "Edit",
-    "saveChanges": "Save Changes",
+    "delete": "Delete",
+    "details": "Details",
     "retry": "Retry",
-    "processing": "Processing...",
     "loading": "Loading...",
-    "success": "Success!",
     "error": "Error",
-    "dashboard": {
-        "welcome": "Welcome, {{name}}!",
-        "welcomeSubtitle": "Here’s a quick summary of your account. Go ahead and explore our services.",
-        "mainBalance": "Main Balance",
-        "adBalance": "Ad Balance",
-        "totalSpent": "Total Spent",
-        "yourRank": "Your Cosmic Rank",
-        "discount": "{{discount}}% Discount",
-        "last5Orders": "Last 5 Orders",
-        "service": "Service",
-        "status": "Status",
-        "achievements": "Cosmic Achievements",
-        "achievementsCompleted": "Completed {{completed}} of {{total}} achievements",
-        "welcomeAlertTitle": "Welcome to the Hajaty Galaxy, {{name}}!",
-        "welcomeAlertDesc": "You haven't placed any orders yet. Explore our services or add funds to start your journey.",
-        "exploreServices": "Explore Services",
+    "success": "Success",
+    "processing": "Processing...",
+    "backToList": "Back to List",
+    "nav": {
+        "home": "Home",
+        "services": {
+            "title": "Services",
+            "smm": "All SMM Services",
+            "smmDesc": "Browse all our social media marketing services.",
+            "campaigns": "Ad Campaigns",
+            "campaignsDesc": "Manage your campaigns on Google, Facebook, and TikTok.",
+            "agency": "Agency Accounts",
+            "agencyDesc": "Purchase and manage powerful, trusted high-spending accounts.",
+            "design": "Web & App Design",
+            "designDesc": "Request a professional website or app design. (Soon)"
+        },
+        "blog": "Blog",
+        "dashboard": "Dashboard",
+        "analytics": "Analytics",
         "addFunds": "Add Funds",
-        "dealOfTheDay": "Deal of the Day",
-        "per1000": "/ per 1000",
-        "orderNow": "Order Now"
+        "orders": {
+            "title": "Orders",
+            "history": "Order History",
+            "massOrder": "Mass Order"
+        },
+        "campaigns": {
+            "title": "Ad Campaigns",
+            "manage": "Manage Campaigns",
+            "agency": "My Agency Accounts"
+        },
+        "affiliate": "Affiliate Program",
+        "support": "Support",
+        "account": {
+            "title": "Account",
+            "profile": "Profile",
+            "settings": "Settings",
+            "api": "API"
+        },
+        "systemStatus": "System Status"
     },
-    "orderStatus": {
-        "مكتمل": "Completed",
-        "قيد التنفيذ": "Processing",
-        "ملغي": "Canceled",
-        "جزئي": "Partial"
+    "header": {
+        "dashboard": "Dashboard",
+        "login": "Login",
+        "getStarted": "Get Started"
+    },
+    "footer": {
+        "rightsReserved": "All rights reserved. Hajaty",
+        "terms": "Terms of Service",
+        "privacy": "Privacy Policy"
     },
     "ranks": {
         "مستكشف نجمي": "Stellar Explorer",
         "قائد صاروخي": "Rocket Commander",
-        "سيد المجرة": "Galactic Master",
+        "سيد المجرة": "Galaxy Master",
         "سيد كوني": "Cosmic Overlord"
-    },
-    "achievements": {
-        "rocketMan": "Rocket Man",
-        "trustedUser": "Trusted User",
-        "orderMaster": "Order Master",
-        "risingStar": "Rising Star",
-        "spendingKing": "Spending King",
-        "specialAgent": "Special Agent",
-        "cosmicLegend": "Cosmic Legend",
-        "networker": "Networker"
-    },
-    "mobileHeader": {
-        "navDescription": "Navigate through your account and features from here."
-    },
-    "quickOrderForm": {
-        "title": "Quick Order",
-        "description": "Place your order quickly and easily.",
-        "platformPlaceholder": "Select Platform",
-        "categoryPlaceholder": "Select Category",
-        "servicePlaceholder": "Select Service",
-        "linkPlaceholder": "Enter link here",
-        "quantityPlaceholder": "Quantity",
-        "finalCost": "Final Cost",
-        "originalCost": "Original Cost",
-        "discountApplied": "{{discount}}% discount applied for {{rankName}} rank!",
-        "submitButton": "Submit Order",
-        "fillAllFieldsError": "Please fill all fields and select a service.",
-        "quantityErrorTitle": "Quantity Error",
-        "quantityErrorDesc": "Quantity must be between {{min}} and {{max}}.",
-        "insufficientFundsTitle": "Insufficient Funds",
-        "insufficientFundsDesc": "Your balance (${{balance}}) is not enough to cover the order cost (${{cost}}).",
-        "submitErrorTitle": "Order Submission Failed",
-        "successTitle": "Order Received!",
-        "successDesc": "Your order is now being processed."
-    },
-    "userNav": {
-        "dashboard": "Dashboard",
-        "profile": "Profile",
-        "adminPanel": "Admin Panel",
-        "signOut": "Sign Out",
-        "signOutSuccessTitle": "Signed Out",
-        "signOutSuccessDesc": "See you soon!",
-        "signOutError": "Failed to sign out. Please try again."
-    },
-    "ordersPage": {
-        "title": "Order History",
-        "description": "View your order history and track their status.",
-        "searchPlaceholder": "Search by ID, service, or link...",
-        "statusFilterPlaceholder": "Filter by status",
-        "allStatuses": "All Statuses",
-        "table": {
-            "id": "ID",
-            "service": "Service",
-            "link": "Link",
-            "quantity": "Quantity",
-            "status": "Status",
-            "date": "Date",
-            "cost": "Cost"
-        },
-        "noMatchTitle": "No Orders Match Your Search",
-        "noMatchDescription": "Try adjusting your search terms or changing the filters.",
-        "resetFilters": "Reset Filters"
-    },
-    "pagination": {
-        "previous": "Previous",
-        "next": "Next"
-    },
-    "massOrder": {
-        "title": "Mass Order",
-        "description": "Add multiple orders at once to save time.",
-        "inputTitle": "Mass Order Format",
-        "inputDescription": "Place each order on a new line in the following format:",
-        "example": "Example",
-        "discountNote": "Your {{rankName}} rank discount of {{discount}}% will be applied automatically.",
-        "emptyFieldError": "The mass order field is empty.",
-        "dataLoadingError": "Cannot process order while data is loading.",
-        "submitButton": "Submit Orders",
-        "resultsTitle": "Mass Order Results",
-        "errors": {
-            "invalidFormat": "Invalid format. Must be service_id|link|quantity.",
-            "serviceNotFound": "Service not found.",
-            "invalidQuantity": "Invalid quantity.",
-            "quantityOutOfBounds": "Quantity is out of allowed bounds (Min: {{min}}, Max: {{max}}).",
-            "noValidOrders": "No valid orders were found to process.",
-            "insufficientFunds": "Insufficient funds. Total cost (${{totalCost}}) exceeds your balance (${{balance}}).",
-            "permissionError": "Permission error while processing orders.",
-            "batchSubmitError": "Batch order submission failed."
-        },
-        "line": "Line",
-        "results": {
-            "fullSuccess": "Full Success!",
-            "fullSuccessDesc": "All your orders have been received and are being processed.",
-            "partialSuccessTitle": "Partial Success",
-            "partialSuccessDesc": "Some of your orders were processed successfully. Please review the errors below.",
-            "fullFailureDesc": "All orders failed to process. Please review the errors below.",
-            "successCount": "Successful Orders",
-            "errorCount": "Failed Orders",
-            "totalCost": "Total Cost",
-            "errorDetails": "Error Details"
-        }
-    },
-    "api": {
-        "title": "API",
-        "description": "Automate your orders by integrating our services directly into your applications.",
-        "endpoints": {
-            "title": "Endpoint",
-            "description": "All requests should be sent as a POST request with a JSON body to the following URL:"
-        },
-        "actions": {
-            "title": "Available Actions",
-            "add": {
-                "title": "Add Order (add)",
-                "description": "Use this action to place a new order.",
-                "params": {
-                    "key": "Your API key.",
-                    "action": "Value must be 'add'.",
-                    "service": "The service ID.",
-                    "link": "The target link.",
-                    "quantity": "The desired quantity."
-                }
-            },
-            "status": {
-                "title": "Order Status (status)",
-                "description": "Use this action to check the status of a specific order.",
-                "params": {
-                    "key": "Your API key.",
-                    "action": "Value must be 'status'.",
-                    "order": "The order ID returned upon creation."
-                }
-            },
-            "services": {
-                "title": "Services List (services)",
-                "description": "Use this action to get a list of all available services."
-            },
-            "balance": {
-                "title": "Balance (balance)",
-                "description": "Use this action to check your current account balance."
-            }
-        },
-        "parameters": "Parameters",
-        "parameter": "Parameter",
-        "responses": {
-            "title": "Responses",
-            "description": "All responses are in JSON format.",
-            "response": "Response",
-            "addSuccess": "On success, returns the order ID.",
-            "statusSuccess": "On success, returns the order status details.",
-            "servicesSuccess": "On success, returns an array of service objects.",
-            "balanceSuccess": "On success, returns the balance and currency.",
-            "errorIncorrect": "Incorrect request (e.g., missing parameter).",
-            "errorFunds": "Not enough funds.",
-            "errorKey": "Invalid API key."
-        }
-    },
-    "profile": {
-        "title": "Profile",
-        "description": "View and update your account information.",
-        "rank": "Rank",
-        "referralCode": "Referral Code",
-        "userId": "User ID",
-        "personalInfo": {
-            "title": "Personal Information",
-            "name": "Name",
-            "namePlaceholder": "Your full name",
-            "avatarUrl": "Avatar URL"
-        },
-        "password": {
-            "title": "Change Password",
-            "current": "Current Password",
-            "new": "New Password",
-            "submitButton": "Update Password",
-            "toast": {
-                "success": "Password updated successfully.",
-                "fail": "Failed to update password.",
-                "wrongPassword": "The current password you entered is incorrect.",
-                "tooManyRequests": "Too many requests. Please try again later."
-            }
-        },
-        "update": {
-            "toast": {
-                "pending": "Updating profile...",
-                "proxyErrorTitle": "Image Processing Error",
-                "success": "Your profile has been updated successfully."
-            }
-        }
-    },
-    "avatarGenerator": {
-        "title": "AI Avatar Generator",
-        "description": "Describe your desired avatar, and our AI will generate a unique one for you.",
-        "promptLabel": "Image Prompt",
-        "promptPlaceholder": "e.g., An astronaut in a futuristic suit",
-        "placeholder": "Your generated image will appear here.",
-        "generateButton": "Generate Avatar",
-        "useThisImage": "Use This Image",
-        "toast": {
-            "generating": "Generating avatar...",
-            "generationFailed": "Avatar Generation Failed"
-        },
-        "errors": {
-            "promptRequired": "Please enter an image prompt.",
-            "noImage": "No image was returned from the generator."
-        }
-    },
-    "adminUsers": {
-        "title": "User Management",
-        "description": "View, edit, and search all user accounts in the system.",
-        "searchPlaceholder": "Search by email, name, or ID...",
-        "noMatch": "No users match your search.",
-        "table": {
-            "user": "User",
-            "role": "Role",
-            "rank": "Rank",
-            "balance": "Balance",
-            "adBalance": "Ad Balance",
-            "totalSpent": "Total Spent",
-            "joinDate": "Join Date",
-            "actions": "Actions"
-        }
     },
     "roles": {
         "user": "User",
         "admin": "Admin"
     },
-    "analytics": {
-        "title": "Account Analytics",
-        "description": "An in-depth look at your activity and spending over the last 30 days.",
-        "totalSpend30Days": "Total Spend (30d)",
-        "totalOrders30Days": "Total Orders (30d)",
-        "avgOrderValue": "Avg. Order Value",
-        "dailySpend": {
-            "title": "Daily Spend",
-            "description": "Your spending over the last 7 days."
-        },
-        "categorySpend": {
-            "title": "Spend by Category",
-            "description": "How your spending is distributed across service categories."
-        },
-        "noData": {
-            "title": "Not Enough Data",
-            "description": "Start placing some orders to see your analytics here."
-        }
+    "pagination": {
+        "previous": "Previous",
+        "next": "Next"
     },
-    "servicesPage": {
-        "title": "Service Catalog",
-        "description": "Browse all our available services with prices and details.",
-        "searchPlaceholder": "Search by ID or service name...",
-        "platformFilterPlaceholder": "Filter by platform",
-        "allPlatforms": "All Platforms",
-        "categoryFilterPlaceholder": "Filter by category",
-        "allCategories": "All Categories",
-        "table": {
-            "service": "Service",
-            "platform": "Platform",
-            "pricePer1000": "Price/1000",
-            "limits": "Limits (Min/Max)",
-            "action": "Action"
-        },
-        "serviceId": "Service ID",
-        "noDescription": "No description available for this service.",
-        "pricePer1000": "Price per 1000",
-        "avgTime": "Average Time",
-        "minOrder": "Min Order",
-        "maxOrder": "Max Order",
-        "orderThisService": "Order This Service"
-    },
-    "locale": "en-US",
     "theme": {
         "light": "Light",
         "dark": "Dark",
         "system": "System"
+    },
+    "goToAdminPanel": "Go to Admin Panel",
+    "orderStatus": {
+        "مكتمل": "Completed",
+        "قيد التنفيذ": "Processing",
+        "ملغي": "Canceled",
+        "جزئي": "Partial"
     }
 }

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import './globals.css';
@@ -37,7 +38,7 @@ function WhatsappSupportButton() {
   return (
     <Button
       asChild
-      className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 text-white hover:scale-110 transition-transform duration-300"
+      className="fixed bottom-6 end-6 z-50 h-14 w-14 rounded-full shadow-lg bg-green-500 hover:bg-green-600 text-white hover:scale-110 transition-transform duration-300"
     >
       <Link href={whatsappLink} target="_blank">
         <WhatsAppIcon className="h-7 w-7" />
