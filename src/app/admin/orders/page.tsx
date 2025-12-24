@@ -224,6 +224,36 @@ function AdminOrdersPageComponent() {
     return <OrdersPageSkeleton />;
   }
 
+  const OrderCard = ({ order }: { order: Order }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium truncate">{order.serviceName}</CardTitle>
+        <CardDescription className="font-mono text-xs">{order.id}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">الحالة</span>
+          <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">المستخدم</span>
+          <span className="font-mono text-xs">{order.userId}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">التكلفة</span>
+          <span className="font-semibold">${order.charge.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">الرابط</span>
+           <a href={order.link} className="text-primary hover:underline truncate block max-w-[150px]" target="_blank">{order.link}</a>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <OrderActions order={order} onOrderUpdate={fetchAllOrders} />
+      </CardFooter>
+    </Card>
+  );
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -261,76 +291,67 @@ function AdminOrdersPageComponent() {
       </Card>
 
       {isLoading && paginatedOrders.length === 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                    {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
+        </div>
       ) : paginatedOrders.length > 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>المعرف</TableHead>
-                  <TableHead>المستخدم</TableHead>
-                  <TableHead>الخدمة</TableHead>
-                  <TableHead>الرابط</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead className="text-right">التكلفة</TableHead>
-                  <TableHead className="text-right">إجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
-                    <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
-                    <TableCell className="font-medium">{order.serviceName}</TableCell>
-                    <TableCell><a href={order.link} className="text-primary hover:underline" target="_blank">{order.link}</a></TableCell>
-                    <TableCell>
-                        <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">
-                        <OrderActions order={order} onOrderUpdate={fetchAllOrders} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-           {pageCount > 1 && (
-             <CardFooter className="justify-center border-t pt-4">
+        <>
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
+                {paginatedOrders.map(order => <OrderCard key={order.id} order={order} />)}
+            </div>
+
+            {/* Desktop View */}
+            <Card className="hidden lg:block">
+            <CardContent className="p-0">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>المعرف</TableHead>
+                    <TableHead>المستخدم</TableHead>
+                    <TableHead>الخدمة</TableHead>
+                    <TableHead>الرابط</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-right">التكلفة</TableHead>
+                    <TableHead className="text-right">إجراءات</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {paginatedOrders.map((order) => (
+                    <TableRow key={order.id}>
+                        <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
+                        <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
+                        <TableCell className="font-medium">{order.serviceName}</TableCell>
+                        <TableCell><a href={order.link} className="text-primary hover:underline" target="_blank">{order.link}</a></TableCell>
+                        <TableCell>
+                            <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">
+                            <OrderActions order={order} onOrderUpdate={fetchAllOrders} />
+                        </TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </CardContent>
+            </Card>
+            {pageCount > 1 && (
                 <Pagination>
-                  <PaginationContent>
+                    <PaginationContent>
                     <PaginationItem>
-                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
+                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
                     </PaginationItem>
                     
                     {renderPaginationItems()}
 
                     <PaginationItem>
-                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
+                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
                     </PaginationItem>
-                  </PaginationContent>
+                    </PaginationContent>
                 </Pagination>
-            </CardFooter>
-           )}
-        </Card>
+            )}
+        </>
       ) : (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
             <CardHeader>

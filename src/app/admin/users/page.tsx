@@ -144,6 +144,40 @@ function AdminUsersPageComponent() {
     return <UsersPageSkeleton />;
   }
 
+    const UserCard = ({ user }: { user: User }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center gap-4">
+            <Avatar className="h-12 w-12">
+                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+                <CardTitle className="text-base">{user.name}</CardTitle>
+                <CardDescription className="text-xs">{user.email}</CardDescription>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+            <div className="flex justify-between">
+                <span className="text-muted-foreground">الرتبة</span>
+                <Badge variant="secondary">{user.rank}</Badge>
+            </div>
+            <div className="flex justify-between">
+                <span className="text-muted-foreground">الرصيد</span>
+                <span className="font-semibold">${(user.balance ?? 0).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+                <span className="text-muted-foreground">رصيد الإعلانات</span>
+                <span className="font-semibold">${(user.adBalance ?? 0).toFixed(2)}</span>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+                <Button variant="outline" size="sm" className="w-full">تعديل</Button>
+            </EditUserDialog>
+        </CardFooter>
+    </Card>
+  );
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -169,67 +203,74 @@ function AdminUsersPageComponent() {
               />
             </div>
         </CardHeader>
-        <CardContent className="p-0">
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>المستخدم</TableHead>
-                <TableHead>الدور</TableHead>
-                <TableHead>الرتبة</TableHead>
-                <TableHead>الرصيد</TableHead>
-                <TableHead>رصيد الإعلانات</TableHead>
-                <TableHead>إجمالي الإنفاق</TableHead>
-                <TableHead>تاريخ الانضمام</TableHead>
-                <TableHead className="text-right">إجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-                {isLoading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                            {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
-                        </TableRow>
-                    ))
-                ) : users.length > 0 ? users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                            <AvatarImage src={user.avatarUrl} alt={user.name} />
-                            <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-muted-foreground">{user.email}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
-                        {user.role === 'admin' ? <Shield className="w-3 h-3 me-1" /> : null}
-                        {user.role || 'user'}
-                        </Badge>
-                    </TableCell>
-                    <TableCell>
-                        <Badge variant="secondary">{user.rank}</Badge>
-                    </TableCell>
-                    <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
-                    <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
-                    <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
-                    <TableCell className="text-right">
-                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
-                            <Button variant="outline" size="sm">تعديل</Button>
-                        </EditUserDialog>
-                    </TableCell>
-                  </TableRow>
-                )) : (
-                     <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center">لم يتم العثور على مستخدمين.</TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-          </Table>
+        <CardContent className="p-0 md:p-6">
+            {isLoading ? (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                     {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-60" />)}
+                 </div>
+            ) : users.length > 0 ? (
+                <>
+                    {/* Mobile View */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4 p-4">
+                         {users.map((user) => <UserCard key={user.id} user={user} />)}
+                    </div>
+                    {/* Desktop View */}
+                    <div className="hidden md:block">
+                        <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead>المستخدم</TableHead>
+                                <TableHead>الدور</TableHead>
+                                <TableHead>الرتبة</TableHead>
+                                <TableHead>الرصيد</TableHead>
+                                <TableHead>رصيد الإعلانات</TableHead>
+                                <TableHead>إجمالي الإنفاق</TableHead>
+                                <TableHead>تاريخ الانضمام</TableHead>
+                                <TableHead className="text-right">إجراءات</TableHead>
+                            </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                <TableRow key={user.id}>
+                                    <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-9 w-9">
+                                            <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                            <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <div className="font-medium">{user.name}</div>
+                                            <div className="text-sm text-muted-foreground">{user.email}</div>
+                                        </div>
+                                    </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
+                                        {user.role === 'admin' ? <Shield className="w-3 h-3 me-1" /> : null}
+                                        {user.role || 'user'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">{user.rank}</Badge>
+                                    </TableCell>
+                                    <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
+                                    <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
+                                    <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
+                                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
+                                    <TableCell className="text-right">
+                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+                                            <Button variant="outline" size="sm">تعديل</Button>
+                                        </EditUserDialog>
+                                    </TableCell>
+                                </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                 </>
+            ) : (
+                <div className="h-24 text-center flex items-center justify-center">لم يتم العثور على مستخدمين.</div>
+            )}
         </CardContent>
         <CardFooter className="flex items-center justify-between border-t pt-4">
             <span className="text-sm text-muted-foreground">
