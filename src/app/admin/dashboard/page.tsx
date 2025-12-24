@@ -201,8 +201,8 @@ export default function AdminDashboardPage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                    <p className="text-xs text-muted-foreground">+{stats.newUsersLast7Days} في آخر 7 أيام</p>
+                    <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground">+{stats.newUsersLast7Days.toLocaleString()} في آخر 7 أيام</p>
                 </CardContent>
             </Card>
              <Card>
@@ -211,7 +211,7 @@ export default function AdminDashboardPage() {
                     <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.totalOrders}</div>
+                    <div className="text-2xl font-bold">{stats.totalOrders.toLocaleString()}</div>
                 </CardContent>
             </Card>
              <Card>
@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
                     <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.openTickets}</div>
+                    <div className="text-2xl font-bold">{stats.openTickets.toLocaleString()}</div>
                 </CardContent>
             </Card>
         </div>
@@ -288,5 +288,7 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    
 
     
