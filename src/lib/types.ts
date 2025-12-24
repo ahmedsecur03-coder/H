@@ -166,3 +166,10 @@ export type SystemLog = {
     timestamp: string;
     metadata?: Record<string, any>;
 };
+
+export type DailyStat = {
+    id: string; // YYYY-MM-DD
+    totalRevenue: number;
+    totalOrders: number;
+    newUsers: number;
+};

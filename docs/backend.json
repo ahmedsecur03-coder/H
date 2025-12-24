@@ -537,6 +537,19 @@
             "metadata": { "type": "object", "description": "An object containing additional context about the event (e.g., userId, orderId, errorDetails)." }
         },
         "required": ["id", "event", "level", "message", "timestamp"]
+    },
+    "DailyStat": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DailyStat",
+      "type": "object",
+      "description": "Aggregated daily statistics for performance tracking.",
+      "properties": {
+        "id": { "type": "string", "description": "The date in YYYY-MM-DD format." },
+        "totalRevenue": { "type": "number" },
+        "totalOrders": { "type": "number" },
+        "newUsers": { "type": "number" }
+      },
+      "required": ["id", "totalRevenue", "totalOrders", "newUsers"]
     }
   },
   "auth": {
@@ -610,6 +623,12 @@
         "$ref": "#/entities/SystemLog"
       },
       "description": "Stores important system-wide events. Writable only by admin functions, readable only by admins."
+    },
+    "/dailyStats/{date}": {
+        "schema": {
+            "$ref": "#/entities/DailyStat"
+        },
+        "description": "Stores aggregated daily statistics. Writable by server functions, readable by admins."
     }
   }
 }

@@ -1,7 +1,7 @@
 
 
 import type { User, Order, BlogPost, Notification } from '@/lib/types';
-import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc, arrayUnion } from 'firebase/firestore';
+import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc, arrayUnion, increment } from 'firebase/firestore';
 
 
 export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number }[] = [
@@ -109,7 +109,16 @@ export async function processOrderInTransaction(
     const newOrderRef = doc(collection(firestore, `users/${userId}/orders`));
     transaction.set(newOrderRef, orderData);
 
-    // 4. Handle multi-level affiliate commissions
+    // 4. Aggregate daily stats
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const dailyStatRef = doc(firestore, 'dailyStats', today);
+    transaction.set(dailyStatRef, {
+        totalRevenue: increment(cost),
+        totalOrders: increment(1)
+    }, { merge: true });
+
+
+    // 5. Handle multi-level affiliate commissions
     let currentReferrerId = userData.referrerId;
     let directReferrer: DocumentSnapshot | null = null;
 

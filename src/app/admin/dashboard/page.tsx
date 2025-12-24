@@ -12,13 +12,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Bar, ComposedChart } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore } from '@/firebase';
-import { collection, query, collectionGroup, where, getDocs, getCountFromServer, Timestamp, orderBy, limit } from 'firebase/firestore';
+import { collection, query, getCountFromServer, Timestamp, orderBy, limit, getDocs } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { User, Order, Ticket } from '@/lib/types';
+import type { User, Order, Ticket, DailyStat } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -29,17 +29,18 @@ const chartConfig = {
   },
   users: {
     label: 'مستخدمون جدد',
-    color: 'hsl(var(--accent))',
+    color: 'hsl(var(--accent-foreground))',
   },
 } as const;
 
 
-function processPerformanceData(users: User[], orders: Order[]) {
-    if (!users || !orders) return [];
+function processPerformanceData(dailyStats: DailyStat[]) {
+    if (!dailyStats) return [];
     
     const dataByDate: Record<string, { date: string, revenue: number, users: number, orders: number }> = {};
     const today = new Date();
     
+    // Initialize last 7 days
     for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
@@ -47,21 +48,13 @@ function processPerformanceData(users: User[], orders: Order[]) {
         dataByDate[dateStr] = { date: dateStr, revenue: 0, users: 0, orders: 0 };
     }
     
-    orders.forEach(order => {
-        const orderDate = new Date(order.orderDate);
-        const dateStr = orderDate.toISOString().split('T')[0];
+    // Fill data from dailyStats
+    dailyStats.forEach(stat => {
+        const dateStr = stat.id; // ID is YYYY-MM-DD
         if (dataByDate[dateStr]) {
-            dataByDate[dateStr].revenue += order.charge;
-            dataByDate[dateStr].orders += 1;
-        }
-    });
-
-    users.forEach(user => {
-        if(!user.createdAt) return;
-        const joinDate = new Date(user.createdAt);
-        const dateStr = joinDate.toISOString().split('T')[0];
-        if (dataByDate[dateStr]) {
-            dataByDate[dateStr].users += 1;
+            dataByDate[dateStr].revenue = stat.totalRevenue;
+            dataByDate[dateStr].users = stat.newUsers;
+            dataByDate[dateStr].orders = stat.totalOrders;
         }
     });
 
@@ -88,41 +81,39 @@ export default function AdminDashboardPage() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                
-                // --- More efficient stat fetching ---
+                // --- Efficient stat fetching ---
                 const usersCol = collection(firestore, 'users');
                 const ordersColGroup = collectionGroup(firestore, 'orders');
                 const ticketsColGroup = collectionGroup(firestore, 'tickets');
 
-                // Use getCountFromServer for counts to reduce reads
+                // Get counts from server
                 const totalUsersSnapshot = await getCountFromServer(usersCol);
                 const totalOrdersSnapshot = await getCountFromServer(ordersColGroup);
                 const openTicketsSnapshot = await getCountFromServer(query(ticketsColGroup, where('status', '!=', 'مغلقة')));
-                const newUsersSnapshot = await getCountFromServer(query(usersCol, where('createdAt', '>=', sevenDaysAgo.toISOString())));
                 
-                // Fetch only necessary documents
-                const ordersSnapshot = await getDocs(ordersColGroup);
-                const allOrders = ordersSnapshot.docs.map(doc => doc.data() as Order);
-                const totalRevenue = allOrders.reduce((acc, order) => acc + order.charge, 0);
+                // Fetch last 7 days of aggregated stats for the chart and totals
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
 
-                // Fetch documents for chart
-                const usersForChartSnapshot = await getDocs(query(usersCol, where('createdAt', '>=', sevenDaysAgo.toISOString())));
-                const ordersForChartSnapshot = await getDocs(query(ordersColGroup, where('orderDate', '>=', sevenDaysAgo.toISOString())));
-                const usersForChart = usersForChartSnapshot.docs.map(doc => doc.data() as User);
-                const ordersForChart = ordersForChartSnapshot.docs.map(doc => doc.data() as Order);
-                
+                const dailyStatsQuery = query(collection(firestore, 'dailyStats'), where('id', '>=', sevenDaysAgoStr));
+                const dailyStatsSnapshot = await getDocs(dailyStatsQuery);
+                const last7DaysStats = dailyStatsSnapshot.docs.map(doc => doc.data() as DailyStat);
+
+                // Calculate totals from aggregated data to save reads
+                const totalRevenue = last7DaysStats.reduce((acc, stat) => acc + stat.totalRevenue, 0);
+                const newUsersLast7Days = last7DaysStats.reduce((acc, stat) => acc + stat.newUsers, 0);
+
                 // --- Set State ---
                 setStats({
                     totalRevenue: totalRevenue,
                     totalUsers: totalUsersSnapshot.data().count,
                     totalOrders: totalOrdersSnapshot.data().count,
                     openTickets: openTicketsSnapshot.data().count,
-                    newUsersLast7Days: newUsersSnapshot.data().count,
+                    newUsersLast7Days: newUsersLast7Days,
                 });
 
-                setPerformanceData(processPerformanceData(usersForChart, ordersForChart));
+                setPerformanceData(processPerformanceData(last7DaysStats));
 
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
@@ -166,7 +157,7 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
+                    <CardTitle className="text-sm font-medium">إجمالي الإيرادات (آخر 7 أيام)</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -211,54 +202,47 @@ export default function AdminDashboardPage() {
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-[350px] w-full">
                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                        data={performanceData}
-                        margin={{
-                            top: 5,
-                            right: 10,
-                            left: 10,
-                            bottom: 5,
-                        }}
+                        <ComposedChart
+                            data={performanceData}
+                            margin={{
+                                top: 5,
+                                right: 10,
+                                left: 10,
+                                bottom: 5,
+                            }}
                         >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis
-                            dataKey="date"
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
-                        />
-                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
-                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
-                        <Tooltip
-                            content={<ChartTooltipContent
-                                formatter={(value, name) => {
-                                    if (name === 'revenue') {
-                                        return `$${(value as number).toFixed(2)}`;
-                                    }
-                                    return value.toLocaleString();
-                                }}
-                                indicator="dot" 
-                            />}
-                        />
-                         <Legend />
-                        <Line
-                            yAxisId="left"
-                            type="monotone"
-                            dataKey="revenue"
-                            stroke="var(--color-revenue)"
-                            strokeWidth={2}
-                            name={chartConfig.revenue.label}
-                        />
-                        <Line
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="users"
-                            stroke="var(--color-users)"
-                            strokeWidth={2}
-                             name={chartConfig.users.label}
-                        />
-                        </LineChart>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
+                            />
+                            <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
+                            <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
+                            <Tooltip
+                                content={<ChartTooltipContent
+                                    formatter={(value, name) => {
+                                        if (name === 'revenue') {
+                                            return `$${(value as number).toFixed(2)}`;
+                                        }
+                                        return value.toLocaleString();
+                                    }}
+                                    indicator="dot" 
+                                />}
+                            />
+                            <Legend />
+                            <Bar yAxisId="right" dataKey="users" fill="var(--color-users)" name={chartConfig.users.label} radius={4} />
+                            <Line
+                                yAxisId="left"
+                                type="monotone"
+                                dataKey="revenue"
+                                stroke="var(--color-revenue)"
+                                strokeWidth={2}
+                                name={chartConfig.revenue.label}
+                            />
+                        </ComposedChart>
                     </ResponsiveContainer>
                 </ChartContainer>
             </CardContent>

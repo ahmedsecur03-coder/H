@@ -68,7 +68,16 @@ export async function serverProcessOrderInTransaction(
     const newOrderRef = firestore.collection(`users/${userId}/orders`).doc();
     transaction.set(newOrderRef, orderData);
 
-    // 3. Handle multi-level affiliate commissions
+    // 3. Aggregate daily stats
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const dailyStatRef = firestore.collection('dailyStats').doc(today);
+    transaction.set(dailyStatRef, {
+        totalRevenue: FieldValue.increment(cost),
+        totalOrders: FieldValue.increment(1)
+    }, { merge: true });
+
+
+    // 4. Handle multi-level affiliate commissions
     let currentReferrerId = userData.referrerId;
     
     // Level 1 Commission (Direct)

@@ -4,12 +4,12 @@ import React, { useMemo, type ReactNode, useEffect } from 'react';
 import { FirebaseProvider, useUser } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
 import { User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, runTransaction, increment } from 'firebase/firestore';
 import type { User as UserType } from '@/lib/types';
 
 
 // This component now handles creating the user document if it doesn't exist
-// This is a fallback and the primary creation logic is now in the signup page transaction.
+// AND increments the daily new user count.
 function UserInitializer() {
   const { user, isUserLoading } = useUser();
   const { firestore } = initializeFirebase(); // Get firestore instance
@@ -20,16 +20,17 @@ function UserInitializer() {
       
       const checkAndCreateUserDoc = async () => {
         try {
-            const userDoc = await getDoc(userDocRef);
-            if (!userDoc.exists() || !userDoc.data().role) {
-              // User document doesn't exist, or role is missing (for older users)
-              // This serves as a fallback for social logins or if the signup transaction fails.
-              const newUser: Partial<UserType> = {
+          await runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            
+            if (!userDoc.exists()) {
+              // User document doesn't exist, create it and update stats
+              const newUser: Omit<UserType, 'id'> = {
                 name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
                 email: user.email || 'N/A',
                 avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
                 rank: 'مستكشف نجمي',
-                role: 'user', // Ensure role is set
+                role: 'user',
                 balance: 0,
                 adBalance: 0,
                 totalSpent: 0,
@@ -45,11 +46,21 @@ function UserInitializer() {
                     orderUpdates: true,
                 }
               };
-              
-              // Using setDoc with merge:true is safer here as a fallback,
-              // it will create the doc if it doesn't exist, or update it if it does.
-              await setDoc(userDocRef, newUser, { merge: true });
+              transaction.set(userDocRef, newUser);
+
+              // Also increment the new user count for today
+              const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+              const dailyStatRef = doc(firestore, 'dailyStats', today);
+              transaction.set(dailyStatRef, {
+                  newUsers: increment(1)
+              }, { merge: true });
+
+            } else if (!userDoc.data().role) {
+                // Document exists but is missing the role (older user), update it
+                transaction.update(userDocRef, { role: 'user' });
             }
+            // If doc exists and has a role, do nothing.
+          });
         } catch (error) {
              // Silently catch errors here, as this is a background process.
         }
