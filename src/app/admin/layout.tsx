@@ -19,7 +19,7 @@ import { adminNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -51,8 +51,7 @@ function AdminHeader({ userData }: { userData: User }) {
 function AdminNavItems() {
   const { state } = useSidebar();
   const isCollapsible = state === "collapsed";
-  const { isMobile } = useSidebar();
-  const pathname = useRouter();
+  const pathname = usePathname();
 
 
   return (
@@ -63,7 +62,7 @@ function AdminNavItems() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                              <SidebarMenuButton asChild>
-                                <Link href={item.href}>
+                                <Link href={item.href} passHref>
                                     <item.icon />
                                     <span>{item.label}</span>
                                 </Link>
@@ -93,7 +92,7 @@ export default function AdminLayout({
   
   const isLoading = isUserLoading || isUserDataLoading;
   
-  const isAdmin = !isLoading && (userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com');
+  const isAdmin = !isLoading && userData?.role === 'admin';
 
   useEffect(() => {
     if (!isLoading) {
@@ -137,7 +136,7 @@ export default function AdminLayout({
   
   return (
     <SidebarProvider>
-      <Sidebar side="left" collapsible="icon">
+      <Sidebar side="right" collapsible="icon">
         <SidebarHeader>
            <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
               <Logo className="group-data-[collapsible=icon]:hidden" />
@@ -152,12 +151,12 @@ export default function AdminLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
+      <div className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
         <AdminHeader userData={userData} />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
         </main>
-      </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }
