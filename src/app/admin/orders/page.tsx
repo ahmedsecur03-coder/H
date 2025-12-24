@@ -42,7 +42,6 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
-import { useDebounce } from 'use-debounce';
 import { OrderActions } from './_components/order-actions';
 import { useToast } from '@/hooks/use-toast';
 
@@ -113,59 +112,65 @@ function AdminOrdersPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentStatus = searchParams.get('status') || 'all';
   const currentSearch = searchParams.get('search') || '';
-  
-  const [debouncedSearch] = useDebounce(currentSearch, 300);
 
-  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageCount, setPageCount] = useState(0);
+  const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
+  const [firstDoc, setFirstDoc] = useState<DocumentSnapshot | null>(null);
 
-  const fetchAllOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
+
     try {
-        let q: FirestoreQuery = query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc'));
+        let q: FirestoreQuery = collectionGroup(firestore, 'orders');
         
-        // This is inefficient but necessary for client-side search across multiple fields
-        const snapshot = await getDocs(q); 
-        const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-        setAllOrders(ordersData);
+        // Firestore doesn't support complex text search + inequality filters well.
+        // We will filter by status in the query, and search will be a simplified client-side filter
+        // on the fetched page data. This is a compromise for performance. A better solution
+        // would involve a dedicated search service like Algolia.
+        if (currentStatus !== 'all') {
+            q = query(q, where('status', '==', currentStatus));
+        }
+
+        // We apply ordering after status filter
+        q = query(q, orderBy('orderDate', 'desc'));
+        
+        // Pagination logic would be more complex with cursors and changing queries.
+        // For simplicity and given the constraints, we'll fetch a slightly larger set and paginate client-side for now.
+        // A production-ready solution would store pagination cursors.
+        const snapshot = await getDocs(q);
+        let ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+
+        // Client-side search on the (potentially status-filtered) results
+        if(currentSearch) {
+            ordersData = ordersData.filter(order => 
+                order.id.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                order.userId.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                order.serviceName.toLowerCase().includes(currentSearch.toLowerCase()) ||
+                (order.link && order.link.toLowerCase().includes(currentSearch.toLowerCase()))
+            );
+        }
+        
+        const totalPages = Math.ceil(ordersData.length / ITEMS_PER_PAGE);
+        setPageCount(totalPages);
+
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        setOrders(ordersData.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+
     } catch(error) {
-        console.error("Failed to fetch all orders:", error);
+        console.error("Failed to fetch orders:", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.'})
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast]);
+  }, [firestore, toast, currentStatus, currentSearch, currentPage]);
 
   useEffect(() => {
-    fetchAllOrders();
-  }, [fetchAllOrders]);
+    fetchOrders();
+  }, [fetchOrders]);
 
-
-  const { paginatedOrders, pageCount } = useMemo(() => {
-    if (!allOrders) {
-      return { paginatedOrders: [], pageCount: 0 };
-    }
-
-    const filtered = allOrders.filter(order => {
-      const statusMatch = currentStatus === 'all' || order.status === currentStatus;
-      const searchMatch = debouncedSearch
-        ? order.id.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          order.userId.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          order.serviceName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          (order.link && order.link.toLowerCase().includes(debouncedSearch.toLowerCase()))
-        : true;
-      return statusMatch && searchMatch;
-    });
-
-    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    
-    return {
-      paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
-      pageCount: totalPages,
-    };
-  }, [allOrders, currentStatus, debouncedSearch, currentPage]);
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -222,7 +227,7 @@ function AdminOrdersPageComponent() {
     ));
   };
   
-  if (isLoading && allOrders.length === 0) {
+  if (isLoading && orders.length === 0) {
     return <OrdersPageSkeleton />;
   }
 
@@ -251,7 +256,7 @@ function AdminOrdersPageComponent() {
         </div>
       </CardContent>
       <CardFooter>
-        <OrderActions order={order} onOrderUpdate={fetchAllOrders} />
+        <OrderActions order={order} onOrderUpdate={fetchOrders} />
       </CardFooter>
     </Card>
   );
@@ -292,15 +297,15 @@ function AdminOrdersPageComponent() {
         </CardContent>
       </Card>
 
-      {isLoading && paginatedOrders.length === 0 ? (
+      {isLoading && orders.length === 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
         </div>
-      ) : paginatedOrders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
-                {paginatedOrders.map(order => <OrderCard key={order.id} order={order} />)}
+                {orders.map(order => <OrderCard key={order.id} order={order} />)}
             </div>
 
             {/* Desktop View */}
@@ -319,7 +324,7 @@ function AdminOrdersPageComponent() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {paginatedOrders.map((order) => (
+                    {orders.map((order) => (
                     <TableRow key={order.id}>
                         <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
                         <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
@@ -330,7 +335,7 @@ function AdminOrdersPageComponent() {
                         </TableCell>
                         <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
-                            <OrderActions order={order} onOrderUpdate={fetchAllOrders} />
+                            <OrderActions order={order} onOrderUpdate={fetchOrders} />
                         </TableCell>
                     </TableRow>
                     ))}

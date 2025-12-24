@@ -42,7 +42,6 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
-import { useDebounce } from 'use-debounce';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -112,9 +111,6 @@ function OrdersPageComponent() {
   const currentStatus = searchParams.get('status') || 'all';
   const currentSearch = searchParams.get('search') || '';
   
-  // Debounced search term for performance
-  const [debouncedSearch] = useDebounce(currentSearch, 300);
-
   const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -142,10 +138,10 @@ function OrdersPageComponent() {
 
     const filtered = allOrders.filter(order => {
       const statusMatch = currentStatus === 'all' || order.status === currentStatus;
-      const searchMatch = debouncedSearch
-        ? order.id.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          order.serviceName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          (order.link && order.link.toLowerCase().includes(debouncedSearch.toLowerCase()))
+      const searchMatch = currentSearch
+        ? order.id.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          order.serviceName.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          (order.link && order.link.toLowerCase().includes(currentSearch.toLowerCase()))
         : true;
       return statusMatch && searchMatch;
     });
@@ -157,7 +153,7 @@ function OrdersPageComponent() {
       paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
       pageCount: totalPages,
     };
-  }, [allOrders, currentStatus, debouncedSearch, currentPage]);
+  }, [allOrders, currentStatus, currentSearch, currentPage]);
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());

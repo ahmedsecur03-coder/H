@@ -10,28 +10,18 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'tex
     const localRef = useRef<HTMLTextAreaElement>(null);
     useImperativeHandle(ref, () => localRef.current!);
 
-    useEffect(() => {
+    const handleInput = () => {
         const textarea = localRef.current;
         if (textarea) {
-            const handleInput = () => {
-                textarea.style.height = 'auto';
-                // Add a buffer for the final height to prevent scrollbar flicker
-                textarea.style.height = `${textarea.scrollHeight + 2}px`;
-            };
-            
-            // Run on mount, on change, and when the component is focused
-            textarea.addEventListener('input', handleInput);
-            textarea.addEventListener('focus', handleInput);
-
-            // Initial resize
-            handleInput();
-            
-            return () => {
-                textarea.removeEventListener('input', handleInput);
-                textarea.removeEventListener('focus', handleInput);
-            }
+            textarea.style.height = 'auto';
+            // Add a buffer for the final height to prevent scrollbar flicker
+            textarea.style.height = `${textarea.scrollHeight + 2}px`;
         }
-    }, [props.value]); // Re-run effect if external value changes
+    };
+    
+    useEffect(() => {
+        handleInput();
+    }, [props.value]);
 
 
     return (
@@ -41,6 +31,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'tex
           className
         )}
         ref={localRef}
+        onInput={handleInput}
         {...props}
       />
     );

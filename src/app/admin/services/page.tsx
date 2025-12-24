@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, Query, DocumentSnapshot } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, Query, DocumentSnapshot, where } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -18,7 +18,6 @@ import { Badge } from '@/components/ui/badge';
 import React from 'react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { useDebounce } from 'use-debounce';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
@@ -74,8 +73,6 @@ function AdminServicesPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
   
-  const [debouncedSearch] = useDebounce(currentSearch, 300);
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
   
@@ -90,14 +87,17 @@ function AdminServicesPageComponent() {
     setIsLoading(true);
 
     try {
+        // A full implementation of search would require a 3rd party service.
+        // We will fetch all and filter client-side as a fallback.
+        // For very large datasets this is inefficient.
         const servicesQuery = query(collection(firestore, 'services'), orderBy('id'));
         const querySnapshot = await getDocs(servicesQuery);
-        const allServices = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+        let allServices = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
         
         const filtered = allServices.filter(service =>
-          service.id.toString().includes(debouncedSearch) ||
-          service.category.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          service.platform.toLowerCase().includes(debouncedSearch.toLowerCase())
+          service.id.toString().includes(currentSearch) ||
+          service.category.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          service.platform.toLowerCase().includes(currentSearch.toLowerCase())
         );
 
         const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -112,7 +112,7 @@ function AdminServicesPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, debouncedSearch, currentPage, toast]);
+  }, [firestore, currentSearch, currentPage, toast]);
 
 
   useEffect(() => {
