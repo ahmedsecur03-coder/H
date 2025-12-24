@@ -1,12 +1,16 @@
 rules_version = '2';
 
 service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow any user (authenticated or not) to perform any action on any document.
-    // This is a highly permissive rule set designed to prevent all permission errors as requested.
-    // WARNING: This is insecure and not recommended for production environments.
-    match /{document=**} {
-      allow read, write: if true;
+    match /databases/{database}/documents {
+          // Allow any user (authenticated or not) to perform any action on any document.
+              // This is a highly permissive rule set designed to prevent all permission errors as requested.
+                  // WARNING: This is insecure and not recommended for production environments.
+                      match /{document=**} {
+                              allow read, write: if true;
+                      }
     }
-  }
+}
+
+                      }
+    }
 }
