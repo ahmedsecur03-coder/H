@@ -98,22 +98,25 @@ function DepositTable({ status }: { status: Status }) {
             throw new Error('المستخدم غير موجود.');
         }
 
-        const updates: any = {};
         if (newStatus === 'مقبول') {
             const currentBalance = userDoc.data().balance ?? 0;
             const newBalance = currentBalance + deposit.amount;
-            updates.balance = newBalance;
-            updates.notifications = arrayUnion({
-              id: `dep-${deposit.id}`,
-              message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
-              type: 'success',
-              read: false,
-              createdAt: new Date().toISOString(),
-              href: '/dashboard/add-funds'
-            });
+            
+            const userUpdates: any = {
+                balance: newBalance,
+                notifications: arrayUnion({
+                    id: `dep-${deposit.id}`,
+                    message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+                    type: 'success',
+                    read: false,
+                    createdAt: new Date().toISOString(),
+                    href: '/dashboard/add-funds'
+                })
+            };
+            transaction.update(userDocRef, userUpdates);
         }
         
-        transaction.update(userDocRef, updates);
+        // Always update the deposit document's status
         transaction.update(depositDocRef, { status: newStatus });
       });
       
