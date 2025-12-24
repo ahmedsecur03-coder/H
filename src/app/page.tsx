@@ -30,27 +30,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/icons';
+import { SMM_SERVICES } from '@/lib/smm-services';
 
 function FeaturedServices() {
     const firestore = useFirestore();
-    const servicesQuery = useMemoFirebase(
-        () => firestore ? query(collection(firestore, 'services'), limit(8)) : null,
-        [firestore]
-    );
-    const { data: featuredServices, isLoading } = useCollection<Service>(servicesQuery);
+    // We can just take the first 8 services from the static list for the homepage.
+    const featuredServices = SMM_SERVICES.slice(0, 8);
 
-    if (isLoading) {
+    if (featuredServices.length === 0) {
+        // This case is unlikely with static data but good for robustness
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
                     <Skeleton key={i} className="h-64" />
                 ))}
             </div>
         );
-    }
-
-    if (!featuredServices || featuredServices.length === 0) {
-        return null;
     }
 
     return (
@@ -74,7 +69,7 @@ function FeaturedServices() {
                                 <p className="text-xs text-muted-foreground">/ لكل 1000</p>
                             </div>
                             <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                <Link href="/login">
+                                <Link href="/services">
                                     <ChevronLeft className="h-4 w-4 ml-2" />
                                     اطلب الآن
                                 </Link>
