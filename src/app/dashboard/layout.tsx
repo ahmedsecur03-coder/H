@@ -11,10 +11,10 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarFooter,
   SidebarMenuSubTrigger,
   SidebarMenuSubContent,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
@@ -141,7 +141,7 @@ export default function DashboardLayout({
 
     return (
         <SidebarProvider>
-        <Sidebar side="left" collapsible="icon" className="hidden md:block">
+        <Sidebar side="right" collapsible="icon" className="hidden md:block">
             <SidebarHeader>
             <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                 <Logo className="group-data-[collapsible=icon]:hidden" />

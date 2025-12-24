@@ -226,7 +226,7 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className={cn("group peer md:block text-sidebar-foreground", className)}
+        className={cn("group peer hidden md:block text-sidebar-foreground", className)}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -235,7 +235,7 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "duration-300 fixed inset-y-0 z-20 flex h-svh w-[--sidebar-width] flex-col transition-[width] ease-in-out",
+            "fixed inset-y-0 z-20 flex h-svh w-[--sidebar-width] flex-col transition-[width] duration-300 ease-in-out",
              side === 'left' ? 'left-0' : 'right-0',
              'group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]'
           )}

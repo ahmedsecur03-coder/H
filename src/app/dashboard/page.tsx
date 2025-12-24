@@ -42,6 +42,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { NewCampaignDialog } from './campaigns/_components/new-campaign-dialog';
 
 
 function WelcomeAlert({ name }: { name: string }) {
@@ -220,7 +221,21 @@ export default function DashboardPage() {
                     </Card>
                 </div>
 
-                <QuickOrderForm user={authUser} userData={userData} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <NewCampaignDialog userData={userData} onCampaignCreated={forceDocUpdate}>
+                        <Button className="w-full text-lg py-7">
+                            <PlusCircle className="ml-2 h-5 w-5" />
+                            إنشاء حملة جديدة
+                        </Button>
+                    </NewCampaignDialog>
+                    <Button variant="outline" className="w-full text-lg py-7" asChild>
+                        <Link href="/dashboard/agency-accounts">
+                            <Briefcase className="ml-2 h-5 w-5" />
+                            إدارة حسابات الوكالة
+                        </Link>
+                    </Button>
+                </div>
+
 
                 {(recentOrders && recentOrders.length > 0) ? (
                     <Card>
