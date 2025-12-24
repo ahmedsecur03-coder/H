@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -48,7 +47,6 @@ function DepositTable({ status }: { status: Status }) {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Memoize the query to prevent re-creating it on every render
   const depositsQuery = useMemoFirebase(
     () => {
         if (!firestore) return null;
@@ -56,7 +54,7 @@ function DepositTable({ status }: { status: Status }) {
             collectionGroup(firestore, 'deposits'), 
             where('status', '==', status), 
             orderBy('depositDate', 'desc'),
-            limit(100) // Limit to a reasonable number for display
+            limit(100)
         );
     },
     [firestore, status]
@@ -94,14 +92,13 @@ function DepositTable({ status }: { status: Status }) {
 
     try {
       await runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists()) {
-            throw new Error('المستخدم غير موجود.');
-        }
-
-        const userUpdates: any = {};
+        let userUpdates: any = {};
         
         if (newStatus === 'مقبول') {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw new Error('المستخدم غير موجود.');
+            }
             const currentBalance = userDoc.data().balance ?? 0;
             userUpdates.balance = currentBalance + deposit.amount;
             userUpdates.notifications = arrayUnion({
@@ -115,11 +112,10 @@ function DepositTable({ status }: { status: Status }) {
             transaction.update(userDocRef, userUpdates);
         }
         
-        // Always update the deposit document's status
+        // Always update the deposit document's status inside the transaction
         transaction.update(depositDocRef, { status: newStatus });
       });
       
-      // Manually update local state to reflect the change immediately
       setDeposits(prev => prev.filter(d => d.id !== deposit.id));
 
       toast({
@@ -127,9 +123,11 @@ function DepositTable({ status }: { status: Status }) {
         description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
       });
     } catch (error: any) {
+        let errorData = newStatus === 'مقبول' ? { balance: '...', notifications: '...' } : { status: newStatus };
         const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
+            path: userDocRef.path, // The primary document being operated on
             operation: 'update',
+            requestResourceData: errorData 
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
