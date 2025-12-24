@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User as UserIcon, Wand2 } from 'lucide-react';
+import { Loader2, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User as UserType } from '@/lib/types';
 import {
@@ -24,8 +24,6 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { isAiConfigured } from '@/ai/client';
-import { GenerateAvatarDialog } from './generate-avatar-dialog';
 
 
 const profileSchema = z.object({
@@ -45,8 +43,6 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     const firestore = useFirestore();
 
     const [isProxying, setIsProxying] = useState(false);
-    
-    const aiConfigured = isAiConfigured();
 
     const profileForm = useForm<z.infer<typeof profileSchema>>({
         resolver: zodResolver(profileSchema),
@@ -137,10 +133,6 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         }
     };
 
-    const handleAvatarGenerated = (dataUri: string) => {
-        profileForm.setValue('avatarUrl', dataUri, { shouldValidate: true });
-    };
-
     const infoBadges = [
         { label: 'الرتبة', value: userData.rank },
         { label: 'كود الإحالة', value: userData.referralCode },
@@ -207,18 +199,9 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     render={({ field }) => (
                                         <FormItem>
                                         <FormLabel>رابط الصورة الرمزية</FormLabel>
-                                        <div className="flex gap-2">
-                                            <FormControl>
-                                                <Input placeholder="https://example.com/image.png" {...field} />
-                                            </FormControl>
-                                            {aiConfigured && (
-                                                <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
-                                                    <Button type="button" variant="outline" size="icon" title="إنشاء صورة بالذكاء الاصطناعي">
-                                                        <Wand2 />
-                                                    </Button>
-                                                </GenerateAvatarDialog>
-                                            )}
-                                        </div>
+                                        <FormControl>
+                                            <Input placeholder="https://example.com/image.png" {...field} />
+                                        </FormControl>
                                         <FormMessage />
                                         </FormItem>
                                     )}
@@ -281,3 +264,5 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         </div>
     );
 }
+
+    
