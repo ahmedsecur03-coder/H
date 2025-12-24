@@ -48,28 +48,21 @@ function DepositTable({ status }: { status: Status }) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const depositsQuery = useMemoFirebase(
-    () => {
-        if (!firestore) return null;
-        return query(
-            collectionGroup(firestore, 'deposits'), 
-            where('status', '==', status), 
-            orderBy('depositDate', 'desc'),
-            limit(100)
-        );
-    },
-    [firestore, status]
-  );
   
   const fetchDeposits = async () => {
-    if (!depositsQuery) {
+    if (!firestore) {
         setIsLoading(false);
         return;
     };
     setIsLoading(true);
 
     try {
+      const depositsQuery = query(
+            collectionGroup(firestore, 'deposits'), 
+            where('status', '==', status), 
+            orderBy('depositDate', 'desc'),
+            limit(100)
+        );
       const snapshot = await getDocs(depositsQuery);
       const fetchedDeposits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Deposit));
       setDeposits(fetchedDeposits);
@@ -83,7 +76,7 @@ function DepositTable({ status }: { status: Status }) {
 
   useEffect(() => {
     fetchDeposits();
-  }, [depositsQuery]);
+  }, [firestore, status]);
 
 
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
