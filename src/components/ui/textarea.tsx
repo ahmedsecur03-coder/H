@@ -1,42 +1,24 @@
+import * as React from "react"
 
+import { cn } from "@/lib/utils"
 
-import * as React from 'react';
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
-import {cn} from '@/lib/utils';
-import { useImperativeHandle, useRef, useEffect } from 'react';
-
-const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(
-  ({className, ...props}, ref) => {
-    const localRef = useRef<HTMLTextAreaElement>(null);
-    useImperativeHandle(ref, () => localRef.current!);
-
-    const handleInput = () => {
-        const textarea = localRef.current;
-        if (textarea) {
-            textarea.style.height = 'auto';
-            // Add a buffer for the final height to prevent scrollbar flicker
-            textarea.style.height = `${textarea.scrollHeight + 2}px`;
-        }
-    };
-    
-    useEffect(() => {
-        handleInput();
-    }, [props.value]);
-
-
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, ...props }, ref) => {
     return (
       <textarea
         className={cn(
-          'flex min-h-[40px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none overflow-hidden',
+          "flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
-        ref={localRef}
-        onInput={handleInput}
+        ref={ref}
         {...props}
       />
-    );
+    )
   }
-);
-Textarea.displayName = 'Textarea';
+)
+Textarea.displayName = "Textarea"
 
-export {Textarea};
+export { Textarea }
