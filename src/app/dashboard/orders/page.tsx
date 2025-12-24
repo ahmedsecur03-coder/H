@@ -44,7 +44,6 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from 'use-debounce';
-import { useTranslation } from 'react-i18next';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -103,7 +102,6 @@ function OrdersPageSkeleton() {
 }
 
 function OrdersPageComponent() {
-  const { t } = useTranslation();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
@@ -215,9 +213,9 @@ function OrdersPageComponent() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('ordersPage.title')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">سجل الطلبات</h1>
         <p className="text-muted-foreground">
-          {t('ordersPage.description')}
+          عرض جميع طلباتك السابقة وتتبع حالة الطلبات الحالية.
         </p>
       </div>
 
@@ -227,7 +225,7 @@ function OrdersPageComponent() {
             <div className="relative">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('ordersPage.searchPlaceholder')}
+                placeholder="ابحث بالمعرف، الخدمة أو الرابط..."
                 className="pe-10 rtl:ps-10"
                 value={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -235,12 +233,12 @@ function OrdersPageComponent() {
             </div>
             <Select value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
-                <SelectValue placeholder={t('ordersPage.statusFilterPlaceholder')} />
+                <SelectValue placeholder="فلترة حسب الحالة" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('ordersPage.allStatuses')}</SelectItem>
+                <SelectItem value="all">جميع الحالات</SelectItem>
                 {STATUS_OPTIONS.map((status) => (
-                  <SelectItem key={status} value={status}>{t(`orderStatus.${status}`)}</SelectItem>
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -273,13 +271,13 @@ function OrdersPageComponent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">{t('ordersPage.table.id')}</TableHead>
-                  <TableHead>{t('ordersPage.table.service')}</TableHead>
-                  <TableHead>{t('ordersPage.table.link')}</TableHead>
-                  <TableHead className="text-center">{t('ordersPage.table.quantity')}</TableHead>
-                  <TableHead className="text-center">{t('ordersPage.table.status')}</TableHead>
-                  <TableHead className="text-center">{t('ordersPage.table.date')}</TableHead>
-                  <TableHead className="text-right">{t('ordersPage.table.cost')}</TableHead>
+                  <TableHead className="w-[100px]">المعرف</TableHead>
+                  <TableHead>الخدمة</TableHead>
+                  <TableHead>الرابط</TableHead>
+                  <TableHead className="text-center">الكمية</TableHead>
+                  <TableHead className="text-center">الحالة</TableHead>
+                  <TableHead className="text-center">التاريخ</TableHead>
+                  <TableHead className="text-right">التكلفة</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -290,9 +288,9 @@ function OrdersPageComponent() {
                     <TableCell><a href={order.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block max-w-xs">{order.link}</a></TableCell>
                     <TableCell className="text-center">{order.quantity.toLocaleString()}</TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={statusVariant[order.status] || 'default'}>{t(`orderStatus.${order.status}`)}</Badge>
+                      <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString(t('locale'))}</TableCell>
+                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
@@ -323,14 +321,14 @@ function OrdersPageComponent() {
                 <div className="mx-auto bg-muted p-4 rounded-full">
                     <ListFilter className="h-12 w-12 text-muted-foreground" />
                 </div>
-                <CardTitle className="mt-4 font-headline text-2xl">{t('ordersPage.noMatchTitle')}</CardTitle>
+                <CardTitle className="mt-4 font-headline text-2xl">لا توجد طلبات تطابق بحثك</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">
-                    {t('ordersPage.noMatchDescription')}
+                    حاول تغيير فلاتر البحث أو قم بإنشاء طلب جديد.
                 </p>
                 <Button variant="outline" onClick={() => router.push(pathname)} className="mt-4">
-                  {t('ordersPage.resetFilters')}
+                  إعادة تعيين الفلاتر
                 </Button>
             </CardContent>
         </Card>

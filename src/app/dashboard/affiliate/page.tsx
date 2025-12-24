@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useTranslation } from "react-i18next";
 
 // Inlined CopyButton component
 function CopyButton({ textToCopy }: { textToCopy: string }) {
@@ -220,7 +219,6 @@ function NetworkTree({ userData }: { userData: UserType }) {
 }
 
 function TransactionHistoryTable({ userId }: { userId: string }) {
-    const { i18n } = useTranslation();
     const firestore = useFirestore();
 
     const transactionsQuery = useMemoFirebase(() => 
@@ -265,7 +263,7 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
                         {transactions && transactions.length > 0 ? (
                             transactions.map((tx) => (
                                 <TableRow key={tx.id}>
-                                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString(i18n.language)}</TableCell>
+                                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString('ar-EG')}</TableCell>
                                     <TableCell className="font-mono text-xs">{tx.orderId.substring(0,10)}...</TableCell>
                                     <TableCell className="font-mono text-xs">{tx.referralId.substring(0,10)}...</TableCell>
                                     <TableCell className="text-center">{tx.level}</TableCell>

@@ -33,11 +33,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ChevronLeft, Info, ChevronRight, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function ServicesSkeleton() {
-  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <Card>
@@ -70,7 +68,6 @@ function ServicesSkeleton() {
 }
 
 export default function ServicesPage() {
-  const { t } = useTranslation();
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState('all');
@@ -112,9 +109,9 @@ export default function ServicesPage() {
   return (
     <div className="space-y-6 pb-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('servicesPage.title')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">قائمة الخدمات</h1>
         <p className="text-muted-foreground mt-2">
-          {t('servicesPage.description')}
+          استكشف مجموعتنا الواسعة من الخدمات لجميع منصات التواصل الاجتماعي.
         </p>
       </div>
 
@@ -123,7 +120,7 @@ export default function ServicesPage() {
           <div className="relative sm:col-span-2 md:col-span-1">
             <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={t('servicesPage.searchPlaceholder')}
+              placeholder="ابحث بالرقم أو اسم الخدمة..."
               className="pe-10 rtl:ps-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -131,19 +128,19 @@ export default function ServicesPage() {
           </div>
           <Select value={platformFilter} onValueChange={setPlatformFilter}>
             <SelectTrigger>
-              <SelectValue placeholder={t('servicesPage.platformFilterPlaceholder')} />
+              <SelectValue placeholder="فلترة حسب المنصة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('servicesPage.allPlatforms')}</SelectItem>
+              <SelectItem value="all">كل المنصات</SelectItem>
               {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger>
-              <SelectValue placeholder={t('servicesPage.categoryFilterPlaceholder')} />
+              <SelectValue placeholder="فلترة حسب الفئة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('servicesPage.allCategories')}</SelectItem>
+              <SelectItem value="all">كل الفئات</SelectItem>
               {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -162,7 +159,7 @@ export default function ServicesPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle>{selectedService.category} - {selectedService.platform}</CardTitle>
-                    <CardDescription>{t('servicesPage.serviceId')}: {selectedService.id}</CardDescription>
+                    <CardDescription>رقم الخدمة: {selectedService.id}</CardDescription>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => setSelectedService(null)}>
                     <X className="h-4 w-4" />
@@ -170,18 +167,18 @@ export default function ServicesPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">{selectedService.description || t('servicesPage.noDescription')}</p>
+                  <p className="text-muted-foreground">{selectedService.description || 'لا يوجد وصف متاح لهذه الخدمة.'}</p>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.pricePer1000')}:</span><span className="font-bold font-mono">${selectedService.price.toFixed(4)}</span></div>
-                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.avgTime')}:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
-                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.minOrder')}:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
-                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.maxOrder')}:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>السعر لكل 1000:</span><span className="font-bold font-mono">${selectedService.price.toFixed(4)}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>متوسط الوقت:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>الحد الأدنى للطلب:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>الحد الأقصى للطلب:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
                   </div>
               </CardContent>
               <CardFooter>
                   <Button asChild className="w-full">
                       <Link href={`/login?redirect=/dashboard/mass-order&prefill=${encodeURIComponent(`${selectedService.id}| |`)}`}>
-                          {t('servicesPage.orderThisService')}
+                          اطلب هذه الخدمة
                       </Link>
                   </Button>
               </CardFooter>
@@ -196,11 +193,11 @@ export default function ServicesPage() {
               <TableHeader>
               <TableRow>
                   <TableHead>#</TableHead>
-                  <TableHead>{t('servicesPage.table.service')}</TableHead>
-                  <TableHead>{t('servicesPage.table.platform')}</TableHead>
-                  <TableHead>{t('servicesPage.table.pricePer1000')}</TableHead>
-                  <TableHead>{t('servicesPage.table.limits')}</TableHead>
-                  <TableHead className="text-right">{t('servicesPage.table.action')}</TableHead>
+                  <TableHead>الخدمة</TableHead>
+                  <TableHead>المنصة</TableHead>
+                  <TableHead>السعر/1000</TableHead>
+                  <TableHead>الحدود</TableHead>
+                  <TableHead className="text-right">إجراء</TableHead>
               </TableRow>
               </TableHeader>
               <TableBody>
@@ -214,7 +211,7 @@ export default function ServicesPage() {
                   <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
                           <Info className="h-4 w-4 me-2" />
-                          {t('details')}
+                          تفاصيل
                       </Button>
                   </TableCell>
                   </TableRow>

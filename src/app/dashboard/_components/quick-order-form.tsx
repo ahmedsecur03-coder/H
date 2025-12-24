@@ -20,11 +20,9 @@ import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
-    const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     
@@ -78,17 +76,17 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         const numQuantity = parseInt(quantity, 10);
         
         if (!user || !firestore || !selectedService || !link || !numQuantity) {
-            toast({ variant: "destructive", title: t('error'), description: t('quickOrderForm.fillAllFieldsError') });
+            toast({ variant: "destructive", title: 'خطأ', description: 'الرجاء تعبئة جميع الحقول بشكل صحيح.' });
             return;
         }
         
         if (numQuantity < selectedService.min || numQuantity > selectedService.max) {
-             toast({ variant: "destructive", title: t('quickOrderForm.quantityErrorTitle'), description: t('quickOrderForm.quantityErrorDesc', { min: selectedService.min, max: selectedService.max }) });
+             toast({ variant: "destructive", title: 'خطأ في الكمية', description: `الكمية يجب أن تكون بين ${selectedService.min} و ${selectedService.max}.` });
             return;
         }
 
         if (userData.balance < orderCost.final) {
-             toast({ variant: "destructive", title: t('quickOrderForm.insufficientFundsTitle'), description: t('quickOrderForm.insufficientFundsDesc', { balance: userData.balance.toFixed(2), cost: orderCost.final.toFixed(2) }) });
+             toast({ variant: "destructive", title: 'رصيد غير كافٍ', description: `رصيدك ${userData.balance.toFixed(2)}$ لا يكفي لإتمام الطلب الذي تكلفته ${orderCost.final.toFixed(2)}$.` });
             return;
         }
 
@@ -117,7 +115,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     promotionToast = result.promotion;
                 }
              });
-             toast({ title: t('quickOrderForm.successTitle'), description: t('quickOrderForm.successDesc') });
+             toast({ title: 'تم تقديم الطلب بنجاح!', description: 'طلبك الآن قيد التنفيذ.' });
              if (promotionToast) {
                 setTimeout(() => toast(promotionToast!), 1000);
              }
@@ -126,7 +124,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
 
         } catch (error: any) {
              if (error.message.includes("رصيدك") || error.message.includes("المستخدم")) {
-                 toast({ variant: "destructive", title: t('quickOrderForm.submitErrorTitle'), description: error.message });
+                 toast({ variant: "destructive", title: 'فشل تقديم الطلب', description: error.message });
              } else {
                  const permissionError = new FirestorePermissionError({ path: `users/${user.uid}`, operation: 'update' });
                  errorEmitter.emit('permission-error', permissionError);
@@ -145,8 +143,8 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         <Card className="overflow-hidden">
             <div className="p-6 bg-gradient-to-br from-primary/10 via-background to-background flex items-center justify-between">
                 <div>
-                    <CardTitle className="font-headline text-2xl">{t('quickOrderForm.title')}</CardTitle>
-                    <CardDescription>{t('quickOrderForm.description')}</CardDescription>
+                    <CardTitle className="font-headline text-2xl">طلب سريع</CardTitle>
+                    <CardDescription>أسرع طريقة لإضافة طلب جديد.</CardDescription>
                 </div>
                 <Rocket className="h-10 w-10 text-primary" />
             </div>
@@ -154,7 +152,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
             <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-4 pt-6">
                     <Select onValueChange={setPlatform} disabled={servicesLoading} value={platform}>
-                        <SelectTrigger><SelectValue placeholder={servicesLoading ? t('loading') : t('quickOrderForm.platformPlaceholder')} /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : 'اختر المنصة'} /></SelectTrigger>
                         <SelectContent>
                             {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                         </SelectContent>
@@ -164,7 +162,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     {platform && (
                         <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
                             <Select onValueChange={setCategory} disabled={!platform || servicesLoading} value={category}>
-                                <SelectTrigger><SelectValue placeholder={t('quickOrderForm.categoryPlaceholder')} /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="اختر الفئة" /></SelectTrigger>
                                 <SelectContent>
                                     {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                 </SelectContent>
@@ -174,7 +172,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     {category && (
                          <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
                             <Select onValueChange={setServiceId} value={serviceId} disabled={!category || servicesLoading}>
-                                <SelectTrigger><SelectValue placeholder={t('quickOrderForm.servicePlaceholder')} /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
                                     {services.map(s => <SelectItem key={s.id} value={s.id}>#{s.id} - ${s.price.toFixed(4)}</SelectItem>)}
                                 </SelectContent>
@@ -183,8 +181,8 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     )}
                     {serviceId && (
                          <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
-                            <Input placeholder={t('quickOrderForm.linkPlaceholder')} value={link} onChange={e => setLink(e.target.value)} required />
-                            <Input type="number" placeholder={t('quickOrderForm.quantityPlaceholder')} value={quantity} onChange={e => setQuantity(e.target.value)} required />
+                            <Input placeholder="الرابط" value={link} onChange={e => setLink(e.target.value)} required />
+                            <Input type="number" placeholder="الكمية" value={quantity} onChange={e => setQuantity(e.target.value)} required />
                         </motion.div>
                     )}
                     </AnimatePresence>
@@ -192,16 +190,16 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
 
                     {selectedService && quantity && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center">
-                            <p className="text-sm text-muted-foreground">{t('quickOrderForm.finalCost')}</p>
+                            <p className="text-sm text-muted-foreground">التكلفة النهائية</p>
                             {discountPercentage > 0 && (
                                 <p className="text-xs text-muted-foreground line-through">
-                                    {t('quickOrderForm.originalCost')}: ${orderCost.base.toFixed(4)}
+                                    التكلفة الأصلية: ${orderCost.base.toFixed(4)}
                                 </p>
                             )}
                             <p className="text-2xl font-bold font-mono">${orderCost.final.toFixed(4)}</p>
                              {discountPercentage > 0 && (
                                 <p className="text-xs text-primary mt-1 font-semibold">
-                                    {t('quickOrderForm.discountApplied', { discount: rank.discount, rankName: t(`ranks.${rank.name}`) })}
+                                    تم تطبيق خصم رتبة {rank.name} بنسبة {rank.discount}%
                                 </p>
                             )}
                         </motion.div>
@@ -211,7 +209,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     <CardFooter>
                         <Button type="submit" className="w-full" disabled={isSubmitting || servicesLoading}>
                             {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
-                            {t('quickOrderForm.submitButton')}
+                            إرسال الطلب
                         </Button>
                     </CardFooter>
                 )}
