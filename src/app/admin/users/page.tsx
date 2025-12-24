@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getDocs, limit, orderBy, startAfter, endBefore, limitToLast, where, DocumentData, Query, getCountFromServer } from 'firebase/firestore';
+import { collection, query, getDocs, limit, orderBy, startAfter, endBefore, limitToLast, where, DocumentData, Query } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,10 +16,12 @@ import { EditUserDialog } from './_components/edit-user-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
 
 const ITEMS_PER_PAGE = 15;
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,75 +31,77 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [page, setPage] = useState(1);
-  const [pageCursors, setPageCursors] = useState<(DocumentData | null)[]>([null]); // Array to store cursors for each page start
+  const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
+  const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
+  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
 
-  const fetchUsers = useCallback(async (newPage: number) => {
+  const fetchUsers = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-        let q: Query = collection(firestore, 'users');
+      let q: Query = collection(firestore, 'users');
 
-        // Note: Firestore doesn't support case-insensitive search or searching across multiple fields with OR.
-        // We will do a basic prefix search on email which is a common use case.
-        if (debouncedSearchTerm) {
-             q = query(q, where('email', '>=', debouncedSearchTerm), where('email', '<=', debouncedSearchTerm + '\uf8ff'));
-        }
+      if (debouncedSearchTerm) {
+        q = query(q, where('email', '>=', debouncedSearchTerm), where('email', '<=', debouncedSearchTerm + '\uf8ff'));
+      }
+      
+      q = query(q, orderBy('createdAt', 'desc'));
 
-        q = query(q, orderBy('email', 'desc'));
+      if (direction === 'next' && lastVisible) {
+          q = query(q, startAfter(lastVisible));
+      } else if (direction === 'prev' && firstVisible) {
+          q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
+      }
+      
+      const limitedQuery = query(q, limit(ITEMS_PER_PAGE + 1));
 
-        if (newPage > page && pageCursors[page]) {
-            q = query(q, startAfter(pageCursors[page]));
-        } else if (newPage < page && pageCursors[newPage - 1]) {
-            // This is tricky without knowing the exact previous cursor. A full-featured pagination would require more state.
-            // For simplicity, we'll reset and go to the target page. This is a simplification for this context.
-            let tempQuery = query(collection(firestore, 'users'), orderBy('email', 'desc'));
-             if (debouncedSearchTerm) {
-                tempQuery = query(tempQuery, where('email', '>=', debouncedSearchTerm), where('email', '<=', debouncedSearchTerm + '\uf8ff'));
-            }
-            if (newPage > 1) {
-                 tempQuery = query(tempQuery, limit((newPage - 1) * ITEMS_PER_PAGE));
-                 const prevDocs = await getDocs(tempQuery);
-                 const lastPrevDoc = prevDocs.docs[prevDocs.docs.length - 1];
-                 q = query(q, startAfter(lastPrevDoc));
-            }
-        }
-        
-        q = query(q, limit(ITEMS_PER_PAGE));
+      const documentSnapshots = await getDocs(limitedQuery);
+      
+      const newUsers: User[] = [];
+      documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).forEach(doc => {
+          newUsers.push({ id: doc.id, ...doc.data() } as User);
+      });
 
-        const documentSnapshots = await getDocs(q);
-        const newUsers: User[] = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+      if (direction === 'initial' && newUsers.length === 0) {
+        setPage(1);
+      }
 
-        setUsers(newUsers);
+      setUsers(newUsers);
+      setIsNextPageAvailable(documentSnapshots.docs.length > ITEMS_PER_PAGE);
 
-        if (documentSnapshots.docs.length > 0) {
-            const newCursors = [...pageCursors];
-            newCursors[newPage] = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-            setPageCursors(newCursors);
-        }
-        
-        setPage(newPage);
-
+      setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length > 1 ? documentSnapshots.docs.length - 2 : 0]);
+      setFirstVisible(documentSnapshots.docs[0]);
+      
     } catch (error) {
-        console.error("Error fetching users:", error);
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب المستخدمين.' });
+      console.error("Error fetching users:", error);
+      toast({ variant: 'destructive', title: t('error'), description: t('adminUsers.fetchError') });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
-  }, [firestore, toast, debouncedSearchTerm, page, pageCursors]);
+  }, [firestore, toast, t, debouncedSearchTerm, lastVisible, firstVisible]);
 
   useEffect(() => {
-    // Reset and fetch when search term changes
     setPage(1);
-    setPageCursors([null]);
-    fetchUsers(1);
+    setLastVisible(null);
+    setFirstVisible(null);
+    fetchUsers('initial');
   }, [debouncedSearchTerm, firestore]);
 
-  const handleManualFetch = () => {
-    setPage(1);
-    setPageCursors([null]);
-    fetchUsers(1);
-  }
+  const handleNextPage = () => {
+    if (isNextPageAvailable) {
+      setPage(p => p + 1);
+      fetchUsers('next');
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(p => p - 1);
+      fetchUsers('prev');
+    }
+  };
+
 
   const renderContent = () => {
      if (isLoading) {
@@ -111,7 +115,7 @@ export default function AdminUsersPage() {
     if (!users || users.length === 0) {
         return (
             <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">لا يوجد مستخدمون يطابقون بحثك.</TableCell>
+                <TableCell colSpan={8} className="h-24 text-center">{t('adminUsers.noMatch')}</TableCell>
             </TableRow>
         );
     }
@@ -132,20 +136,20 @@ export default function AdminUsersPage() {
         </TableCell>
         <TableCell>
             <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
-              {user.role === 'admin' ? <Shield className="w-3 h-3 ml-1" /> : null}
-              {user.role || 'user'}
+              {user.role === 'admin' ? <Shield className="w-3 h-3 me-1" /> : null}
+              {t(`roles.${user.role || 'user'}`)}
             </Badge>
         </TableCell>
         <TableCell>
-            <Badge variant="secondary">{user.rank}</Badge>
+            <Badge variant="secondary">{t(`ranks.${user.rank}`)}</Badge>
         </TableCell>
         <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
         <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
         <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-        <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'غير متوفر'}</TableCell>
+        <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
         <TableCell className="text-right">
-            <EditUserDialog user={user} onUserUpdate={handleManualFetch}>
-                <Button variant="outline" size="sm">تعديل</Button>
+            <EditUserDialog user={user} onUserUpdate={() => fetchUsers('initial')}>
+                <Button variant="outline" size="sm">{t('edit')}</Button>
             </EditUserDialog>
         </TableCell>
       </TableRow>
@@ -155,19 +159,19 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المستخدمين</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('adminUsers.title')}</h1>
         <p className="text-muted-foreground">
-          عرض وتعديل بيانات المستخدمين في المنصة.
+          {t('adminUsers.description')}
         </p>
       </div>
 
        <Card>
         <CardHeader>
           <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالبريد الإلكتروني..."
-                className="pr-10"
+                placeholder={t('adminUsers.searchPlaceholder')}
+                className="pe-10 rtl:ps-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -177,14 +181,14 @@ export default function AdminUsersPage() {
            <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>المستخدم</TableHead>
-                <TableHead>الدور</TableHead>
-                <TableHead>الرتبة</TableHead>
-                <TableHead>الرصيد</TableHead>
-                <TableHead>رصيد الإعلانات</TableHead>
-                <TableHead>إجمالي الإنفاق</TableHead>
-                <TableHead>تاريخ الانضمام</TableHead>
-                <TableHead className="text-right">إجراءات</TableHead>
+                <TableHead>{t('adminUsers.table.user')}</TableHead>
+                <TableHead>{t('adminUsers.table.role')}</TableHead>
+                <TableHead>{t('adminUsers.table.rank')}</TableHead>
+                <TableHead>{t('adminUsers.table.balance')}</TableHead>
+                <TableHead>{t('adminUsers.table.adBalance')}</TableHead>
+                <TableHead>{t('adminUsers.table.totalSpent')}</TableHead>
+                <TableHead>{t('adminUsers.table.joinDate')}</TableHead>
+                <TableHead className="text-right">{t('adminUsers.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -193,13 +197,15 @@ export default function AdminUsersPage() {
           </Table>
         </CardContent>
          <CardFooter className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">صفحة {page}</span>
+            <span className="text-sm text-muted-foreground">{t('page')} {page}</span>
             <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => fetchUsers(page - 1)} disabled={page <= 1}>
-                    <ChevronRight className="h-4 w-4" />
+                <Button variant="outline" size="icon" onClick={handlePrevPage} disabled={page <= 1 || isLoading}>
+                    <ChevronRight className="h-4 w-4 rtl:hidden" />
+                    <ChevronLeft className="h-4 w-4 ltr:hidden" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => fetchUsers(page + 1)} disabled={users.length < ITEMS_PER_PAGE}>
-                    <ChevronLeft className="h-4 w-4" />
+                <Button variant="outline" size="icon" onClick={handleNextPage} disabled={!isNextPageAvailable || isLoading}>
+                    <ChevronLeft className="h-4 w-4 rtl:hidden" />
+                    <ChevronRight className="h-4 w-4 ltr:hidden" />
                 </Button>
             </div>
         </CardFooter>

@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, LogOut, Shield, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 type UserProps = {
   id: string;
@@ -30,6 +31,7 @@ type UserProps = {
 }
 
 export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }) {
+  const { t } = useTranslation();
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -39,15 +41,15 @@ export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }
       if (!auth) return;
       await signOut(auth);
       toast({
-        title: 'تم تسجيل الخروج',
-        description: 'نراك قريباً!',
+        title: t('userNav.signOutSuccessTitle'),
+        description: t('userNav.signOutSuccessDesc'),
       });
       router.push('/login');
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'خطأ',
-        description: 'حدث خطأ أثناء تسجيل الخروج. يرجى المحاولة مرة أخرى.',
+        title: t('error'),
+        description: t('userNav.signOutError'),
       });
     }
   };
@@ -75,29 +77,29 @@ export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href="/dashboard">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                <span>لوحة التحكم</span>
+                <LayoutDashboard className="me-2 h-4 w-4" />
+                <span>{t('userNav.dashboard')}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/profile">
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>الملف الشخصي</span>
+                <UserIcon className="me-2 h-4 w-4" />
+                <span>{t('userNav.profile')}</span>
             </Link>
           </DropdownMenuItem>
            {isAdmin && (
             <DropdownMenuItem asChild>
                 <Link href="/admin/dashboard">
-                    <Shield className="mr-2 h-4 w-4 text-primary" />
-                    <span>لوحة المسؤول</span>
+                    <Shield className="me-2 h-4 w-4 text-primary" />
+                    <span>{t('userNav.adminPanel')}</span>
                 </Link>
             </DropdownMenuItem>
            )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>تسجيل الخروج</span>
+          <LogOut className="me-2 h-4 w-4" />
+          <span>{t('userNav.signOut')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

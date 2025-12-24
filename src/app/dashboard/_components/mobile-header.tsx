@@ -9,22 +9,19 @@ import Link from "next/link";
 import { dashboardNavItems } from "@/lib/placeholder-data";
 import { usePathname } from "next/navigation";
 import { UserNav } from "../_components/user-nav";
-import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc } from 'firebase/firestore';
 import type { User as UserType } from '@/lib/types';
+import { useTranslation } from "react-i18next";
 
-export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
-    const { user } = useUser();
-    const firestore = useFirestore();
-    const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, 'users', user.uid) : null), [firestore, user]);
-    const { data: userData } = useDoc<UserType>(userDocRef);
-
+export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData: UserType }) {
+    const { t } = useTranslation();
     const pathname = usePathname();
+
+    // Use userData from Firestore as the source of truth
     const appUser = {
-        name: user?.displayName || `مستخدم`,
-        email: user?.email || "مستخدم مجهول",
-        avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
-        id: user?.uid || 'N/A'
+        name: userData.name,
+        email: userData.email,
+        avatarUrl: userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.id}`,
+        id: userData.id
     };
     
     return (
@@ -40,7 +37,7 @@ export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
               <SheetHeader className="text-right mb-6">
                 <SheetTitle><Logo /></SheetTitle>
                 <SheetDescription>
-                  قائمة التنقل الرئيسية في لوحة التحكم
+                  {t('mobileHeader.navDescription')}
                 </SheetDescription>
               </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium">
@@ -51,7 +48,7 @@ export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
                         className={`flex items-center gap-4 px-2.5 ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         <item.icon className="h-5 w-5" />
-                        {item.label}
+                        {t(item.label)}
                     </Link>
                 ))}
                  {isAdmin && (
@@ -60,13 +57,13 @@ export function MobileHeader({ isAdmin }: { isAdmin: boolean }) {
                         className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                     >
                        <Shield className="h-5 w-5" />
-                        لوحة المسؤول
+                        {t('userNav.adminPanel')}
                     </Link>
                  )}
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="ml-auto">
+          <div className="ms-auto">
              <UserNav user={appUser} isAdmin={isAdmin} />
           </div>
         </header>

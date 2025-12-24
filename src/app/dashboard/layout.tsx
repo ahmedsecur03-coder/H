@@ -33,14 +33,18 @@ import { cn } from '@/lib/utils';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { LanguageToggle } from '@/components/language-toggle';
+import { useTranslation } from 'react-i18next';
+import { Skeleton } from '@/components/ui/skeleton';
 
-
-function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
+function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
+  const { t } = useTranslation();
+  
+  // Use userData from Firestore as the source of truth
   const appUser = {
-      name: user?.displayName || `User`,
-      email: user?.email || "Anonymous User",
-      avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
-      id: user?.uid || 'N/A'
+      name: userData.name,
+      email: userData.email,
+      avatarUrl: userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.id}`,
+      id: userData.id,
   };
 
   return (
@@ -50,7 +54,7 @@ function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
              {isAdmin && (
                 <Button variant="outline" size="sm" asChild>
                     <Link href="/admin/dashboard">
-                        <Shield className="me-2 h-4 w-4"/>Go to Admin Panel
+                        <Shield className="me-2 h-4 w-4"/>{t('goToAdminPanel')}
                     </Link>
                 </Button>
              )}
@@ -62,10 +66,12 @@ function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
 
 function NavItems() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const renderNavItem = (item: NestedNavItem, index: number) => {
     const isActive = item.href ? pathname === item.href : false;
     const Icon = item.icon;
+    const label = t(item.label);
 
     if (item.children) {
       return (
@@ -74,7 +80,7 @@ function NavItems() {
                 <SidebarMenuSubTrigger>
                     <div className='flex items-center gap-2'>
                         {Icon && <Icon className="h-4 w-4" />}
-                        <span>{item.label}</span>
+                        <span>{label}</span>
                     </div>
                     <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
                 </SidebarMenuSubTrigger>
@@ -83,7 +89,7 @@ function NavItems() {
                         <Link key={child.href} href={child.href || '#'} passHref>
                             <SidebarMenuSubButton isActive={pathname === child.href}>
                                 {child.icon && <child.icon className="w-4 h-4" />}
-                                <span>{child.label}</span>
+                                <span>{t(child.label)}</span>
                             </SidebarMenuSubButton>
                         </Link>
                     ))}
@@ -98,7 +104,7 @@ function NavItems() {
         <Link href={item.href || '#'} passHref>
           <SidebarMenuButton isActive={isActive}>
             {Icon && <Icon className="h-4 w-4" />}
-            <span>{item.label}</span>
+            <span>{label}</span>
           </SidebarMenuButton>
         </Link>
       </SidebarMenuItem>
@@ -116,6 +122,7 @@ export default function DashboardLayout({
 }) {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
+    const { t } = useTranslation();
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
     const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
@@ -129,7 +136,7 @@ export default function DashboardLayout({
     if (isUserLoading || isUserDataLoading || !user || !userData) {
       return (
            <div className="flex min-h-screen w-full items-center justify-center">
-                <p>Loading...</p>
+                <Skeleton className="h-10 w-48" />
             </div>
       )
     }
@@ -156,20 +163,20 @@ export default function DashboardLayout({
             <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
                 <div className="flex items-center gap-3 p-2">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
-                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={userData.avatarUrl || undefined} alt={userData.name || 'User'} />
+                        <AvatarFallback>{userData.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <p className="font-semibold text-sm">{user.displayName}</p>
-                        <p className="text-xs text-muted-foreground">{rank.name}</p>
+                        <p className="font-semibold text-sm">{userData.name}</p>
+                        <p className="text-xs text-muted-foreground">{t(`ranks.${rank.name}`)}</p>
                     </div>
                 </div>
             </SidebarFooter>
         </Sidebar>
         
         <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
-            <MobileHeader isAdmin={isAdmin} />
-            <DesktopHeader isAdmin={isAdmin} user={user} />
+            <MobileHeader isAdmin={isAdmin} userData={userData} />
+            <DesktopHeader isAdmin={isAdmin} userData={userData} />
             
             <main className="mb-20 flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:mb-0 md:gap-8">
             {children}
@@ -181,4 +188,3 @@ export default function DashboardLayout({
         </SidebarProvider>
     );
 }
-
