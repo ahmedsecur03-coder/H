@@ -87,7 +87,7 @@ const PIE_CHART_COLORS = [
 ];
 
 export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { dailySpending, categorySpending, totalOrders, averageOrderValue, mostUsedCategory } = processAnalyticsData(orders);
 
     const totalSpendingLast30Days = useMemo(() => orders.reduce((sum, order) => sum + order.charge, 0), [orders]);
@@ -158,7 +158,7 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
                                     tickLine={false}
                                     tickMargin={10}
                                     axisLine={false}
-                                    tickFormatter={(value) => new Date(value).toLocaleDateString(t('locale') || 'en-US', { month: 'short', day: 'numeric' })}
+                                    tickFormatter={(value) => new Date(value).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
                                 />
                                 <YAxis />
                                 <ChartTooltip content={<ChartTooltipContent />} />
