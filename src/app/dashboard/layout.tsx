@@ -11,14 +11,11 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
   SidebarMenuSub,
-  SidebarFooter,
   SidebarMenuSubTrigger,
   SidebarMenuSubContent,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
@@ -26,16 +23,16 @@ import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
 import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
-import { ChevronDown, Shield, Bell } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { ChevronDown, Shield } from 'lucide-react';
+import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend } from '@/lib/service';
-import { cn } from '@/lib/utils';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Notifications } from '@/components/notifications';
+import { Button } from '@/components/ui/button';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const appUser = {
@@ -66,19 +63,17 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
 function NavItems() {
   const pathname = usePathname();
 
-  const renderNavItem = (item: NestedNavItem) => {
-    const isActive = item.href ? pathname === item.href : false;
+  const renderNavItem = (item: NestedNavItem, index: number) => {
     const Icon = item.icon;
-    const label = item.label;
 
     if (item.children) {
       return (
-        <SidebarMenuItem key={label}>
+        <SidebarMenuItem key={item.label || index}>
             <SidebarMenuSub>
                 <SidebarMenuSubTrigger>
                     <div className='flex items-center gap-2'>
                         {Icon && <Icon className="h-4 w-4" />}
-                        <span>{label}</span>
+                        <span>{item.label}</span>
                     </div>
                     <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
                 </SidebarMenuSubTrigger>
@@ -96,11 +91,11 @@ function NavItems() {
     }
 
     return (
-      <SidebarMenuItem key={label}>
+      <SidebarMenuItem key={item.href || index}>
         <Link href={item.href || '#'} passHref>
-          <SidebarMenuButton isActive={isActive}>
+          <SidebarMenuButton isActive={pathname === item.href}>
             {Icon && <Icon className="h-4 w-4" />}
-            <span>{label}</span>
+            <span>{item.label}</span>
           </SidebarMenuButton>
         </Link>
       </SidebarMenuItem>
@@ -136,7 +131,8 @@ export default function DashboardLayout({
       )
     }
   
-    const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
+    // For development, all users are admins.
+    const isAdmin = true;
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
     return (
@@ -155,21 +151,9 @@ export default function DashboardLayout({
                 <NavItems />
             </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
-                <div className="flex items-center gap-3 p-2">
-                    <Avatar className="h-10 w-10">
-                        <AvatarImage src={userData.avatarUrl || undefined} alt={userData.name || 'User'} />
-                        <AvatarFallback>{userData.name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <p className="font-semibold text-sm">{userData.name}</p>
-                        <p className="text-xs text-muted-foreground">{rank.name}</p>
-                    </div>
-                </div>
-            </SidebarFooter>
         </Sidebar>
         
-        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
+        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
             <MobileHeader isAdmin={isAdmin} userData={userData} />
             <DesktopHeader isAdmin={isAdmin} userData={userData} />
             

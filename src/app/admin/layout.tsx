@@ -10,9 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarInset,
   SidebarTrigger,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
@@ -92,20 +90,15 @@ export default function AdminLayout({
   
   const isLoading = isUserLoading || isUserDataLoading;
   
-  const isAdmin = !isLoading && userData?.role === 'admin';
-
+  // No more role check, just ensure user is logged in for development convenience
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.push('/login');
-      } else if (!isAdmin) {
-        router.push('/dashboard');
-      }
+    if (!isLoading && !user) {
+      router.push('/login');
     }
-  }, [user, isAdmin, isLoading, router]);
+  }, [user, isLoading, router]);
 
 
-  if (isLoading || !isAdmin || !userData) {
+  if (isLoading || !userData) {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden w-64 border-e bg-muted/40 p-4 md:block">
@@ -151,7 +144,7 @@ export default function AdminLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <div className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
+      <div className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
         <AdminHeader userData={userData} />
         <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
