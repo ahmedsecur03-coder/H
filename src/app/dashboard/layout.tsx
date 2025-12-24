@@ -32,23 +32,25 @@ import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { LanguageToggle } from '@/components/language-toggle';
 
 
 function DesktopHeader({ isAdmin, user }: { isAdmin: boolean, user: any }) {
   const appUser = {
-      name: user?.displayName || `مستخدم`,
-      email: user?.email || "مستخدم مجهول",
+      name: user?.displayName || `User`,
+      email: user?.email || "Anonymous User",
       avatarUrl: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid}`,
       id: user?.uid || 'N/A'
   };
 
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
-        <div className="flex items-center gap-2 font-body ml-auto">
+        <div className="ms-auto flex items-center gap-2 font-body">
+             <LanguageToggle />
              {isAdmin && (
                 <Button variant="outline" size="sm" asChild>
                     <Link href="/admin/dashboard">
-                        <Shield className="w-4 h-4 ml-2"/>الانتقال للوحة المسؤول
+                        <Shield className="me-2 h-4 w-4"/>Go to Admin Panel
                     </Link>
                 </Button>
              )}
@@ -127,7 +129,7 @@ export default function DashboardLayout({
     if (isUserLoading || isUserDataLoading || !user || !userData) {
       return (
            <div className="flex min-h-screen w-full items-center justify-center">
-                <p>جاري التحميل...</p>
+                <p>Loading...</p>
             </div>
       )
     }
@@ -137,7 +139,7 @@ export default function DashboardLayout({
 
     return (
         <SidebarProvider>
-        <Sidebar side="right" collapsible="icon" className="hidden md:block">
+        <Sidebar side="left" collapsible="icon" className="hidden md:block">
             <SidebarHeader>
             <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                 <Logo className="group-data-[collapsible=icon]:hidden" />
@@ -165,11 +167,11 @@ export default function DashboardLayout({
             </SidebarFooter>
         </Sidebar>
         
-        <div className="flex flex-col flex-1 md:peer-data-[state=expanded]:[margin-right:16rem] md:peer-data-[state=collapsed]:[margin-right:3.5rem] transition-all duration-300 ease-in-out">
+        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
             <MobileHeader isAdmin={isAdmin} />
             <DesktopHeader isAdmin={isAdmin} user={user} />
             
-            <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 mb-20 md:mb-0">
+            <main className="mb-20 flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:mb-0 md:gap-8">
             {children}
             </main>
             
@@ -179,3 +181,4 @@ export default function DashboardLayout({
         </SidebarProvider>
     );
 }
+

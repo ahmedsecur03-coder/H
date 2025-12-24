@@ -20,8 +20,8 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { ThemeToggle } from '@/components/theme-toggle';
-import { doc } from 'firebase/firestore';
+import { LanguageToggle } from '@/components/language-toggle';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   Sheet,
   SheetContent,
@@ -87,8 +87,8 @@ function Header() {
   }, [user, firestore]);
 
    const appUser = user ? {
-      name: user.displayName || `مستخدم`,
-      email: user.email || "مستخدم مسجل",
+      name: user.displayName || `User`,
+      email: user.email || "Registered User",
       avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
       id: user.uid
   } : null;
@@ -129,15 +129,15 @@ function Header() {
             </NavigationMenuList>
           </NavigationMenu>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <LanguageToggle />
           <div className="hidden md:flex items-center gap-2">
             {isClient && (
               isUserLoading ? (
-                  <div className="h-10 w-24 bg-muted rounded-md animate-pulse" />
+                  <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />
               ) : user ? (
                   <>
                   <Button asChild>
-                      <Link href="/dashboard">لوحة التحكم</Link>
+                      <Link href="/dashboard">Dashboard</Link>
                   </Button>
                   {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
                   </>
@@ -145,14 +145,14 @@ function Header() {
                   <>
                   <Button variant="ghost" asChild>
                       <Link href="/login">
-                      <LogIn className="ml-2" />
-                      تسجيل الدخول
+                      <LogIn className="me-2" />
+                      Login
                       </Link>
                   </Button>
                   <Button asChild>
                       <Link href="/signup">
-                      <UserPlus className="ml-2" />
-                      ابدأ الآن
+                      <UserPlus className="me-2" />
+                      Get Started
                       </Link>
                   </Button>
                   </>
@@ -164,10 +164,10 @@ function Header() {
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
                   <Menu className="h-5 w-5" />
-                  <span className="sr-only">فتح القائمة</span>
+                  <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right">
+              <SheetContent side="left">
                 <SheetHeader>
                   <SheetTitle><Logo /></SheetTitle>
                 </SheetHeader>
@@ -181,21 +181,21 @@ function Header() {
                  <div className="mt-auto pt-6 border-t">
                   {isClient && (
                     isUserLoading ? (
-                        <div className="h-10 w-full bg-muted rounded-md animate-pulse" />
+                        <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
                     ) : user ? (
                          <Button asChild className="w-full">
-                            <Link href="/dashboard">لوحة التحكم</Link>
+                            <Link href="/dashboard">Dashboard</Link>
                         </Button>
                     ) : (
                       <div className="space-y-2">
                         <SheetClose asChild>
                            <Button asChild className="w-full">
-                              <Link href="/signup"><UserPlus className="ml-2" />ابدأ الآن</Link>
+                              <Link href="/signup"><UserPlus className="me-2" />Get Started</Link>
                           </Button>
                         </SheetClose>
                          <SheetClose asChild>
                           <Button variant="ghost" asChild className="w-full">
-                              <Link href="/login"><LogIn className="ml-2" />تسجيل الدخول</Link>
+                              <Link href="/login"><LogIn className="me-2" />Login</Link>
                           </Button>
                         </SheetClose>
                       </div>
@@ -227,13 +227,14 @@ export default function PublicLayout({
       </main>
       <footer className="bg-card/50 border-t border-border z-10">
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
-            <p className="text-sm text-muted-foreground">&copy; 2024 حاجاتي. جميع الحقوق محفوظة.</p>
+            <p className="text-sm text-muted-foreground">&copy; 2024 Hajaty. All rights reserved.</p>
             <nav className="flex gap-4 sm:gap-6">
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">Terms of Service</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">Privacy Policy</Link>
             </nav>
         </div>
       </footer>
     </div>
   );
 }
+

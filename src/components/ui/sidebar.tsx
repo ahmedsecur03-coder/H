@@ -242,7 +242,7 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col border-l border-sidebar-border bg-sidebar"
+            className="flex h-full w-full flex-col border-e border-sidebar-border bg-sidebar rtl:border-e-0 rtl:border-s"
           >
             {children}
           </div>
@@ -317,7 +317,7 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ms-2 md:peer-data-[variant=inset]:ms-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}
       {...props}
@@ -669,7 +669,7 @@ const SidebarMenuSubTrigger = React.forwardRef<
   React.ComponentProps<typeof CollapsibleTrigger> & { asChild?: boolean }
 >(({ asChild = true, ...props }, ref) => (
   <CollapsibleTrigger asChild={asChild} {...props} ref={ref}>
-    <SidebarMenuButton className="justify-between w-full">
+    <SidebarMenuButton className="w-full justify-between">
       {props.children}
     </SidebarMenuButton>
   </CollapsibleTrigger>
@@ -679,7 +679,7 @@ SidebarMenuSubTrigger.displayName = "SidebarMenuSubTrigger";
 
 const SidebarMenuSubContent = ({ ...props }: React.ComponentProps<typeof CollapsibleContent>) => (
     <CollapsibleContent
-      className="group-data-[collapsible=icon]:hidden ml-7 flex flex-col gap-1 border-r-2 border-dotted border-sidebar-border/50 pr-2"
+      className="ms-7 flex flex-col gap-1 border-s-2 border-dotted border-sidebar-border/50 ps-2 group-data-[collapsible=icon]:hidden"
       {...props}
     />
 );
