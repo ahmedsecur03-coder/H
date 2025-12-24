@@ -693,6 +693,7 @@ const SidebarMenuSubButton = React.forwardRef<
   >(({ isActive, className, children, ...props }, ref) => {
     return (
       <Link
+        passHref
         ref={ref}
         data-active={isActive}
         className={cn(
