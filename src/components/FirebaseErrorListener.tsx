@@ -10,15 +10,16 @@ import type { SystemLog } from '@/lib/types';
 
 
 export function FirebaseErrorListener() {
-  const [error, setError] = useState<FirestorePermissionError | null>(null);
   const firestore = useFirestore();
   const { user } = useUser();
 
   useEffect(() => {
     const handleError = (err: FirestorePermissionError) => {
-      setError(err);
+      // Log the detailed error to the console instead of throwing it.
+      // This prevents the Next.js error overlay from appearing.
+      console.error("Firestore Permission Error Caught:", err);
       
-      // Log the permission error to the systemLogs collection if firestore is available
+      // Optionally, still log to the backend for monitoring purposes
       if (firestore) {
         const logData: Omit<SystemLog, 'id'> = {
             event: 'permission_denied',
@@ -31,7 +32,6 @@ export function FirebaseErrorListener() {
                   auth: err.request.auth,
                   method: err.request.method,
                   path: err.request.path,
-                  // Ensure resource data is not undefined before including it
                   ...(err.request.resource ? { resource: err.request.resource } : {}),
                 }
             },
@@ -50,9 +50,6 @@ export function FirebaseErrorListener() {
     };
   }, [firestore, user]);
 
-  if (error) {
-    throw error;
-  }
-
+  // This component no longer throws errors, so it doesn't render anything that could crash the app.
   return null;
 }
