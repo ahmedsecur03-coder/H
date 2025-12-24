@@ -1,3 +1,4 @@
+
 import 'server-only';
 
 import type { User, Order } from '@/lib/types';
@@ -8,7 +9,8 @@ const MULTI_LEVEL_COMMISSIONS = [3, 2, 1, 0.5, 0.25]; // Corresponds to levels 2
 
 /**
  * Server-side version of processOrderInTransaction.
- * This function is designed to be used in server environments (like API routes)
+ * This function is the single source of truth for all order processing logic.
+ * It is designed to be used in server environments (like API routes)
  * and uses the Firebase Admin SDK's Transaction object.
  *
  * @param transaction The Firestore Admin Transaction object.
@@ -22,7 +24,7 @@ export async function serverProcessOrderInTransaction(
     firestore: Firestore,
     userId: string,
     orderData: Omit<Order, 'id'>,
-): Promise<string> { // Returns the new order ID
+): Promise<{ orderId: string, promotion: { title: string, description: string } | null }> {
     const userRef = firestore.collection("users").doc(userId);
     const userDoc = await transaction.get(userRef);
 
@@ -37,17 +39,30 @@ export async function serverProcessOrderInTransaction(
         throw new Error("Not enough funds on balance.");
     }
 
-    // 1. Update user's balance and total spent
+    // 1. Update user's balance, total spent, and check for rank promotion
     const newBalance = userData.balance - cost;
     const newTotalSpent = (userData.totalSpent || 0) + cost;
+    const oldRank = getRankForSpend(userData.totalSpent || 0);
+    const newRank = getRankForSpend(newTotalSpent);
 
-    transaction.update(userRef, {
+    const userUpdates: { [key: string]: any } = {
         balance: newBalance,
         totalSpent: newTotalSpent,
-    });
-    
-    // Note: Rank promotion rewards are handled on the client-side/order form for immediate feedback.
-    // The rank itself is derived, so no update is needed here unless we denormalize it.
+    };
+
+    let promotion: { title: string, description: string } | null = null;
+    if (newRank.name !== oldRank.name) {
+        userUpdates.rank = newRank.name;
+        if (newRank.reward > 0) {
+            userUpdates.adBalance = FieldValue.increment(newRank.reward);
+            promotion = {
+                title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
+                description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
+            };
+        }
+    }
+
+    transaction.update(userRef, userUpdates);
     
     // 2. Create the new order document
     const newOrderRef = firestore.collection(`users/${userId}/orders`).doc();
@@ -81,10 +96,9 @@ export async function serverProcessOrderInTransaction(
                     level: 1,
                 });
             }
-             // Set up for next level
             currentReferrerId = referrerData.referrerId;
         } else {
-             currentReferrerId = null; // Stop if a referrer in the chain doesn't exist
+             currentReferrerId = null;
         }
     }
 
@@ -114,14 +128,12 @@ export async function serverProcessOrderInTransaction(
                     transactionDate: new Date().toISOString(),
                     level: level,
                 });
-
-                // Move to the next referrer up the chain
                 currentReferrerId = referrerData.referrerId; 
             } else {
-                break; // Stop if a referrer in the chain doesn't exist
+                break;
             }
         }
     }
     
-    return newOrderRef.id;
+    return { orderId: newOrderRef.id, promotion };
 }

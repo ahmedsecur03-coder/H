@@ -1,10 +1,11 @@
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeFirebaseServer } from '@/firebase/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import type { Service, Order, User } from '@/lib/types';
-import { processOrderInTransaction as serverProcessOrderInTransaction } from '@/lib/server-service';
+import { serverProcessOrderInTransaction } from '@/lib/server-service';
 
 // Helper function to find user by API key
 async function getUserByApiKey(apiKey: string) {
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: `Quantity must be between ${service.min} and ${service.max}` }, { status: 400 });
                 }
 
-                const cost = (numQuantity / 1000) * service.price; // Simplified cost, no discount via API for now
+                const cost = (numQuantity / 1000) * service.price;
                 if (user.balance < cost) {
                     return NextResponse.json({ error: 'Not enough funds' }, { status: 400 });
                 }
@@ -109,18 +110,18 @@ export async function POST(request: NextRequest) {
                     serviceName: `${service.platform} - ${service.category}`,
                     link: link,
                     quantity: numQuantity,
-                    charge: cost, // Using simplified cost for now
+                    charge: cost,
                     orderDate: new Date().toISOString(),
                     status: 'قيد التنفيذ',
                 };
                 
-                // Using a transaction for safety
-                const newOrderId = await firestore.runTransaction(async (transaction) => {
+                // Using the unified server-side transaction for safety and consistency
+                const { orderId } = await firestore.runTransaction(async (transaction) => {
                      return await serverProcessOrderInTransaction(transaction, firestore, user.id, orderData);
                 });
 
 
-                return NextResponse.json({ order: newOrderId });
+                return NextResponse.json({ order: orderId });
             }
 
             case 'status': {

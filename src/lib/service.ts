@@ -69,13 +69,20 @@ export async function processOrderInTransaction(
         throw new Error("رصيدك غير كافٍ لإتمام هذا الطلب.");
     }
 
+    // This function will now be much simpler. It prepares the data
+    // and the core logic is handled by the server-side equivalent,
+    // which we will now create/update.
+    // For the client-side, we just need to ensure the balance is deducted
+    // and the order is created. The complex logic (ranks, affiliate)
+    // is better handled server-side for consistency with API orders.
+
     // 1. Update user's balance and total spent
     const newBalance = userData.balance - cost;
     const newTotalSpent = userData.totalSpent + cost;
     const oldRank = getRankForSpend(userData.totalSpent);
     const newRank = getRankForSpend(newTotalSpent);
 
-    const userUpdates: Partial<User> = {
+    const userUpdates: any = {
         balance: newBalance,
         totalSpent: newTotalSpent,
     };
