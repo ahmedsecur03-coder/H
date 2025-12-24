@@ -2,91 +2,95 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { CheckCircle2, AlertCircle, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, AlertCircle, Clock, Database, Server, KeyRound, MessageSquare, Briefcase } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useFirestore, useUser } from '@/firebase';
+import { getCountFromServer, collection } from 'firebase/firestore';
+import { useTranslation } from 'react-i18next';
+import { ServiceCheckItem } from "./_components/service-check-item";
 
-// This is now simplified. In a real-world scenario, this would be fetched from a status API.
-const services = [
-  { name: "واجهة الموقع الرئيسية", status: "Operational" },
-  { name: "لوحة تحكم المستخدم", status: "Operational" },
-  { name: "نظام تقديم الطلبات", status: "Operational" },
-  { name: "بوابة الدفع (فودافون كاش)", status: "Operational" },
-  { name: "بوابة الدفع (Binance Pay)", status: "Operational" },
-  { name: "نظام الحملات الإعلانية", status: "Operational" },
-  { name: "نظام الإحالة", status: "Operational" },
-  { name: "الدعم الفني", status: "Operational" },
-  { name: "واجهة API", status: "Operational" },
-  { name: "لوحة تحكم المسؤول", status: "Operational" },
-];
-
-const statusConfig = {
-  Operational: {
-    icon: CheckCircle2,
-    color: "text-green-500",
-    text: "يعمل بكفاءة",
-  },
-  Maintenance: {
-    icon: Clock,
-    color: "text-yellow-500",
-    text: "تحت الصيانة",
-  },
-  Degraded: {
-    icon: AlertCircle,
-    color: "text-orange-500",
-    text: "أداء متدهور",
-  },
-  Outage: {
-    icon: AlertCircle,
-    color: "text-red-500",
-    text: "انقطاع الخدمة",
-  },
-};
 
 export default function SystemStatusPage() {
-  const overallStatus = services.every(s => s.status === 'Operational') 
-    ? 'Operational' 
-    : services.some(s => s.status === 'Outage' || s.status === 'Degraded') 
-    ? 'Degraded' 
-    : 'Maintenance';
+    const { t } = useTranslation();
+    const firestore = useFirestore();
+    const { user } = useUser();
 
-  const overallConfig = statusConfig[overallStatus as keyof typeof statusConfig];
+    // These functions represent the "check" for each service.
+    const checkDatabase = async () => {
+        if (!firestore) throw new Error("Firestore not available");
+        const servicesCol = collection(firestore, 'services');
+        await getCountFromServer(servicesCol);
+        return true;
+    };
 
-  return (
-    <div className="space-y-6 pb-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">حالة النظام</h1>
-        <p className="text-muted-foreground">
-          عرض حي لحالة تشغيل خدمات منصة حاجاتي.
-        </p>
-      </div>
+    const checkAuthentication = async () => {
+        if (!user) throw new Error("User not authenticated");
+        // Simple check if user object exists
+        return true;
+    };
+    
+    const checkApi = async () => {
+        // In a real scenario, this would ping the actual API endpoint.
+        // For this demo, we'll simulate a successful check.
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return true;
+    }
+    
+     const checkSupport = async () => {
+        // Simulate checking if the support ticket collection is accessible
+         if (!firestore || !user) throw new Error("User or Firestore not available");
+        const ticketsCol = collection(firestore, `users/${user.uid}/tickets`);
+        await getCountFromServer(ticketsCol);
+        return true;
+    };
 
-      <Card className={`bg-gradient-to-r from-${overallConfig.color.replace('text-', '')}-500/10 via-background to-background border-${overallConfig.color.replace('text-', '')}-500/20`}>
-        <CardHeader className="flex flex-row items-center gap-4">
-          <overallConfig.icon className={`h-8 w-8 ${overallConfig.color}`} />
-          <div>
-            <CardTitle>{overallConfig.text}</CardTitle>
-            <CardDescription>آخر تحديث: قبل بضع ثوانٍ</CardDescription>
-          </div>
-        </CardHeader>
-      </Card>
+    const checkCampaigns = async () => {
+        // Simulate checking if the campaigns collection is accessible
+        if (!firestore || !user) throw new Error("User or Firestore not available");
+        const campaignsCol = collection(firestore, `users/${user.uid}/campaigns`);
+        await getCountFromServer(campaignsCol);
+        return true;
+    }
 
-      <div className="space-y-4">
-        {services.map((service, index) => {
-          const config = statusConfig[service.status as keyof typeof statusConfig] || statusConfig.Operational;
-          return (
-            <Card key={index} className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-4">
-                <config.icon className={`h-6 w-6 ${config.color}`} />
-                <span className="font-medium">{service.name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className={`h-3 w-3 rounded-full ${config.color.replace('text-', 'bg-')} animate-pulse`}></div>
-                <span className={`font-semibold text-sm ${config.color}`}>{config.text}</span>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
-  );
+
+    const servicesToMonitor = [
+        { name: t('systemStatus.services.mainUI'), checkFn: async () => true, icon: Server },
+        { name: t('systemStatus.services.auth'), checkFn: checkAuthentication, icon: KeyRound },
+        { name: t('systemStatus.services.database'), checkFn: checkDatabase, icon: Database },
+        { name: t('systemStatus.services.support'), checkFn: checkSupport, icon: MessageSquare },
+        { name: t('systemStatus.services.campaigns'), checkFn: checkCampaigns, icon: Briefcase },
+        { name: t('systemStatus.services.api'), checkFn: checkApi, icon: KeyRound },
+    ];
+
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">{t('systemStatus.title')}</h1>
+                <p className="text-muted-foreground">
+                    {t('systemStatus.description')}
+                </p>
+            </div>
+
+            <div className="space-y-4">
+                {servicesToMonitor.map((service, index) => (
+                    <ServiceCheckItem 
+                        key={index}
+                        name={service.name}
+                        checkFn={service.checkFn}
+                        Icon={service.icon}
+                    />
+                ))}
+            </div>
+             <Card className="mt-8">
+                <CardHeader>
+                    <CardTitle>{t('systemStatus.note.title')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                       {t('systemStatus.note.description')}
+                    </p>
+                </CardContent>
+             </Card>
+        </div>
+    );
 }
