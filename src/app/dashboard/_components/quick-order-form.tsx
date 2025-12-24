@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle } from 'lucide-react';
+import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle, ChevronsRight, Timer, Gauge, TrendingDown, ShieldCheck } from 'lucide-react';
 import type { Service, Order, User as UserType } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -22,36 +22,39 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 
 function ServiceDescription({ service }: { service: Service }) {
-    if (!service.description) return null;
+    if (!service) return null;
 
-    // Split the description into parts based on the delimiter ' | '
-    const parts = service.description.split('|').map(part => part.trim());
-    
-    // The first part is the main description, the rest are details
-    const mainDesc = parts.shift();
-    const details = parts;
+    const details = [
+        { label: "وقت البدء", value: service.startTime, icon: Timer },
+        { label: "السرعة", value: service.speed, icon: Gauge },
+        { label: "معدل النقصان", value: service.dropRate, icon: TrendingDown },
+        { label: "الضمان", value: service.guarantee ? 'متوفر' : 'غير متوفر', icon: ShieldCheck },
+        { label: "متوسط الوقت", value: service.avgTime, icon: ChevronsRight },
+    ];
 
     return (
         <motion.div 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 p-4 border rounded-lg bg-muted/50 space-y-3"
+            className="mt-4 p-4 border rounded-lg bg-muted/50 space-y-3 text-sm"
         >
-             <h4 className="font-semibold text-foreground flex items-center gap-2"><Info className="h-4 w-4"/>وصف الخدمة</h4>
-             <p className="text-sm text-muted-foreground">{mainDesc}</p>
-             {details.length > 0 && (
-                 <ul className="space-y-1 text-xs text-muted-foreground list-disc list-inside">
-                     {details.map((detail, index) => (
-                         <li key={index}>{detail}</li>
-                     ))}
-                 </ul>
+             <h4 className="font-semibold text-foreground flex items-center gap-2 border-b pb-2 mb-3"><Info className="h-4 w-4"/>وصف الخدمة</h4>
+             {service.description && (
+                <p className="text-sm text-muted-foreground pb-3 border-b">{service.description}</p>
              )}
-             {service.avgTime && (
-                <p className="text-xs text-muted-foreground pt-2 border-t">
-                    <strong>متوسط الوقت:</strong> {service.avgTime}
-                </p>
-             )}
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                {details.map(detail => {
+                    if (!detail.value) return null;
+                    const Icon = detail.icon;
+                    return (
+                        <div key={detail.label} className="flex justify-between items-center text-xs">
+                            <span className="text-muted-foreground flex items-center gap-1.5"><Icon className="h-3 w-3" /> {detail.label}</span>
+                            <span className="font-semibold text-foreground text-right">{detail.value}</span>
+                        </div>
+                    )
+                })}
+            </div>
         </motion.div>
     );
 }
@@ -186,7 +189,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
             <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-4 pt-6">
                     <Select onValueChange={setPlatform} disabled={servicesLoading} value={platform}>
-                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : 'اختر المنصة'} /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
                         <SelectContent>
                             {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                         </SelectContent>
@@ -194,9 +197,9 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     
                     <AnimatePresence>
                     {platform && (
-                        <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
+                        <motion.div key="category-select" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
                             <Select onValueChange={setCategory} disabled={!platform || servicesLoading} value={category}>
-                                <SelectTrigger><SelectValue placeholder="اختر الفئة" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="2. اختر الفئة" /></SelectTrigger>
                                 <SelectContent>
                                     {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                 </SelectContent>
@@ -204,13 +207,13 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                         </motion.div>
                     )}
                     {category && (
-                         <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
+                         <motion.div key="service-select" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
                             <Select onValueChange={setServiceId} value={serviceId} disabled={!category || servicesLoading}>
-                                <SelectTrigger><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="3. اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
                                     {services.map(s => 
                                         <SelectItem key={s.id} value={s.id}>
-                                            {`#${s.id} - ${s.description?.split('|')[0] || s.category} - $${s.price.toFixed(4)}`}
+                                            {`#${s.id} - ${s.category} - $${s.price.toFixed(4)}`}
                                         </SelectItem>
                                     )}
                                 </SelectContent>
@@ -220,19 +223,19 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     </AnimatePresence>
                     
                     <AnimatePresence>
-                        {selectedService && <ServiceDescription service={selectedService} />}
+                        {selectedService && <ServiceDescription key="service-description" service={selectedService} />}
                     </AnimatePresence>
 
 
                     {serviceId && (
-                         <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4 pt-4 border-t">
-                            <Input placeholder="الرابط" value={link} onChange={e => setLink(e.target.value)} required />
-                            <Input type="number" placeholder={`الكمية (الحد الأدنى: ${selectedService?.min} - الأقصى: ${selectedService?.max})`} value={quantity} onChange={e => setQuantity(e.target.value)} required min={selectedService?.min} max={selectedService?.max}/>
+                         <motion.div key="order-inputs" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4 pt-4 border-t">
+                            <Input placeholder="4. أدخل الرابط" value={link} onChange={e => setLink(e.target.value)} required />
+                            <Input type="number" placeholder={`5. أدخل الكمية (بين ${selectedService?.min} و ${selectedService?.max})`} value={quantity} onChange={e => setQuantity(e.target.value)} required min={selectedService?.min} max={selectedService?.max}/>
                         </motion.div>
                     )}
 
                     {selectedService && quantity && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center">
+                        <motion.div key="order-cost" initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center">
                             <p className="text-sm text-muted-foreground">التكلفة النهائية</p>
                             {discountPercentage > 0 && (
                                 <p className="text-xs text-muted-foreground line-through">
