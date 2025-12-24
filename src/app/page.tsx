@@ -18,9 +18,11 @@ import {
   ChevronLeft,
   Star,
   Zap,
+  LayoutDashboard,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, limit } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
@@ -138,6 +140,19 @@ function Partners() {
 }
 
 export default function HomePage() {
+  const { user, isUserLoading } = useUser();
+
+  const primaryAction = {
+    href: isUserLoading ? "#" : user ? "/dashboard" : "/signup",
+    label: isUserLoading ? "..." : user ? "الذهاب للوحة التحكم" : "انطلق الآن",
+    icon: isUserLoading ? Loader2 : user ? LayoutDashboard : Rocket
+  }
+
+  const secondaryAction = {
+      href: isUserLoading ? "#" : user ? "/dashboard/services" : "/services",
+      label: "استكشف الخدمات"
+  }
+
   return (
     <div className="space-y-24 pb-8">
         <section className="relative text-center py-20 overflow-hidden">
@@ -151,16 +166,16 @@ export default function HomePage() {
                 منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
             </p>
             <div className="mt-10 flex justify-center gap-4">
-                <Button size="lg" asChild className="text-lg py-7">
-                    <Link href="/signup">
-                        <Rocket className="ml-2" />
-                        انطلق الآن
+                <Button size="lg" asChild className="text-lg py-7" disabled={isUserLoading}>
+                    <Link href={primaryAction.href}>
+                         <primaryAction.icon className={`ml-2 ${isUserLoading ? 'animate-spin' : ''}`} />
+                        {primaryAction.label}
                     </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild className="text-lg py-7">
-                    <Link href="/services">
+                    <Link href={secondaryAction.href}>
                         <ShoppingCart className="ml-2" />
-                        استكشف الخدمات
+                        {secondaryAction.label}
                     </Link>
                 </Button>
             </div>
