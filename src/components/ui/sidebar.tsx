@@ -686,7 +686,7 @@ const SidebarMenuSubContent = ({ ...props }: React.ComponentProps<typeof Collaps
 
 const SidebarMenuSubButton = React.forwardRef<
     HTMLAnchorElement,
-    Omit<React.ComponentPropsWithoutRef<typeof Link>, "href"> & {
+     Omit<React.ComponentPropsWithoutRef<typeof Link>, "href"> & {
       isActive?: boolean
       href: string
     }

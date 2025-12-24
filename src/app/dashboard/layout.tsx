@@ -64,14 +64,14 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
 function NavItems() {
   const pathname = usePathname();
 
-  const renderNavItem = (item: NestedNavItem, index: number) => {
+  const renderNavItem = (item: NestedNavItem) => {
     const isActive = item.href ? pathname === item.href : false;
     const Icon = item.icon;
     const label = item.label;
 
     if (item.children) {
       return (
-        <SidebarMenuItem key={`${item.label}-${index}`}>
+        <SidebarMenuItem key={label}>
             <SidebarMenuSub>
                 <SidebarMenuSubTrigger>
                     <div className='flex items-center gap-2'>
@@ -82,12 +82,12 @@ function NavItems() {
                 </SidebarMenuSubTrigger>
                 <SidebarMenuSubContent>
                     {item.children.map((child) => (
-                        <Link key={child.href} href={child.href || '#'} passHref>
-                            <SidebarMenuSubButton isActive={pathname === child.href}>
-                                {child.icon && <child.icon className="w-4 h-4" />}
-                                <span>{child.label}</span>
-                            </SidebarMenuSubButton>
-                        </Link>
+                      <Link key={child.href} href={child.href || '#'} passHref>
+                          <SidebarMenuSubButton isActive={pathname === child.href}>
+                              {child.icon && <child.icon className="w-4 h-4" />}
+                              <span>{child.label}</span>
+                          </SidebarMenuSubButton>
+                      </Link>
                     ))}
                 </SidebarMenuSubContent>
             </SidebarMenuSub>
@@ -96,7 +96,7 @@ function NavItems() {
     }
 
     return (
-      <SidebarMenuItem key={`${item.label}-${index}`}>
+      <SidebarMenuItem key={label}>
         <Link href={item.href || '#'} passHref>
           <SidebarMenuButton isActive={isActive}>
             {Icon && <Icon className="h-4 w-4" />}
@@ -107,7 +107,7 @@ function NavItems() {
     );
   };
 
-  return <>{dashboardNavItems.map((item, index) => renderNavItem(item, index))}</>;
+  return <>{dashboardNavItems.map((item) => renderNavItem(item))}</>;
 }
 
 
@@ -169,7 +169,7 @@ export default function DashboardLayout({
             </SidebarFooter>
         </Sidebar>
         
-        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:16rem] md:peer-data-[state=collapsed]:[margin-inline-start:3.5rem]">
+        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:-16rem] md:peer-data-[state=collapsed]:[margin-inline-start:-3.5rem] md:ms-[16rem] peer-data-[state=collapsed]:md:ms-[3.5rem]">
             <MobileHeader isAdmin={isAdmin} userData={userData} />
             <DesktopHeader isAdmin={isAdmin} userData={userData} />
             
