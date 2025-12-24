@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,19 +6,8 @@ import { useFirestore } from '@/firebase';
 import { doc, runTransaction } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, PauseCircle, PlayCircle } from 'lucide-react';
+import { Loader2, PauseCircle } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {
@@ -32,16 +22,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CampaignDetailsDialog } from './campaign-details-dialog';
+import { useTranslation } from 'react-i18next';
 
-
-const statusVariant = {
-  'نشط': 'default',
-  'متوقف': 'secondary',
-  'مكتمل': 'outline',
-  'بانتظار المراجعة': 'destructive',
-} as const;
 
 export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
+    const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
@@ -56,13 +41,13 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
         try {
             await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+                if (!userDoc.exists()) throw new Error(t('campaigns.actions.userNotFound'));
 
                 const campaignDoc = await transaction.get(campaignDocRef);
-                if (!campaignDoc.exists()) throw new Error("الحملة غير موجودة.");
+                if (!campaignDoc.exists()) throw new Error(t('campaigns.actions.campaignNotFound'));
                 
                 const currentCampaignData = campaignDoc.data() as Campaign;
-                if(currentCampaignData.status !== 'نشط') throw new Error("يمكن إيقاف الحملات النشطة فقط.");
+                if(currentCampaignData.status !== 'نشط') throw new Error(t('campaigns.actions.onlyActiveError'));
 
                 // Calculate remaining budget
                 const remainingBudget = currentCampaignData.budget - (currentCampaignData.spend || 0);
@@ -78,12 +63,12 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                 transaction.update(campaignDocRef, { status: 'متوقف' });
             });
 
-            toast({ title: 'نجاح', description: 'تم إيقاف الحملة وإعادة الرصيد المتبقي.' });
+            toast({ title: t('success'), description: t('campaigns.actions.stopSuccess') });
             forceCollectionUpdate(); // Force re-fetch
             setIsAlertOpen(false);
 
         } catch (error: any) {
-             toast({ variant: 'destructive', title: 'خطأ', description: error.message });
+             toast({ variant: 'destructive', title: t('error'), description: error.message });
             const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
             errorEmitter.emit('permission-error', permissionError);
         } finally {
@@ -99,21 +84,21 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                     <AlertDialogTrigger asChild>
                          <Button variant="destructive" size="sm">
                             <PauseCircle className="ml-2 h-4 w-4" />
-                            إيقاف
+                            {t('stop')}
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>هل أنت متأكد من إيقاف الحملة؟</AlertDialogTitle>
+                            <AlertDialogTitle>{t('campaigns.actions.stopConfirmTitle')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                سيؤدي هذا إلى إيقاف حملتك فورًا وإعادة أي رصيد متبقٍ من الميزانية إلى رصيدك الإعلاني. لا يمكن التراجع عن هذا الإجراء.
+                                {t('campaigns.actions.stopConfirmDesc')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel disabled={loading}>إلغاء</AlertDialogCancel>
+                            <AlertDialogCancel disabled={loading}>{t('cancel')}</AlertDialogCancel>
                             <AlertDialogAction onClick={handleStopCampaign} disabled={loading} className="bg-destructive hover:bg-destructive/90">
                                 {loading && <Loader2 className="ml-2 animate-spin" />}
-                                نعم، قم بالإيقاف
+                                {t('campaigns.actions.stopConfirmAction')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

@@ -15,8 +15,10 @@ import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { NewCampaignDialog } from './_components/new-campaign-dialog';
 import { UserCampaignActions } from './_components/user-campaign-actions';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 function CampaignsSkeleton() {
+    const { t } = useTranslation();
     return (
         <div className="space-y-6 pb-8">
             <div>
@@ -40,6 +42,7 @@ function CampaignsSkeleton() {
 }
 
 export default function CampaignsPage() {
+    const { t } = useTranslation();
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
 
@@ -47,6 +50,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
+    // Use a different name for the hook's return value to avoid conflict
     const { data: initialCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
@@ -55,34 +59,42 @@ export default function CampaignsPage() {
     );
     const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
 
+    // This state will hold the dynamically updated campaign data
     const [campaigns, setCampaigns] = useState<Campaign[] | null>(initialCampaigns);
 
     useEffect(() => {
+        // Initialize the local state with data from Firestore
         if (initialCampaigns) {
             setCampaigns(initialCampaigns);
         }
     }, [initialCampaigns]);
 
+    // Effect for simulating campaign performance updates
     useEffect(() => {
         const updateCampaigns = () => {
             setCampaigns(prevCampaigns => {
                 if (!prevCampaigns) return null;
 
                 const updatedCampaigns = prevCampaigns.map(campaign => {
+                    // Only update 'active' campaigns
                     if (campaign.status !== 'نشط') {
                         return campaign;
                     }
                     
+                    // --- Simulation Logic ---
                     const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
                     const newClicks = (campaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80));
+                    // Ensure spend doesn't exceed budget
                     const newSpend = Math.min(campaign.budget, (campaign.spend || 0) + (newClicks - (campaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
                     const newResults = (campaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
                     const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
                     const cpc = newClicks > 0 ? newSpend / newClicks : 0;
                     let status = campaign.status;
+
                     if (newSpend >= campaign.budget) {
                         status = 'مكتمل';
                     }
+                    // --- End Simulation Logic ---
 
                     const updatedCampaign = {
                         ...campaign,
@@ -95,7 +107,8 @@ export default function CampaignsPage() {
                         status: status,
                     };
 
-                    if(firestore && authUser) {
+                    // Persist updates to Firestore in the background (non-blocking)
+                    if(firestore && authUser && (updatedCampaign.status !== campaign.status || (updatedCampaign.impressions % 10 === 0))) { // Update every 10 ticks approx
                         const campaignRef = doc(firestore, `users/${authUser.uid}/campaigns/${campaign.id}`);
                         // Update Firestore document without awaiting to avoid blocking UI thread
                         updateDoc(campaignRef, {
@@ -116,14 +129,14 @@ export default function CampaignsPage() {
             });
         };
 
-        // Run once immediately on load
+        // Run once immediately on load to get initial simulated data
         updateCampaigns(); 
         
-        // Then run every 30 minutes
-        const interval = setInterval(updateCampaigns, 1800000); 
+        // Then run every 30 seconds to simulate real-time updates
+        const interval = setInterval(updateCampaigns, 30000); 
 
-        return () => clearInterval(interval);
-    }, [firestore, authUser]);
+        return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [firestore, authUser]); // Rerun if auth state changes
 
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
@@ -143,9 +156,9 @@ export default function CampaignsPage() {
   return (
      <div className="space-y-6 pb-8">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">مركز الحملات الإعلانية</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">{t('campaigns.title')}</h1>
             <p className="text-muted-foreground">
-             أنشئ، حلل، وحسّن حملاتك التسويقية على جميع المنصات الكبرى من مكان واحد.
+             {t('campaigns.description')}
             </p>
         </div>
 
@@ -153,31 +166,31 @@ export default function CampaignsPage() {
              <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
                 <Button className="w-full text-lg py-7">
                     <PlusCircle className="ml-2 h-5 w-5" />
-                    إنشاء حملة إعلانية جديدة
+                    {t('campaigns.newCampaign')}
                 </Button>
             </NewCampaignDialog>
              <Button variant="outline" className="w-full text-lg py-7" asChild>
                 <Link href="/dashboard/agency-accounts">
                     <Briefcase className="ml-2 h-5 w-5" />
-                    إدارة حساباتي الإعلانية
+                    {t('campaigns.manageAccounts')}
                 </Link>
             </Button>
         </div>
         
         <Card>
             <CardHeader>
-                <CardTitle>سجل الحملات الأخيرة</CardTitle>
-                <CardDescription>قائمة بجميع حملاتك الإعلانية في النظام. يمكنك تتبع أدائها وتفاصيلها من هنا.</CardDescription>
+                <CardTitle>{t('campaigns.historyTitle')}</CardTitle>
+                <CardDescription>{t('campaigns.historyDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
                 {campaigns && campaigns.length > 0 ? (
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>اسم الحملة</TableHead>
-                                <TableHead>الحالة</TableHead>
-                                <TableHead>المدة</TableHead>
-                                <TableHead className="text-right">الإجراءات</TableHead>
+                                <TableHead>{t('campaigns.campaignName')}</TableHead>
+                                <TableHead>{t('campaigns.status')}</TableHead>
+                                <TableHead>{t('campaigns.duration')}</TableHead>
+                                <TableHead className="text-right">{t('campaigns.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -191,11 +204,11 @@ export default function CampaignsPage() {
                                             <span>{campaign.name}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
+                                    <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{t(`campaignStatus.${campaign.status}`)}</Badge></TableCell>
                                     <TableCell>
                                         <div className='flex items-center gap-1 text-muted-foreground'>
                                             <Clock className="w-3.5 h-3.5" />
-                                            <span>{campaign.durationDays} أيام</span>
+                                            <span>{t('campaigns.days', { count: campaign.durationDays })}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -209,14 +222,14 @@ export default function CampaignsPage() {
                 ) : (
                     <div className="text-center py-10">
                         <Rocket className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <h3 className="mt-4 text-lg font-medium">ابدأ حملتك الإعلانية الأولى</h3>
+                        <h3 className="mt-4 text-lg font-medium">{t('campaigns.noCampaignsTitle')}</h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            ليس لديك أي حملات إعلانية حتى الآن. أنشئ حملة جديدة لتبدأ.
+                            {t('campaigns.noCampaignsDesc')}
                         </p>
                          <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
                            <Button className="mt-4">
                                 <PlusCircle className="ml-2 h-4 w-4" />
-                                إنشاء حملة جديدة
+                                {t('campaigns.newCampaign')}
                             </Button>
                         </NewCampaignDialog>
                     </div>
