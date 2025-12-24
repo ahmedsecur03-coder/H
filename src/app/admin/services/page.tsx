@@ -166,7 +166,7 @@ export default function AdminServicesPage() {
      if (!services || services.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={8} className="h-24 text-center">
+          <TableCell colSpan={8}>
              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
                 <h3 className="mt-4 font-headline text-2xl">{searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
