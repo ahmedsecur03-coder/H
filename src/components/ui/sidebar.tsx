@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import * as React from "react"
@@ -666,9 +664,9 @@ const SidebarMenuSub = ({ ...props }: React.ComponentProps<typeof Collapsible>) 
 
 const SidebarMenuSubTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<typeof CollapsibleTrigger> & { asChild?: boolean }
->(({ children, asChild, ...props }, ref) => (
-  <CollapsibleTrigger asChild={asChild} {...props} ref={ref}>
+  React.ComponentProps<typeof CollapsibleTrigger>
+>(({ children, ...props }, ref) => (
+  <CollapsibleTrigger asChild {...props} ref={ref}>
     <SidebarMenuButton className="w-full justify-between">
       {children}
     </SidebarMenuButton>
