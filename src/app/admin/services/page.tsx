@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import React from 'react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { useDebounce } from 'use-debounce';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -34,20 +35,21 @@ export default function AdminServicesPage() {
   const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
   const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
   const [page, setPage] = useState(1);
+  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  const fetchServices = async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+  const fetchServices = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
       if (!firestore) return;
       setIsLoading(true);
 
       try {
           let q: Query = collection(firestore, 'services');
 
-          // Note: Firestore does not support robust text search natively.
-          // For a production app, a third-party search service like Algolia or Typesense would be used.
-          // Here, we'll order by ID and do a basic filter if a search term is provided.
-          // This search is limited and case-sensitive.
-          if (searchTerm) {
-             q = query(q, where('id', '>=', searchTerm), where('id', '<=', searchTerm + '\uf8ff'));
+          // Firestore doesn't support partial string matching well.
+          // This search will work for IDs, but not for category/platform unless it's an exact match.
+          // For a better search experience, a third-party service like Algolia is recommended.
+          if (debouncedSearchTerm) {
+             q = query(q, where('id', '>=', debouncedSearchTerm), where('id', '<=', debouncedSearchTerm + '\uf8ff'));
           }
 
           q = query(q, orderBy('id'));
@@ -58,44 +60,54 @@ export default function AdminServicesPage() {
               q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
           }
 
-          if (direction !== 'prev') {
-              q = query(q, limit(ITEMS_PER_PAGE));
-          }
+          const limitedQuery = query(q, limit(ITEMS_PER_PAGE + 1));
+          const documentSnapshots = await getDocs(limitedQuery);
+          
+          const newServices: Service[] = documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).map(doc => ({ id: doc.id, ...doc.data() } as Service));
+          
+           if (direction === 'prev') {
+             newServices.reverse();
+           }
 
-          const documentSnapshots = await getDocs(q);
-          const newServices: Service[] = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+           setServices(newServices);
+           const hasMore = documentSnapshots.docs.length > ITEMS_PER_PAGE;
+           setIsNextPageAvailable(direction === 'prev' ? true : hasMore);
 
-           if (newServices.length === 0 && direction !== 'initial') {
-              toast({ title: direction === 'next' ? "هذه هي الصفحة الأخيرة." : "هذه هي الصفحة الأولى." });
-              setIsLoading(false);
-              return;
+            if (documentSnapshots.docs.length > 0) {
+              setFirstVisible(documentSnapshots.docs[0]);
+              setLastVisible(documentSnapshots.docs[newServices.length - 1]);
+            } else {
+              setFirstVisible(null);
+              setLastVisible(null);
             }
-
-          setServices(newServices);
-          setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
-          setFirstVisible(documentSnapshots.docs[0]);
-
-          if (direction === 'next') setPage(p => p + 1);
-          if (direction === 'prev' && page > 1) setPage(p => p - 1);
-          if (direction === 'initial') setPage(1);
-
       } catch (error) {
           console.error("Error fetching services:", error);
           toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الخدمات.' });
       } finally {
           setIsLoading(false);
       }
-  };
+  }, [firestore, toast, debouncedSearchTerm, lastVisible, firstVisible]);
 
   useEffect(() => {
+    setPage(1);
+    setLastVisible(null);
+    setFirstVisible(null);
     fetchServices('initial');
-  }, [firestore]); // Re-fetch only when firestore instance changes
+  }, [debouncedSearchTerm, firestore]);
 
-  const handleSearch = (e: React.FormEvent) => {
-      e.preventDefault();
-      setPage(1);
-      fetchServices('initial');
-  }
+   const handleNextPage = () => {
+    if (isNextPageAvailable) {
+      setPage(p => p + 1);
+      fetchServices('next');
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(p => p - 1);
+      fetchServices('prev');
+    }
+  };
   
   const handleSaveService = (data: Omit<Service, 'id'> & { id?: string }) => {
     if (!firestore) return;
@@ -210,7 +222,7 @@ export default function AdminServicesPage() {
       </div>
        <Card>
         <CardHeader>
-            <form onSubmit={handleSearch}>
+            <form onSubmit={(e) => { e.preventDefault(); fetchServices('initial'); }}>
               <Input placeholder="ابحث عن خدمة بالرقم، الاسم، أو الفئة..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </form>
         </CardHeader>
@@ -236,10 +248,10 @@ export default function AdminServicesPage() {
          <CardFooter className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">صفحة {page}</span>
             <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => fetchServices('prev')} disabled={page <= 1}>
+                <Button variant="outline" size="icon" onClick={handlePrevPage} disabled={page <= 1 || isLoading}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => fetchServices('next')} disabled={services.length < ITEMS_PER_PAGE}>
+                <Button variant="outline" size="icon" onClick={handleNextPage} disabled={!isNextPageAvailable || isLoading}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
             </div>

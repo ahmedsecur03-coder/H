@@ -42,11 +42,18 @@ export default function AdminUsersPage() {
     try {
       let q: Query = collection(firestore, 'users');
 
+      // Firestore doesn't support case-insensitive search natively.
+      // A common workaround is to store a lower-case version of the field to search on.
+      // For this implementation, we will perform a >= and <= query which acts as a "starts-with" search.
       if (debouncedSearchTerm) {
-        q = query(q, where('email', '>=', debouncedSearchTerm), where('email', '<=', debouncedSearchTerm + '\uf8ff'));
+        q = query(q, 
+          orderBy('email'), 
+          where('email', '>=', debouncedSearchTerm), 
+          where('email', '<=', debouncedSearchTerm + '\uf8ff')
+        );
+      } else {
+         q = query(q, orderBy('createdAt', 'desc'));
       }
-      
-      q = query(q, orderBy('createdAt', 'desc'));
 
       if (direction === 'next' && lastVisible) {
           q = query(q, startAfter(lastVisible));
@@ -58,20 +65,25 @@ export default function AdminUsersPage() {
 
       const documentSnapshots = await getDocs(limitedQuery);
       
-      const newUsers: User[] = [];
-      documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).forEach(doc => {
-          newUsers.push({ id: doc.id, ...doc.data() } as User);
-      });
-
-      if (direction === 'initial' && newUsers.length === 0) {
-        setPage(1);
+      const newUsers: User[] = documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).map(doc => ({ id: doc.id, ...doc.data() } as User));
+      
+      // If fetching backwards, the documents are returned in reverse order
+      if(direction === 'prev') {
+          newUsers.reverse();
       }
 
       setUsers(newUsers);
-      setIsNextPageAvailable(documentSnapshots.docs.length > ITEMS_PER_PAGE);
+      
+      const hasMore = documentSnapshots.docs.length > ITEMS_PER_PAGE;
+      setIsNextPageAvailable(direction === 'prev' ? true : hasMore);
 
-      setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length > 1 ? documentSnapshots.docs.length - 2 : 0]);
-      setFirstVisible(documentSnapshots.docs[0]);
+      if (documentSnapshots.docs.length > 0) {
+        setFirstVisible(documentSnapshots.docs[0]);
+        setLastVisible(documentSnapshots.docs[newUsers.length -1]);
+      } else {
+        setFirstVisible(null);
+        setLastVisible(null);
+      }
       
     } catch (error) {
       console.error("Error fetching users:", error);

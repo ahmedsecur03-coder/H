@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
 import { collectionGroup, query, where, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
@@ -33,6 +33,8 @@ import { OrderActions } from './_components/order-actions';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from 'use-debounce';
+
 
 const statusVariant = {
   مكتمل: 'default',
@@ -50,11 +52,14 @@ export default function AdminOrdersPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    
+    const [page, setPage] = useState(1);
     const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
     const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
-    const [page, setPage] = useState(1);
+    const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
+    const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-    const fetchOrders = async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+    const fetchOrders = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
         if (!firestore) return;
         setIsLoading(true);
 
@@ -64,8 +69,12 @@ export default function AdminOrdersPage() {
             if (statusFilter !== 'all') {
                 q = query(q, where('status', '==', statusFilter));
             }
-
-            q = query(q, orderBy('orderDate', 'desc'));
+             // Simple "starts-with" search for user ID if a search term is provided.
+            if (debouncedSearchTerm) {
+                q = query(q, where('userId', '>=', debouncedSearchTerm), where('userId', '<=', debouncedSearchTerm + '\uf8ff'));
+            } else {
+                 q = query(q, orderBy('orderDate', 'desc'));
+            }
 
             if (direction === 'next' && lastVisible) {
                 q = query(q, startAfter(lastVisible));
@@ -73,54 +82,62 @@ export default function AdminOrdersPage() {
                 q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
             }
             
-            if (direction !== 'prev') {
-               q = query(q, limit(ITEMS_PER_PAGE));
-            }
+            const limitedQuery = query(q, limit(ITEMS_PER_PAGE + 1));
 
-            const documentSnapshots = await getDocs(q);
-
-            const newOrders: Order[] = [];
-            documentSnapshots.forEach(doc => {
-                newOrders.push({ id: doc.id, ...doc.data() } as Order);
+            const documentSnapshots = await getDocs(limitedQuery);
+            
+            const newOrders = documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).map(doc => {
+                const data = doc.data() as Order;
+                // The doc ID is the order ID, but the userId is in the path
+                const pathSegments = doc.ref.path.split('/');
+                const userId = pathSegments.find((segment, index) => pathSegments[index - 1] === 'users');
+                return { ...data, id: doc.id, userId: userId || data.userId };
             });
 
-            if (newOrders.length === 0 && direction !== 'initial') {
-              toast({ title: direction === 'next' ? "هذه هي الصفحة الأخيرة." : "هذه هي الصفحة الأولى." });
-              setIsLoading(false);
-              return;
+            if (direction === 'prev') {
+                newOrders.reverse();
             }
 
             setOrders(newOrders);
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
-            setFirstVisible(documentSnapshots.docs[0]);
-            
-            if (direction === 'next') setPage(p => p + 1);
-            if (direction === 'prev' && page > 1) setPage(p => p - 1);
-            if (direction === 'initial') setPage(1);
+            const hasMore = documentSnapshots.docs.length > ITEMS_PER_PAGE;
+            setIsNextPageAvailable(direction === 'prev' ? true : hasMore);
 
+            if (documentSnapshots.docs.length > 0) {
+              setFirstVisible(documentSnapshots.docs[0]);
+              setLastVisible(documentSnapshots.docs[newOrders.length - 1]);
+            } else {
+              setFirstVisible(null);
+              setLastVisible(null);
+            }
         } catch (error) {
             console.error("Error fetching orders:", error);
             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الطلبات.' });
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [firestore, statusFilter, debouncedSearchTerm, lastVisible, firstVisible]);
     
     useEffect(() => {
+        setPage(1);
+        setLastVisible(null);
+        setFirstVisible(null);
         fetchOrders('initial');
-    }, [firestore, statusFilter]);
+    }, [statusFilter, debouncedSearchTerm]);
 
-    // Note: client-side filtering for search term
-    const filteredOrders = useMemo(() => {
-        if (!orders) return [];
-        if (!searchTerm) return orders;
-        const lowerCaseSearch = searchTerm.toLowerCase();
-        return orders.filter(order => 
-            order.id.toLowerCase().includes(lowerCaseSearch) ||
-            order.userId.toLowerCase().includes(lowerCaseSearch) ||
-            (order.link && order.link.toLowerCase().includes(lowerCaseSearch))
-        );
-    }, [orders, searchTerm]);
+
+    const handleNextPage = () => {
+      if(isNextPageAvailable) {
+        setPage(p => p+1);
+        fetchOrders('next');
+      }
+    }
+
+    const handlePrevPage = () => {
+      if(page > 1) {
+        setPage(p => p - 1);
+        fetchOrders('prev');
+      }
+    }
 
 
     const renderContent = () => {
@@ -132,7 +149,7 @@ export default function AdminOrdersPage() {
             ));
         }
 
-        if (!filteredOrders || filteredOrders.length === 0) {
+        if (!orders || orders.length === 0) {
             return (
                 <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">لا توجد طلبات تطابق بحثك.</TableCell>
@@ -140,7 +157,7 @@ export default function AdminOrdersPage() {
             );
         }
 
-        return filteredOrders.map((order) => (
+        return orders.map((order) => (
             <TableRow key={order.id}>
                 <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
                 <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
@@ -206,10 +223,10 @@ export default function AdminOrdersPage() {
         <CardFooter className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">صفحة {page}</span>
             <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={() => fetchOrders('prev')} disabled={page <= 1}>
+                <Button variant="outline" size="icon" onClick={handlePrevPage} disabled={page <= 1 || isLoading}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => fetchOrders('next')} disabled={orders.length < ITEMS_PER_PAGE}>
+                <Button variant="outline" size="icon" onClick={handleNextPage} disabled={!isNextPageAvailable || isLoading}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
             </div>

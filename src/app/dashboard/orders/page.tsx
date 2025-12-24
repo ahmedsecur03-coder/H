@@ -32,7 +32,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, ListFilter } from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
   PaginationContent,
@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from 'use-debounce';
+import { useTranslation } from 'react-i18next';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -102,10 +103,12 @@ function OrdersPageSkeleton() {
 }
 
 function OrdersPageComponent() {
+  const { t } = useTranslation();
   const { user } = useUser();
   const firestore = useFirestore();
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,33 +120,30 @@ function OrdersPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-
   useEffect(() => {
     if (!firestore || !user) return;
 
     const fetchPaginatedOrders = async () => {
         setIsLoading(true);
         try {
-            // First, get the total count for pagination calculation based on filters
-            let countQuery: FirestoreQuery = query(collection(firestore, `users/${user.uid}/orders`));
-            if (statusFilter !== 'all') {
-                countQuery = query(countQuery, where('status', '==', statusFilter));
-            }
-             // Note: Full text search is not natively supported well in Firestore.
-             // A simple search by ID is feasible but complex searches require 3rd party services.
-             // We will stick to client side filtering for search term for now after getting the full filtered list by status.
+            let baseQuery: FirestoreQuery = collection(firestore, `users/${user.uid}/orders`);
             
-            const totalDocsSnapshot = await getDocs(countQuery);
-            const allFilteredOrders = totalDocsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+            // Apply status filter at the query level
+            if (statusFilter !== 'all') {
+                baseQuery = query(baseQuery, where('status', '==', statusFilter));
+            }
 
+            const allFilteredDocsSnapshot = await getDocs(baseQuery);
+            let allFilteredOrders = allFilteredDocsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+            
+            // Then apply search term filter on the client-side
             const finalFiltered = debouncedSearchTerm
                 ? allFilteredOrders.filter(order =>
                     order.id.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
                     order.serviceName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
                     (order.link && order.link.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
-                  )
-                : allFilteredOrders;
-
+                  ).sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+                : allFilteredOrders.sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
 
             setPageCount(Math.ceil(finalFiltered.length / ITEMS_PER_PAGE));
             
@@ -160,16 +160,18 @@ function OrdersPageComponent() {
     fetchPaginatedOrders();
   }, [firestore, user, statusFilter, debouncedSearchTerm, currentPage]);
 
-
-  const handleFilterChange = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+  const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
+    const params = new URLSearchParams(searchParams);
     if (value && value !== 'all') {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-    params.set('page', '1'); // Reset to first page on filter change
-    router.push(`?${params.toString()}`);
+    // Always reset page to 1 when search or status filters change
+    if (key !== 'page') {
+      params.set('page', '1');
+    }
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const renderPaginationItems = () => {
@@ -214,7 +216,6 @@ function OrdersPageComponent() {
     ));
   };
 
-
   if (isLoading && orders.length === 0) {
     return <OrdersPageSkeleton />;
   }
@@ -222,9 +223,9 @@ function OrdersPageComponent() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الطلبات</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('ordersPage.title')}</h1>
         <p className="text-muted-foreground">
-          استعرض، ابحث، وفلتر جميع طلباتك السابقة والحالية.
+          {t('ordersPage.description')}
         </p>
       </div>
 
@@ -232,22 +233,22 @@ function OrdersPageComponent() {
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالمعرف، الخدمة، أو الرابط..."
-                className="pr-10"
+                placeholder={t('ordersPage.searchPlaceholder')}
+                className="pe-10 rtl:ps-10"
                 defaultValue={searchTerm}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
               />
             </div>
             <Select defaultValue={statusFilter} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="فلترة حسب الحالة" />
+                <SelectValue placeholder={t('ordersPage.statusFilterPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">جميع الحالات</SelectItem>
+                <SelectItem value="all">{t('ordersPage.allStatuses')}</SelectItem>
                 {STATUS_OPTIONS.map((status) => (
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                  <SelectItem key={status} value={status}>{t(`orderStatus.${status}`)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -280,13 +281,13 @@ function OrdersPageComponent() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">المعرف</TableHead>
-                  <TableHead>الخدمة</TableHead>
-                  <TableHead>الرابط</TableHead>
-                  <TableHead className="text-center">الكمية</TableHead>
-                  <TableHead className="text-center">الحالة</TableHead>
-                  <TableHead className="text-center">التاريخ</TableHead>
-                  <TableHead className="text-right">التكلفة</TableHead>
+                  <TableHead className="w-[100px]">{t('ordersPage.table.id')}</TableHead>
+                  <TableHead>{t('ordersPage.table.service')}</TableHead>
+                  <TableHead>{t('ordersPage.table.link')}</TableHead>
+                  <TableHead className="text-center">{t('ordersPage.table.quantity')}</TableHead>
+                  <TableHead className="text-center">{t('ordersPage.table.status')}</TableHead>
+                  <TableHead className="text-center">{t('ordersPage.table.date')}</TableHead>
+                  <TableHead className="text-right">{t('ordersPage.table.cost')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -297,9 +298,9 @@ function OrdersPageComponent() {
                     <TableCell><a href={order.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block max-w-xs">{order.link}</a></TableCell>
                     <TableCell className="text-center">{order.quantity.toLocaleString()}</TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                      <Badge variant={statusVariant[order.status] || 'default'}>{t(`orderStatus.${order.status}`)}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
+                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString(t('locale'))}</TableCell>
                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
@@ -330,23 +331,21 @@ function OrdersPageComponent() {
                 <div className="mx-auto bg-muted p-4 rounded-full">
                     <ListFilter className="h-12 w-12 text-muted-foreground" />
                 </div>
-                <CardTitle className="mt-4 font-headline text-2xl">لا توجد طلبات تطابق بحثك</CardTitle>
+                <CardTitle className="mt-4 font-headline text-2xl">{t('ordersPage.noMatchTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground">
-                    حاول تغيير كلمات البحث أو إزالة الفلاتر لعرض المزيد من النتائج.
+                    {t('ordersPage.noMatchDescription')}
                 </p>
-                <Button variant="outline" onClick={() => router.push('/dashboard/orders')} className="mt-4">
-                  إعادة تعيين الفلاتر
+                <Button variant="outline" onClick={() => router.push(pathname)} className="mt-4">
+                  {t('ordersPage.resetFilters')}
                 </Button>
             </CardContent>
         </Card>
       )}
-
     </div>
   );
 }
-
 
 export default function OrdersPage() {
   return (
@@ -355,5 +354,3 @@ export default function OrdersPage() {
     </Suspense>
   )
 }
-
-    
