@@ -25,7 +25,6 @@ import {
   HandCoins,
   AppWindow,
   UserCircle,
-  BarChart2,
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
