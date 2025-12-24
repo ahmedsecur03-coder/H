@@ -13,7 +13,7 @@ import type { BlogPost } from '@/lib/types';
 interface PostDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    post?: BlogPost;
+    post?: Partial<BlogPost>; // Changed to Partial<BlogPost>
     onSave: (data: { title: string; content: string }) => void;
 }
 
@@ -43,7 +43,7 @@ export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{post ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
+                    <DialogTitle>{post?.id ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">

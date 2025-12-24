@@ -22,7 +22,7 @@ export default function AdminBlogPage() {
     const { user } = useUser();
     const { toast } = useToast();
     const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
-    const [selectedPost, setSelectedPost] = useState<BlogPost | undefined>(undefined);
+    const [selectedPost, setSelectedPost] = useState<Partial<BlogPost> | undefined>(undefined);
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -49,7 +49,7 @@ export default function AdminBlogPage() {
         fetchPosts();
     }, [firestore]);
 
-    const handleOpenPostDialog = (post?: BlogPost) => {
+    const handleOpenPostDialog = (post?: Partial<BlogPost>) => {
         setSelectedPost(post);
         setIsPostDialogOpen(true);
     };
@@ -59,7 +59,7 @@ export default function AdminBlogPage() {
             title: article.title,
             content: article.content,
         };
-        handleOpenPostDialog(newPost as BlogPost);
+        handleOpenPostDialog(newPost);
     };
 
 
@@ -138,7 +138,7 @@ export default function AdminBlogPage() {
         return posts.map(post => (
             <TableRow key={post.id}>
                 <TableCell className="font-medium">{post.title}</TableCell>
-                <TableCell>{new Date(post.publishDate).toLocaleDateString('ar-EG')}</TableCell>
+                <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString('ar-EG') : 'غير محدد'}</TableCell>
                 <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
                 <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)}>
