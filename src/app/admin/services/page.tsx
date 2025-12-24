@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useFirestore } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, getDocs, limit, orderBy, startAfter, endBefore, limitToLast, where, DocumentData, Query } from 'firebase/firestore';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,94 +20,130 @@ import React from 'react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useDebounce } from 'use-debounce';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+
 
 const ITEMS_PER_PAGE = 25;
 
-export default function AdminServicesPage() {
+function ServicesPageSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <Skeleton className="h-9 w-48" />
+                    <Skeleton className="h-5 w-64 mt-2" />
+                </div>
+                <div className="flex gap-2 self-end sm:self-center">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                </div>
+            </div>
+            <Card>
+                <CardHeader><Skeleton className="h-10 w-full" /></CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({ length: 15 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+                <CardFooter className="justify-center border-t pt-4">
+                    <Skeleton className="h-9 w-64" />
+                </CardFooter>
+            </Card>
+        </div>
+    );
+}
+
+function AdminServicesPageComponent() {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const currentSearch = searchParams.get('search') || '';
+  
+  const [debouncedSearch] = useDebounce(currentSearch, 300);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
-  
-  const [services, setServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
-  const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
-  const [page, setPage] = useState(1);
-  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  const fetchServices = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
-      if (!firestore) return;
-      setIsLoading(true);
+  const servicesQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'services')) : null),
+    [firestore]
+  );
+  const { data: allServices, isLoading, forceCollectionUpdate } = useCollection<Service>(servicesQuery);
 
-      try {
-          let q: Query = collection(firestore, 'services');
-
-          // Firestore doesn't support partial string matching well.
-          // This search will work for IDs, but not for category/platform unless it's an exact match.
-          // For a better search experience, a third-party service like Algolia is recommended.
-          if (debouncedSearchTerm) {
-             q = query(q, where('id', '>=', debouncedSearchTerm), where('id', '<=', debouncedSearchTerm + '\uf8ff'));
-          }
-
-          q = query(q, orderBy('id'));
-          
-          if (direction === 'next' && lastVisible) {
-              q = query(q, startAfter(lastVisible));
-          } else if (direction === 'prev' && firstVisible) {
-              q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
-          }
-
-          const limitedQuery = query(q, limit(ITEMS_PER_PAGE + 1));
-          const documentSnapshots = await getDocs(limitedQuery);
-          
-          const newServices: Service[] = documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).map(doc => ({ id: doc.id, ...doc.data() } as Service));
-          
-           if (direction === 'prev') {
-             newServices.reverse();
-           }
-
-           setServices(newServices);
-           const hasMore = documentSnapshots.docs.length > ITEMS_PER_PAGE;
-           setIsNextPageAvailable(direction === 'prev' ? true : hasMore);
-
-            if (documentSnapshots.docs.length > 0) {
-              setFirstVisible(documentSnapshots.docs[0]);
-              setLastVisible(documentSnapshots.docs[newServices.length - 1]);
-            } else {
-              setFirstVisible(null);
-              setLastVisible(null);
-            }
-      } catch (error) {
-          console.error("Error fetching services:", error);
-          toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الخدمات.' });
-      } finally {
-          setIsLoading(false);
-      }
-  }, [firestore, toast, debouncedSearchTerm, lastVisible, firstVisible]);
-
-  useEffect(() => {
-    setPage(1);
-    setLastVisible(null);
-    setFirstVisible(null);
-    fetchServices('initial');
-  }, [debouncedSearchTerm, firestore]);
-
-   const handleNextPage = () => {
-    if (isNextPageAvailable) {
-      setPage(p => p + 1);
-      fetchServices('next');
+  const { paginatedServices, pageCount } = useMemo(() => {
+    if (!allServices) {
+      return { paginatedServices: [], pageCount: 0 };
     }
+
+    const filtered = allServices.filter(service =>
+      service.id.toString().includes(debouncedSearch) ||
+      service.category.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      service.platform.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    
+    return {
+      paginatedServices: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
+      pageCount: totalPages,
+    };
+  }, [allServices, debouncedSearch, currentPage]);
+
+
+  const handleFilterChange = (key: 'search' | 'page', value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    if (key !== 'page') {
+      params.set('page', '1');
+    }
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
-  const handlePrevPage = () => {
-    if (page > 1) {
-      setPage(p => p - 1);
-      fetchServices('prev');
+
+  const renderPaginationItems = () => {
+    if (pageCount <= 1) return null;
+    const pageNumbers: (number | 'ellipsis')[] = [];
+    if (pageCount <= 7) {
+        for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
+    } else {
+        pageNumbers.push(1);
+        if (currentPage > 3) pageNumbers.push('ellipsis');
+        let start = Math.max(2, currentPage - 1);
+        let end = Math.min(pageCount - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) pageNumbers.push(i);
+        if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
+        pageNumbers.push(pageCount);
     }
+    return pageNumbers.map((page, index) => (
+        <PaginationItem key={`${page}-${index}`}>
+            {page === 'ellipsis' ? <PaginationEllipsis /> : (
+                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
+            )}
+        </PaginationItem>
+    ));
   };
+
   
   const handleSaveService = (data: Omit<Service, 'id'> & { id?: string }) => {
     if (!firestore) return;
@@ -122,7 +158,7 @@ export default function AdminServicesPage() {
 
     actionPromise.then(() => {
         toast({ title: 'نجاح', description: 'تم حفظ الخدمة بنجاح.' });
-        fetchServices('initial'); // Refresh data
+        forceCollectionUpdate();
         setIsDialogOpen(false);
         setSelectedService(undefined);
     }).catch(serverError => {
@@ -142,7 +178,7 @@ export default function AdminServicesPage() {
       deleteDoc(serviceDocRef)
         .then(() => {
             toast({ title: 'نجاح', description: 'تم حذف الخدمة بنجاح.' });
-            fetchServices('initial'); // Refresh data
+            forceCollectionUpdate();
         })
         .catch(serverError => {
             const permissionError = new FirestorePermissionError({ path: serviceDocRef.path, operation: 'delete' });
@@ -156,27 +192,27 @@ export default function AdminServicesPage() {
   }
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && paginatedServices.length === 0) {
       return Array.from({length: 10}).map((_, i) => (
         <TableRow key={i}>
           {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
         </TableRow>
       ));
     }
-     if (!services || services.length === 0) {
+     if (!paginatedServices || paginatedServices.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={8}>
              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
-                <h3 className="mt-4 font-headline text-2xl">{searchTerm ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{searchTerm ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة أو استيرادها."}</p>
+                <h3 className="mt-4 font-headline text-2xl">{currentSearch ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة أو استيرادها."}</p>
             </div>
           </TableCell>
         </TableRow>
       );
     }
-    return services.map(service => (
+    return paginatedServices.map(service => (
       <TableRow key={service.id}>
           <TableCell className="font-mono text-xs">{service.id}</TableCell>
           <TableCell>{service.category}</TableCell>
@@ -214,7 +250,7 @@ export default function AdminServicesPage() {
           <p className="text-muted-foreground">إضافة وتعديل وحذف خدمات المنصة.</p>
         </div>
         <div className="flex gap-2 self-end sm:self-center">
-           <ImportDialog onImportComplete={() => fetchServices('initial')}>
+           <ImportDialog onImportComplete={forceCollectionUpdate}>
              <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
            </ImportDialog>
             <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
@@ -222,11 +258,11 @@ export default function AdminServicesPage() {
       </div>
        <Card>
         <CardHeader>
-            <form onSubmit={(e) => { e.preventDefault(); fetchServices('initial'); }}>
-              <Input placeholder="ابحث عن خدمة بالرقم، الاسم، أو الفئة..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <form onSubmit={(e) => e.preventDefault()}>
+              <Input placeholder="ابحث عن خدمة بالرقم، الاسم، أو الفئة..." value={currentSearch} onChange={(e) => handleFilterChange('search', e.target.value)} />
             </form>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
            <Table>
               <TableHeader>
                   <TableRow>
@@ -245,17 +281,21 @@ export default function AdminServicesPage() {
               </TableBody>
           </Table>
         </CardContent>
-         <CardFooter className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">صفحة {page}</span>
-            <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handlePrevPage} disabled={page <= 1 || isLoading}>
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleNextPage} disabled={!isNextPageAvailable || isLoading}>
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-            </div>
-        </CardFooter>
+         {pageCount > 1 && (
+            <CardFooter className="flex items-center justify-center border-t pt-4">
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
+                        </PaginationItem>
+                        {renderPaginationItems()}
+                        <PaginationItem>
+                            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            </CardFooter>
+        )}
        </Card>
         <ServiceDialog
             open={isDialogOpen}
@@ -267,4 +307,12 @@ export default function AdminServicesPage() {
         </ServiceDialog>
     </div>
   );
+}
+
+export default function AdminServicesPage() {
+    return (
+        <Suspense fallback={<ServicesPageSkeleton />}>
+            <AdminServicesPageComponent />
+        </Suspense>
+    )
 }

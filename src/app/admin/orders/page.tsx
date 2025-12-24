@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useFirestore } from '@/firebase';
-import { collectionGroup, query, where, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query } from 'firebase/firestore';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collectionGroup, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import {
   Card,
@@ -34,6 +34,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from 'use-debounce';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
 
 const statusVariant = {
@@ -43,105 +45,126 @@ const statusVariant = {
   جزئي: 'outline',
 } as const;
 
+const STATUS_OPTIONS: (keyof typeof statusVariant)[] = ['مكتمل', 'قيد التنفيذ', 'ملغي', 'جزئي'];
 const ITEMS_PER_PAGE = 25;
 
-export default function AdminOrdersPage() {
+function OrdersPageSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-9 w-1/4" />
+                <Skeleton className="h-5 w-1/2 mt-2" />
+            </div>
+            <Card>
+                <CardHeader>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({ length: 15 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+                <CardFooter className="justify-center border-t pt-4">
+                    <Skeleton className="h-9 w-64" />
+                </CardFooter>
+            </Card>
+        </div>
+    );
+}
+
+function AdminOrdersPageComponent() {
     const firestore = useFirestore();
     const { toast } = useToast();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    
-    const [page, setPage] = useState(1);
-    const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
-    const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
-    const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
-    const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
-    const fetchOrders = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
-        if (!firestore) return;
-        setIsLoading(true);
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const currentStatus = searchParams.get('status') || 'all';
+    const currentSearch = searchParams.get('search') || '';
 
-        try {
-            let q: Query = collectionGroup(firestore, 'orders');
+    const [debouncedSearch] = useDebounce(currentSearch, 500);
 
-            if (statusFilter !== 'all') {
-                q = query(q, where('status', '==', statusFilter));
-            }
-             // Simple "starts-with" search for user ID if a search term is provided.
-            if (debouncedSearchTerm) {
-                q = query(q, where('userId', '>=', debouncedSearchTerm), where('userId', '<=', debouncedSearchTerm + '\uf8ff'));
-            } else {
-                 q = query(q, orderBy('orderDate', 'desc'));
-            }
+    const ordersQuery = useMemoFirebase(
+        () => (firestore ? query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc')) : null),
+        [firestore]
+    );
 
-            if (direction === 'next' && lastVisible) {
-                q = query(q, startAfter(lastVisible));
-            } else if (direction === 'prev' && firstVisible) {
-                q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
-            }
-            
-            const limitedQuery = query(q, limit(ITEMS_PER_PAGE + 1));
+    const { data: allOrders, isLoading, forceCollectionUpdate } = useCollection<Order>(ordersQuery);
 
-            const documentSnapshots = await getDocs(limitedQuery);
-            
-            const newOrders = documentSnapshots.docs.slice(0, ITEMS_PER_PAGE).map(doc => {
-                const data = doc.data() as Order;
-                // The doc ID is the order ID, but the userId is in the path
-                const pathSegments = doc.ref.path.split('/');
-                const userId = pathSegments.find((segment, index) => pathSegments[index - 1] === 'users');
-                return { ...data, id: doc.id, userId: userId || data.userId };
-            });
+    const { paginatedOrders, pageCount } = useMemo(() => {
+        if (!allOrders) return { paginatedOrders: [], pageCount: 0 };
+        
+        const filtered = allOrders.filter(order => {
+            const statusMatch = currentStatus === 'all' || order.status === currentStatus;
+            const searchMatch = debouncedSearch ?
+                order.userId.includes(debouncedSearch) ||
+                order.id.includes(debouncedSearch) ||
+                order.link.includes(debouncedSearch)
+                : true;
+            return statusMatch && searchMatch;
+        });
 
-            if (direction === 'prev') {
-                newOrders.reverse();
-            }
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return {
+            paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
+            pageCount: totalPages,
+        };
+    }, [allOrders, currentStatus, debouncedSearch, currentPage]);
 
-            setOrders(newOrders);
-            const hasMore = documentSnapshots.docs.length > ITEMS_PER_PAGE;
-            setIsNextPageAvailable(direction === 'prev' ? true : hasMore);
-
-            if (documentSnapshots.docs.length > 0) {
-              setFirstVisible(documentSnapshots.docs[0]);
-              setLastVisible(documentSnapshots.docs[newOrders.length - 1]);
-            } else {
-              setFirstVisible(null);
-              setLastVisible(null);
-            }
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الطلبات.' });
-        } finally {
-            setIsLoading(false);
+    const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value && value !== 'all') {
+            params.set(key, value);
+        } else {
+            params.delete(key);
         }
-    }, [firestore, statusFilter, debouncedSearchTerm, lastVisible, firstVisible]);
-    
-    useEffect(() => {
-        setPage(1);
-        setLastVisible(null);
-        setFirstVisible(null);
-        fetchOrders('initial');
-    }, [statusFilter, debouncedSearchTerm]);
+        if (key !== 'page') {
+            params.set('page', '1');
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
 
-
-    const handleNextPage = () => {
-      if(isNextPageAvailable) {
-        setPage(p => p+1);
-        fetchOrders('next');
-      }
-    }
-
-    const handlePrevPage = () => {
-      if(page > 1) {
-        setPage(p => p - 1);
-        fetchOrders('prev');
-      }
-    }
-
+    const renderPaginationItems = () => {
+        if (pageCount <= 1) return null;
+        const pageNumbers: (number | 'ellipsis')[] = [];
+        if (pageCount <= 7) {
+            for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
+        } else {
+            pageNumbers.push(1);
+            if (currentPage > 3) pageNumbers.push('ellipsis');
+            let start = Math.max(2, currentPage - 1);
+            let end = Math.min(pageCount - 1, currentPage + 1);
+            for (let i = start; i <= end; i++) pageNumbers.push(i);
+            if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
+            pageNumbers.push(pageCount);
+        }
+        return pageNumbers.map((page, index) => (
+            <PaginationItem key={`${page}-${index}`}>
+                {page === 'ellipsis' ? <PaginationEllipsis /> : (
+                    <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
+                )}
+            </PaginationItem>
+        ));
+    };
 
     const renderContent = () => {
-         if (isLoading) {
+         if (isLoading && !allOrders) {
             return Array.from({length: 10}).map((_, i) => (
                 <TableRow key={i}>
                     {Array.from({length: 7}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
@@ -149,7 +172,7 @@ export default function AdminOrdersPage() {
             ));
         }
 
-        if (!orders || orders.length === 0) {
+        if (!paginatedOrders || paginatedOrders.length === 0) {
             return (
                 <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center">لا توجد طلبات تطابق بحثك.</TableCell>
@@ -157,7 +180,7 @@ export default function AdminOrdersPage() {
             );
         }
 
-        return orders.map((order) => (
+        return paginatedOrders.map((order) => (
             <TableRow key={order.id}>
                 <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
                 <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
@@ -168,7 +191,7 @@ export default function AdminOrdersPage() {
                 </TableCell>
                 <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
-                    <OrderActions order={order} onOrderUpdate={() => fetchOrders('initial')} />
+                    <OrderActions order={order} onOrderUpdate={forceCollectionUpdate} />
                 </TableCell>
             </TableRow>
         ));
@@ -188,21 +211,21 @@ export default function AdminOrdersPage() {
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input 
                 placeholder="ابحث بالمعرف، المستخدم، أو الرابط..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={currentSearch}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
             />
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value)}>
+            <Select value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger><SelectValue placeholder="فلترة حسب الحالة" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">جميع الحالات</SelectItem>
-                {Object.keys(statusVariant).map(status => (
+                {STATUS_OPTIONS.map(status => (
                   <SelectItem key={status} value={status}>{status}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
            <Table>
             <TableHeader>
               <TableRow>
@@ -220,18 +243,30 @@ export default function AdminOrdersPage() {
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">صفحة {page}</span>
-            <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handlePrevPage} disabled={page <= 1 || isLoading}>
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleNextPage} disabled={!isNextPageAvailable || isLoading}>
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-            </div>
-        </CardFooter>
+        {pageCount > 1 && (
+            <CardFooter className="flex items-center justify-center border-t pt-4">
+                 <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
+                        </PaginationItem>
+                        {renderPaginationItems()}
+                        <PaginationItem>
+                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
+}
+
+export default function AdminOrdersPage() {
+    return (
+        <Suspense fallback={<OrdersPageSkeleton />}>
+            <AdminOrdersPageComponent />
+        </Suspense>
+    )
 }
