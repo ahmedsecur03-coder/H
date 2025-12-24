@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -28,34 +29,35 @@ export function ImportDialog({ children, onImportComplete }: ImportDialogProps) 
         }
 
         setIsImporting(true);
-        toast({ title: 'جاري الاستيراد...', description: `جاري استيراد ${SMM_SERVICES.length} خدمة. قد يستغرق الأمر بعض الوقت.` });
+        toast({ title: 'جاري الاستيراد...', description: `جاري مزامنة أسعار ${SMM_SERVICES.length} خدمة. قد يستغرق الأمر بعض الوقت.` });
 
         const batch = writeBatch(firestore);
-        const servicesColRef = collection(firestore, 'services');
+        const pricesColRef = collection(firestore, 'servicePrices');
         let errorOccurred = false;
 
         SMM_SERVICES.forEach(service => {
-            const serviceDocRef = doc(servicesColRef, service.id.toString());
-            batch.set(serviceDocRef, service);
+            const priceDocRef = doc(pricesColRef, service.id.toString());
+            // Only write the price to Firestore
+            batch.set(priceDocRef, { price: service.price });
         });
 
         try {
             await batch.commit();
-            toast({ title: 'نجاح!', description: `تم استيراد ${SMM_SERVICES.length} خدمة بنجاح.` });
+            toast({ title: 'نجاح!', description: `تم مزامنة أسعار ${SMM_SERVICES.length} خدمة بنجاح.` });
             onImportComplete();
             setOpen(false);
         } catch (error) {
             console.error("Import Error:", error);
             errorOccurred = true;
             const permissionError = new FirestorePermissionError({
-                path: 'services/[multiple]',
+                path: 'servicePrices/[multiple]',
                 operation: 'write'
             });
             errorEmitter.emit('permission-error', permissionError);
         } finally {
             setIsImporting(false);
             if (errorOccurred) {
-                toast({ variant: 'destructive', title: 'فشل الاستيراد', description: 'لم يتم استيراد الخدمات بسبب خطأ في الصلاحيات. تحقق من console.' });
+                toast({ variant: 'destructive', title: 'فشل المزامنة', description: 'لم تتم مزامنة الأسعار بسبب خطأ في الصلاحيات. تحقق من console.' });
             }
         }
     };
@@ -65,19 +67,20 @@ export function ImportDialog({ children, onImportComplete }: ImportDialogProps) 
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>تأكيد عملية الاستيراد</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2"><AlertTriangle className="text-destructive"/>تأكيد عملية المزامنة</DialogTitle>
                     <DialogDescription>
-                        أنت على وشك استيراد {SMM_SERVICES.length} خدمة إلى قاعدة البيانات. سيؤدي هذا إلى الكتابة فوق أي خدمات موجودة بنفس المعرف (ID). هل أنت متأكد أنك تريد المتابعة؟
+                        أنت على وشك مزامنة أسعار {SMM_SERVICES.length} خدمة مع قاعدة البيانات. سيؤدي هذا إلى الكتابة فوق أي أسعار موجودة. هل أنت متأكد أنك تريد المتابعة؟
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
                     <Button variant="secondary" onClick={() => setOpen(false)}>إلغاء</Button>
                     <Button onClick={handleImport} disabled={isImporting} variant="destructive">
                         {isImporting ? <Loader2 className="animate-spin" /> : <Upload className="ml-2"/>}
-                        نعم، قم بالاستيراد
+                        نعم، قم بالمزامنة
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
+

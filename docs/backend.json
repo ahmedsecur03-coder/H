@@ -146,6 +146,17 @@
       },
       "required": [ "id", "platform", "category", "price", "min", "max" ]
     },
+     "ServicePrice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service Price",
+      "type": "object",
+      "description": "Represents the dynamic price of a service.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the service, matching the static service data." },
+        "price": { "type": "number", "description": "Price of the service per 1000 units." }
+      },
+      "required": [ "id", "price" ]
+    },
     "Order": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Order",
@@ -564,11 +575,11 @@
       },
       "description": "Stores user profiles. Uses path-based ownership for private data."
     },
-    "/services/{serviceId}": {
+    "/servicePrices/{serviceId}": {
       "schema": {
-        "$ref": "#/entities/Service"
+        "$ref": "#/entities/ServicePrice"
       },
-      "description": "Stores service catalog information. Publicly readable."
+      "description": "Stores dynamic prices for services. Publicly readable, admin writable."
     },
     "/users/{userId}/orders/{orderId}": {
       "schema": {
@@ -632,3 +643,4 @@
     }
   }
 }
+

@@ -51,6 +51,11 @@ export type Service = {
   dropRate?: string;
 };
 
+export type ServicePrice = {
+    id: string;
+    price: number;
+}
+
 export type Order = {
   id: string;
   userId: string;
@@ -173,3 +178,4 @@ export type DailyStat = {
     totalOrders: number;
     newUsers: number;
 };
+

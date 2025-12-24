@@ -1,13 +1,15 @@
+
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, Query, DocumentSnapshot, where } from 'firebase/firestore';
-import type { Service } from '@/lib/types';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, orderBy, getDocs, writeBatch } from 'firebase/firestore';
+import type { Service, ServicePrice } from '@/lib/types';
+import { SMM_SERVICES } from '@/lib/smm-services';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Trash2, ListFilter, Pencil, CheckCircle, XCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { PlusCircle, Upload, Trash2, ListFilter, Pencil, CheckCircle, XCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -33,7 +35,6 @@ function ServicesPageSkeleton() {
                     <Skeleton className="h-5 w-64 mt-2" />
                 </div>
                 <div className="flex gap-2 self-end sm:self-center">
-                    <Skeleton className="h-10 w-24" />
                     <Skeleton className="h-10 w-24" />
                 </div>
             </div>
@@ -80,20 +81,25 @@ function AdminServicesPageComponent() {
   const [isLoading, setIsLoading] = useState(true);
   const [pageCount, setPageCount] = useState(0);
 
-  // This is a simplified fetch as we don't have cursors for client-side search.
-  // A more robust solution for huge datasets would involve a dedicated search service like Algolia/Typesense.
-  const fetchServices = useCallback(async () => {
+  const fetchServiceData = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-        // A full implementation of search would require a 3rd party service.
-        // We will fetch all and filter client-side as a fallback.
-        // For very large datasets this is inefficient.
-        const servicesQuery = query(collection(firestore, 'services'), orderBy('id'));
-        const querySnapshot = await getDocs(servicesQuery);
-        let allServices = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+        // Step 1: Get dynamic prices from Firestore
+        const pricesSnapshot = await getDocs(collection(firestore, 'servicePrices'));
+        const pricesMap = new Map<string, number>();
+        pricesSnapshot.forEach(doc => {
+            pricesMap.set(doc.id, doc.data().price);
+        });
+
+        // Step 2: Merge with static data from SMM_SERVICES
+        const allServices = SMM_SERVICES.map(service => ({
+            ...service,
+            price: pricesMap.get(service.id) ?? service.price, // Use Firestore price if available, otherwise fallback
+        }));
         
+        // Step 3: Apply client-side filtering and pagination
         const filtered = allServices.filter(service =>
           service.id.toString().includes(currentSearch) ||
           service.category.toLowerCase().includes(currentSearch.toLowerCase()) ||
@@ -107,8 +113,8 @@ function AdminServicesPageComponent() {
         setServices(filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE));
 
     } catch (error) {
-        console.error("Error fetching services: ", error);
-        toast({variant: 'destructive', title: "خطأ", description: "فشل في جلب الخدمات."});
+        console.error("Error fetching services data: ", error);
+        toast({variant: 'destructive', title: "خطأ", description: "فشل في جلب بيانات الخدمات."});
     } finally {
         setIsLoading(false);
     }
@@ -116,8 +122,8 @@ function AdminServicesPageComponent() {
 
 
   useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+    fetchServiceData();
+  }, [fetchServiceData]);
 
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
@@ -158,27 +164,23 @@ function AdminServicesPageComponent() {
   };
 
   
-  const handleSaveService = (data: Omit<Service, 'id'> & { id?: string }) => {
-    if (!firestore) return;
+  const handleSaveService = (data: { price: number }) => {
+    if (!firestore || !selectedService) return;
 
-    const actionPromise = selectedService
-        ? updateDoc(doc(firestore, 'services', selectedService.id), data)
-        : data.id
-            ? setDoc(doc(firestore, 'services', data.id), data)
-            : addDoc(collection(firestore, 'services'), data);
+    const priceDocRef = doc(firestore, 'servicePrices', selectedService.id);
+    
+    toast({ title: 'جاري حفظ السعر...' });
 
-    toast({ title: 'جاري الحفظ...' });
-
-    actionPromise.then(() => {
-        toast({ title: 'نجاح', description: 'تم حفظ الخدمة بنجاح.' });
-        fetchServices(); // Re-fetch data
+    updateDoc(priceDocRef, data)
+    .then(() => {
+        toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
+        fetchServiceData(); // Re-fetch data to show updated price
         setIsDialogOpen(false);
         setSelectedService(undefined);
     }).catch(serverError => {
-        const path = selectedService ? `services/${selectedService.id}` : `services/${data.id || '[new]'}`;
         const permissionError = new FirestorePermissionError({
-            path: path,
-            operation: selectedService ? 'update' : 'create',
+            path: priceDocRef.path,
+            operation: 'update',
             requestResourceData: data,
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -187,14 +189,16 @@ function AdminServicesPageComponent() {
 
   const handleDeleteService = (id: string) => {
       if (!firestore) return;
-      const serviceDocRef = doc(firestore, 'services', id);
-      deleteDoc(serviceDocRef)
+      // This now only deletes the price document, leaving the static data intact.
+      // The service will still appear in the list but may use a fallback price.
+      const priceDocRef = doc(firestore, 'servicePrices', id);
+      deleteDoc(priceDocRef)
         .then(() => {
-            toast({ title: 'نجاح', description: 'تم حذف الخدمة بنجاح.' });
-            fetchServices(); // Re-fetch data
+            toast({ title: 'نجاح', description: 'تم حذف السعر المخصص للخدمة.' });
+            fetchServiceData();
         })
         .catch(serverError => {
-            const permissionError = new FirestorePermissionError({ path: serviceDocRef.path, operation: 'delete' });
+            const permissionError = new FirestorePermissionError({ path: priceDocRef.path, operation: 'delete' });
             errorEmitter.emit('permission-error', permissionError);
         });
   };
@@ -226,15 +230,6 @@ function AdminServicesPageComponent() {
       </CardContent>
       <CardFooter className="gap-2">
          <Button variant="ghost" size="sm" className="flex-1" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex-1 text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle>هل أنت متأكد تماماً؟</AlertDialogTitle><AlertDialogDescription>هذا الإجراء لا يمكن التراجع عنه. سيؤدي هذا إلى حذف الخدمة نهائياً من قاعدة البيانات.</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter><AlertDialogCancel>إلغاء</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteService(service.id)} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction></AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
       </CardFooter>
     </Card>
   );
@@ -254,13 +249,12 @@ function AdminServicesPageComponent() {
              <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
                 <h3 className="mt-4 font-headline text-2xl">{currentSearch ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة أو استيرادها."}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بمزامنة أسعار الخدمات."}</p>
                  {!currentSearch && (
                     <div className="flex gap-2 mt-4">
-                        <ImportDialog onImportComplete={fetchServices}>
-                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
+                        <ImportDialog onImportComplete={fetchServiceData}>
+                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />مزامنة الأسعار</Button>
                         </ImportDialog>
-                        <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
                     </div>
                 )}
             </div>
@@ -283,15 +277,6 @@ function AdminServicesPageComponent() {
           </TableCell>
           <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>هل أنت متأكد تماماً؟</AlertDialogTitle><AlertDialogDescription>هذا الإجراء لا يمكن التراجع عنه. سيؤدي هذا إلى حذف الخدمة نهائياً من قاعدة البيانات.</AlertDialogDescription></AlertDialogHeader>
-                    <AlertDialogFooter><AlertDialogCancel>إلغاء</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteService(service.id)} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction></AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
           </TableCell>
       </TableRow>
     ));
@@ -303,13 +288,12 @@ function AdminServicesPageComponent() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">إدارة الخدمات</h1>
-          <p className="text-muted-foreground">إضافة وتعديل وحذف خدمات المنصة.</p>
+          <p className="text-muted-foreground">تعديل أسعار خدمات المنصة.</p>
         </div>
         <div className="flex gap-2 self-end sm:self-center">
-           <ImportDialog onImportComplete={fetchServices}>
-             <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
+           <ImportDialog onImportComplete={fetchServiceData}>
+             <Button variant="outline"><Upload className="ml-2 h-4 w-4" />مزامنة الأسعار</Button>
            </ImportDialog>
-            <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
         </div>
       </div>
        <Card>
@@ -335,23 +319,10 @@ function AdminServicesPageComponent() {
             <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
                 <h3 className="mt-4 font-headline text-2xl">{currentSearch ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة أو استيرادها."}</p>
-                 {!currentSearch && (
-                    <div className="flex gap-2 mt-4">
-                        <ImportDialog onImportComplete={fetchServices}>
-                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
-                        </ImportDialog>
-                        <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
-                    </div>
-                )}
+                <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بمزامنة أسعار الخدمات."}</p>
             </div>
           ) : (
             <>
-              {/* Mobile View */}
-              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:hidden gap-4">
-                  {services.map(service => <ServiceCard key={service.id} service={service} />)}
-              </div>
-              {/* Desktop View */}
               <div className="hidden lg:block">
                 <Table>
                     <TableHeader>
@@ -409,3 +380,4 @@ export default function AdminServicesPage() {
         </Suspense>
     )
 }
+

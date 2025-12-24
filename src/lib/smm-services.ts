@@ -1,3 +1,4 @@
+
 import type { Service } from './types';
 
 // This file contains a comprehensive list of SMM services.
@@ -1069,11 +1070,11 @@ export const SMM_SERVICES: Service[] = [
         "id": "6007",
         "platform": "TikTok",
         "category": "إعجابات",
-        "price": 0.05423,
+        "price": 0.06919,
         "min": 10,
         "max": 5000000,
         "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان",
-        "avgTime": "1 ساعة 50 دقائق"
+        "avgTime": "11 دقائق"
     },
     {
         "id": "5856",
@@ -2070,11 +2071,11 @@ export const SMM_SERVICES: Service[] = [
         "id": "5423",
         "platform": "YouTube",
         "category": "مشاهدات",
-        "price": 1.5521,
+        "price": 1.7017,
         "min": 100,
         "max": 1000000,
         "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
-        "avgTime": "21 دقائق",
+        "avgTime": "77 ساعات 50 دقائق",
         "guarantee": true,
         "refill": true
     },
@@ -2110,7 +2111,7 @@ export const SMM_SERVICES: Service[] = [
         "min": 100,
         "max": 1000000,
         "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
-        "avgTime": "77 ساعات 50 دقائق",
+        "avgTime": "13 دقائق",
         "guarantee": true,
         "refill": true
     },
@@ -3201,3 +3202,4 @@ export const SMM_SERVICES: Service[] = [
         "avgTime": "3 ساعات 58 دقائق"
     }
 ]
+

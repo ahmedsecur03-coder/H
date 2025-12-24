@@ -1,8 +1,10 @@
+
 'use client';
 import { useMemo, useState, useEffect } from 'react';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, getDocs } from 'firebase/firestore';
-import type { Service } from '@/lib/types';
+import type { Service, ServicePrice } from '@/lib/types';
+import { SMM_SERVICES } from '@/lib/smm-services';
 import {
   Card,
   CardContent,
@@ -73,17 +75,36 @@ export default function ServicesPage() {
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!firestore) return;
-    const servicesQuery = query(collection(firestore, 'services'));
-    getDocs(servicesQuery).then(snapshot => {
-      const servicesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
-      setAllServices(servicesData);
-      setIsLoading(false);
-    }).catch(err => {
-      console.error("Error fetching services: ", err);
-      setIsLoading(false);
-    });
+ useEffect(() => {
+    const fetchServices = async () => {
+        if (!firestore) {
+            // If firestore is not available, use static data as fallback
+            setAllServices(SMM_SERVICES);
+            setIsLoading(false);
+            return;
+        };
+
+        try {
+            const pricesSnapshot = await getDocs(collection(firestore, 'servicePrices'));
+            const pricesMap = new Map<string, number>();
+            pricesSnapshot.forEach(doc => {
+                pricesMap.set(doc.id, doc.data().price);
+            });
+
+            const mergedServices = SMM_SERVICES.map(service => ({
+                ...service,
+                price: pricesMap.get(service.id) ?? service.price,
+            }));
+
+            setAllServices(mergedServices);
+        } catch (error) {
+            console.error("Error fetching dynamic prices, falling back to static data: ", error);
+            setAllServices(SMM_SERVICES);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchServices();
   }, [firestore]);
 
 
@@ -231,3 +252,4 @@ export default function ServicesPage() {
     </div>
   );
 }
+

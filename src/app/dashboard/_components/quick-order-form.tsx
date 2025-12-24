@@ -1,7 +1,8 @@
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { runTransaction, collection, doc, query } from 'firebase/firestore';
+import { runTransaction, collection, doc, query, getDocs } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +15,13 @@ import {
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle, ChevronsRight, Timer, Gauge, TrendingDown, ShieldCheck } from 'lucide-react';
-import type { Service, Order, User as UserType } from '@/lib/types';
+import type { Service, Order, User as UserType, ServicePrice } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+import { SMM_SERVICES } from '@/lib/smm-services';
 
 function ServiceDescription({ service }: { service: Service }) {
     if (!service) return null;
@@ -70,26 +72,38 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     const [link, setLink] = useState<string>('');
     const [quantity, setQuantity] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Fetch dynamic prices from Firestore
+    const pricesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'servicePrices')) : null, [firestore]);
+    const { data: pricesData, isLoading: pricesLoading } = useCollection<ServicePrice>(pricesQuery);
 
-    const servicesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'services')) : null, [firestore]);
-    const { data: servicesData, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+    const mergedServices = useMemo(() => {
+        if (pricesLoading) return []; // Wait until prices are loaded
+        const pricesMap = new Map<string, number>();
+        pricesData?.forEach(p => pricesMap.set(p.id, p.price));
+
+        return SMM_SERVICES.map(service => ({
+            ...service,
+            price: pricesMap.get(service.id) ?? service.price // Fallback to static price if not in DB
+        }));
+    }, [pricesData, pricesLoading]);
     
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
     const discountPercentage = rank.discount / 100;
     
-    const platforms = useMemo(() => servicesData ? [...new Set(servicesData.map(s => s.platform))] : [], [servicesData]);
+    const platforms = useMemo(() => mergedServices ? [...new Set(mergedServices.map(s => s.platform))] : [], [mergedServices]);
     
     const categories = useMemo(() => {
         if (!platform) return [];
-        return [...new Set(servicesData?.filter(s => s.platform === platform).map(s => s.category) || [])];
-    }, [servicesData, platform]);
+        return [...new Set(mergedServices?.filter(s => s.platform === platform).map(s => s.category) || [])];
+    }, [mergedServices, platform]);
 
     const services = useMemo(() => {
         if (!category) return [];
-        return servicesData?.filter(s => s.platform === platform && s.category === category) || [];
-    }, [servicesData, platform, category]);
+        return mergedServices?.filter(s => s.platform === platform && s.category === category) || [];
+    }, [mergedServices, platform, category]);
 
-    const selectedService = useMemo(() => servicesData?.find(s => s.id === serviceId), [servicesData, serviceId]);
+    const selectedService = useMemo(() => mergedServices?.find(s => s.id === serviceId), [mergedServices, serviceId]);
     
     const orderCost = useMemo(() => {
         if (!selectedService || !quantity) return { base: 0, final: 0 };
@@ -188,8 +202,8 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
 
             <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-4 pt-6">
-                    <Select onValueChange={setPlatform} disabled={servicesLoading} value={platform}>
-                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
+                    <Select onValueChange={setPlatform} disabled={pricesLoading} value={platform}>
+                        <SelectTrigger><SelectValue placeholder={pricesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
                         <SelectContent>
                             {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                         </SelectContent>
@@ -198,7 +212,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     <AnimatePresence>
                     {platform && (
                         <motion.div key="category-select" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
-                            <Select onValueChange={setCategory} disabled={!platform || servicesLoading} value={category}>
+                            <Select onValueChange={setCategory} disabled={!platform || pricesLoading} value={category}>
                                 <SelectTrigger><SelectValue placeholder="2. اختر الفئة" /></SelectTrigger>
                                 <SelectContent>
                                     {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -208,7 +222,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     )}
                     {category && (
                          <motion.div key="service-select" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
-                            <Select onValueChange={setServiceId} value={serviceId} disabled={!category || servicesLoading}>
+                            <Select onValueChange={setServiceId} value={serviceId} disabled={!category || pricesLoading}>
                                 <SelectTrigger><SelectValue placeholder="3. اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
                                     {services.map(s => 
@@ -253,7 +267,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                 </CardContent>
                 {serviceId && (
                     <CardFooter>
-                        <Button type="submit" className="w-full" disabled={isSubmitting || servicesLoading}>
+                        <Button type="submit" className="w-full" disabled={isSubmitting || pricesLoading}>
                             {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
                             إرسال الطلب
                         </Button>
@@ -263,3 +277,4 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         </Card>
     );
 }
+
