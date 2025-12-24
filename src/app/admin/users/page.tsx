@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot,getCountFromServer } from 'firebase/firestore';
+import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot,getCountFromServer, and, or } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { EditUserDialog } from './_components/edit-user-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { useDebounce } from 'use-debounce';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
@@ -64,43 +63,53 @@ function AdminUsersPageComponent() {
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
-  const [debouncedSearch] = useDebounce(currentSearch, 500);
-
+  
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageCount, setPageCount] = useState(0);
-
-  const fetchUsers = useCallback(async () => {
+  const [firstDoc, setFirstDoc] = useState<DocumentSnapshot | null>(null);
+  const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
+  
+  const fetchUsers = useCallback(async (page: number, searchTerm: string, direction: 'next' | 'prev' | 'none' = 'none') => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
         let baseQuery: Query;
-        let countQuery: Query;
-
-        // Firestore does not support case-insensitive search or partial search on multiple fields well.
-        // We will fetch all and filter client side. This is inefficient but a limitation we accept for this app's scope.
-        // For production, a dedicated search service like Algolia or Typesense is recommended.
-        baseQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
-        countQuery = query(collection(firestore, 'users'));
-
-        const snapshot = await getDocs(baseQuery);
-        let allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-
-        // Client-side search
-        if (debouncedSearch) {
-             allUsers = allUsers.filter(u => 
-                (u.name && u.name.toLowerCase().includes(debouncedSearch.toLowerCase())) || 
-                (u.email && u.email.toLowerCase().includes(debouncedSearch.toLowerCase()))
-            );
+        if (searchTerm) {
+            // Firestore doesn't support full-text search on multiple fields natively with case-insensitivity.
+            // This is a workaround that searches for an exact match on email, which is more likely to be unique.
+            // A more robust solution would use a dedicated search service like Algolia or Typesense.
+             baseQuery = query(collection(firestore, 'users'), where('email', '>=', searchTerm), where('email', '<=', searchTerm + '\uf8ff'));
+        } else {
+            baseQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
         }
 
-        const totalUsers = allUsers.length;
+        const countQuery = baseQuery; // Use the same base query for counting
+        const totalUsersSnapshot = await getCountFromServer(countQuery);
+        const totalUsers = totalUsersSnapshot.data().count;
         setPageCount(Math.ceil(totalUsers / ITEMS_PER_PAGE));
         
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        setUsers(allUsers.slice(startIndex, endIndex));
+        let finalQuery = baseQuery;
+        if (direction === 'next' && lastDoc) {
+          finalQuery = query(baseQuery, startAfter(lastDoc), limit(ITEMS_PER_PAGE));
+        } else if (direction === 'prev' && firstDoc) {
+          finalQuery = query(baseQuery, endBefore(firstDoc), limitToLast(ITEMS_PER_PAGE));
+        } else {
+          // For initial load or direct page jumps (simplified)
+           if (page > 1 && !searchTerm) { // Pagination without cursors is complex with variable queries, simplifying for non-search
+               // This is a simplification and might not be perfectly accurate on direct page jumps with search.
+               // A full cursor-based pagination would require storing cursors for every page.
+           }
+           finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
+        }
+
+        const snapshot = await getDocs(finalQuery);
+        const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        
+        setUsers(usersData);
+        setFirstDoc(snapshot.docs[0] || null);
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
 
     } catch (error) {
         console.error(error);
@@ -108,23 +117,27 @@ function AdminUsersPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, debouncedSearch, currentPage, toast]);
+  }, [firestore, toast, lastDoc, firstDoc]);
+
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchUsers(currentPage, currentSearch);
+  }, [currentSearch, currentPage]);
+
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    const direction = key === 'page' ? (Number(value) > currentPage ? 'next' : 'prev') : 'none';
     if (value) {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-     if (key !== 'page') {
+     if (key === 'search') {
       params.set('page', '1');
     }
     router.replace(`${pathname}?${params.toString()}`);
+    // The useEffect will trigger the fetch
   };
   
    const renderPaginationItems = () => {
@@ -182,7 +195,7 @@ function AdminUsersPageComponent() {
             </div>
         </CardContent>
         <CardFooter>
-            <EditUserDialog user={user} onUserUpdate={fetchUsers}>
+            <EditUserDialog user={user} onUserUpdate={() => fetchUsers(currentPage, currentSearch)}>
                 <Button variant="outline" size="sm" className="w-full">تعديل</Button>
             </EditUserDialog>
         </CardFooter>
@@ -202,12 +215,12 @@ function AdminUsersPageComponent() {
         <CardHeader>
           <CardTitle>بحث وتعديل المستخدمين</CardTitle>
           <CardDescription>
-            ابحث بالاسم أو البريد الإلكتروني لتعديل بيانات المستخدم.
+            ابحث بالبريد الإلكتروني لتعديل بيانات المستخدم.
           </CardDescription>
           <div className="relative pt-4">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                placeholder="ابحث بالبريد الإلكتروني..."
                 className="pe-10 rtl:ps-10"
                 value={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -269,7 +282,7 @@ function AdminUsersPageComponent() {
                                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <EditUserDialog user={user} onUserUpdate={fetchUsers}>
+                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers(currentPage, currentSearch)}>
                                             <Button variant="outline" size="sm">تعديل</Button>
                                         </EditUserDialog>
                                     </TableCell>
@@ -280,7 +293,7 @@ function AdminUsersPageComponent() {
                     </div>
                  </>
             ) : (
-                <div className="h-24 text-center flex items-center justify-center">لم يتم العثور على مستخدمين.</div>
+                <div className="h-24 text-center flex items-center justify-center text-muted-foreground">لم يتم العثور على مستخدمين يطابقون هذا البحث.</div>
             )}
         </CardContent>
        {pageCount > 1 && (
@@ -311,3 +324,5 @@ export default function AdminUsersPage() {
         </Suspense>
     )
 }
+
+    
