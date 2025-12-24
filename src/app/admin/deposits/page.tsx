@@ -112,7 +112,6 @@ function DepositTable({ status }: { status: Status }) {
             transaction.update(userDocRef, userUpdates);
         }
         
-        // Always update the deposit document's status inside the transaction
         transaction.update(depositDocRef, { status: newStatus });
       });
       
@@ -123,11 +122,14 @@ function DepositTable({ status }: { status: Status }) {
         description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
       });
     } catch (error: any) {
-        let errorData = newStatus === 'مقبول' ? { balance: '...', notifications: '...' } : { status: newStatus };
+        toast({
+            variant: 'destructive',
+            title: 'فشل الإجراء',
+            description: error.message || 'حدث خطأ غير متوقع أثناء تحديث الطلب.'
+        });
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path, // The primary document being operated on
             operation: 'update',
-            requestResourceData: errorData 
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
