@@ -119,8 +119,12 @@ function AdminUsersPageComponent() {
     }
   }, [firestore, debouncedSearch, lastVisible, firstVisible, page, toast]);
 
-  useEffect(() => {
+  const refreshUsers = useCallback(() => {
     fetchUsers('first');
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    refreshUsers();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
@@ -167,7 +171,7 @@ function AdminUsersPageComponent() {
             </div>
         </CardContent>
         <CardFooter>
-            <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+            <EditUserDialog user={user} onUserUpdate={refreshUsers}>
                 <Button variant="outline" size="sm" className="w-full">تعديل</Button>
             </EditUserDialog>
         </CardFooter>
@@ -254,7 +258,7 @@ function AdminUsersPageComponent() {
                                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers('first')}>
+                                        <EditUserDialog user={user} onUserUpdate={refreshUsers}>
                                             <Button variant="outline" size="sm">تعديل</Button>
                                         </EditUserDialog>
                                     </TableCell>

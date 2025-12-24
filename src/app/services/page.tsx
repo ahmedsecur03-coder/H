@@ -105,7 +105,7 @@ export default function ServicesPage() {
       return searchMatch && platformMatch && categoryMatch;
     });
 
-    return { platforms, categories, filteredServices: filtered };
+    return { platforms, categories, filteredServices: filtered.slice(0, 100) }; // Limit to 100 results for performance
   }, [allServices, searchTerm, platformFilter, categoryFilter]);
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);

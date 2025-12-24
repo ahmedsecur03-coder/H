@@ -46,82 +46,13 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: initialCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
     const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
-
-    const [campaigns, setCampaigns] = useState<Campaign[] | null>(initialCampaigns);
-
-    useEffect(() => {
-        if (initialCampaigns) {
-            setCampaigns(initialCampaigns);
-        }
-    }, [initialCampaigns]);
-
-    useEffect(() => {
-        const updateCampaigns = () => {
-            setCampaigns(prevCampaigns => {
-                if (!prevCampaigns) return null;
-
-                const updatedCampaigns = prevCampaigns.map(campaign => {
-                    if (campaign.status !== 'نشط') {
-                        return campaign;
-                    }
-                    
-                    const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
-                    const newClicks = (campaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80));
-                    const newSpend = Math.min(campaign.budget, (campaign.spend || 0) + (newClicks - (campaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
-                    const newResults = (campaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
-                    const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
-                    const cpc = newClicks > 0 ? newSpend / newClicks : 0;
-                    let status = campaign.status;
-
-                    if (newSpend >= campaign.budget) {
-                        status = 'مكتمل';
-                    }
-
-                    const updatedCampaign = {
-                        ...campaign,
-                        impressions: newImpressions,
-                        clicks: newClicks,
-                        spend: newSpend,
-                        results: newResults,
-                        ctr: ctr,
-                        cpc: cpc,
-                        status: status,
-                    };
-
-                    if(firestore && authUser && (updatedCampaign.status !== campaign.status || (updatedCampaign.impressions % 10 === 0))) {
-                        const campaignRef = doc(firestore, `users/${authUser.uid}/campaigns/${campaign.id}`);
-                        updateDoc(campaignRef, {
-                            impressions: updatedCampaign.impressions,
-                            clicks: updatedCampaign.clicks,
-                            spend: updatedCampaign.spend,
-                            results: updatedCampaign.results,
-                            ctr: updatedCampaign.ctr,
-                            cpc: updatedCampaign.cpc,
-                            status: updatedCampaign.status
-                        }).catch(err => console.error("Failed to update campaign in background", err));
-                    }
-                    
-                    return updatedCampaign;
-                });
-                
-                return updatedCampaigns;
-            });
-        };
-
-        updateCampaigns(); 
-        
-        const interval = setInterval(updateCampaigns, 30000); 
-
-        return () => clearInterval(interval);
-    }, [firestore, authUser]);
-
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
 

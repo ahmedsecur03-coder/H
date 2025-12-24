@@ -299,12 +299,12 @@ function AdminOrdersPageComponent() {
       ) : paginatedOrders.length > 0 ? (
         <>
             {/* Mobile View */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
                 {paginatedOrders.map(order => <OrderCard key={order.id} order={order} />)}
             </div>
 
             {/* Desktop View */}
-            <Card className="hidden lg:block">
+            <Card className="hidden md:block">
             <CardContent className="p-0">
                 <Table>
                 <TableHeader>

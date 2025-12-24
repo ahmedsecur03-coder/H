@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
@@ -115,32 +115,32 @@ function OrdersPageComponent() {
   // Debounced search term for performance
   const [debouncedSearch] = useDebounce(currentSearch, 300);
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch data once
-  const fetchOrders = useCallback(async () => {
+  const fetchAllOrders = useCallback(async () => {
     if (!user || !firestore) return;
     setIsLoading(true);
     const ordersQuery = query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc'));
     const snapshot = await getDocs(ordersQuery);
     const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-    setOrders(ordersData);
+    setAllOrders(ordersData);
     setIsLoading(false);
   }, [user, firestore]);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    fetchAllOrders();
+  }, [fetchAllOrders]);
 
 
   // Memoized client-side filtering
   const { paginatedOrders, pageCount } = useMemo(() => {
-    if (!orders) {
+    if (!allOrders) {
       return { paginatedOrders: [], pageCount: 0 };
     }
 
-    const filtered = orders.filter(order => {
+    const filtered = allOrders.filter(order => {
       const statusMatch = currentStatus === 'all' || order.status === currentStatus;
       const searchMatch = debouncedSearch
         ? order.id.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -157,7 +157,7 @@ function OrdersPageComponent() {
       paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
       pageCount: totalPages,
     };
-  }, [orders, currentStatus, debouncedSearch, currentPage]);
+  }, [allOrders, currentStatus, debouncedSearch, currentPage]);
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
