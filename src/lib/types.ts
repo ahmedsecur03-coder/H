@@ -1,4 +1,5 @@
 
+
 export type User = {
   id: string;
   name: string;
@@ -67,6 +68,7 @@ export type NestedNavItem = NavItem & {
 export type Campaign = {
     id: string;
     userId: string;
+    agencyAccountId: string; // New field to link to agency account
     name: string;
     platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
     goal: 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';

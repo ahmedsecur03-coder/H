@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useFirestore } from '@/firebase';
 import { doc, runTransaction } from 'firebase/firestore';
-import type { Campaign, User } from '@/lib/types';
+import type { Campaign, AgencyAccount } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -40,25 +41,25 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
         setLoading(true);
 
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        const userDocRef = doc(firestore, 'users', campaign.userId);
+        const agencyAccountDocRef = doc(firestore, `users/${campaign.userId}/agencyAccounts`, campaign.agencyAccountId);
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) {
-                    throw new Error("المستخدم صاحب الحملة غير موجود.");
+                const agencyAccountDoc = await transaction.get(agencyAccountDocRef);
+                if (!agencyAccountDoc.exists()) {
+                    throw new Error("الحساب الإعلاني المرتبط بالحملة غير موجود.");
                 }
 
-                const userData = userDoc.data() as User;
-                const currentAdBalance = userData.adBalance ?? 0;
+                const accountData = agencyAccountDoc.data() as AgencyAccount;
+                const currentAccountBalance = accountData.balance ?? 0;
 
-                if (currentAdBalance < campaign.budget) {
-                    throw new Error(`رصيد إعلانات المستخدم غير كافٍ. المطلوب: $${campaign.budget.toFixed(2)}, المتاح: $${currentAdBalance.toFixed(2)}`);
+                if (currentAccountBalance < campaign.budget) {
+                    throw new Error(`رصيد الحساب الإعلاني غير كافٍ. المطلوب: $${campaign.budget.toFixed(2)}, المتاح: $${currentAccountBalance.toFixed(2)}`);
                 }
 
-                // 1. Deduct budget from user's adBalance
-                const newAdBalance = currentAdBalance - campaign.budget;
-                transaction.update(userDocRef, { adBalance: newAdBalance });
+                // 1. Deduct budget from agency account balance
+                const newAccountBalance = currentAccountBalance - campaign.budget;
+                transaction.update(agencyAccountDocRef, { balance: newAccountBalance });
 
                 // 2. Activate the campaign
                 const updates = { 
@@ -68,7 +69,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 transaction.update(campaignDocRef, updates);
             });
 
-            toast({ title: 'نجاح', description: 'تم تفعيل الحملة وخصم الميزانية بنجاح.' });
+            toast({ title: 'نجاح', description: 'تم تفعيل الحملة وخصم الميزانية من الحساب الإعلاني بنجاح.' });
             forceCollectionUpdate();
             setOpen(false);
 
@@ -79,7 +80,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 description: error.message,
             });
             const permissionError = new FirestorePermissionError({
-              path: userDocRef.path, 
+              path: agencyAccountDocRef.path, 
               operation: 'update',
             });
             errorEmitter.emit('permission-error', permissionError);
@@ -102,6 +103,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <p><strong>المستخدم:</strong> <span className="font-mono text-xs">{campaign.userId}</span></p>
+                     <p><strong>الحساب الإعلاني:</strong> <span className="font-mono text-xs">{campaign.agencyAccountId}</span></p>
                     <p><strong>الميزانية:</strong> ${campaign.budget.toFixed(2)}</p>
                      <p className="flex items-center gap-2"><strong>المدة:</strong> {campaign.durationDays} أيام <Clock className="w-4 h-4 text-muted-foreground" /></p>
                     <p><strong>المنصة:</strong> {campaign.platform}</p>

@@ -70,15 +70,16 @@ service cloud.firestore {
 
     function isValidCampaign(data) {
         return data.userId == request.auth.uid &&
+               data.agencyAccountId is string &&
                data.name is string &&
                data.platform is string &&
                data.goal is string &&
                data.targetAudience is string &&
                data.startDate is string &&
-               data.budget is number &&
-               data.durationDays is number &&
-               data.spend is number && data.spend == 0 && // Spend must be 0 on creation
-               data.status == 'بانتظار المراجعة'; // Must be pending review on creation
+               data.budget is number && data.budget > 0 &&
+               data.durationDays is number && data.durationDays > 0 &&
+               data.spend is number && data.spend == 0 &&
+               data.status == 'بانتظار المراجعة';
     }
 
     function isValidDeposit(data) {
@@ -86,7 +87,7 @@ service cloud.firestore {
              data.amount is number && data.amount > 0 &&
              data.paymentMethod is string &&
              data.depositDate is string &&
-             data.status == 'معلق' && // Status must be pending on creation
+             data.status == 'معلق' &&
              data.details is map;
     }
     
@@ -94,9 +95,9 @@ service cloud.firestore {
       return data.userId == request.auth.uid &&
              data.subject is string &&
              data.message is string &&
-             data.status == 'مفتوحة' && // Status must be open on creation
+             data.status == 'مفتوحة' &&
              data.createdDate is string &&
-             data.messages.size() == 1; // Only the initial message is allowed on creation
+             data.messages.size() == 1;
     }
 
 
@@ -107,47 +108,44 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwnerOrAdmin(userId);
       
-      // A user can create their own user document on signup.
-      // The document must be valid and they cannot assign themselves as admin.
       allow create: if isUser(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'user';
       
-      // Users can update a limited set of their own fields. Admins can update anything.
       allow update: if (isUser(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatarUrl', 'notificationPreferences']))
                     || isAdmin();
 
-      // Only admins can delete user accounts.
       allow delete: if isAdmin();
     }
     
     match /services/{serviceId} {
-      allow read: if true; // Services are public
-      allow write: if isAdmin(); // Only admins can create, update, delete services
+      allow read: if true;
+      allow write: if isAdmin();
     }
     
     match /blogPosts/{blogPostId} {
-      allow read: if true; // Blog posts are public
-      allow write: if isAdmin(); // Only admins can manage blog posts
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+     match /settings/global {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /systemLogs/{logId} {
-      allow read, write: if isAdmin(); // Only admins can manage system logs
+      allow read, write: if isAdmin();
     }
 
-    // Subcollection rules using a wildcard to cover Orders, Campaigns, etc.
     match /users/{userId}/{collectionName}/{docId} {
       allow read, delete: if isOwnerOrAdmin(userId);
       
-      // CREATE: User creating their own valid subcollection document.
       allow create: if isUser(userId) && (
         (collectionName == 'orders' && isValidOrder(request.resource.data)) ||
         (collectionName == 'campaigns' && isValidCampaign(request.resource.data)) ||
         (collectionName == 'deposits' && isValidDeposit(request.resource.data)) ||
         (collectionName == 'tickets' && isValidTicket(request.resource.data)) ||
-        // Add other subcollections here as needed
-        (collectionName == 'withdrawals' || collectionName == 'agencyAccounts' || collectionName == 'affiliateTransactions') // More generic rule for others
+        (collectionName == 'withdrawals' || collectionName == 'agencyAccounts' || collectionName == 'affiliateTransactions')
       );
 
-      // UPDATE: User can update their own docs, Admins can update any.
       allow update: if isOwnerOrAdmin(userId);
     }
   }
