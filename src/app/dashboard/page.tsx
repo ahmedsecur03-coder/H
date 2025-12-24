@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -236,7 +237,6 @@ export default function DashboardPage() {
                     </Button>
                 </div>
 
-
                 {(recentOrders && recentOrders.length > 0) ? (
                     <Card>
                         <CardHeader>
@@ -269,6 +269,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+                <QuickOrderForm user={authUser} userData={userData} />
                 <DealOfTheDay />
                 <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 <Card>
