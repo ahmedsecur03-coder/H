@@ -46,7 +46,6 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    // Use a different name for the hook's return value to avoid conflict
     const { data: initialCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
@@ -55,32 +54,26 @@ export default function CampaignsPage() {
     );
     const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
 
-    // This state will hold the dynamically updated campaign data
     const [campaigns, setCampaigns] = useState<Campaign[] | null>(initialCampaigns);
 
     useEffect(() => {
-        // Initialize the local state with data from Firestore
         if (initialCampaigns) {
             setCampaigns(initialCampaigns);
         }
     }, [initialCampaigns]);
 
-    // Effect for simulating campaign performance updates
     useEffect(() => {
         const updateCampaigns = () => {
             setCampaigns(prevCampaigns => {
                 if (!prevCampaigns) return null;
 
                 const updatedCampaigns = prevCampaigns.map(campaign => {
-                    // Only update 'active' campaigns
                     if (campaign.status !== 'نشط') {
                         return campaign;
                     }
                     
-                    // --- Simulation Logic ---
                     const newImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * 500) + 100;
                     const newClicks = (campaign.clicks || 0) + Math.floor(newImpressions / (Math.floor(Math.random() * 200) + 80));
-                    // Ensure spend doesn't exceed budget
                     const newSpend = Math.min(campaign.budget, (campaign.spend || 0) + (newClicks - (campaign.clicks || 0)) * (Math.random() * 0.1 + 0.05));
                     const newResults = (campaign.results || 0) + Math.floor(newClicks / (Math.floor(Math.random() * 5) + 2));
                     const ctr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : 0;
@@ -90,7 +83,6 @@ export default function CampaignsPage() {
                     if (newSpend >= campaign.budget) {
                         status = 'مكتمل';
                     }
-                    // --- End Simulation Logic ---
 
                     const updatedCampaign = {
                         ...campaign,
@@ -103,10 +95,8 @@ export default function CampaignsPage() {
                         status: status,
                     };
 
-                    // Persist updates to Firestore in the background (non-blocking)
-                    if(firestore && authUser && (updatedCampaign.status !== campaign.status || (updatedCampaign.impressions % 10 === 0))) { // Update every 10 ticks approx
+                    if(firestore && authUser && (updatedCampaign.status !== campaign.status || (updatedCampaign.impressions % 10 === 0))) {
                         const campaignRef = doc(firestore, `users/${authUser.uid}/campaigns/${campaign.id}`);
-                        // Update Firestore document without awaiting to avoid blocking UI thread
                         updateDoc(campaignRef, {
                             impressions: updatedCampaign.impressions,
                             clicks: updatedCampaign.clicks,
@@ -125,14 +115,12 @@ export default function CampaignsPage() {
             });
         };
 
-        // Run once immediately on load to get initial simulated data
         updateCampaigns(); 
         
-        // Then run every 30 seconds to simulate real-time updates
         const interval = setInterval(updateCampaigns, 30000); 
 
-        return () => clearInterval(interval); // Cleanup interval on component unmount
-    }, [firestore, authUser]); // Rerun if auth state changes
+        return () => clearInterval(interval);
+    }, [firestore, authUser]);
 
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
