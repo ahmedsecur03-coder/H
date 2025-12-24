@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   collectionGroup,
   query,
@@ -38,8 +38,6 @@ import { Check, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { useTranslation } from 'react-i18next';
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
@@ -66,25 +64,28 @@ function DepositTable({ status }: { status: Status }) {
     [firestore, status]
   );
   
-  useEffect(() => {
+  const fetchDeposits = async () => {
     if (!depositsQuery) {
         setIsLoading(false);
         return;
     };
     setIsLoading(true);
 
-    getDocs(depositsQuery)
-        .then(snapshot => {
-            const fetchedDeposits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Deposit));
-            setDeposits(fetchedDeposits);
-        })
-        .catch(err => {
-            console.error("Error fetching deposits: ", err);
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب طلبات الإيداع.' });
-        })
-        .finally(() => setIsLoading(false));
+    try {
+      const snapshot = await getDocs(depositsQuery);
+      const fetchedDeposits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Deposit));
+      setDeposits(fetchedDeposits);
+    } catch(err) {
+        console.error("Error fetching deposits: ", err);
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب طلبات الإيداع.' });
+    } finally {
+        setIsLoading(false);
+    }
+  };
 
-  }, [depositsQuery, toast]);
+  useEffect(() => {
+    fetchDeposits();
+  }, [depositsQuery]);
 
 
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
