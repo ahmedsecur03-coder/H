@@ -667,7 +667,7 @@ const SidebarMenuSub = ({ ...props }: React.ComponentProps<typeof Collapsible>) 
 const SidebarMenuSubTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof CollapsibleTrigger> & { asChild?: boolean }
->(({ asChild = true, ...props }, ref) => (
+>(({ asChild = false, ...props }, ref) => (
   <CollapsibleTrigger asChild={asChild} {...props} ref={ref}>
     <SidebarMenuButton className="w-full justify-between">
       {props.children}
