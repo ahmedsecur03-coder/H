@@ -2,13 +2,13 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, Query, DocumentSnapshot } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Trash2, ListFilter, Pencil, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, Upload, Trash2, ListFilter, Pencil, CheckCircle, XCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -79,32 +79,46 @@ function AdminServicesPageComponent() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
+  
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageCount, setPageCount] = useState(0);
 
-  const servicesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'services')) : null),
-    [firestore]
-  );
-  const { data: allServices, isLoading, forceCollectionUpdate } = useCollection<Service>(servicesQuery);
+  // This is a simplified fetch as we don't have cursors for client-side search.
+  // A more robust solution for huge datasets would involve a dedicated search service like Algolia/Typesense.
+  const fetchServices = useCallback(async () => {
+    if (!firestore) return;
+    setIsLoading(true);
 
-  const { paginatedServices, pageCount } = useMemo(() => {
-    if (!allServices) {
-      return { paginatedServices: [], pageCount: 0 };
+    try {
+        const servicesQuery = query(collection(firestore, 'services'), orderBy('id'));
+        const querySnapshot = await getDocs(servicesQuery);
+        const allServices = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+        
+        const filtered = allServices.filter(service =>
+          service.id.toString().includes(debouncedSearch) ||
+          service.category.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          service.platform.toLowerCase().includes(debouncedSearch.toLowerCase())
+        );
+
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+        setPageCount(totalPages);
+
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        setServices(filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+
+    } catch (error) {
+        console.error("Error fetching services: ", error);
+        toast({variant: 'destructive', title: "خطأ", description: "فشل في جلب الخدمات."});
+    } finally {
+        setIsLoading(false);
     }
+  }, [firestore, debouncedSearch, currentPage, toast]);
 
-    const filtered = allServices.filter(service =>
-      service.id.toString().includes(debouncedSearch) ||
-      service.category.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      service.platform.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
 
-    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    
-    return {
-      paginatedServices: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
-      pageCount: totalPages,
-    };
-  }, [allServices, debouncedSearch, currentPage]);
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
 
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
@@ -114,7 +128,7 @@ function AdminServicesPageComponent() {
     } else {
       params.delete(key);
     }
-    if (key !== 'page') {
+    if (key === 'search') {
       params.set('page', '1');
     }
     router.replace(`${pathname}?${params.toString()}`);
@@ -158,7 +172,7 @@ function AdminServicesPageComponent() {
 
     actionPromise.then(() => {
         toast({ title: 'نجاح', description: 'تم حفظ الخدمة بنجاح.' });
-        forceCollectionUpdate();
+        fetchServices(); // Re-fetch data
         setIsDialogOpen(false);
         setSelectedService(undefined);
     }).catch(serverError => {
@@ -178,7 +192,7 @@ function AdminServicesPageComponent() {
       deleteDoc(serviceDocRef)
         .then(() => {
             toast({ title: 'نجاح', description: 'تم حذف الخدمة بنجاح.' });
-            forceCollectionUpdate();
+            fetchServices(); // Re-fetch data
         })
         .catch(serverError => {
             const permissionError = new FirestorePermissionError({ path: serviceDocRef.path, operation: 'delete' });
@@ -192,14 +206,14 @@ function AdminServicesPageComponent() {
   }
 
   const renderContent = () => {
-    if (isLoading && paginatedServices.length === 0) {
+    if (isLoading) {
       return Array.from({length: 10}).map((_, i) => (
         <TableRow key={i}>
           {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
         </TableRow>
       ));
     }
-     if (!paginatedServices || paginatedServices.length === 0) {
+     if (!services || services.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={8}>
@@ -207,12 +221,20 @@ function AdminServicesPageComponent() {
                 <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
                 <h3 className="mt-4 font-headline text-2xl">{currentSearch ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بإضافة خدمة جديدة أو استيرادها."}</p>
+                 {!currentSearch && (
+                    <div className="flex gap-2 mt-4">
+                        <ImportDialog onImportComplete={fetchServices}>
+                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
+                        </ImportDialog>
+                        <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
+                    </div>
+                )}
             </div>
           </TableCell>
         </TableRow>
       );
     }
-    return paginatedServices.map(service => (
+    return services.map(service => (
       <TableRow key={service.id}>
           <TableCell className="font-mono text-xs">{service.id}</TableCell>
           <TableCell>{service.category}</TableCell>
@@ -250,7 +272,7 @@ function AdminServicesPageComponent() {
           <p className="text-muted-foreground">إضافة وتعديل وحذف خدمات المنصة.</p>
         </div>
         <div className="flex gap-2 self-end sm:self-center">
-           <ImportDialog onImportComplete={forceCollectionUpdate}>
+           <ImportDialog onImportComplete={fetchServices}>
              <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
            </ImportDialog>
             <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
@@ -259,7 +281,15 @@ function AdminServicesPageComponent() {
        <Card>
         <CardHeader>
             <form onSubmit={(e) => e.preventDefault()}>
-              <Input placeholder="ابحث عن خدمة بالرقم، الاسم، أو الفئة..." value={currentSearch} onChange={(e) => handleFilterChange('search', e.target.value)} />
+              <div className="relative">
+                  <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="ابحث عن خدمة بالرقم، الاسم، أو الفئة..." 
+                    value={currentSearch} 
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    className="pe-10 rtl:ps-10"
+                   />
+              </div>
             </form>
         </CardHeader>
         <CardContent className="p-0">
