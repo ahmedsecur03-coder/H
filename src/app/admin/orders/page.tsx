@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collectionGroup, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query } from 'firebase/firestore';
+import { collectionGroup, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import {
   Card,
@@ -31,11 +31,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { OrderActions } from './_components/order-actions';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from 'use-debounce';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+import { useTranslation } from 'react-i18next';
 
 
 const statusVariant = {
@@ -87,84 +87,95 @@ function OrdersPageSkeleton() {
 }
 
 function AdminOrdersPageComponent() {
+    const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    const currentPage = Number(searchParams.get('page')) || 1;
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [firstVisible, setFirstVisible] = useState<DocumentSnapshot | null>(null);
+    const [lastVisible, setLastVisible] = useState<DocumentSnapshot | null>(null);
+    const [isNextPageAvailable, setIsNextPageAvailable] = useState(true);
+
     const currentStatus = searchParams.get('status') || 'all';
     const currentSearch = searchParams.get('search') || '';
 
     const [debouncedSearch] = useDebounce(currentSearch, 500);
 
-    const ordersQuery = useMemoFirebase(
-        () => (firestore ? query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc')) : null),
-        [firestore]
-    );
+     const fetchOrders = useCallback(async (direction: 'next' | 'prev' | 'first' = 'first') => {
+        if (!firestore) return;
+        setIsLoading(true);
 
-    const { data: allOrders, isLoading, forceCollectionUpdate } = useCollection<Order>(ordersQuery);
+        let q: Query = collectionGroup(firestore, 'orders');
 
-    const { paginatedOrders, pageCount } = useMemo(() => {
-        if (!allOrders) return { paginatedOrders: [], pageCount: 0 };
+        if (currentStatus !== 'all') {
+            q = query(q, where('status', '==', currentStatus));
+        }
         
-        const filtered = allOrders.filter(order => {
-            const statusMatch = currentStatus === 'all' || order.status === currentStatus;
-            const searchMatch = debouncedSearch ?
-                order.userId.includes(debouncedSearch) ||
-                order.id.includes(debouncedSearch) ||
-                order.link.includes(debouncedSearch)
-                : true;
-            return statusMatch && searchMatch;
-        });
+        // Note: Firestore does not support inequality filters on different fields. 
+        // A robust search would require a dedicated search service like Algolia or Typesense.
+        // This client-side filter is a fallback for the debounced search term.
+        
+        q = query(q, orderBy('orderDate', 'desc'));
 
-        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return {
-            paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
-            pageCount: totalPages,
-        };
-    }, [allOrders, currentStatus, debouncedSearch, currentPage]);
+        if (direction === 'next' && lastVisible) {
+            q = query(q, startAfter(lastVisible));
+        } else if (direction === 'prev' && firstVisible) {
+            q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
+        } else {
+             q = query(q, limit(ITEMS_PER_PAGE));
+        }
 
-    const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
+        try {
+            const documentSnapshots = await getDocs(q);
+            let newOrders = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+            
+            if (debouncedSearch) {
+                newOrders = newOrders.filter(order =>
+                    order.userId.includes(debouncedSearch) ||
+                    order.id.includes(debouncedSearch) ||
+                    order.link.includes(debouncedSearch)
+                );
+            }
+
+            setOrders(newOrders);
+            setFirstVisible(documentSnapshots.docs[0] || null);
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+            setIsNextPageAvailable(documentSnapshots.docs.length === ITEMS_PER_PAGE);
+
+            if (direction === 'first') setPage(1);
+            else if (direction === 'next') setPage(p => p + 1);
+            else if (direction === 'prev') setPage(p => p - 1);
+
+        } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: 'Error', description: t('ordersPage.fetchError') });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [firestore, currentStatus, debouncedSearch, lastVisible, firstVisible, t, toast]);
+
+    useEffect(() => {
+        fetchOrders('first');
+    }, [currentStatus, debouncedSearch]); // Refetch on filter change
+
+    const handleFilterChange = (key: 'search' | 'status', value: string) => {
         const params = new URLSearchParams(searchParams.toString());
         if (value && value !== 'all') {
             params.set(key, value);
         } else {
             params.delete(key);
         }
-        if (key !== 'page') {
-            params.set('page', '1');
-        }
         router.replace(`${pathname}?${params.toString()}`);
     };
 
-    const renderPaginationItems = () => {
-        if (pageCount <= 1) return null;
-        const pageNumbers: (number | 'ellipsis')[] = [];
-        if (pageCount <= 7) {
-            for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
-        } else {
-            pageNumbers.push(1);
-            if (currentPage > 3) pageNumbers.push('ellipsis');
-            let start = Math.max(2, currentPage - 1);
-            let end = Math.min(pageCount - 1, currentPage + 1);
-            for (let i = start; i <= end; i++) pageNumbers.push(i);
-            if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
-            pageNumbers.push(pageCount);
-        }
-        return pageNumbers.map((page, index) => (
-            <PaginationItem key={`${page}-${index}`}>
-                {page === 'ellipsis' ? <PaginationEllipsis /> : (
-                    <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
-                )}
-            </PaginationItem>
-        ));
-    };
 
     const renderContent = () => {
-         if (isLoading && !allOrders) {
+         if (isLoading) {
             return Array.from({length: 10}).map((_, i) => (
                 <TableRow key={i}>
                     {Array.from({length: 7}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
@@ -172,15 +183,24 @@ function AdminOrdersPageComponent() {
             ));
         }
 
-        if (!paginatedOrders || paginatedOrders.length === 0) {
+        if (!orders || orders.length === 0) {
             return (
-                <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">لا توجد طلبات تطابق بحثك.</TableCell>
+                 <TableRow>
+                    <TableCell colSpan={7}>
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                            <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
+                            <h3 className="mt-4 font-headline text-2xl">{t('ordersPage.noMatchTitle')}</h3>
+                            <p className="mt-2 text-sm text-muted-foreground">{t('ordersPage.noMatchDescription')}</p>
+                             <Button variant="outline" onClick={() => handleFilterChange('search', '')} className="mt-4">
+                                {t('ordersPage.resetFilters')}
+                            </Button>
+                        </div>
+                    </TableCell>
                 </TableRow>
             );
         }
 
-        return paginatedOrders.map((order) => (
+        return orders.map((order) => (
             <TableRow key={order.id}>
                 <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
                 <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
@@ -191,7 +211,7 @@ function AdminOrdersPageComponent() {
                 </TableCell>
                 <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
-                    <OrderActions order={order} onOrderUpdate={forceCollectionUpdate} />
+                    <OrderActions order={order} onOrderUpdate={() => fetchOrders('first')} />
                 </TableCell>
             </TableRow>
         ));
@@ -209,11 +229,15 @@ function AdminOrdersPageComponent() {
        <Card>
         <CardHeader>
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input 
-                placeholder="ابحث بالمعرف، المستخدم، أو الرابط..."
-                value={currentSearch}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-            />
+            <div className="relative">
+                <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="ابحث بالمعرف، المستخدم، أو الرابط..."
+                    value={currentSearch}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    className="pe-10 rtl:ps-10"
+                />
+            </div>
             <Select value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger><SelectValue placeholder="فلترة حسب الحالة" /></SelectTrigger>
               <SelectContent>
@@ -243,21 +267,23 @@ function AdminOrdersPageComponent() {
             </TableBody>
           </Table>
         </CardContent>
-        {pageCount > 1 && (
-            <CardFooter className="flex items-center justify-center border-t pt-4">
-                 <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
-                        </PaginationItem>
-                        {renderPaginationItems()}
-                        <PaginationItem>
-                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </CardFooter>
-        )}
+        <CardFooter className="flex items-center justify-between border-t pt-4">
+             <span className="text-sm text-muted-foreground">
+                صفحة {page}
+            </span>
+            <div className="flex gap-2">
+                 <Button onClick={() => fetchOrders('prev')} disabled={isLoading || page <= 1} variant="outline">
+                    <ChevronRight className="h-4 w-4 me-2 rtl:hidden" />
+                     <ChevronLeft className="h-4 w-4 ms-2 ltr:hidden" />
+                    السابق
+                </Button>
+                <Button onClick={() => fetchOrders('next')} disabled={isLoading || !isNextPageAvailable} variant="outline">
+                    التالي
+                    <ChevronLeft className="h-4 w-4 ms-2 rtl:hidden" />
+                    <ChevronRight className="h-4 w-4 me-2 ltr:hidden" />
+                </Button>
+            </div>
+        </CardFooter>
       </Card>
     </div>
   );
@@ -270,3 +296,5 @@ export default function AdminOrdersPage() {
         </Suspense>
     )
 }
+
+    
