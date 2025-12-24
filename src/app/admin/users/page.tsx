@@ -77,35 +77,48 @@ function AdminUsersPageComponent() {
 
     let q: Query;
     
-    // For simplicity in this example, search will be a client-side filter.
-    // For production with large datasets, server-side search (e.g., Algolia) is recommended.
-    q = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+    // Base query
+    let baseQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
 
-    if (direction === 'next' && lastVisible) {
-        q = query(q, startAfter(lastVisible), limit(ITEMS_PER_PAGE));
-    } else if (direction === 'prev' && firstVisible) {
-        q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
-    } else {
-         q = query(q, limit(ITEMS_PER_PAGE));
+    // Server-side search will be basic for now. For full text search, Algolia/Typesense is recommended.
+    // This basic implementation can search by exact email or name prefix.
+    if (debouncedSearch) {
+        // This is not perfectly efficient as Firestore doesn't support partial text search natively on multiple fields.
+        // We will fetch all and filter client side for simplicity for now. 
+        // A production app should use a search service.
+         baseQuery = query(collection(firestore, 'users'));
+    }
+    
+    let finalQuery = baseQuery;
+
+    if (direction === 'next' && lastVisible && !debouncedSearch) {
+        finalQuery = query(baseQuery, startAfter(lastVisible), limit(ITEMS_PER_PAGE));
+    } else if (direction === 'prev' && firstVisible && !debouncedSearch) {
+        finalQuery = query(baseQuery, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
+    } else if (!debouncedSearch) {
+         finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
     }
 
     try {
-        const documentSnapshots = await getDocs(q);
+        const documentSnapshots = await getDocs(finalQuery);
         let newUsers = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
 
-        // Client-side search filtering
+        // Client-side filtering for search term
         if (debouncedSearch) {
-          const allUsersSnapshot = await getDocs(query(collection(firestore, 'users')));
-          const allUsers = allUsersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-          newUsers = allUsers.filter(u => 
-            u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
-            u.email.toLowerCase().includes(debouncedSearch.toLowerCase())
-          );
+            newUsers = newUsers.filter(u => 
+                (u.name && u.name.toLowerCase().includes(debouncedSearch.toLowerCase())) || 
+                (u.email && u.email.toLowerCase().includes(debouncedSearch.toLowerCase()))
+            );
         }
 
         setUsers(newUsers);
-        setFirstVisible(documentSnapshots.docs[0] || null);
-        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+        if (!debouncedSearch) {
+            setFirstVisible(documentSnapshots.docs[0] || null);
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+        } else {
+            setFirstVisible(null);
+            setLastVisible(null);
+        }
 
         if (direction === 'first') setPage(1);
         else if (direction === 'next') setPage(p => p + 1);
@@ -120,13 +133,17 @@ function AdminUsersPageComponent() {
   }, [firestore, debouncedSearch, lastVisible, firstVisible, page, toast]);
 
   const refreshUsers = useCallback(() => {
+    // Reset pagination state before fetching
+    setLastVisible(null);
+    setFirstVisible(null);
     fetchUsers('first');
-  }, [fetchUsers]);
+  // We only want to re-run this when the debounced search term changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, firestore, toast]);
 
   useEffect(() => {
     refreshUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
+  }, [refreshUsers]);
 
 
   const handleFilterChange = (key: 'search', value: string) => {
@@ -274,11 +291,11 @@ function AdminUsersPageComponent() {
         </CardContent>
         {!debouncedSearch && <CardFooter className="flex items-center justify-between border-t pt-4">
             <span className="text-sm text-muted-foreground">
-                Page {page}
+                صفحة {page}
             </span>
             <div className="flex gap-2">
-                <Button onClick={() => fetchUsers('prev')} disabled={isLoading || page <= 1} variant="outline">Previous</Button>
-                <Button onClick={() => fetchUsers('next')} disabled={isLoading || users.length < ITEMS_PER_PAGE} variant="outline">Next</Button>
+                <Button onClick={() => fetchUsers('prev')} disabled={isLoading || page <= 1} variant="outline"><ChevronRight className="h-4 w-4" /></Button>
+                <Button onClick={() => fetchUsers('next')} disabled={isLoading || users.length < ITEMS_PER_PAGE} variant="outline"><ChevronLeft className="h-4 w-4" /></Button>
             </div>
         </CardFooter>}
       </Card>
