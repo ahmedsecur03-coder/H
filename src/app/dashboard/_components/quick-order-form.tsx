@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -14,13 +13,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Briefcase, Rocket, ChevronLeft } from 'lucide-react';
+import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle } from 'lucide-react';
 import type { Service, Order, User as UserType } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+
+function ServiceDescription({ service }: { service: Service }) {
+    if (!service.description) return null;
+
+    // Split the description into parts based on the delimiter ' | '
+    const parts = service.description.split('|').map(part => part.trim());
+    
+    // The first part is the main description, the rest are details
+    const mainDesc = parts.shift();
+    const details = parts;
+
+    return (
+        <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 p-4 border rounded-lg bg-muted/50 space-y-3"
+        >
+             <h4 className="font-semibold text-foreground flex items-center gap-2"><Info className="h-4 w-4"/>وصف الخدمة</h4>
+             <p className="text-sm text-muted-foreground">{mainDesc}</p>
+             {details.length > 0 && (
+                 <ul className="space-y-1 text-xs text-muted-foreground list-disc list-inside">
+                     {details.map((detail, index) => (
+                         <li key={index}>{detail}</li>
+                     ))}
+                 </ul>
+             )}
+             {service.avgTime && (
+                <p className="text-xs text-muted-foreground pt-2 border-t">
+                    <strong>متوسط الوقت:</strong> {service.avgTime}
+                </p>
+             )}
+        </motion.div>
+    );
+}
+
 
 export function QuickOrderForm({ user, userData }: { user: any, userData: UserType }) {
     const firestore = useFirestore();
@@ -93,7 +128,6 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         setIsSubmitting(true);
         let promotionToast: { title: string; description: string } | null = null;
         try {
-             // This is a complex transaction, it MUST be awaited.
              await runTransaction(firestore, async (transaction) => {
                 const orderData: Omit<Order, 'id'> = {
                     userId: user.uid,
@@ -174,19 +208,28 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                             <Select onValueChange={setServiceId} value={serviceId} disabled={!category || servicesLoading}>
                                 <SelectTrigger><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
-                                    {services.map(s => <SelectItem key={s.id} value={s.id}>#{s.id} - ${s.price.toFixed(4)}</SelectItem>)}
+                                    {services.map(s => 
+                                        <SelectItem key={s.id} value={s.id}>
+                                            {`#${s.id} - ${s.description?.split('|')[0] || s.category} - $${s.price.toFixed(4)}`}
+                                        </SelectItem>
+                                    )}
                                 </SelectContent>
                             </Select>
                          </motion.div>
                     )}
-                    {serviceId && (
-                         <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
-                            <Input placeholder="الرابط" value={link} onChange={e => setLink(e.target.value)} required />
-                            <Input type="number" placeholder="الكمية" value={quantity} onChange={e => setQuantity(e.target.value)} required />
-                        </motion.div>
-                    )}
                     </AnimatePresence>
                     
+                    <AnimatePresence>
+                        {selectedService && <ServiceDescription service={selectedService} />}
+                    </AnimatePresence>
+
+
+                    {serviceId && (
+                         <motion.div initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4 pt-4 border-t">
+                            <Input placeholder="الرابط" value={link} onChange={e => setLink(e.target.value)} required />
+                            <Input type="number" placeholder={`الكمية (الحد الأدنى: ${selectedService?.min} - الأقصى: ${selectedService?.max})`} value={quantity} onChange={e => setQuantity(e.target.value)} required min={selectedService?.min} max={selectedService?.max}/>
+                        </motion.div>
+                    )}
 
                     {selectedService && quantity && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center">
