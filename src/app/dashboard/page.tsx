@@ -84,19 +84,17 @@ function DashboardSkeleton() {
                 <Skeleton className="h-9 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                <div className="space-y-4">
-                    <Skeleton className="h-96" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+                <div className="lg:col-span-2 space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Skeleton className="h-16" />
                         <Skeleton className="h-16" />
                     </div>
+                    <Skeleton className="h-96" />
                 </div>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4">
-                        <Skeleton className="h-28" />
-                        <Skeleton className="h-28" />
-                    </div>
+                <div className="lg:col-span-1 space-y-4">
+                     <Skeleton className="h-28" />
+                     <Skeleton className="h-28" />
                     <Skeleton className="h-44 w-full" />
                     <Skeleton className="h-40" />
                 </div>
@@ -151,7 +149,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Sidebar Column */}
-                <div className="grid auto-rows-max items-start gap-4 md:gap-8">
+                <div className="lg:col-span-1 grid auto-rows-max items-start gap-4 md:gap-8">
                     <Card>
                         <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الأساسي</CardDescription>
