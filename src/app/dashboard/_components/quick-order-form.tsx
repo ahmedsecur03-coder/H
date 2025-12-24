@@ -227,7 +227,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                                 <SelectContent>
                                     {services.map(s => 
                                         <SelectItem key={s.id} value={s.id}>
-                                            {`#${s.id} - ${s.category} - $${s.price.toFixed(4)}`}
+                                            {`#${s.id} - ${s.description} - $${s.price.toFixed(4)}`}
                                         </SelectItem>
                                     )}
                                 </SelectContent>
@@ -278,3 +278,5 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     );
 }
 
+
+    
