@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { collectionGroup, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
@@ -123,8 +123,10 @@ function AdminOrdersPageComponent() {
     if (!firestore) return;
     setIsLoading(true);
     try {
-        let q: FirestoreQuery = collectionGroup(firestore, 'orders');
-        const snapshot = await getDocs(q);
+        let q: FirestoreQuery = query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc'));
+        
+        // This is inefficient but necessary for client-side search across multiple fields
+        const snapshot = await getDocs(q); 
         const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
         setAllOrders(ordersData);
     } catch(error) {

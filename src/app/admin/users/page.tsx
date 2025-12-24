@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
@@ -75,20 +75,11 @@ function AdminUsersPageComponent() {
     if (!firestore) return;
     setIsLoading(true);
 
-    let q: Query = collection(firestore, 'users');
-    let isSearchQuery = false;
+    let q: Query;
     
-    if (debouncedSearch) {
-        // This is a simple prefix search on email, which is more Firestore-friendly.
-        q = query(q, 
-            orderBy('email'),
-            where('email', '>=', debouncedSearch), 
-            where('email', '<=', debouncedSearch + '\uf8ff')
-        );
-        isSearchQuery = true;
-    } else {
-        q = query(q, orderBy('createdAt', 'desc'));
-    }
+    // For simplicity in this example, search will be a client-side filter.
+    // For production with large datasets, server-side search (e.g., Algolia) is recommended.
+    q = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
 
     if (direction === 'next' && lastVisible) {
         q = query(q, startAfter(lastVisible), limit(ITEMS_PER_PAGE));
@@ -100,12 +91,16 @@ function AdminUsersPageComponent() {
 
     try {
         const documentSnapshots = await getDocs(q);
-        // For search, we still do a client-side filter for name as a fallback
-        // since we can't do a compound OR query efficiently.
         let newUsers = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
 
-        if (isSearchQuery) {
-          newUsers = newUsers.filter(u => u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || u.email.toLowerCase().includes(debouncedSearch.toLowerCase()));
+        // Client-side search filtering
+        if (debouncedSearch) {
+          const allUsersSnapshot = await getDocs(query(collection(firestore, 'users')));
+          const allUsers = allUsersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+          newUsers = allUsers.filter(u => 
+            u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+            u.email.toLowerCase().includes(debouncedSearch.toLowerCase())
+          );
         }
 
         setUsers(newUsers);
@@ -126,6 +121,7 @@ function AdminUsersPageComponent() {
 
   useEffect(() => {
     fetchUsers('first');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
 
@@ -258,7 +254,7 @@ function AdminUsersPageComponent() {
                                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers('first')}>
                                             <Button variant="outline" size="sm">تعديل</Button>
                                         </EditUserDialog>
                                     </TableCell>
@@ -272,7 +268,7 @@ function AdminUsersPageComponent() {
                 <div className="h-24 text-center flex items-center justify-center">لم يتم العثور على مستخدمين.</div>
             )}
         </CardContent>
-        <CardFooter className="flex items-center justify-between border-t pt-4">
+        {!debouncedSearch && <CardFooter className="flex items-center justify-between border-t pt-4">
             <span className="text-sm text-muted-foreground">
                 Page {page}
             </span>
@@ -280,7 +276,7 @@ function AdminUsersPageComponent() {
                 <Button onClick={() => fetchUsers('prev')} disabled={isLoading || page <= 1} variant="outline">Previous</Button>
                 <Button onClick={() => fetchUsers('next')} disabled={isLoading || users.length < ITEMS_PER_PAGE} variant="outline">Next</Button>
             </div>
-        </CardFooter>
+        </CardFooter>}
       </Card>
     </div>
   );

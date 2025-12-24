@@ -1,8 +1,7 @@
-
 'use client';
-import { useMemo, useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
+import { useMemo, useState, useEffect } from 'react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, getDocs } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import {
   Card,
@@ -30,8 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ChevronLeft, Info, ChevronRight, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Search, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -72,12 +70,22 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const servicesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'services')) : null),
-    [firestore]
-  );
-  const { data: allServices, isLoading } = useCollection<Service>(servicesQuery);
+  useEffect(() => {
+    if (!firestore) return;
+    const servicesQuery = query(collection(firestore, 'services'));
+    getDocs(servicesQuery).then(snapshot => {
+      const servicesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+      setAllServices(servicesData);
+      setIsLoading(false);
+    }).catch(err => {
+      console.error("Error fetching services: ", err);
+      setIsLoading(false);
+    });
+  }, [firestore]);
+
 
   const { platforms, categories, filteredServices } = useMemo(() => {
     if (!allServices) {

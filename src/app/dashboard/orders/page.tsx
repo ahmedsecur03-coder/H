@@ -1,8 +1,7 @@
-
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
+import { useFirestore, useUser } from '@/firebase';
 import { collection, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
@@ -116,20 +115,32 @@ function OrdersPageComponent() {
   // Debounced search term for performance
   const [debouncedSearch] = useDebounce(currentSearch, 300);
 
-  // Firestore query to get all orders for the user
-  const ordersQuery = useMemoFirebase(
-    () => (user ? query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc')) : null),
-    [user, firestore]
-  );
-  const { data: allOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch data once
+  const fetchOrders = useCallback(async () => {
+    if (!user || !firestore) return;
+    setIsLoading(true);
+    const ordersQuery = query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc'));
+    const snapshot = await getDocs(ordersQuery);
+    const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+    setOrders(ordersData);
+    setIsLoading(false);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
 
   // Memoized client-side filtering
   const { paginatedOrders, pageCount } = useMemo(() => {
-    if (!allOrders) {
+    if (!orders) {
       return { paginatedOrders: [], pageCount: 0 };
     }
 
-    const filtered = allOrders.filter(order => {
+    const filtered = orders.filter(order => {
       const statusMatch = currentStatus === 'all' || order.status === currentStatus;
       const searchMatch = debouncedSearch
         ? order.id.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -146,7 +157,7 @@ function OrdersPageComponent() {
       paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
       pageCount: totalPages,
     };
-  }, [allOrders, currentStatus, debouncedSearch, currentPage]);
+  }, [orders, currentStatus, debouncedSearch, currentPage]);
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -204,9 +215,7 @@ function OrdersPageComponent() {
     ));
   };
   
-  const isLoading = isUserLoading || isOrdersLoading;
-
-  if (isLoading && !allOrders) {
+  if (isLoading) {
     return <OrdersPageSkeleton />;
   }
 
@@ -246,26 +255,7 @@ function OrdersPageComponent() {
         </CardContent>
       </Card>
 
-      {isLoading && paginatedOrders.length === 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                    {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ) : paginatedOrders.length > 0 ? (
+      {paginatedOrders.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -344,5 +334,3 @@ export default function OrdersPage() {
     </Suspense>
   )
 }
-
-    

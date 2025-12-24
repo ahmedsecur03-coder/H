@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/chart';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
-import { useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, collectionGroup, where, getDocs, getCountFromServer, Timestamp } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { collection, query, collectionGroup, where, getDocs, getCountFromServer, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User, Order, Ticket } from '@/lib/types';
@@ -88,49 +88,38 @@ export default function AdminDashboardPage() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // --- Collection References ---
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                
+                // --- More efficient stat fetching ---
                 const usersCol = collection(firestore, 'users');
                 const ordersColGroup = collectionGroup(firestore, 'orders');
                 const ticketsColGroup = collectionGroup(firestore, 'tickets');
 
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                const sevenDaysAgoISO = sevenDaysAgo.toISOString();
+                // Use getCountFromServer for counts to reduce reads
+                const totalUsersSnapshot = await getCountFromServer(usersCol);
+                const totalOrdersSnapshot = await getCountFromServer(ordersColGroup);
+                const openTicketsSnapshot = await getCountFromServer(query(ticketsColGroup, where('status', '!=', 'مغلقة')));
+                const newUsersSnapshot = await getCountFromServer(query(usersCol, where('createdAt', '>=', sevenDaysAgo.toISOString())));
                 
-                // --- Fetch ALL documents needed ---
-                const [
-                    usersSnapshot,
-                    ordersSnapshot,
-                    ticketsSnapshot
-                ] = await Promise.all([
-                    getDocs(usersCol),
-                    getDocs(ordersColGroup),
-                    getDocs(ticketsColGroup)
-                ]);
-
-                const allUsers = usersSnapshot.docs.map(doc => doc.data() as User);
+                // Fetch only necessary documents
+                const ordersSnapshot = await getDocs(ordersColGroup);
                 const allOrders = ordersSnapshot.docs.map(doc => doc.data() as Order);
-                const allTickets = ticketsSnapshot.docs.map(doc => doc.data() as Ticket);
-
-                // --- Process data in memory ---
                 const totalRevenue = allOrders.reduce((acc, order) => acc + order.charge, 0);
-                const totalUsers = allUsers.length;
-                const totalOrders = allOrders.length;
+
+                // Fetch documents for chart
+                const usersForChartSnapshot = await getDocs(query(usersCol, where('createdAt', '>=', sevenDaysAgo.toISOString())));
+                const ordersForChartSnapshot = await getDocs(query(ordersColGroup, where('orderDate', '>=', sevenDaysAgo.toISOString())));
+                const usersForChart = usersForChartSnapshot.docs.map(doc => doc.data() as User);
+                const ordersForChart = ordersForChartSnapshot.docs.map(doc => doc.data() as Order);
                 
-                const newUsersLast7Days = allUsers.filter(user => user.createdAt && new Date(user.createdAt) >= sevenDaysAgo).length;
-                const openTickets = allTickets.filter(ticket => ticket.status !== 'مغلقة').length;
-
-                const usersForChart = allUsers.filter(user => user.createdAt && new Date(user.createdAt) >= sevenDaysAgo);
-                const ordersForChart = allOrders.filter(order => new Date(order.orderDate) >= sevenDaysAgo);
-
-
                 // --- Set State ---
                 setStats({
                     totalRevenue: totalRevenue,
-                    totalUsers: totalUsers,
-                    totalOrders: totalOrders,
-                    openTickets: openTickets,
-                    newUsersLast7Days: newUsersLast7Days,
+                    totalUsers: totalUsersSnapshot.data().count,
+                    totalOrders: totalOrdersSnapshot.data().count,
+                    openTickets: openTicketsSnapshot.data().count,
+                    newUsersLast7Days: newUsersSnapshot.data().count,
                 });
 
                 setPerformanceData(processPerformanceData(usersForChart, ordersForChart));
