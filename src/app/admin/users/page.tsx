@@ -2,13 +2,13 @@
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot,getCountFromServer } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Shield } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { EditUserDialog } from './_components/edit-user-dialog';
@@ -62,67 +62,45 @@ function AdminUsersPageComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [firstVisible, setFirstVisible] = useState<DocumentSnapshot | null>(null);
-  const [lastVisible, setLastVisible] = useState<DocumentSnapshot | null>(null);
-  
+  const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
   const [debouncedSearch] = useDebounce(currentSearch, 500);
 
-  const fetchUsers = useCallback(async (direction: 'next' | 'prev' | 'first' = 'first') => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageCount, setPageCount] = useState(0);
+
+  const fetchUsers = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
-    let q: Query;
-    
-    // Base query
-    let baseQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
-
-    // Server-side search will be basic for now. For full text search, Algolia/Typesense is recommended.
-    // This basic implementation can search by exact email or name prefix.
-    if (debouncedSearch) {
-        // This is not perfectly efficient as Firestore doesn't support partial text search natively on multiple fields.
-        // We will fetch all and filter client side for simplicity for now. 
-        // A production app should use a search service.
-         baseQuery = query(collection(firestore, 'users'));
-    }
-    
-    let finalQuery = baseQuery;
-
-    if (direction === 'next' && lastVisible && !debouncedSearch) {
-        finalQuery = query(baseQuery, startAfter(lastVisible), limit(ITEMS_PER_PAGE));
-    } else if (direction === 'prev' && firstVisible && !debouncedSearch) {
-        finalQuery = query(baseQuery, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
-    } else if (!debouncedSearch) {
-         finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
-    }
-
     try {
-        const documentSnapshots = await getDocs(finalQuery);
-        let newUsers = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        let baseQuery: Query;
+        let countQuery: Query;
 
-        // Client-side filtering for search term
+        // Firestore does not support case-insensitive search or partial search on multiple fields well.
+        // We will fetch all and filter client side. This is inefficient but a limitation we accept for this app's scope.
+        // For production, a dedicated search service like Algolia or Typesense is recommended.
+        baseQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+        countQuery = query(collection(firestore, 'users'));
+
+        const snapshot = await getDocs(baseQuery);
+        let allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+
+        // Client-side search
         if (debouncedSearch) {
-            newUsers = newUsers.filter(u => 
+             allUsers = allUsers.filter(u => 
                 (u.name && u.name.toLowerCase().includes(debouncedSearch.toLowerCase())) || 
                 (u.email && u.email.toLowerCase().includes(debouncedSearch.toLowerCase()))
             );
         }
 
-        setUsers(newUsers);
-        if (!debouncedSearch) {
-            setFirstVisible(documentSnapshots.docs[0] || null);
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-        } else {
-            setFirstVisible(null);
-            setLastVisible(null);
-        }
-
-        if (direction === 'first') setPage(1);
-        else if (direction === 'next') setPage(p => p + 1);
-        else if (direction === 'prev' && page > 1) setPage(p => p - 1);
+        const totalUsers = allUsers.length;
+        setPageCount(Math.ceil(totalUsers / ITEMS_PER_PAGE));
+        
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        setUsers(allUsers.slice(startIndex, endIndex));
 
     } catch (error) {
         console.error(error);
@@ -130,30 +108,46 @@ function AdminUsersPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, debouncedSearch, lastVisible, firstVisible, page, toast]);
-
-  const refreshUsers = useCallback(() => {
-    // Reset pagination state before fetching
-    setLastVisible(null);
-    setFirstVisible(null);
-    fetchUsers('first');
-  // We only want to re-run this when the debounced search term changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, firestore, toast]);
+  }, [firestore, debouncedSearch, currentPage, toast]);
 
   useEffect(() => {
-    refreshUsers();
-  }, [refreshUsers]);
+    fetchUsers();
+  }, [fetchUsers]);
 
-
-  const handleFilterChange = (key: 'search', value: string) => {
+  const handleFilterChange = (key: 'search' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set(key, value);
     } else {
       params.delete(key);
     }
+     if (key !== 'page') {
+      params.set('page', '1');
+    }
     router.replace(`${pathname}?${params.toString()}`);
+  };
+  
+   const renderPaginationItems = () => {
+    if (pageCount <= 1) return null;
+    const pageNumbers: (number | 'ellipsis')[] = [];
+    if (pageCount <= 7) {
+        for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
+    } else {
+        pageNumbers.push(1);
+        if (currentPage > 3) pageNumbers.push('ellipsis');
+        let start = Math.max(2, currentPage - 1);
+        let end = Math.min(pageCount - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) pageNumbers.push(i);
+        if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
+        pageNumbers.push(pageCount);
+    }
+    return pageNumbers.map((page, index) => (
+        <PaginationItem key={`${page}-${index}`}>
+            {page === 'ellipsis' ? <PaginationEllipsis /> : (
+                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
+            )}
+        </PaginationItem>
+    ));
   };
 
 
@@ -188,7 +182,7 @@ function AdminUsersPageComponent() {
             </div>
         </CardContent>
         <CardFooter>
-            <EditUserDialog user={user} onUserUpdate={refreshUsers}>
+            <EditUserDialog user={user} onUserUpdate={fetchUsers}>
                 <Button variant="outline" size="sm" className="w-full">تعديل</Button>
             </EditUserDialog>
         </CardFooter>
@@ -275,7 +269,7 @@ function AdminUsersPageComponent() {
                                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <EditUserDialog user={user} onUserUpdate={refreshUsers}>
+                                        <EditUserDialog user={user} onUserUpdate={fetchUsers}>
                                             <Button variant="outline" size="sm">تعديل</Button>
                                         </EditUserDialog>
                                     </TableCell>
@@ -289,15 +283,21 @@ function AdminUsersPageComponent() {
                 <div className="h-24 text-center flex items-center justify-center">لم يتم العثور على مستخدمين.</div>
             )}
         </CardContent>
-        {!debouncedSearch && <CardFooter className="flex items-center justify-between border-t pt-4">
-            <span className="text-sm text-muted-foreground">
-                صفحة {page}
-            </span>
-            <div className="flex gap-2">
-                <Button onClick={() => fetchUsers('prev')} disabled={isLoading || page <= 1} variant="outline"><ChevronRight className="h-4 w-4" /></Button>
-                <Button onClick={() => fetchUsers('next')} disabled={isLoading || users.length < ITEMS_PER_PAGE} variant="outline"><ChevronLeft className="h-4 w-4" /></Button>
-            </div>
-        </CardFooter>}
+       {pageCount > 1 && (
+            <CardFooter className="flex items-center justify-center border-t pt-4">
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
+                        </PaginationItem>
+                        {renderPaginationItems()}
+                        <PaginationItem>
+                            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
