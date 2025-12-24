@@ -88,60 +88,49 @@ export default function AdminDashboardPage() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // --- Efficient Count Queries ---
+                // --- Collection References ---
                 const usersCol = collection(firestore, 'users');
                 const ordersColGroup = collectionGroup(firestore, 'orders');
                 const ticketsColGroup = collectionGroup(firestore, 'tickets');
 
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                const sevenDaysAgoTimestamp = Timestamp.fromDate(sevenDaysAgo);
                 const sevenDaysAgoISO = sevenDaysAgo.toISOString();
-
-                const usersCountQuery = query(usersCol);
-                const newUsersCountQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoISO));
-                const ordersCountQuery = query(ordersColGroup);
-                const openTicketsCountQuery = query(ticketsColGroup, where('status', '!=', 'مغلقة'));
-
+                
+                // --- Fetch ALL documents needed ---
                 const [
                     usersSnapshot,
-                    newUsersSnapshot,
                     ordersSnapshot,
-                    openTicketsSnapshot,
+                    ticketsSnapshot
                 ] = await Promise.all([
-                    getCountFromServer(usersCountQuery),
-                    getCountFromServer(newUsersCountQuery),
-                    getCountFromServer(ordersCountQuery),
-                    getCountFromServer(openTicketsCountQuery),
+                    getDocs(usersCol),
+                    getDocs(ordersColGroup),
+                    getDocs(ticketsColGroup)
                 ]);
 
-                // --- Chart Data Queries (last 7 days) ---
-                const usersChartQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoISO));
-                const ordersChartQuery = query(ordersColGroup, where('orderDate', '>=', sevenDaysAgoISO));
-                const revenueQuery = query(ordersColGroup); // still need all for total revenue
+                const allUsers = usersSnapshot.docs.map(doc => doc.data() as User);
+                const allOrders = ordersSnapshot.docs.map(doc => doc.data() as Order);
+                const allTickets = ticketsSnapshot.docs.map(doc => doc.data() as Ticket);
 
-                const [
-                    usersChartDocs,
-                    ordersChartDocs,
-                    allOrdersDocs
-                ] = await Promise.all([
-                    getDocs(usersChartQuery),
-                    getDocs(ordersChartQuery),
-                    getDocs(revenueQuery)
-                ]);
-
-                const usersForChart = usersChartDocs.docs.map(doc => doc.data() as User);
-                const ordersForChart = ordersChartDocs.docs.map(doc => doc.data() as Order);
+                // --- Process data in memory ---
+                const totalRevenue = allOrders.reduce((acc, order) => acc + order.charge, 0);
+                const totalUsers = allUsers.length;
+                const totalOrders = allOrders.length;
                 
-                const totalRevenue = allOrdersDocs.docs.reduce((acc, doc) => acc + (doc.data() as Order).charge, 0);
+                const newUsersLast7Days = allUsers.filter(user => user.createdAt && new Date(user.createdAt) >= sevenDaysAgo).length;
+                const openTickets = allTickets.filter(ticket => ticket.status !== 'مغلقة').length;
+
+                const usersForChart = allUsers.filter(user => user.createdAt && new Date(user.createdAt) >= sevenDaysAgo);
+                const ordersForChart = allOrders.filter(order => new Date(order.orderDate) >= sevenDaysAgo);
+
 
                 // --- Set State ---
                 setStats({
                     totalRevenue: totalRevenue,
-                    totalUsers: usersSnapshot.data().count,
-                    totalOrders: ordersSnapshot.data().count,
-                    openTickets: openTicketsSnapshot.data().count,
-                    newUsersLast7Days: newUsersSnapshot.data().count,
+                    totalUsers: totalUsers,
+                    totalOrders: totalOrders,
+                    openTickets: openTickets,
+                    newUsersLast7Days: newUsersLast7Days,
                 });
 
                 setPerformanceData(processPerformanceData(usersForChart, ordersForChart));

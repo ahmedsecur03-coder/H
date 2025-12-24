@@ -47,32 +47,31 @@ function AdminHeader({ userData }: { userData: User }) {
 
 
 function AdminNavItems() {
-  const { state } = useSidebar();
-  const isCollapsible = state === "collapsed";
-  const pathname = usePathname();
+    const { state } = useSidebar();
+    const isCollapsible = state === "collapsed";
+    const pathname = usePathname();
 
-
-  return (
-    <>
-        {adminNavItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                             <SidebarMenuButton asChild>
-                                <Link href={item.href} passHref>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </TooltipTrigger>
-                        {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
-                    </Tooltip>
-                </TooltipProvider>
-            </SidebarMenuItem>
-        ))}
-    </>
-  )
+    return (
+        <>
+            {adminNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <SidebarMenuButton asChild>
+                                    <Link href={item.href}>
+                                        <item.icon />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </TooltipTrigger>
+                            {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
+                        </Tooltip>
+                    </TooltipProvider>
+                </SidebarMenuItem>
+            ))}
+        </>
+    );
 }
 
 
@@ -90,7 +89,6 @@ export default function AdminLayout({
   
   const isLoading = isUserLoading || isUserDataLoading;
   
-  // No more role check, just ensure user is logged in for development convenience
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
