@@ -49,12 +49,12 @@ function TicketsTable({ statusFilter }: { statusFilter: Status | 'all' }) {
             try {
                 let ticketsQuery;
                 if (statusFilter === 'all') {
-                     ticketsQuery = query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc'));
+                     ticketsQuery = query(collectionGroup(firestore, 'tickets'));
                 } else if (statusFilter === 'مفتوحة') {
                     // Combine 'مفتوحة' and 'قيد المراجعة' for the active view
-                    ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']), orderBy('createdDate', 'desc'));
+                    ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
                 } else {
-                    ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', '==', statusFilter), orderBy('createdDate', 'desc'));
+                    ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', '==', statusFilter));
                 }
 
                 const querySnapshot = await getDocs(ticketsQuery);
