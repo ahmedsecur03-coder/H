@@ -33,6 +33,7 @@ function UserInitializer() {
                 balance: 0,
                 adBalance: 0,
                 totalSpent: 0,
+                apiKey: `hy_${crypto.randomUUID()}`,
                 referralCode: user.uid.substring(0, 8).toUpperCase(),
                 referrerId: null,
                 createdAt: new Date().toISOString(),
