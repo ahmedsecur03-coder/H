@@ -26,7 +26,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose
+  SheetClose,
+  SheetDescription
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -92,7 +93,7 @@ function Header() {
       id: user.uid
   } : null;
 
-  const isAdmin = userData?.role === 'admin' || user?.email === 'hagaaty@gmail.com';
+  const isAdmin = userData?.role === 'admin';
 
 
   return (
@@ -169,6 +170,7 @@ function Header() {
               <SheetContent side="left">
                 <SheetHeader>
                   <SheetTitle><Logo /></SheetTitle>
+                  <SheetDescription>قائمة التنقل الرئيسية لمنصة حاجاتي.</SheetDescription>
                 </SheetHeader>
                 <div className="flex flex-col space-y-4 py-6">
                   {publicNavItems.map(item => (
