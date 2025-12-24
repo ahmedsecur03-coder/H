@@ -46,7 +46,6 @@ export const publicNavItems: NestedNavItem[] = [
 
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { 
     label: 'الحملات الإعلانية',
     icon: Megaphone,
@@ -64,6 +63,7 @@ export const dashboardNavItems: NestedNavItem[] = [
         { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
     ]
   },
+  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { 
