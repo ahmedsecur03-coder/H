@@ -158,7 +158,7 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
                                     tickLine={false}
                                     tickMargin={10}
                                     axisLine={false}
-                                    tickFormatter={(value) => new Date(value).toLocaleDateString(t('locale'), { month: 'short', day: 'numeric' })}
+                                    tickFormatter={(value) => new Date(value).toLocaleDateString(t('locale') || 'en-US', { month: 'short', day: 'numeric' })}
                                 />
                                 <YAxis />
                                 <ChartTooltip content={<ChartTooltipContent />} />
