@@ -79,26 +79,28 @@ function DealOfTheDay() {
 
 function DashboardSkeleton() {
     return (
-        <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
-            <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-                <div className='mb-4'>
-                    <Skeleton className="h-9 w-1/3" />
-                    <Skeleton className="h-5 w-2/3 mt-2" />
-                </div>
-                 <div className="grid gap-4 sm:grid-cols-2">
-                    <Skeleton className="h-12" />
-                    <Skeleton className="h-12" />
-                </div>
-                <Skeleton className="h-96" />
+        <div className="space-y-6 pb-4">
+             <div className='mb-4'>
+                <Skeleton className="h-9 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                    <Skeleton className="h-28" />
-                    <Skeleton className="h-28" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                <div className="space-y-4">
+                    <Skeleton className="h-96" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Skeleton className="h-16" />
+                        <Skeleton className="h-16" />
+                    </div>
                 </div>
-                <Skeleton className="h-44 w-full" />
-                <Skeleton className="h-40" />
-             </div>
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4">
+                        <Skeleton className="h-28" />
+                        <Skeleton className="h-28" />
+                    </div>
+                    <Skeleton className="h-44 w-full" />
+                    <Skeleton className="h-40" />
+                </div>
+            </div>
         </div>
     );
 }
@@ -122,34 +124,34 @@ export default function DashboardPage() {
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
     return (
-        <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
-            <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-                <div className='mb-4'>
-                    <h1 className='text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
-                    <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. كل شيء تحت السيطرة.</p>
-                </div>
-
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Button variant="outline" className="w-full text-md py-6" asChild>
-                        <Link href="/dashboard/campaigns">
-                            <PlusCircle className="ml-2 h-5 w-5" />
-                            إنشاء حملة إعلانية
-                        </Link>
-                    </Button>
-                    <Button variant="outline" className="w-full text-md py-6" asChild>
-                        <Link href="/dashboard/agency-accounts">
-                            <Briefcase className="ml-2 h-5 w-5" />
-                            فتح حسابات إعلانية (ايجنسي)
-                        </Link>
-                    </Button>
-                </div>
-                
-                <QuickOrderForm user={authUser} userData={userData} />
-                
+        <div className="space-y-6 pb-4">
+            <div className='mb-4'>
+                <h1 className='text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
+                <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. كل شيء تحت السيطرة.</p>
             </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
 
-            <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                {/* Main Content Column */}
+                <div className="lg:col-span-2 grid auto-rows-max items-start gap-4 md:gap-8">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Button variant="outline" className="w-full text-md py-6" asChild>
+                            <Link href="/dashboard/campaigns">
+                                <PlusCircle className="ml-2 h-5 w-5" />
+                                إنشاء حملة إعلانية
+                            </Link>
+                        </Button>
+                        <Button variant="outline" className="w-full text-md py-6" asChild>
+                            <Link href="/dashboard/agency-accounts">
+                                <Briefcase className="ml-2 h-5 w-5" />
+                                فتح حسابات إعلانية (ايجنسي)
+                            </Link>
+                        </Button>
+                    </div>
+                    <QuickOrderForm user={authUser} userData={userData} />
+                </div>
+
+                {/* Sidebar Column */}
+                <div className="grid auto-rows-max items-start gap-4 md:gap-8">
                     <Card>
                         <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الأساسي</CardDescription>
@@ -166,11 +168,9 @@ export default function DashboardPage() {
                             <p className="text-xs text-muted-foreground">خصم {rank.discount}% على كل الطلبات</p>
                         </CardHeader>
                     </Card>
+                    <DealOfTheDay />
+                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 </div>
-                
-                <DealOfTheDay />
-                <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
-                
             </div>
         </div>
     );
