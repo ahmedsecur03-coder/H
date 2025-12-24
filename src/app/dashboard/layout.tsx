@@ -60,7 +60,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
   );
 }
 
-function NavItems() {
+function NavItems({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
 
   const renderNavItem = (item: NestedNavItem) => {
@@ -78,10 +78,12 @@ function NavItems() {
           </SidebarMenuSubTrigger>
           <SidebarMenuSubContent>
             {item.children.map((child) => (
-              <SidebarMenuSubButton key={child.href} href={child.href || '#'} isActive={pathname === child.href}>
-                {child.icon && <child.icon className="w-4 h-4" />}
-                <span>{child.label}</span>
-              </SidebarMenuSubButton>
+               <SidebarMenuItem key={child.href}>
+                <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
+                    {child.icon && <child.icon className="w-4 h-4" />}
+                    <span>{child.label}</span>
+                </SidebarMenuSubButton>
+              </SidebarMenuItem>
             ))}
           </SidebarMenuSubContent>
         </SidebarMenuSub>
@@ -98,7 +100,21 @@ function NavItems() {
     );
   };
 
-  return <>{dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}</>;
+  return (
+    <>
+      {dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}
+      {isAdmin && (
+        <SidebarMenuItem>
+          <Link href="/admin/dashboard" passHref>
+            <SidebarMenuButton isActive={pathname.startsWith('/admin')}>
+              <Shield className="h-4 w-4" />
+              <span>لوحة تحكم المسؤول</span>
+            </SidebarMenuButton>
+          </Link>
+        </SidebarMenuItem>
+      )}
+    </>
+  );
 }
 
 
@@ -127,7 +143,7 @@ export default function DashboardLayout({
       )
     }
   
-    const isAdmin = userData.role === 'admin';
+    const isAdmin = user.email === 'hagaaty@gmail.com';
 
     return (
         <SidebarProvider>
@@ -143,7 +159,7 @@ export default function DashboardLayout({
                     </SidebarHeader>
                     <SidebarContent>
                     <SidebarMenu>
-                        <NavItems />
+                        <NavItems isAdmin={isAdmin} />
                     </SidebarMenu>
                     </SidebarContent>
                 </Sidebar>

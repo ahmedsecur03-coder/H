@@ -69,10 +69,12 @@ function AdminNavItems() {
                     </SidebarMenuSubTrigger>
                     <SidebarMenuSubContent>
                         {item.children.map((child) => (
-                            <SidebarMenuSubButton key={child.href} href={child.href || '#'} isActive={pathname === child.href}>
+                           <SidebarMenuItem key={child.href}>
+                             <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
                                 {child.icon && <child.icon className="w-4 h-4" />}
                                 <span>{child.label}</span>
-                            </SidebarMenuSubButton>
+                             </SidebarMenuSubButton>
+                           </SidebarMenuItem>
                         ))}
                     </SidebarMenuSubContent>
                 </SidebarMenuSub>
@@ -106,14 +108,16 @@ export default function AdminLayout({
   const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
   
   const isLoading = isUserLoading || isUserDataLoading;
-
+  
+  // Security check: Only allow the specific admin user
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login');
+    if (!isLoading && (!user || user.email !== 'hagaaty@gmail.com')) {
+      router.push('/login'); // Redirect non-admins or logged-out users
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !userData) {
+
+  if (isLoading || !userData || user?.email !== 'hagaaty@gmail.com') {
     return (
       <div className="flex min-h-screen w-full">
         <div className="hidden w-64 border-e bg-muted/40 p-4 md:block">
