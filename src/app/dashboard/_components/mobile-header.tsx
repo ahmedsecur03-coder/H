@@ -1,15 +1,18 @@
 'use client';
 
 import Logo from "@/components/logo"
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { PanelLeft, Shield } from "lucide-react"
+import { PanelLeft, Shield, ChevronDown } from "lucide-react"
 import Link from "next/link";
 import { dashboardNavItems } from "@/lib/placeholder-data";
 import { usePathname } from "next/navigation";
 import { UserNav } from "../_components/user-nav";
-import type { User as UserType } from '@/lib/types';
+import type { User as UserType, NestedNavItem } from '@/lib/types';
 import { Notifications } from "@/components/notifications";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import React from "react";
+import { cn } from "@/lib/utils";
 
 export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData: UserType }) {
     const pathname = usePathname();
@@ -19,6 +22,46 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
         email: userData.email,
         avatarUrl: userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.id}`,
         id: userData.id
+    };
+
+    const renderNavItem = (item: NestedNavItem, isSubItem = false) => {
+        const Icon = item.icon;
+        const isActive = pathname === item.href;
+
+        if (item.children) {
+            return (
+                <Collapsible key={item.label} className="w-full">
+                    <CollapsibleTrigger asChild>
+                        <div className={cn("flex w-full items-center justify-between rounded-md p-2 hover:bg-muted", isActive && "bg-muted")}>
+                             <div className="flex items-center gap-4">
+                                <Icon className="h-5 w-5" />
+                                <span className="text-lg font-medium">{item.label}</span>
+                            </div>
+                            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                        </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="ps-8 mt-2 space-y-2">
+                        {item.children.map(child => renderNavItem(child, true))}
+                    </CollapsibleContent>
+                </Collapsible>
+            );
+        }
+
+        return (
+            <SheetClose asChild key={item.href}>
+                <Link
+                    href={item.href || '#'}
+                    className={cn(
+                        'flex items-center gap-4 rounded-md p-2',
+                        isActive ? 'bg-muted font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground',
+                        isSubItem ? 'text-base' : 'text-lg font-medium'
+                    )}
+                >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                </Link>
+            </SheetClose>
+        );
     };
     
     return (
@@ -37,25 +80,18 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                   مرحباً بك في لوحة تحكم حاجاتي
                 </SheetDescription>
               </SheetHeader>
-              <nav className="grid gap-6 text-lg font-medium">
-                {dashboardNavItems.map(item => (
-                    <Link
-                        key={item.label}
-                        href={item.href || '#'}
-                        className={`flex items-center gap-4 px-2.5 ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <item.icon className="h-5 w-5" />
-                        {item.label}
-                    </Link>
-                ))}
+              <nav className="grid gap-2">
+                 {dashboardNavItems.map(item => renderNavItem(item))}
                  {isAdmin && (
-                    <Link
-                        href="/admin/dashboard"
-                        className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                    >
-                       <Shield className="h-5 w-5" />
-                        لوحة التحكم للمسؤول
-                    </Link>
+                    <SheetClose asChild>
+                        <Link
+                            href="/admin/dashboard"
+                            className="flex items-center gap-4 px-2.5 text-lg font-medium text-muted-foreground hover:text-foreground"
+                        >
+                           <Shield className="h-5 w-5" />
+                            لوحة التحكم للمسؤول
+                        </Link>
+                    </SheetClose>
                  )}
               </nav>
             </SheetContent>
