@@ -14,6 +14,7 @@ import {
   SidebarMenuSubTrigger,
   SidebarMenuSubContent,
   SidebarMenuSubButton,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
@@ -43,6 +44,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
 
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
+        <SidebarTrigger />
         <div className="ms-auto flex items-center gap-2 font-body">
              <ThemeToggle />
              <Notifications userData={userData} />
@@ -88,16 +90,18 @@ function NavItems() {
     }
 
     return (
-      <Link key={item.href} href={item.href || '#'} passHref>
-        <SidebarMenuButton isActive={pathname === item.href}>
-          {Icon && <Icon className="h-4 w-4" />}
-          <span>{item.label}</span>
-        </SidebarMenuButton>
-      </Link>
+      <SidebarMenuItem key={item.href}>
+        <Link href={item.href || '#'} passHref>
+          <SidebarMenuButton isActive={pathname === item.href}>
+            {Icon && <Icon className="h-4 w-4" />}
+            <span>{item.label}</span>
+          </SidebarMenuButton>
+        </Link>
+      </SidebarMenuItem>
     );
   };
 
-  return <>{dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}</>;
+  return <>{dashboardNavItems.map(renderNavItem)}</>;
 }
 
 
@@ -127,37 +131,37 @@ export default function DashboardLayout({
     }
   
     const isAdmin = userData.role === 'admin';
-    const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
     return (
         <SidebarProvider>
-        <Sidebar side="right" collapsible="icon" className="hidden md:block">
-            <SidebarHeader>
-            <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-                <Logo className="group-data-[collapsible=icon]:hidden" />
-                 <div className="hidden group-data-[collapsible=icon]:block">
-                   <Logo/>
+            <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
+                <Sidebar side="right" collapsible="icon" className="hidden md:flex">
+                    <SidebarHeader>
+                    <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+                        <Logo className="group-data-[collapsible=icon]:hidden" />
+                        <div className="hidden group-data-[collapsible=icon]:block">
+                        <Logo/>
+                        </div>
+                    </div>
+                    </SidebarHeader>
+                    <SidebarContent>
+                    <SidebarMenu>
+                        <NavItems />
+                    </SidebarMenu>
+                    </SidebarContent>
+                </Sidebar>
+                
+                <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
+                    <MobileHeader isAdmin={isAdmin} userData={userData} />
+                    <DesktopHeader isAdmin={isAdmin} userData={userData} />
+                    
+                    <main className="mb-20 flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:mb-0 md:gap-8">
+                    {children}
+                    </main>
+                    
+                    <BottomNavBar />
                 </div>
             </div>
-            </SidebarHeader>
-            <SidebarContent>
-            <SidebarMenu>
-                <NavItems />
-            </SidebarMenu>
-            </SidebarContent>
-        </Sidebar>
-        
-        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
-            <MobileHeader isAdmin={isAdmin} userData={userData} />
-            <DesktopHeader isAdmin={isAdmin} userData={userData} />
-            
-            <main className="mb-20 flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:mb-0 md:gap-8">
-            {children}
-            </main>
-            
-            <BottomNavBar />
-        </div>
-
         </SidebarProvider>
     );
 }
