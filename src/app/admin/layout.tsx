@@ -80,7 +80,7 @@ function AdminNavItems() {
         }
 
         return (
-            <Link key={item.href} href={item.href || '#'} passHref>
+            <Link href={item.href || '#'} passHref>
                 <SidebarMenuButton isActive={pathname === item.href}>
                     {Icon && <Icon className="h-4 w-4" />}
                     <span>{item.label}</span>

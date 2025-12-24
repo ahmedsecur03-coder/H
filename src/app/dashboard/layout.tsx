@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -90,18 +89,16 @@ function NavItems() {
     }
 
     return (
-      <SidebarMenuItem key={item.href}>
         <Link href={item.href || '#'} passHref>
           <SidebarMenuButton isActive={pathname === item.href}>
             {Icon && <Icon className="h-4 w-4" />}
             <span>{item.label}</span>
           </SidebarMenuButton>
         </Link>
-      </SidebarMenuItem>
     );
   };
 
-  return <>{dashboardNavItems.map(renderNavItem)}</>;
+  return <>{dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}</>;
 }
 
 
