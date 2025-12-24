@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot } from 'firebase/firestore';
 import type { User } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -74,27 +74,27 @@ function AdminUsersPageComponent() {
   const currentSearch = searchParams.get('search') || '';
   const [debouncedSearch] = useDebounce(currentSearch, 500);
 
-  // We need to fetch all users for the EditUserDialog to work without re-fetching
-  const allUsersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users')) : null),
-    [firestore]
-  );
-  const { forceCollectionUpdate } = useCollection<User>(allUsersQuery);
-
   const fetchUsers = useCallback(async (direction: 'next' | 'prev' | 'first' = 'first') => {
     if (!firestore) return;
     setIsLoading(true);
 
     let q: Query = collection(firestore, 'users');
-
+    let isSearchQuery = false;
+    
     if (debouncedSearch) {
-        q = query(q, where('email', '>=', debouncedSearch), where('email', '<=', debouncedSearch + '\uf8ff'));
+        // This is a simple prefix search on email, which is more Firestore-friendly.
+        q = query(q, 
+            orderBy('email'),
+            where('email', '>=', debouncedSearch), 
+            where('email', '<=', debouncedSearch + '\uf8ff')
+        );
+        isSearchQuery = true;
     } else {
         q = query(q, orderBy('createdAt', 'desc'));
     }
 
     if (direction === 'next' && lastVisible) {
-        q = query(q, startAfter(lastVisible));
+        q = query(q, startAfter(lastVisible), limit(ITEMS_PER_PAGE));
     } else if (direction === 'prev' && firstVisible) {
         q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
     } else {
@@ -103,8 +103,14 @@ function AdminUsersPageComponent() {
 
     try {
         const documentSnapshots = await getDocs(q);
-        const newUsers = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        
+        // For search, we still do a client-side filter for name as a fallback
+        // since we can't do a compound OR query efficiently.
+        let newUsers = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+
+        if (isSearchQuery) {
+          newUsers = newUsers.filter(u => u.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || u.email.toLowerCase().includes(debouncedSearch.toLowerCase()));
+        }
+
         setUsers(newUsers);
         setFirstVisible(documentSnapshots.docs[0] || null);
         setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
@@ -152,7 +158,11 @@ function AdminUsersPageComponent() {
 
        <Card>
         <CardHeader>
-          <div className="relative">
+          <CardTitle>بحث وتعديل المستخدمين</CardTitle>
+          <CardDescription>
+            ابحث بالاسم أو البريد الإلكتروني لتعديل بيانات المستخدم.
+          </CardDescription>
+          <div className="relative pt-4">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={t('adminUsers.searchPlaceholder')}

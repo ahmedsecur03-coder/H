@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User as UserIcon, Wand2 } from 'lucide-react';
+import { Loader2, User as UserIcon, Palette } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User as UserType } from '@/lib/types';
 import {
@@ -168,7 +168,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                          {isAiConfigured() && (
                             <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
                                 <Button size="icon" className="absolute -bottom-2 -end-2 h-8 w-8 rounded-full border-2 border-background">
-                                    <Wand2 className="h-4 w-4"/>
+                                    <Palette className="h-4 w-4"/>
                                 </Button>
                             </GenerateAvatarDialog>
                         )}

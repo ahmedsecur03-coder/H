@@ -253,8 +253,8 @@ export default function AdminDashboardPage() {
                             tickMargin={8}
                             tickFormatter={(value) => new Date(value).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}
                         />
-                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="right" />
-                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="left" allowDecimals={false} />
+                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
+                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
                         <Tooltip
                             content={<ChartTooltipContent
                                 formatter={(value, name) => {
@@ -291,7 +291,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
-
-    

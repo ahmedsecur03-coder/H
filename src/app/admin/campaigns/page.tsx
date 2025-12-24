@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  CardTitle
 } from '@/components/ui/card';
 import {
   Table,
@@ -112,7 +113,8 @@ export default function AdminCampaignsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-wrap gap-2">
+            <CardTitle>فلترة الحملات</CardTitle>
+          <div className="flex flex-wrap gap-2 pt-4">
             <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>الكل</Button>
             {(Object.keys(statusVariant) as Status[]).map(status => (
               <Button key={status} variant={filter === status ? 'default' : 'outline'} onClick={() => setFilter(status)}>{status}</Button>

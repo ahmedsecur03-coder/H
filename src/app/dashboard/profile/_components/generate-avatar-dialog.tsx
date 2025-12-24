@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, RotateCw, Wand2 } from 'lucide-react';
+import { Loader2, RotateCw, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateAvatar } from '@/ai/flows/generate-avatar-flow';
 import Image from 'next/image';
@@ -77,7 +77,7 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
                         )}
                         {!generatedImage && !isGenerating && (
                              <div className="text-center text-muted-foreground p-4">
-                                <Wand2 className="h-10 w-10 mx-auto" />
+                                <Palette className="h-10 w-10 mx-auto" />
                                 <p className="mt-2 text-sm">{t('avatarGenerator.placeholder')}</p>
                              </div>
                         )}
@@ -120,4 +120,3 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
         </Dialog>
     );
 }
-

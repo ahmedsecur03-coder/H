@@ -30,10 +30,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ChevronLeft, Info, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, Info, ChevronRight, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function ServicesSkeleton() {
   const { t } = useTranslation();
@@ -148,70 +149,80 @@ export default function ServicesPage() {
           </Select>
         </CardContent>
       </Card>
-        
-      {selectedService ? (
-         <Card>
-            <CardHeader>
-                 <Button variant="ghost" size="sm" onClick={() => setSelectedService(null)} className="self-start">
-                     <ChevronRight className="h-4 w-4 me-2 rtl:hidden" />
-                     <ChevronLeft className="h-4 w-4 ms-2 ltr:hidden" />
-                     {t('backToList')}
-                 </Button>
-                 <CardTitle>{selectedService.category} - {selectedService.platform}</CardTitle>
-                 <CardDescription>{t('servicesPage.serviceId')}: {selectedService.id}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <p className="text-muted-foreground">{selectedService.description || t('servicesPage.noDescription')}</p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.pricePer1000')}:</span><span className="font-bold font-mono">${selectedService.price.toFixed(4)}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.avgTime')}:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.minOrder')}:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.maxOrder')}:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
+      
+      <AnimatePresence>
+        {selectedService && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>{selectedService.category} - {selectedService.platform}</CardTitle>
+                    <CardDescription>{t('servicesPage.serviceId')}: {selectedService.id}</CardDescription>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedService(null)}>
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-            </CardContent>
-             <CardFooter>
-                 <Button asChild className="w-full">
-                    <Link href={`/login?redirect=/dashboard/mass-order&prefill=${encodeURIComponent(`${selectedService.id}| |`)}`}>
-                        {t('servicesPage.orderThisService')}
-                    </Link>
-                 </Button>
-            </CardFooter>
-         </Card>
-      ) : (
-        <Card>
-            <CardContent className="p-0">
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>{t('servicesPage.table.service')}</TableHead>
-                    <TableHead>{t('servicesPage.table.platform')}</TableHead>
-                    <TableHead>{t('servicesPage.table.pricePer1000')}</TableHead>
-                    <TableHead>{t('servicesPage.table.limits')}</TableHead>
-                    <TableHead className="text-right">{t('servicesPage.table.action')}</TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {filteredServices.map(service => (
-                    <TableRow key={service.id}>
-                    <TableCell className="font-mono text-xs">{service.id}</TableCell>
-                    <TableCell className="font-medium">{service.category}</TableCell>
-                    <TableCell>{service.platform}</TableCell>
-                    <TableCell>${service.price.toFixed(4)}</TableCell>
-                    <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
-                            <Info className="h-4 w-4 me-2" />
-                            {t('details')}
-                        </Button>
-                    </TableCell>
-                    </TableRow>
-                ))}
-                </TableBody>
-            </Table>
-            </CardContent>
-        </Card>
-      )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <p className="text-muted-foreground">{selectedService.description || t('servicesPage.noDescription')}</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.pricePer1000')}:</span><span className="font-bold font-mono">${selectedService.price.toFixed(4)}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.avgTime')}:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.minOrder')}:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.maxOrder')}:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
+                  </div>
+              </CardContent>
+              <CardFooter>
+                  <Button asChild className="w-full">
+                      <Link href={`/login?redirect=/dashboard/mass-order&prefill=${encodeURIComponent(`${selectedService.id}| |`)}`}>
+                          {t('servicesPage.orderThisService')}
+                      </Link>
+                  </Button>
+              </CardFooter>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Card>
+          <CardContent className="p-0">
+          <Table>
+              <TableHeader>
+              <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>{t('servicesPage.table.service')}</TableHead>
+                  <TableHead>{t('servicesPage.table.platform')}</TableHead>
+                  <TableHead>{t('servicesPage.table.pricePer1000')}</TableHead>
+                  <TableHead>{t('servicesPage.table.limits')}</TableHead>
+                  <TableHead className="text-right">{t('servicesPage.table.action')}</TableHead>
+              </TableRow>
+              </TableHeader>
+              <TableBody>
+              {filteredServices.map(service => (
+                  <TableRow key={service.id} className={selectedService?.id === service.id ? 'bg-muted/50' : ''}>
+                  <TableCell className="font-mono text-xs">{service.id}</TableCell>
+                  <TableCell className="font-medium">{service.category}</TableCell>
+                  <TableCell>{service.platform}</TableCell>
+                  <TableCell>${service.price.toFixed(4)}</TableCell>
+                  <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
+                          <Info className="h-4 w-4 me-2" />
+                          {t('details')}
+                      </Button>
+                  </TableCell>
+                  </TableRow>
+              ))}
+              </TableBody>
+          </Table>
+          </CardContent>
+      </Card>
     </div>
   );
 }
