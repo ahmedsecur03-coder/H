@@ -56,8 +56,7 @@ export function NewTicketDialog({ children }: { children: React.ReactNode }) {
 
     const ticketsColRef = collection(firestore, `users/${user.uid}/tickets`);
 
-    try {
-        const docRef = await addDoc(ticketsColRef, newTicketData);
+    addDoc(ticketsColRef, newTicketData).then(docRef => {
         toast({
             title: 'تم فتح التذكرة بنجاح',
             description: 'سيقوم فريق الدعم بالرد عليك في أقرب وقت ممكن.',
@@ -66,16 +65,16 @@ export function NewTicketDialog({ children }: { children: React.ReactNode }) {
         setMessage('');
         setOpen(false);
         router.push(`/dashboard/support/${docRef.id}`);
-    } catch (error) {
+    }).catch(error => {
         const permissionError = new FirestorePermissionError({
             path: ticketsColRef.path,
             operation: 'create',
             requestResourceData: newTicketData
         });
         errorEmitter.emit('permission-error', permissionError);
-    } finally {
+    }).finally(() => {
         setIsSubmitting(false);
-    }
+    });
   };
 
   return (
@@ -101,6 +100,7 @@ export function NewTicketDialog({ children }: { children: React.ReactNode }) {
               onChange={(e) => setSubject(e.target.value)}
               className="col-span-3"
               required
+              disabled={isSubmitting}
             />
           </div>
           <div className="space-y-2">
@@ -113,6 +113,7 @@ export function NewTicketDialog({ children }: { children: React.ReactNode }) {
               onChange={(e) => setMessage(e.target.value)}
               className="col-span-3"
               required
+              disabled={isSubmitting}
             />
           </div>
            <DialogFooter>

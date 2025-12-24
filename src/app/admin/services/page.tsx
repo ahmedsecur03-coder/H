@@ -47,7 +47,7 @@ export default function AdminServicesPage() {
           // Here, we'll order by ID and do a basic filter if a search term is provided.
           // This search is limited and case-sensitive.
           if (searchTerm) {
-             q = query(q, where('id', '>=', searchTerm), where('id', '<=', searchTerm + 'uf8ff'));
+             q = query(q, where('id', '>=', searchTerm), where('id', '<=', searchTerm + '\uf8ff'));
           }
 
           q = query(q, orderBy('id'));
@@ -100,45 +100,28 @@ export default function AdminServicesPage() {
   const handleSaveService = (data: Omit<Service, 'id'> & { id?: string }) => {
     if (!firestore) return;
 
-    if (selectedService) { // Editing existing service
-        const serviceDocRef = doc(firestore, 'services', selectedService.id);
-        const { id, ...updateData } = data; // Don't update the ID
-        updateDoc(serviceDocRef, updateData)
-            .then(() => {
-                toast({ title: 'نجاح', description: 'تم تحديث الخدمة بنجاح.' });
-                fetchServices('initial'); // Refresh data
-            })
-            .catch(serverError => {
-                const permissionError = new FirestorePermissionError({ path: serviceDocRef.path, operation: 'update', requestResourceData: updateData });
-                errorEmitter.emit('permission-error', permissionError);
-            });
-    } else { // Adding new service
-        const servicesColRef = collection(firestore, 'services');
-        if (data.id) { // Use user-provided ID
-            const newServiceDocRef = doc(firestore, 'services', data.id);
-            const { id, ...newServiceData } = data;
-            setDoc(newServiceDocRef, newServiceData)
-                .then(() => {
-                    toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
-                    fetchServices('initial'); // Refresh data
-                })
-                .catch(serverError => {
-                    const permissionError = new FirestorePermissionError({ path: newServiceDocRef.path, operation: 'create', requestResourceData: newServiceData });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-        } else { // Auto-generate ID
-             const { id, ...newServiceData } = data;
-             addDoc(servicesColRef, newServiceData)
-                .then(() => {
-                    toast({ title: 'نجاح', description: 'تمت إضافة الخدمة بنجاح.' });
-                    fetchServices('initial'); // Refresh data
-                })
-                .catch(serverError => {
-                    const permissionError = new FirestorePermissionError({ path: servicesColRef.path, operation: 'create', requestResourceData: newServiceData });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-        }
-    }
+    const actionPromise = selectedService
+        ? updateDoc(doc(firestore, 'services', selectedService.id), data)
+        : data.id
+            ? setDoc(doc(firestore, 'services', data.id), data)
+            : addDoc(collection(firestore, 'services'), data);
+
+    toast({ title: 'جاري الحفظ...' });
+
+    actionPromise.then(() => {
+        toast({ title: 'نجاح', description: 'تم حفظ الخدمة بنجاح.' });
+        fetchServices('initial'); // Refresh data
+        setIsDialogOpen(false);
+        setSelectedService(undefined);
+    }).catch(serverError => {
+        const path = selectedService ? `services/${selectedService.id}` : `services/${data.id || '[new]'}`;
+        const permissionError = new FirestorePermissionError({
+            path: path,
+            operation: selectedService ? 'update' : 'create',
+            requestResourceData: data,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    });
   };
 
   const handleDeleteService = (id: string) => {
@@ -222,13 +205,7 @@ export default function AdminServicesPage() {
            <ImportDialog onImportComplete={() => fetchServices('initial')}>
              <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد</Button>
            </ImportDialog>
-            <ServiceDialog
-                open={isDialogOpen && !selectedService}
-                onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}
-                onSave={handleSaveService}
-            >
-                <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
-            </ServiceDialog>
+            <Button onClick={() => handleOpenDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة</Button>
         </div>
       </div>
        <Card>
@@ -268,14 +245,14 @@ export default function AdminServicesPage() {
             </div>
         </CardFooter>
        </Card>
-        {selectedService && <ServiceDialog
-            open={isDialogOpen && !!selectedService}
-            onOpenChange={(open) => { if (!open) setSelectedService(undefined); setIsDialogOpen(open); }}
+        <ServiceDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
             service={selectedService}
             onSave={handleSaveService}
         >
-            {/* This dialog is controlled by the button in the table row */}
-        </ServiceDialog>}
+            {/* This dialog is controlled programmatically */}
+        </ServiceDialog>
     </div>
   );
 }

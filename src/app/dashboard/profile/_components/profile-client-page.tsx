@@ -264,5 +264,3 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         </div>
     );
 }
-
-    

@@ -47,8 +47,7 @@ export function ServiceDialog({ service, onSave, children, onOpenChange, open }:
         e.preventDefault();
         setIsSaving(true);
         onSave(data);
-        setIsSaving(false);
-        onOpenChange(false);
+        // The parent component will handle closing the dialog and resetting state
     };
     
     return (
