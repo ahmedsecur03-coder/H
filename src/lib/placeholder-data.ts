@@ -52,13 +52,14 @@ export const dashboardNavItems: NestedNavItem[] = [
     icon: Megaphone,
      children: [
         { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'فتح حسابات إعلانية', icon: Briefcase },
+        { href: '/dashboard/agency-accounts', label: 'فتح حسابات إعلانية (ايجنسي)', icon: Briefcase },
     ]
   },
   { 
     label: 'خدمات SMM',
     icon: ShoppingCart,
     children: [
+        { href: '/dashboard/services', label: 'كل الخدمات', icon: Rocket },
         { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
         { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
     ]
