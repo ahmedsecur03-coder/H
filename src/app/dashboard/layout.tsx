@@ -126,7 +126,7 @@ export default function DashboardLayout({
       )
     }
   
-    const isAdmin = true;
+    const isAdmin = userData.role === 'admin';
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
 
     return (

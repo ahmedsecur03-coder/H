@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Bell, Shield } from 'lucide-react';
+import { Bell, Shield, ChevronDown } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -12,6 +12,10 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
   useSidebar,
+  SidebarMenuSub,
+  SidebarMenuSubTrigger,
+  SidebarMenuSubContent,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
@@ -19,11 +23,11 @@ import Logo from '@/components/logo';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { doc } from 'firebase/firestore';
-import type { User } from '@/lib/types';
+import type { User, NestedNavItem } from '@/lib/types';
 import { Notifications } from '@/components/notifications';
 
 
@@ -48,31 +52,44 @@ function AdminHeader({ userData }: { userData: User }) {
 
 
 function AdminNavItems() {
-    const { state } = useSidebar();
-    const isCollapsible = state === "collapsed";
     const pathname = usePathname();
 
-    return (
-        <>
-            {adminNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <SidebarMenuButton asChild isActive={pathname === item.href}>
-                                    <Link href={item.href}>
-                                        <item.icon />
-                                        <span>{item.label}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </TooltipTrigger>
-                            {isCollapsible && <TooltipContent side="left" align="center">{item.label}</TooltipContent>}
-                        </Tooltip>
-                    </TooltipProvider>
-                </SidebarMenuItem>
-            ))}
-        </>
-    );
+    const renderNavItem = (item: NestedNavItem) => {
+        const Icon = item.icon;
+
+        if (item.children) {
+            return (
+                <SidebarMenuSub key={item.label}>
+                    <SidebarMenuSubTrigger>
+                        <div className='flex items-center gap-2'>
+                            {Icon && <Icon className="h-4 w-4" />}
+                            <span>{item.label}</span>
+                        </div>
+                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </SidebarMenuSubTrigger>
+                    <SidebarMenuSubContent>
+                        {item.children.map((child) => (
+                            <SidebarMenuSubButton key={child.href} href={child.href || '#'} isActive={pathname === child.href}>
+                                {child.icon && <child.icon className="w-4 h-4" />}
+                                <span>{child.label}</span>
+                            </SidebarMenuSubButton>
+                        ))}
+                    </SidebarMenuSubContent>
+                </SidebarMenuSub>
+            );
+        }
+
+        return (
+            <Link key={item.href} href={item.href || '#'} passHref>
+                <SidebarMenuButton isActive={pathname === item.href}>
+                    {Icon && <Icon className="h-4 w-4" />}
+                    <span>{item.label}</span>
+                </SidebarMenuButton>
+            </Link>
+        );
+    };
+
+    return <>{adminNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}</>;
 }
 
 
@@ -89,13 +106,12 @@ export default function AdminLayout({
   const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
   
   const isLoading = isUserLoading || isUserDataLoading;
-  
+
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
-
 
   if (isLoading || !userData) {
     return (
