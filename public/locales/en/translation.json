@@ -1,0 +1,260 @@
+{
+  "backToList": "Back to List",
+  "details": "Details",
+  "edit": "Edit",
+  "error": "Error",
+  "loading": "Loading...",
+  "page": "Page",
+  "processing": "Processing...",
+  "success": "Success!",
+  "pagination": {
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "ranks": {
+    "مستكشف نجمي": "Stellar Explorer",
+    "قائد صاروخي": "Rocket Commander",
+    "سيد المجرة": "Galactic Master",
+    "سيد كوني": "Cosmic Overlord"
+  },
+  "roles": {
+    "user": "User",
+    "admin": "Admin"
+  },
+  "orderStatus": {
+    "مكتمل": "Completed",
+    "قيد التنفيذ": "Processing",
+    "ملغي": "Cancelled",
+    "جزئي": "Partial"
+  },
+  "mobileHeader": {
+    "navDescription": "Navigate through your dashboard sections."
+  },
+  "userNav": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "adminPanel": "Admin Panel",
+    "signOut": "Sign Out",
+    "signOutSuccessTitle": "Signed out successfully",
+    "signOutSuccessDesc": "See you soon!",
+    "signOutError": "Failed to sign out. Please try again."
+  },
+  "goToAdminPanel": "Go to Admin Panel",
+  "dashboard": {
+    "welcome": "Welcome, {{name}}!",
+    "welcomeSubtitle": "Here's a quick summary of your account. Go ahead and explore our services.",
+    "mainBalance": "Main Balance",
+    "adBalance": "Ad Balance",
+    "totalSpent": "Total Spent",
+    "yourRank": "Your Cosmic Rank",
+    "discount": "{{discount}}% discount",
+    "last5Orders": "Last 5 Orders",
+    "service": "Service",
+    "status": "Status",
+    "achievements": "Cosmic Achievements",
+    "achievementsCompleted": "Completed {{completed}} of {{total}} achievements",
+    "welcomeAlertTitle": "Ready for Launch, {{name}}?",
+    "welcomeAlertDesc": "You don't have any orders yet. Start your journey now by exploring our services or adding funds to your account.",
+    "exploreServices": "Explore Services",
+    "addFunds": "Add Funds",
+    "dealOfTheDay": "Deal of the Day",
+    "per1000": "/ per 1000",
+    "orderNow": "Order Now"
+  },
+  "achievements": {
+    "rocketMan": "Rocket Man",
+    "trustedUser": "Trusted User",
+    "orderMaster": "Order Master",
+    "risingStar": "Rising Star",
+    "spendingKing": "Spending King",
+    "specialAgent": "Special Agent",
+    "cosmicLegend": "Cosmic Legend",
+    "networker": "Networker"
+  },
+  "quickOrderForm": {
+    "title": "Quick Launch Zone",
+    "description": "Create a new order in seconds.",
+    "platformPlaceholder": "Select a platform...",
+    "categoryPlaceholder": "Select a category...",
+    "servicePlaceholder": "Select a service...",
+    "linkPlaceholder": "Enter the link here...",
+    "quantityPlaceholder": "Quantity...",
+    "finalCost": "Final Cost",
+    "originalCost": "Original Cost",
+    "discountApplied": "{{discount}}% discount for '{{rankName}}' rank applied!",
+    "submitButton": "Submit Order",
+    "fillAllFieldsError": "Please fill in all fields.",
+    "quantityErrorTitle": "Invalid Quantity",
+    "quantityErrorDesc": "The quantity must be between {{min}} and {{max}}.",
+    "insufficientFundsTitle": "Insufficient Funds",
+    "insufficientFundsDesc": "Your balance (${{balance}}) is not enough to cover the order cost (${{cost}}).",
+    "successTitle": "Order Received!",
+    "successDesc": "Your order is now being processed.",
+    "submitErrorTitle": "Order Submission Failed"
+  },
+  "massOrder": {
+    "title": "Mass Order",
+    "description": "Save time by placing multiple orders at once.",
+    "inputTitle": "Enter Your Orders Here",
+    "inputDescription": "Each line is a separate order with the format:",
+    "example": "Example",
+    "discountNote": "Note: Your '{{rankName}}' rank discount ({{discount}}%) will be automatically applied to the total cost.",
+    "submitButton": "Process Mass Order",
+    "emptyFieldError": "The mass order field cannot be empty.",
+    "dataLoadingError": "Cannot process orders, services data is still loading.",
+    "resultsTitle": "Mass Processing Results",
+    "results": {
+      "fullSuccess": "Full Success!",
+      "fullSuccessDesc": "All your orders have been processed successfully.",
+      "partialSuccessTitle": "Partial Success",
+      "partialSuccessDesc": "Some of your orders were processed successfully, while others failed.",
+      "fullFailureDesc": "All orders failed to process.",
+      "successCount": "Successful Orders",
+      "errorCount": "Failed Orders",
+      "totalCost": "Total Cost",
+      "errorDetails": "Error Details"
+    },
+    "line": "Line",
+    "errors": {
+      "invalidFormat": "Invalid format. Must be 'id|link|quantity'.",
+      "serviceNotFound": "Service not found.",
+      "invalidQuantity": "Invalid quantity.",
+      "quantityOutOfBounds": "Quantity is out of bounds (Min: {{min}}, Max: {{max}}).",
+      "noValidOrders": "No valid orders found to process.",
+      "insufficientFunds": "Insufficient funds. Total cost: ${{totalCost}}, your balance: ${{balance}}.",
+      "batchSubmitError": "Batch submission failed",
+      "permissionError": "Transaction failed due to a permission error. Check security rules."
+    }
+  },
+  "ordersPage": {
+    "title": "Order History",
+    "description": "Here you can view all your past and current orders and track their status.",
+    "searchPlaceholder": "Search by ID, service, or link...",
+    "statusFilterPlaceholder": "Filter by status",
+    "allStatuses": "All Statuses",
+    "table": {
+      "id": "ID",
+      "service": "Service",
+      "link": "Link",
+      "quantity": "Quantity",
+      "status": "Status",
+      "date": "Date",
+      "cost": "Cost"
+    },
+    "noMatchTitle": "No Matching Results!",
+    "noMatchDescription": "We couldn't find any orders that match your current search and filter criteria.",
+    "resetFilters": "Reset Filters"
+  },
+  "adminUsers": {
+    "title": "User Management",
+    "description": "View, edit, and search for all users in the system.",
+    "searchPlaceholder": "Search by name or email...",
+    "fetchError": "Failed to fetch users.",
+    "noMatch": "No users match your search.",
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "rank": "Rank",
+      "balance": "Balance",
+      "adBalance": "Ad Balance",
+      "totalSpent": "Total Spent",
+      "joinDate": "Join Date",
+      "actions": "Actions"
+    }
+  },
+  "analytics": {
+    "title": "Your Account Analytics",
+    "description": "A deep dive into your activity and spending for valuable insights.",
+    "noData": {
+        "title": "Not Enough Data to Analyze",
+        "description": "Start placing some orders, and we'll begin generating custom charts and insights for you here."
+    },
+    "totalSpend30Days": "Total Spend (Last 30 Days)",
+    "totalOrders30Days": "Total Orders (Last 30 Days)",
+    "avgOrderValue": "Average Order Value",
+    "dailySpend": {
+        "title": "Daily Spending",
+        "description": "A look at your daily expenditure over the last week."
+    },
+    "categorySpend": {
+        "title": "Spending by Category",
+        "description": "The distribution of your spending across different service categories."
+    }
+  },
+  "api": {
+    "title": "API Access",
+    "description": "Automate your orders by integrating our services directly into your applications.",
+    "endpoints": {
+      "title": "Endpoint",
+      "description": "All API requests should be sent as POST requests to the following endpoint:"
+    },
+    "actions": {
+      "title": "Available Actions",
+      "add": {
+        "title": "Add Order (add)",
+        "description": "This action is used to place a new order."
+      },
+      "status": {
+        "title": "Order Status (status)",
+        "description": "This action is used to check the status of a specific order."
+      },
+      "services": {
+        "title": "Services List (services)",
+        "description": "This action is used to get a full list of all available services."
+      },
+      "balance": {
+        "title": "Balance (balance)",
+        "description": "This action is used to check your current account balance."
+      },
+      "add.params": {
+        "key": "Your personal API key.",
+        "action": "The value must be 'add'.",
+        "service": "The ID of the service you want to order.",
+        "link": "The target link for the order.",
+        "quantity": "The desired quantity."
+      },
+      "status.params": {
+        "key": "Your personal API key.",
+        "action": "The value must be 'status'.",
+        "order": "The ID of the order you want to check."
+      }
+    },
+    "parameter": "Parameter",
+    "parameters": "Parameters",
+    "responses": {
+      "title": "Example Responses",
+      "description": "Below are examples of the JSON responses you can expect from the API.",
+      "response": "Response",
+      "addSuccess": "Successful response when adding a new order. The number is the new order ID.",
+      "statusSuccess": "Successful response when checking an order status.",
+      "servicesSuccess": "Successful response when requesting the services list.",
+      "balanceSuccess": "Successful response when requesting the balance.",
+      "errorIncorrect": "Error response in case of missing or invalid parameters.",
+      "errorFunds": "Error response in case of insufficient funds to place the order.",
+      "errorKey": "Error response in case the API key is invalid."
+    }
+  },
+  "servicesPage": {
+    "title": "Full Service Catalog",
+    "description": "Browse and search all available services we offer.",
+    "searchPlaceholder": "Search by ID or service name...",
+    "platformFilterPlaceholder": "Filter by platform",
+    "categoryFilterPlaceholder": "Filter by category",
+    "allPlatforms": "All Platforms",
+    "allCategories": "All Categories",
+    "serviceId": "Service ID",
+    "noDescription": "No description available for this service.",
+    "pricePer1000": "Price per 1000",
+    "avgTime": "Average Time",
+    "minOrder": "Min. Order",
+    "maxOrder": "Max. Order",
+    "orderThisService": "Order this Service",
+    "table": {
+        "service": "Service",
+        "platform": "Platform",
+        "pricePer1000": "Price/1k",
+        "limits": "Limits (Min/Max)",
+        "action": "Action"
+    }
+  }
+}

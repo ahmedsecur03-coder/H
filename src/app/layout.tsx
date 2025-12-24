@@ -1,8 +1,8 @@
 
 'use client';
 
-import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import '../i18n'; // Import the i18n configuration
 import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
 import { doc } from 'firebase/firestore';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 const fontSans = Tajawal({
   subsets: ['arabic'],
@@ -24,19 +26,6 @@ const fontHeadline = Tajawal({
   weight: ['800'],
   variable: '--font-headline',
 });
-
-// We can't set metadata in a client component, but we can leave this here
-// as it will be used by the build process if possible.
-// export const metadata: Metadata = {
-//   title: 'Hajaty Hub - منصة حاجتي للخدمات الرقمية',
-//   description: 'منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك.',
-//   keywords: ['SMM', 'تسويق رقمي', 'حملات إعلانية', 'زيادة متابعين', 'خدمات رقمية', 'فيسبوك', 'انستغرام', 'تيك توك', 'Hajaty'],
-//   manifest: '/manifest.json',
-// };
-
-// export const viewport: Viewport = {
-//   themeColor: '#0c1222',
-// };
 
 function WhatsappSupportButton() {
   const firestore = useFirestore();
@@ -63,6 +52,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language;
+    document.documentElement.dir = i18n.dir(i18n.language);
+  }, [i18n, i18n.language]);
+
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>

@@ -110,8 +110,7 @@ function DealOfTheDay() {
              <CardContent>
                 <Button asChild className="w-full">
                    <Link href={prefillUrl}>
-                     <ChevronLeft className="h-4 w-4 ms-2 rtl:hidden" />
-                     <ChevronLeft className="h-4 w-4 me-2 ltr:hidden" />
+                     <ChevronLeft className="h-4 w-4 me-2" />
                         {t('dashboard.orderNow')}
                    </Link>
                 </Button>
