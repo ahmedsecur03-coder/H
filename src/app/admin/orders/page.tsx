@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
@@ -35,7 +34,6 @@ import { ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from 'use-debounce';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
 
 
 const statusVariant = {
@@ -87,7 +85,6 @@ function OrdersPageSkeleton() {
 }
 
 function AdminOrdersPageComponent() {
-    const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const router = useRouter();
@@ -153,11 +150,11 @@ function AdminOrdersPageComponent() {
 
         } catch (error) {
             console.error(error);
-            toast({ variant: 'destructive', title: 'Error', description: t('ordersPage.fetchError') });
+            toast({ variant: 'destructive', title: 'Error', description: "فشل في جلب الطلبات." });
         } finally {
             setIsLoading(false);
         }
-    }, [firestore, currentStatus, debouncedSearch, lastVisible, firstVisible, t, toast]);
+    }, [firestore, currentStatus, debouncedSearch, lastVisible, firstVisible, toast]);
 
     useEffect(() => {
         fetchOrders('first');
@@ -189,10 +186,10 @@ function AdminOrdersPageComponent() {
                     <TableCell colSpan={7}>
                         <div className="flex flex-col items-center justify-center py-10 text-center">
                             <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
-                            <h3 className="mt-4 font-headline text-2xl">{t('ordersPage.noMatchTitle')}</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">{t('ordersPage.noMatchDescription')}</p>
+                            <h3 className="mt-4 font-headline text-2xl">لا توجد طلبات تطابق بحثك</h3>
+                            <p className="mt-2 text-sm text-muted-foreground">حاول تغيير فلاتر البحث أو التأكد من وجود طلبات.</p>
                              <Button variant="outline" onClick={() => handleFilterChange('search', '')} className="mt-4">
-                                {t('ordersPage.resetFilters')}
+                                إعادة تعيين الفلاتر
                             </Button>
                         </div>
                     </TableCell>
@@ -296,5 +293,3 @@ export default function AdminOrdersPage() {
         </Suspense>
     )
 }
-
-    

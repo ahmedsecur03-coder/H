@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
@@ -15,10 +14,8 @@ import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { NewCampaignDialog } from './_components/new-campaign-dialog';
 import { UserCampaignActions } from './_components/user-campaign-actions';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
 
 function CampaignsSkeleton() {
-    const { t } = useTranslation();
     return (
         <div className="space-y-6 pb-8">
             <div>
@@ -42,7 +39,6 @@ function CampaignsSkeleton() {
 }
 
 export default function CampaignsPage() {
-    const { t } = useTranslation();
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
 
@@ -156,9 +152,9 @@ export default function CampaignsPage() {
   return (
      <div className="space-y-6 pb-8">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">{t('campaigns.title')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الحملات الإعلانية</h1>
             <p className="text-muted-foreground">
-             {t('campaigns.description')}
+             أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.
             </p>
         </div>
 
@@ -166,31 +162,31 @@ export default function CampaignsPage() {
              <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
                 <Button className="w-full text-lg py-7">
                     <PlusCircle className="ml-2 h-5 w-5" />
-                    {t('campaigns.newCampaign')}
+                    إنشاء حملة جديدة
                 </Button>
             </NewCampaignDialog>
              <Button variant="outline" className="w-full text-lg py-7" asChild>
                 <Link href="/dashboard/agency-accounts">
                     <Briefcase className="ml-2 h-5 w-5" />
-                    {t('campaigns.manageAccounts')}
+                    إدارة حسابات الوكالة
                 </Link>
             </Button>
         </div>
         
         <Card>
             <CardHeader>
-                <CardTitle>{t('campaigns.historyTitle')}</CardTitle>
-                <CardDescription>{t('campaigns.historyDesc')}</CardDescription>
+                <CardTitle>سجل الحملات</CardTitle>
+                <CardDescription>عرض لجميع حملاتك الإعلانية وحالاتها.</CardDescription>
             </CardHeader>
             <CardContent>
                 {campaigns && campaigns.length > 0 ? (
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>{t('campaigns.campaignName')}</TableHead>
-                                <TableHead>{t('campaigns.status')}</TableHead>
-                                <TableHead>{t('campaigns.duration')}</TableHead>
-                                <TableHead className="text-right">{t('campaigns.actions')}</TableHead>
+                                <TableHead>اسم الحملة</TableHead>
+                                <TableHead>الحالة</TableHead>
+                                <TableHead>المدة</TableHead>
+                                <TableHead className="text-right">الإجراءات</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -204,11 +200,11 @@ export default function CampaignsPage() {
                                             <span>{campaign.name}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{t(`campaignStatus.${campaign.status}`)}</Badge></TableCell>
+                                    <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
                                     <TableCell>
                                         <div className='flex items-center gap-1 text-muted-foreground'>
                                             <Clock className="w-3.5 h-3.5" />
-                                            <span>{t('campaigns.days', { count: campaign.durationDays })}</span>
+                                            <span>{campaign.durationDays} أيام</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -222,14 +218,14 @@ export default function CampaignsPage() {
                 ) : (
                     <div className="text-center py-10">
                         <Rocket className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <h3 className="mt-4 text-lg font-medium">{t('campaigns.noCampaignsTitle')}</h3>
+                        <h3 className="mt-4 text-lg font-medium">ابدأ رحلتك الإعلانية</h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            {t('campaigns.noCampaignsDesc')}
+                            ليس لديك أي حملات حتى الآن. انقر أدناه لإنشاء حملتك الأولى.
                         </p>
                          <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
                            <Button className="mt-4">
                                 <PlusCircle className="ml-2 h-4 w-4" />
-                                {t('campaigns.newCampaign')}
+                                إنشاء حملة جديدة
                             </Button>
                         </NewCampaignDialog>
                     </div>

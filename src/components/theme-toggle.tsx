@@ -11,11 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useTranslation } from "react-i18next"
 
 export function ThemeToggle() {
   const { setTheme } = useTheme()
-  const { t } = useTranslation();
 
   return (
     <DropdownMenu>
@@ -28,13 +26,13 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          {t('theme.light')}
+          فاتح
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          {t('theme.dark')}
+          داكن
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
-          {t('theme.system')}
+          النظام
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

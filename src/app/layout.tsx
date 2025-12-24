@@ -1,9 +1,6 @@
-
-
 'use client';
 
 import './globals.css';
-import '../i18n'; // Import the i18n configuration
 import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
@@ -13,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
 import { doc } from 'firebase/firestore';
-import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 
 const fontSans = Tajawal({
@@ -53,13 +49,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { i18n } = useTranslation();
-
-  useEffect(() => {
-    document.documentElement.lang = i18n.language;
-    document.documentElement.dir = i18n.dir(i18n.language);
-  }, [i18n, i18n.language]);
-
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>

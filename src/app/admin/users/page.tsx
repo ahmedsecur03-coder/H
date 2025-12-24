@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
@@ -16,7 +15,6 @@ import { EditUserDialog } from './_components/edit-user-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from 'use-debounce';
-import { useTranslation } from 'react-i18next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
@@ -58,7 +56,6 @@ function UsersPageSkeleton() {
 }
 
 function AdminUsersPageComponent() {
-  const { t, i18n } = useTranslation();
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
@@ -150,9 +147,9 @@ function AdminUsersPageComponent() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('adminUsers.title')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المستخدمين</h1>
         <p className="text-muted-foreground">
-          {t('adminUsers.description')}
+          عرض وتعديل بيانات المستخدمين في النظام.
         </p>
       </div>
 
@@ -165,7 +162,7 @@ function AdminUsersPageComponent() {
           <div className="relative pt-4">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('adminUsers.searchPlaceholder')}
+                placeholder="ابحث بالاسم أو البريد الإلكتروني..."
                 className="pe-10 rtl:ps-10"
                 value={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -176,14 +173,14 @@ function AdminUsersPageComponent() {
            <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('adminUsers.table.user')}</TableHead>
-                <TableHead>{t('adminUsers.table.role')}</TableHead>
-                <TableHead>{t('adminUsers.table.rank')}</TableHead>
-                <TableHead>{t('adminUsers.table.balance')}</TableHead>
-                <TableHead>{t('adminUsers.table.adBalance')}</TableHead>
-                <TableHead>{t('adminUsers.table.totalSpent')}</TableHead>
-                <TableHead>{t('adminUsers.table.joinDate')}</TableHead>
-                <TableHead className="text-right">{t('adminUsers.table.actions')}</TableHead>
+                <TableHead>المستخدم</TableHead>
+                <TableHead>الدور</TableHead>
+                <TableHead>الرتبة</TableHead>
+                <TableHead>الرصيد</TableHead>
+                <TableHead>رصيد الإعلانات</TableHead>
+                <TableHead>إجمالي الإنفاق</TableHead>
+                <TableHead>تاريخ الانضمام</TableHead>
+                <TableHead className="text-right">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -210,25 +207,25 @@ function AdminUsersPageComponent() {
                     <TableCell>
                         <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
                         {user.role === 'admin' ? <Shield className="w-3 h-3 me-1" /> : null}
-                        {t(`roles.${user.role || 'user'}`)}
+                        {user.role || 'user'}
                         </Badge>
                     </TableCell>
                     <TableCell>
-                        <Badge variant="secondary">{t(`ranks.${user.rank}`)}</Badge>
+                        <Badge variant="secondary">{user.rank}</Badge>
                     </TableCell>
                     <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
                     <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString(i18n.language) : 'N/A'}</TableCell>
+                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                     <TableCell className="text-right">
                         <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
-                            <Button variant="outline" size="sm">{t('edit')}</Button>
+                            <Button variant="outline" size="sm">تعديل</Button>
                         </EditUserDialog>
                     </TableCell>
                   </TableRow>
                 )) : (
                      <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center">{t('adminUsers.noMatch')}</TableCell>
+                        <TableCell colSpan={8} className="h-24 text-center">لم يتم العثور على مستخدمين.</TableCell>
                     </TableRow>
                 )}
             </TableBody>

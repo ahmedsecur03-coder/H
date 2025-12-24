@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -25,7 +24,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const statusVariant = {
@@ -38,7 +36,6 @@ type Status = keyof typeof statusVariant;
 
 
 function TicketsTable({ statusFilter }: { statusFilter: Status | 'all' }) {
-    const { i18n } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -129,7 +126,7 @@ function TicketsTable({ statusFilter }: { statusFilter: Status | 'all' }) {
                         <TableCell>
                         <Badge variant={statusVariant[ticket.status] || 'default'}>{ticket.status}</Badge>
                         </TableCell>
-                        <TableCell>{new Date(ticket.createdDate).toLocaleDateString(i18n.language)}</TableCell>
+                        <TableCell>{new Date(ticket.createdDate).toLocaleDateString('ar-EG')}</TableCell>
                         <TableCell className="text-right">
                         <Button asChild variant="outline" size="sm">
                             <Link href={`/admin/support/${ticket.id}?userId=${ticket.userId}`}>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -21,7 +20,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User, Order, Ticket } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
 
 
 const chartConfig = {
@@ -74,7 +72,6 @@ function processPerformanceData(users: User[], orders: Order[]) {
 export default function AdminDashboardPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
-    const { t, i18n } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState({
         totalRevenue: 0,
@@ -251,7 +248,7 @@ export default function AdminDashboardPage() {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
                         />
                         <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
                         <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />

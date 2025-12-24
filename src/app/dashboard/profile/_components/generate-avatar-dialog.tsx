@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +9,6 @@ import { Loader2, RotateCw, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateAvatar } from '@/ai/flows/generate-avatar-flow';
 import Image from 'next/image';
-import { useTranslation } from 'react-i18next';
 
 interface GenerateAvatarDialogProps {
     children: React.ReactNode;
@@ -18,7 +16,6 @@ interface GenerateAvatarDialogProps {
 }
 
 export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAvatarDialogProps) {
-    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [prompt, setPrompt] = useState('An astronaut in a futuristic suit, cosmic background, vibrant colors');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -28,24 +25,24 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!prompt.trim()) {
-            toast({ variant: 'destructive', title: 'Error', description: t('avatarGenerator.errors.promptRequired') });
+            toast({ variant: 'destructive', title: 'Error', description: 'الرجاء إدخال وصف للصورة.' });
             return;
         }
 
         setIsGenerating(true);
         setGeneratedImage(null);
-        toast({ title: t('avatarGenerator.toast.generating') });
+        toast({ title: 'جاري توليد الصورة الرمزية...' });
 
         try {
             const result = await generateAvatar({ prompt });
             if (result.imageDataUri) {
                 setGeneratedImage(result.imageDataUri);
             } else {
-                throw new Error(t('avatarGenerator.errors.noImage'));
+                throw new Error('لم يتم إرجاع أي صورة.');
             }
         } catch (error: any) {
             console.error("AI Avatar Generation Error:", error);
-            toast({ variant: 'destructive', title: t('avatarGenerator.toast.generationFailed'), description: error.message || 'An unknown error occurred.' });
+            toast({ variant: 'destructive', title: 'فشل توليد الصورة', description: error.message || 'An unknown error occurred.' });
         } finally {
             setIsGenerating(false);
         }
@@ -64,9 +61,9 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>{t('avatarGenerator.title')}</DialogTitle>
+                    <DialogTitle>توليد صورة رمزية بالذكاء الاصطناعي</DialogTitle>
                     <DialogDescription>
-                        {t('avatarGenerator.description')}
+                        صف الصورة الرمزية التي تريدها، وسيقوم الذكاء الاصطناعي بإنشائها لك.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
@@ -78,7 +75,7 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
                         {!generatedImage && !isGenerating && (
                              <div className="text-center text-muted-foreground p-4">
                                 <Palette className="h-10 w-10 mx-auto" />
-                                <p className="mt-2 text-sm">{t('avatarGenerator.placeholder')}</p>
+                                <p className="mt-2 text-sm">ستظهر الصورة المولدة هنا.</p>
                              </div>
                         )}
                     </div>
@@ -87,12 +84,12 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="prompt">{t('avatarGenerator.promptLabel')}</Label>
+                        <Label htmlFor="prompt">وصف الصورة</Label>
                         <Input 
                             id="prompt" 
                             value={prompt} 
                             onChange={(e) => setPrompt(e.target.value)} 
-                            placeholder={t('avatarGenerator.promptPlaceholder')}
+                            placeholder="مثال: رائد فضاء في حلة مستقبلية..."
                             required 
                             disabled={isGenerating}
                         />
@@ -102,15 +99,15 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
                             <>
                                  <Button type="submit" variant="outline" disabled={isGenerating}>
                                     <RotateCw className="ml-2 h-4 w-4" />
-                                     {t('retry')}
+                                     إعادة المحاولة
                                 </Button>
                                 <Button type="button" onClick={handleUseImage}>
-                                    {t('avatarGenerator.useThisImage')}
+                                    استخدام هذه الصورة
                                 </Button>
                             </>
                        ) : (
                             <Button type="submit" disabled={isGenerating} className="w-full">
-                                {isGenerating ? <Loader2 className="animate-spin" /> : t('avatarGenerator.generateButton')}
+                                {isGenerating ? <Loader2 className="animate-spin" /> : 'توليد الصورة'}
                             </Button>
                        )}
 

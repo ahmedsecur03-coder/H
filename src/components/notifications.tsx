@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -26,11 +25,10 @@ import {
 import { Badge } from './ui/badge';
 import Link from 'next/link';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useTranslation } from 'react-i18next';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { ar, enUS } from 'date-fns/locale';
+import { ar } from 'date-fns/locale';
 
 const notificationIcons: { [key in Notification['type']]: React.ElementType } = {
   info: Info,
@@ -40,19 +38,15 @@ const notificationIcons: { [key in Notification['type']]: React.ElementType } = 
 };
 
 function TimeAgo({ dateString }: { dateString: string }) {
-  const { i18n } = useTranslation();
-  const locale = i18n.language === 'ar' ? ar : enUS;
-
   try {
     const date = new Date(dateString);
-    return formatDistanceToNow(date, { addSuffix: true, locale });
+    return formatDistanceToNow(date, { addSuffix: true, locale: ar });
   } catch (error) {
     return dateString;
   }
 }
 
 export function Notifications({ userData }: { userData: User }) {
-  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -97,7 +91,7 @@ export function Notifications({ userData }: { userData: User }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80" align="end">
-        <DropdownMenuLabel>{t('notifications.title')}</DropdownMenuLabel>
+        <DropdownMenuLabel>الإشعارات</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {sortedNotifications.length > 0 ? (
           <ScrollArea className="h-[300px]">
@@ -144,7 +138,7 @@ export function Notifications({ userData }: { userData: User }) {
           </ScrollArea>
         ) : (
           <div className="p-4 text-center text-sm text-muted-foreground">
-            {t('notifications.noNotifications')}
+            لا توجد إشعارات جديدة.
           </div>
         )}
       </DropdownMenuContent>

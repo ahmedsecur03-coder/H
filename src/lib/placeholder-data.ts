@@ -1,5 +1,3 @@
-
-
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -32,65 +30,65 @@ import { PLATFORM_ICONS } from './icon-data';
 
 
 export const publicNavItems: NestedNavItem[] = [
-    { href: '/', label: 'nav.home', icon: Home },
+    { href: '/', label: 'الرئيسية', icon: Home },
     { 
-      label: 'nav.services.title',
+      label: 'الخدمات',
       icon: Package,
       children: [
-        { href: '/services', label: 'nav.services.smm', description: 'nav.services.smmDesc', icon: Users },
-        { href: '/dashboard/campaigns', label: 'nav.services.campaigns', description: 'nav.services.campaignsDesc', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'nav.services.agency', description: 'nav.services.agencyDesc', icon: Briefcase },
-        { href: '/#', label: 'nav.services.design', description: 'nav.services.designDesc', icon: AppWindow },
+        { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
+        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', description: 'شراء وشحن حسابات إعلانية احترافية.', icon: Briefcase },
+        { href: '/#', label: 'تصميم المواقع', description: 'تصميم وتطوير مواقع احترافية لعملك.', icon: AppWindow },
       ]
     },
-    { href: '/blog', label: 'nav.blog', icon: BookOpen },
+    { href: '/blog', label: 'المدونة', icon: BookOpen },
 ];
 
 export const dashboardNavItems: NestedNavItem[] = [
-  { href: '/dashboard', label: 'nav.dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/analytics', label: 'nav.analytics', icon: BarChart2 },
-  { href: '/dashboard/add-funds', label: 'nav.addFunds', icon: DollarSign },
+  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard/analytics', label: 'التحليلات', icon: BarChart2 },
+  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { 
-    label: 'nav.orders.title',
+    label: 'الطلبات',
     icon: ShoppingCart,
     children: [
-        { href: '/dashboard/orders', label: 'nav.orders.history', icon: ListOrdered },
-        { href: '/dashboard/mass-order', label: 'nav.orders.massOrder', icon: Package },
+        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
     ]
   },
    { 
-    label: 'nav.campaigns.title',
+    label: 'الحملات الإعلانية',
     icon: Megaphone,
      children: [
-        { href: '/dashboard/campaigns', label: 'nav.campaigns.manage', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'nav.campaigns.agency', icon: Briefcase },
+        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
     ]
   },
-  { href: '/dashboard/affiliate', label: 'nav.affiliate', icon: Users },
-  { href: '/dashboard/support', label: 'nav.support', icon: MessageSquare },
+  { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
+  { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { 
-      label: 'nav.account.title',
+      label: 'الحساب',
       icon: UserCircle,
       children: [
-        { href: '/dashboard/profile', label: 'nav.account.profile', icon: UserCircle },
-        { href: '/dashboard/settings', label: 'nav.account.settings', icon: Settings },
-        { href: '/dashboard/api', label: 'nav.account.api', icon: Code2 },
+        { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
+        { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
+        { href: '/dashboard/api', label: 'API', icon: Code2 },
       ]
    },
-   { href: '/dashboard/system-status', label: 'nav.systemStatus', icon: HeartPulse },
+   { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
 ];
 
 export const adminNavItems: NestedNavItem[] = [
-    { href: '/admin/dashboard', label: 'adminNav.dashboard', icon: LayoutDashboard },
-    { href: '/admin/deposits', label: 'adminNav.deposits', icon: Banknote },
-    { href: '/admin/withdrawals', label: 'adminNav.withdrawals', icon: HandCoins },
-    { href: '/admin/users', label: 'adminNav.users', icon: Users2 },
-    { href: '/admin/orders', label: 'adminNav.orders', icon: ShoppingCart },
-    { href: '/admin/services', label: 'adminNav.services', icon: Package },
-    { href: '/admin/campaigns', label: 'adminNav.campaigns', icon: Megaphone },
-    { href: '/admin/support', label: 'adminNav.support', icon: MessageSquare },
-    { href: '/admin/blog', label: 'adminNav.blog', icon: PenSquare },
-    { href: '/admin/settings', label: 'adminNav.settings', icon: Settings },
-    { href: '/admin/system-log', label: 'adminNav.systemLog', icon: History },
-    { href: '/dashboard', label: 'adminNav.userDashboard', icon: Shield },
+    { href: '/admin/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+    { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
+    { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
+    { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
+    { href: '/admin/orders', label: 'الطلبات', icon: ShoppingCart },
+    { href: '/admin/services', label: 'الخدمات', icon: Package },
+    { href: '/admin/campaigns', label: 'الحملات', icon: Megaphone },
+    { href: '/admin/support', label: 'الدعم', icon: MessageSquare },
+    { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
+    { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
+    { href: '/admin/system-log', label: 'سجل النظام', icon: History },
+    { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];

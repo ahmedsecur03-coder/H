@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Avatar,
@@ -21,7 +20,6 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutDashboard, LogOut, Shield, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
 
 type UserProps = {
   id: string;
@@ -31,7 +29,6 @@ type UserProps = {
 }
 
 export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }) {
-  const { t } = useTranslation();
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -41,15 +38,15 @@ export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }
       if (!auth) return;
       await signOut(auth);
       toast({
-        title: t('userNav.signOutSuccessTitle'),
-        description: t('userNav.signOutSuccessDesc'),
+        title: "تم تسجيل الخروج",
+        description: "نراك قريباً!",
       });
       router.push('/login');
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: t('error'),
-        description: t('userNav.signOutError'),
+        title: "خطأ",
+        description: "فشل تسجيل الخروج.",
       });
     }
   };
@@ -78,20 +75,20 @@ export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }
           <DropdownMenuItem asChild>
             <Link href="/dashboard">
                 <LayoutDashboard className="me-2 h-4 w-4" />
-                <span>{t('userNav.dashboard')}</span>
+                <span>لوحة التحكم</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/dashboard/profile">
                 <UserIcon className="me-2 h-4 w-4" />
-                <span>{t('userNav.profile')}</span>
+                <span>الملف الشخصي</span>
             </Link>
           </DropdownMenuItem>
            {isAdmin && (
             <DropdownMenuItem asChild>
                 <Link href="/admin/dashboard">
                     <Shield className="me-2 h-4 w-4 text-primary" />
-                    <span>{t('userNav.adminPanel')}</span>
+                    <span>لوحة تحكم المسؤول</span>
                 </Link>
             </DropdownMenuItem>
            )}
@@ -99,7 +96,7 @@ export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="me-2 h-4 w-4" />
-          <span>{t('userNav.signOut')}</span>
+          <span>تسجيل الخروج</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -6,12 +5,10 @@ import { CheckCircle2, AlertCircle, Clock, Database, Server, KeyRound, MessageSq
 import { useState, useEffect } from 'react';
 import { useFirestore, useUser } from '@/firebase';
 import { getCountFromServer, collection } from 'firebase/firestore';
-import { useTranslation } from 'react-i18next';
 import { ServiceCheckItem } from "./_components/service-check-item";
 
 
 export default function SystemStatusPage() {
-    const { t } = useTranslation();
     const firestore = useFirestore();
     const { user } = useUser();
 
@@ -54,20 +51,20 @@ export default function SystemStatusPage() {
 
 
     const servicesToMonitor = [
-        { name: t('systemStatus.services.mainUI'), checkFn: async () => true, icon: Server },
-        { name: t('systemStatus.services.auth'), checkFn: checkAuthentication, icon: KeyRound },
-        { name: t('systemStatus.services.database'), checkFn: checkDatabase, icon: Database },
-        { name: t('systemStatus.services.support'), checkFn: checkSupport, icon: MessageSquare },
-        { name: t('systemStatus.services.campaigns'), checkFn: checkCampaigns, icon: Briefcase },
-        { name: t('systemStatus.services.api'), checkFn: checkApi, icon: KeyRound },
+        { name: "الواجهة الرئيسية للمنصة", checkFn: async () => true, icon: Server },
+        { name: "نظام المصادقة وتسجيل الدخول", checkFn: checkAuthentication, icon: KeyRound },
+        { name: "قاعدة بيانات الخدمات والطلبات", checkFn: checkDatabase, icon: Database },
+        { name: "نظام تذاكر الدعم الفني", checkFn: checkSupport, icon: MessageSquare },
+        { name: "نظام إدارة الحملات الإعلانية", checkFn: checkCampaigns, icon: Briefcase },
+        { name: "واجهة برمجة التطبيقات (API)", checkFn: checkApi, icon: KeyRound },
     ];
 
     return (
         <div className="space-y-6 pb-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">{t('systemStatus.title')}</h1>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">حالة النظام</h1>
                 <p className="text-muted-foreground">
-                    {t('systemStatus.description')}
+                    نظرة مباشرة على أداء وصحة جميع خدمات منصة حاجاتي.
                 </p>
             </div>
 
@@ -83,11 +80,11 @@ export default function SystemStatusPage() {
             </div>
              <Card className="mt-8">
                 <CardHeader>
-                    <CardTitle>{t('systemStatus.note.title')}</CardTitle>
+                    <CardTitle>ملاحظة</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground">
-                       {t('systemStatus.note.description')}
+                       هذه الصفحة مخصصة لمراقبة الحالة العامة للخدمات الرئيسية. إذا واجهت مشكلة مع خدمة معينة غير مذكورة هنا، يرجى التواصل مع الدعم الفني.
                     </p>
                 </CardContent>
              </Card>

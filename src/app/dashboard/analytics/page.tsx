@@ -5,10 +5,8 @@ import { collection, query, where, Timestamp } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { AnalyticsClientPage } from './_components/analytics-client-page';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
 
 function AnalyticsPageSkeleton() {
-    const { t } = useTranslation();
     return (
         <div className="space-y-6 pb-8">
             <div>

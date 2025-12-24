@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -27,7 +26,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
-import { useTranslation } from 'react-i18next';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
 type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
@@ -40,12 +38,12 @@ const platforms: { name: Platform; title: string }[] = [
     { name: 'Snapchat', title: 'Snapchat Ads' },
 ];
 
-const goals: { name: Goal; title: string, translationKey: string }[] = [
-  { name: 'زيادة الوعي', title: 'زيادة الوعي', translationKey: 'campaignGoals.awareness' },
-  { name: 'زيارات للموقع', title: 'زيارات للموقع', translationKey: 'campaignGoals.visits' },
-  { name: 'تفاعل مع المنشور', title: 'تفاعل مع المنشور', translationKey: 'campaignGoals.engagement' },
-  { name: 'مشاهدات فيديو', title: 'مشاهدات فيديو', translationKey: 'campaignGoals.videoViews' },
-  { name: 'تحويلات', title: 'تحويلات', translationKey: 'campaignGoals.conversions' },
+const goals: { name: Goal; title: string }[] = [
+  { name: 'زيادة الوعي', title: 'زيادة الوعي' },
+  { name: 'زيارات للموقع', title: 'زيارات للموقع' },
+  { name: 'تفاعل مع المنشور', title: 'تفاعل مع المنشور' },
+  { name: 'مشاهدات فيديو', title: 'مشاهدات فيديو' },
+  { name: 'تحويلات', title: 'تحويلات' },
 ];
 
 export function NewCampaignDialog({
@@ -57,7 +55,6 @@ export function NewCampaignDialog({
   children: React.ReactNode;
   onCampaignCreated: () => void;
 }) {
-  const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
@@ -68,7 +65,7 @@ export function NewCampaignDialog({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!firestore || !user) {
-        toast({ variant: 'destructive', title: t('error'), description: t('campaigns.new.loginError') });
+        toast({ variant: 'destructive', title: "خطأ", description: "يجب تسجيل الدخول أولاً." });
         return;
     }
 
@@ -76,12 +73,12 @@ export function NewCampaignDialog({
     const campaignBudget = parseFloat(budget);
 
     if (!campaignBudget || campaignBudget <= 0) {
-        toast({ variant: 'destructive', title: t('error'), description: t('campaigns.new.invalidBudgetError') });
+        toast({ variant: 'destructive', title: "خطأ", description: "الرجاء إدخال ميزانية صالحة." });
         return;
     }
 
     if (campaignBudget > userData.adBalance) {
-        toast({ variant: 'destructive', title: t('campaigns.new.insufficientAdBalanceTitle'), description: t('campaigns.new.insufficientAdBalanceDesc', { budget: campaignBudget.toFixed(2), adBalance: userData.adBalance.toFixed(2) }) });
+        toast({ variant: 'destructive', title: "رصيد الإعلانات غير كافٍ", description: `الميزانية المطلوبة ${campaignBudget.toFixed(2)}$، بينما رصيدك الحالي ${userData.adBalance.toFixed(2)}$ فقط.` });
         return;
     }
 
@@ -117,7 +114,7 @@ export function NewCampaignDialog({
         const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
         await addDoc(campaignsColRef, newCampaignData);
 
-        toast({ title: t('success'), description: t('campaigns.new.submitSuccess') });
+        toast({ title: "نجاح!", description: "تم استلام حملتك وستتم مراجعتها من قبل الإدارة." });
         onCampaignCreated();
         setOpen(false);
         (event.target as HTMLFormElement).reset();
@@ -139,22 +136,22 @@ export function NewCampaignDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('campaigns.new.title')}</DialogTitle>
+          <DialogTitle>إنشاء حملة إعلانية جديدة</DialogTitle>
           <DialogDescription>
-            {t('campaigns.new.description')}
+            املأ التفاصيل أدناه وسيقوم فريقنا بإطلاق حملتك.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
            <div className="space-y-2">
-            <Label htmlFor="name">{t('campaigns.campaignName')}</Label>
-            <Input id="name" name="name" required placeholder={t('campaigns.new.namePlaceholder')} />
+            <Label htmlFor="name">اسم الحملة</Label>
+            <Input id="name" name="name" required placeholder="مثال: حملة إطلاق المنتج الجديد" />
           </div>
 
            <div className="space-y-2">
-            <Label htmlFor="platform">{t('campaigns.platform')}</Label>
+            <Label htmlFor="platform">المنصة الإعلانية</Label>
              <Select name="platform" required>
               <SelectTrigger id="platform">
-                <SelectValue placeholder={t('campaigns.new.platformPlaceholder')} />
+                <SelectValue placeholder="اختر منصة إعلانية" />
               </SelectTrigger>
               <SelectContent>
                 {platforms.map((p) => (
@@ -167,44 +164,44 @@ export function NewCampaignDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="goal">{t('campaigns.goal')}</Label>
+            <Label htmlFor="goal">الهدف من الحملة</Label>
             <Select name="goal" required>
               <SelectTrigger id="goal">
-                <SelectValue placeholder={t('campaigns.new.goalPlaceholder')} />
+                <SelectValue placeholder="اختر هدف الحملة" />
               </SelectTrigger>
               <SelectContent>
                 {goals.map((g) => (
                   <SelectItem key={g.name} value={g.name}>
-                    {t(g.translationKey)}
+                    {g.title}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="targetAudience">{t('campaigns.targetAudience')}</Label>
+            <Label htmlFor="targetAudience">الجمهور المستهدف</Label>
             <Textarea
               id="targetAudience"
               name="targetAudience"
               required
-              placeholder={t('campaigns.new.audiencePlaceholder')}
+              placeholder="صف جمهورك المستهدف بالتفصيل (العمر، الاهتمامات، الموقع...)"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="budget">{t('campaigns.budget')}</Label>
+              <Label htmlFor="budget">الميزانية ($)</Label>
               <Input id="budget" name="budget" type="number" required min="5" value={budget} onChange={e => setBudget(e.target.value)} max={userData.adBalance}/>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="durationDays">{t('campaigns.duration')}</Label>
+              <Label htmlFor="durationDays">مدة الحملة (أيام)</Label>
               <Input id="durationDays" name="durationDays" type="number" required min="1" />
             </div>
           </div>
-           <p className="text-xs text-muted-foreground">{t('campaigns.new.adBalanceNote', { adBalance: userData.adBalance.toFixed(2) })}</p>
+           <p className="text-xs text-muted-foreground">ملاحظة: سيتم خصم الميزانية من "رصيد الإعلانات" الخاص بك (المتاح: ${userData.adBalance.toFixed(2)}) عند موافقة الإدارة.</p>
 
           <DialogFooter>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? <Loader2 className="animate-spin" /> : t('campaigns.new.submitButton')}
+              {loading ? <Loader2 className="animate-spin" /> : 'إرسال الحملة للمراجعة'}
             </Button>
           </DialogFooter>
         </form>

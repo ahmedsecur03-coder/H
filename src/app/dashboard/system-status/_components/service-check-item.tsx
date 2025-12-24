@@ -1,10 +1,8 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, AlertCircle, Clock, LucideIcon } from "lucide-react";
-import { useTranslation } from 'react-i18next';
 
 type Status = 'checking' | 'operational' | 'error';
 
@@ -12,19 +10,19 @@ const statusConfig = {
   checking: {
     icon: Clock,
     color: "text-yellow-500",
-    textKey: 'systemStatus.status.checking',
+    text: 'جاري التحقق...',
     pulse: true,
   },
   operational: {
     icon: CheckCircle2,
     color: "text-green-500",
-    textKey: 'systemStatus.status.operational',
+    text: 'يعمل بكفاءة',
     pulse: false,
   },
   error: {
     icon: AlertCircle,
     color: "text-red-500",
-    textKey: 'systemStatus.status.error',
+    text: 'يوجد خلل',
     pulse: false,
   },
 };
@@ -36,7 +34,6 @@ interface ServiceCheckItemProps {
 }
 
 export function ServiceCheckItem({ name, checkFn, Icon }: ServiceCheckItemProps) {
-    const { t } = useTranslation();
     const [status, setStatus] = useState<Status>('checking');
 
     useEffect(() => {
@@ -74,9 +71,8 @@ export function ServiceCheckItem({ name, checkFn, Icon }: ServiceCheckItemProps)
             </div>
             <div className="flex items-center gap-2">
                 <StatusIcon className={`h-5 w-5 ${config.color} ${config.pulse ? 'animate-spin' : ''}`} />
-                <span className={`font-semibold text-sm ${config.color}`}>{t(config.textKey)}</span>
+                <span className={`font-semibold text-sm ${config.color}`}>{config.text}</span>
             </div>
         </Card>
     );
 }
-

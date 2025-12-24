@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,10 +15,8 @@ import { PostDialog } from './_components/post-dialog';
 import { AiPostDialog } from './_components/ai-post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { useTranslation } from 'react-i18next';
 
 export default function AdminBlogPage() {
-    const { t, i18n } = useTranslation();
     const firestore = useFirestore();
     const { user } = useUser();
     const { toast } = useToast();
@@ -140,7 +137,7 @@ export default function AdminBlogPage() {
         return posts.map(post => (
             <TableRow key={post.id}>
                 <TableCell className="font-medium">{post.title}</TableCell>
-                <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString(i18n.language) : 'غير محدد'}</TableCell>
+                <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString('ar-EG') : 'غير محدد'}</TableCell>
                 <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
                 <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)}>

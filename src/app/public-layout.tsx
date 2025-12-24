@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +19,6 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { LanguageToggle } from '@/components/language-toggle';
 import { doc, getDoc } from 'firebase/firestore';
 import {
   Sheet,
@@ -32,7 +29,6 @@ import {
   SheetClose
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useTranslation } from 'react-i18next';
 
 
 const ListItem = React.forwardRef<
@@ -64,7 +60,6 @@ ListItem.displayName = "ListItem"
 
 
 function Header() {
-  const { t } = useTranslation();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const pathname = usePathname();
@@ -110,12 +105,12 @@ function Header() {
                 <NavigationMenuItem key={item.label}>
                   {item.children ? (
                     <>
-                      <NavigationMenuTrigger>{t(item.label)}</NavigationMenuTrigger>
+                      <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                           {item.children.map((component) => (
-                             <ListItem key={component.label} href={component.href} title={t(component.label)}>
-                               {t(component.description || '')}
+                             <ListItem key={component.label} href={component.href} title={component.label}>
+                               {component.description}
                              </ListItem>
                           ))}
                         </ul>
@@ -124,7 +119,7 @@ function Header() {
                   ) : (
                     <NavigationMenuLink asChild active={pathname === item.href} className={navigationMenuTriggerStyle()}>
                         <Link href={item.href || '#'}>
-                            {t(item.label)}
+                            {item.label}
                         </Link>
                     </NavigationMenuLink>
                   )}
@@ -134,7 +129,6 @@ function Header() {
           </NavigationMenu>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <LanguageToggle />
           <div className="hidden md:flex items-center gap-2">
             {isClient && (
               isUserLoading ? (
@@ -142,7 +136,7 @@ function Header() {
               ) : user ? (
                   <>
                   <Button asChild>
-                      <Link href="/dashboard">{t('header.dashboard')}</Link>
+                      <Link href="/dashboard">لوحة التحكم</Link>
                   </Button>
                   {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
                   </>
@@ -151,13 +145,13 @@ function Header() {
                   <Button variant="ghost" asChild>
                       <Link href="/login">
                       <LogIn className="me-2" />
-                      {t('header.login')}
+                      دخول
                       </Link>
                   </Button>
                   <Button asChild>
                       <Link href="/signup">
                       <UserPlus className="me-2" />
-                      {t('header.getStarted')}
+                      ابدأ الآن
                       </Link>
                   </Button>
                   </>
@@ -179,7 +173,7 @@ function Header() {
                 <div className="flex flex-col space-y-4 py-6">
                   {publicNavItems.map(item => (
                      <SheetClose asChild key={item.label}>
-                      <Link href={item.href || '#'} className="text-lg font-medium hover:text-primary">{t(item.label)}</Link>
+                      <Link href={item.href || '#'} className="text-lg font-medium hover:text-primary">{item.label}</Link>
                     </SheetClose>
                   ))}
                 </div>
@@ -189,18 +183,18 @@ function Header() {
                         <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
                     ) : user ? (
                          <Button asChild className="w-full">
-                            <Link href="/dashboard">{t('header.dashboard')}</Link>
+                            <Link href="/dashboard">لوحة التحكم</Link>
                         </Button>
                     ) : (
                       <div className="space-y-2">
                         <SheetClose asChild>
                            <Button asChild className="w-full">
-                              <Link href="/signup"><UserPlus className="me-2" />{t('header.getStarted')}</Link>
+                              <Link href="/signup"><UserPlus className="me-2" />ابدأ الآن</Link>
                           </Button>
                         </SheetClose>
                          <SheetClose asChild>
                           <Button variant="ghost" asChild className="w-full">
-                              <Link href="/login"><LogIn className="me-2" />{t('header.login')}</Link>
+                              <Link href="/login"><LogIn className="me-2" />دخول</Link>
                           </Button>
                         </SheetClose>
                       </div>
@@ -222,7 +216,6 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { t } = useTranslation();
   return (
      <div className="flex min-h-screen flex-col font-sans antialiased">
        <Header />
@@ -233,10 +226,10 @@ export default function PublicLayout({
       </main>
       <footer className="bg-card/50 border-t border-border z-10">
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
-            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {t('footer.rightsReserved')}</p>
+            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
             <nav className="flex gap-4 sm:gap-6">
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">{t('footer.terms')}</Link>
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">{t('footer.privacy')}</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
+                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
             </nav>
         </div>
       </footer>

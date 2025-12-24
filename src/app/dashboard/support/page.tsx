@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { NewTicketDialog } from './_components/new-ticket-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
 
 
 const statusVariant = {
@@ -56,7 +54,6 @@ function SupportPageSkeleton() {
 
 export default function SupportPage() {
     const { user, isUserLoading } = useUser();
-    const { i18n } = useTranslation();
     const firestore = useFirestore();
 
     const ticketsQuery = useMemoFirebase(
@@ -106,7 +103,7 @@ export default function SupportPage() {
                       <div>
                         <h3 className="font-semibold">{ticket.subject}</h3>
                         <p className="text-sm text-muted-foreground">
-                          آخر تحديث: {new Date(ticket.messages[ticket.messages.length - 1].timestamp).toLocaleString(i18n.language)}
+                          آخر تحديث: {new Date(ticket.messages[ticket.messages.length - 1].timestamp).toLocaleString('ar-EG')}
                         </p>
                       </div>
                     </div>

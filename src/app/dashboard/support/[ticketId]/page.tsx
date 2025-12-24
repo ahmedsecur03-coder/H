@@ -1,4 +1,3 @@
-
 'use client';
 
 import { notFound, useParams } from 'next/navigation';
@@ -19,7 +18,6 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { TicketChat } from './_components/ticket-chat';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
 
 
 const statusVariant = {
@@ -57,7 +55,6 @@ function TicketDetailsSkeleton() {
 
 export default function TicketDetailsPage() {
   const { user, isUserLoading } = useUser();
-  const { i18n } = useTranslation();
   const firestore = useFirestore();
   const params = useParams();
   const ticketId = params.ticketId as string;
@@ -101,7 +98,7 @@ export default function TicketDetailsPage() {
                     <div>
                         <CardTitle className="font-headline text-2xl">{ticket.subject}</CardTitle>
                         <CardDescription>
-                            تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleString(i18n.language)}
+                            تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleString('ar-EG')}
                         </CardDescription>
                     </div>
                     <Badge variant={statusVariant[ticket.status] || 'default'} className="text-base px-4 py-1">{ticket.status}</Badge>

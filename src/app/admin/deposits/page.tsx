@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -38,14 +37,12 @@ import { Check, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTranslation } from 'react-i18next';
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
 function DepositTable({ status }: { status: Status }) {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const { i18n } = useTranslation();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -196,7 +193,7 @@ function DepositTable({ status }: { status: Status }) {
               {deposit.details?.phoneNumber || deposit.details?.transactionId || 'N/A'}
             </TableCell>
             <TableCell>
-              {new Date(deposit.depositDate).toLocaleString(i18n.language)}
+              {new Date(deposit.depositDate).toLocaleString('ar-EG')}
             </TableCell>
             {status === 'معلق' && (
               <TableCell className="text-right">

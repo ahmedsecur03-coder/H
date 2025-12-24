@@ -20,7 +20,6 @@ import {
   PieChart as RechartsPieChart,
   Legend
 } from 'recharts';
-import { useTranslation } from 'react-i18next';
 
 // Process data for charts
 function processAnalyticsData(orders: Order[]) {
@@ -73,7 +72,7 @@ function processAnalyticsData(orders: Order[]) {
 
 const chartConfig = {
     spend: {
-        label: "Spend ($)",
+        label: "الإنفاق ($)",
         color: "hsl(var(--primary))",
     },
 };
@@ -87,7 +86,6 @@ const PIE_CHART_COLORS = [
 ];
 
 export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
-    const { t, i18n } = useTranslation();
     const { dailySpending, categorySpending, totalOrders, averageOrderValue, mostUsedCategory } = processAnalyticsData(orders);
 
     const totalSpendingLast30Days = useMemo(() => orders.reduce((sum, order) => sum + order.charge, 0), [orders]);
@@ -96,9 +94,9 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
         return (
              <div className="text-center py-20 bg-card border rounded-lg">
                 <BarChart className="mx-auto h-16 w-16 text-muted-foreground" />
-                <h2 className="mt-4 text-2xl font-bold">{t('analytics.noData.title')}</h2>
+                <h2 className="mt-4 text-2xl font-bold">لا توجد بيانات تحليلية بعد</h2>
                 <p className="mt-2 text-muted-foreground">
-                    {t('analytics.noData.description')}
+                    ابدأ بإنشاء بعض الطلبات وستظهر التحليلات هنا لمساعدتك على فهم إنفاقك.
                 </p>
             </div>
         )
@@ -107,16 +105,16 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
     return (
         <div className="space-y-6 pb-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">{t('analytics.title')}</h1>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">التحليلات</h1>
                 <p className="text-muted-foreground">
-                    {t('analytics.description')}
+                    نظرة عميقة على إنفاقك وأدائك على المنصة خلال آخر 30 يومًا.
                 </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('analytics.totalSpend30Days')}</CardTitle>
+                        <CardTitle className="text-sm font-medium">إجمالي الإنفاق (آخر 30 يوم)</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -125,7 +123,7 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('analytics.totalOrders30Days')}</CardTitle>
+                        <CardTitle className="text-sm font-medium">إجمالي الطلبات (آخر 30 يوم)</CardTitle>
                         <ListOrdered className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -134,7 +132,7 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('analytics.avgOrderValue')}</CardTitle>
+                        <CardTitle className="text-sm font-medium">متوسط قيمة الطلب</CardTitle>
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -146,8 +144,8 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <Card className="lg:col-span-3">
                     <CardHeader>
-                        <CardTitle>{t('analytics.dailySpend.title')}</CardTitle>
-                        <CardDescription>{t('analytics.dailySpend.description')}</CardDescription>
+                        <CardTitle>الإنفاق اليومي (آخر 7 أيام)</CardTitle>
+                        <CardDescription>عرض بياني للإنفاق اليومي.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -158,7 +156,7 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
                                     tickLine={false}
                                     tickMargin={10}
                                     axisLine={false}
-                                    tickFormatter={(value) => new Date(value).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
+                                    tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' })}
                                 />
                                 <YAxis />
                                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -169,8 +167,8 @@ export function AnalyticsClientPage({ orders }: { orders: Order[] }) {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>{t('analytics.categorySpend.title')}</CardTitle>
-                        <CardDescription>{t('analytics.categorySpend.description')}</CardDescription>
+                        <CardTitle>الإنفاق حسب الفئة</CardTitle>
+                        <CardDescription>توزيع الإنفاق على فئات الخدمات المختلفة.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex justify-center">
                          <ChartContainer config={{}} className="h-[300px] w-full">

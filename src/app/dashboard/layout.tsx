@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import Link from 'next/link';
@@ -33,16 +31,11 @@ import { getRankForSpend } from '@/lib/service';
 import { cn } from '@/lib/utils';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { LanguageToggle } from '@/components/language-toggle';
-import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Notifications } from '@/components/notifications';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
-  const { t } = useTranslation();
-  
-  // Use userData from Firestore as the source of truth
   const appUser = {
       name: userData.name,
       email: userData.email,
@@ -54,12 +47,11 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="ms-auto flex items-center gap-2 font-body">
              <ThemeToggle />
-             <LanguageToggle />
              <Notifications userData={userData} />
              {isAdmin && (
                 <Button variant="outline" size="sm" asChild>
                     <Link href="/admin/dashboard">
-                        <Shield className="me-2 h-4 w-4"/>{t('goToAdminPanel')}
+                        <Shield className="me-2 h-4 w-4"/>لوحة تحكم المسؤول
                     </Link>
                 </Button>
              )}
@@ -71,12 +63,11 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
 
 function NavItems() {
   const pathname = usePathname();
-  const { t } = useTranslation();
 
   const renderNavItem = (item: NestedNavItem, index: number) => {
     const isActive = item.href ? pathname === item.href : false;
     const Icon = item.icon;
-    const label = t(item.label);
+    const label = item.label;
 
     if (item.children) {
       return (
@@ -94,7 +85,7 @@ function NavItems() {
                         <Link key={child.href} href={child.href || '#'} passHref>
                             <SidebarMenuSubButton isActive={pathname === child.href}>
                                 {child.icon && <child.icon className="w-4 h-4" />}
-                                <span>{t(child.label)}</span>
+                                <span>{child.label}</span>
                             </SidebarMenuSubButton>
                         </Link>
                     ))}
@@ -127,7 +118,6 @@ export default function DashboardLayout({
 }) {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
-    const { t } = useTranslation();
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
     const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
@@ -173,7 +163,7 @@ export default function DashboardLayout({
                     </Avatar>
                     <div>
                         <p className="font-semibold text-sm">{userData.name}</p>
-                        <p className="text-xs text-muted-foreground">{t(`ranks.${rank.name}`)}</p>
+                        <p className="text-xs text-muted-foreground">{rank.name}</p>
                     </div>
                 </div>
             </SidebarFooter>

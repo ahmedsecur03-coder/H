@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
@@ -9,7 +8,6 @@ import { ApiKeyCard } from "./_components/api-key-card";
 import { CodeExample } from "./_components/code-example";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useTranslation } from "react-i18next";
 
 function ApiPageSkeleton() {
     return (
@@ -26,7 +24,6 @@ function ApiPageSkeleton() {
 }
 
 export default function ApiPage() {
-    const { t } = useTranslation();
     const { user } = useUser();
     const firestore = useFirestore();
 
@@ -69,10 +66,10 @@ export default function ApiPage() {
             <div>
                 <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
                     <Code2 className="h-8 w-8 text-primary" />
-                    <span>{t('api.title')}</span>
+                    <span>واجهة برمجة التطبيقات (API)</span>
                 </h1>
                 <p className="text-muted-foreground">
-                    {t('api.description')}
+                    ربط خدماتك مع منصة حاجاتي لأتمتة الطلبات.
                 </p>
             </div>
             
@@ -80,54 +77,54 @@ export default function ApiPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('api.endpoints.title')}</CardTitle>
+                    <CardTitle>نقاط النهاية (Endpoints)</CardTitle>
                      <CardDescription>
-                        {t('api.endpoints.description')}
+                        جميع الطلبات يجب أن تكون من نوع POST إلى الرابط التالي.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <CodeExample code="https://hajaty.com/api/v2" language="bash" />
-                    <h3 className="font-semibold text-lg mb-4 mt-6">{t('api.actions.title')}</h3>
+                    <h3 className="font-semibold text-lg mb-4 mt-6">الإجراءات المتاحة</h3>
 
                     <div className="space-y-8">
                         <div>
-                            <h4 className="font-medium text-xl border-b pb-2 mb-4">{t('api.actions.add.title')}</h4>
-                            <p className="text-sm text-muted-foreground mb-4">{t('api.actions.add.description')}</p>
+                            <h4 className="font-medium text-xl border-b pb-2 mb-4">إضافة طلب (add)</h4>
+                            <p className="text-sm text-muted-foreground mb-4">لإنشاء طلب جديد في النظام.</p>
                             <CodeExample code={addOrderExample} language="json" />
-                             <h5 className="font-medium mt-4 mb-2">{t('api.parameters')}</h5>
+                             <h5 className="font-medium mt-4 mb-2">المعلمات</h5>
                              <Table>
-                                <TableHeader><TableRow><TableHead>{t('api.parameter')}</TableHead><TableHead>{t('description')}</TableHead></TableRow></TableHeader>
+                                <TableHeader><TableRow><TableHead>المعلمة</TableHead><TableHead>الوصف</TableHead></TableRow></TableHeader>
                                 <TableBody>
-                                    <TableRow><TableCell><code className="font-mono">key</code></TableCell><TableCell>{t('api.actions.add.params.key')}</TableCell></TableRow>
-                                    <TableRow><TableCell><code className="font-mono">action</code></TableCell><TableCell>{t('api.actions.add.params.action')}</TableCell></TableRow>
-                                    <TableRow><TableCell><code className="font-mono">service</code></TableCell><TableCell>{t('api.actions.add.params.service')}</TableCell></TableRow>
-                                    <TableRow><TableCell><code className="font-mono">link</code></TableCell><TableCell>{t('api.actions.add.params.link')}</TableCell></TableRow>
-                                    <TableRow><TableCell><code className="font-mono">quantity</code></TableCell><TableCell>{t('api.actions.add.params.quantity')}</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">key</code></TableCell><TableCell>مفتاح API الخاص بك.</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">action</code></TableCell><TableCell>يجب أن تكون قيمته `add`.</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">service</code></TableCell><TableCell>معرف الخدمة (Service ID).</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">link</code></TableCell><TableCell>الرابط المستهدف للخدمة.</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">quantity</code></TableCell><TableCell>الكمية المطلوبة.</TableCell></TableRow>
                                 </TableBody>
                              </Table>
                         </div>
                          <div>
-                            <h4 className="font-medium text-xl border-b pb-2 mb-4">{t('api.actions.status.title')}</h4>
-                            <p className="text-sm text-muted-foreground mb-4">{t('api.actions.status.description')}</p>
+                            <h4 className="font-medium text-xl border-b pb-2 mb-4">حالة الطلب (status)</h4>
+                            <p className="text-sm text-muted-foreground mb-4">للحصول على حالة طلب معين.</p>
                              <CodeExample code={orderStatusExample} language="json" />
-                             <h5 className="font-medium mt-4 mb-2">{t('api.parameters')}</h5>
+                             <h5 className="font-medium mt-4 mb-2">المعلمات</h5>
                              <Table>
-                                <TableHeader><TableRow><TableHead>{t('api.parameter')}</TableHead><TableHead>{t('description')}</TableHead></TableRow></TableHeader>
+                                <TableHeader><TableRow><TableHead>المعلمة</TableHead><TableHead>الوصف</TableHead></TableRow></TableHeader>
                                 <TableBody>
-                                    <TableRow><TableCell><code className="font-mono">key</code></TableCell><TableCell>{t('api.actions.status.params.key')}</TableCell></TableRow>
-                                    <TableRow><TableCell><code className="font-mono">action</code></TableCell><TableCell>{t('api.actions.status.params.action')}</TableCell></TableRow>
-                                    <TableRow><TableCell><code className="font-mono">order</code></TableCell><TableCell>{t('api.actions.status.params.order')}</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">key</code></TableCell><TableCell>مفتاح API الخاص بك.</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">action</code></TableCell><TableCell>يجب أن تكون قيمته `status`.</TableCell></TableRow>
+                                    <TableRow><TableCell><code className="font-mono">order</code></TableCell><TableCell>معرف الطلب (Order ID).</TableCell></TableRow>
                                 </TableBody>
                              </Table>
                         </div>
                          <div>
-                            <h4 className="font-medium text-xl border-b pb-2 mb-4">{t('api.actions.services.title')}</h4>
-                            <p className="text-sm text-muted-foreground mb-4">{t('api.actions.services.description')}</p>
+                            <h4 className="font-medium text-xl border-b pb-2 mb-4">قائمة الخدمات (services)</h4>
+                            <p className="text-sm text-muted-foreground mb-4">للحصول على قائمة بجميع الخدمات المتاحة.</p>
                             <CodeExample code={servicesListExample} language="json" />
                         </div>
                          <div>
-                            <h4 className="font-medium text-xl border-b pb-2 mb-4">{t('api.actions.balance.title')}</h4>
-                            <p className="text-sm text-muted-foreground mb-4">{t('api.actions.balance.description')}</p>
+                            <h4 className="font-medium text-xl border-b pb-2 mb-4">الرصيد (balance)</h4>
+                            <p className="text-sm text-muted-foreground mb-4">للحصول على رصيد حسابك الحالي.</p>
                             <CodeExample code={balanceExample} language="json" />
                         </div>
                     </div>
@@ -136,47 +133,47 @@ export default function ApiPage() {
 
              <Card>
                 <CardHeader>
-                    <CardTitle>{t('api.responses.title')}</CardTitle>
+                    <CardTitle>الاستجابات (Responses)</CardTitle>
                     <CardDescription>
-                        {t('api.responses.description')}
+                        أمثلة على الاستجابات التي يمكنك توقعها من الـ API.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                      <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>{t('api.responses.response')}</TableHead>
-                                <TableHead>{t('description')}</TableHead>
+                                <TableHead>الاستجابة</TableHead>
+                                <TableHead>الوصف</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow>
                                 <TableCell><CodeExample code={`{"order": 12345}`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.addSuccess')}</TableCell>
+                                <TableCell>استجابة ناجحة لطلب إضافة، تحتوي على معرف الطلب الجديد.</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell><CodeExample code={`{"charge": "0.50", "status": "قيد التنفيذ", ...}`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.statusSuccess')}</TableCell>
+                                <TableCell>استجابة ناجحة لطلب حالة، تحتوي على تفاصيل الطلب.</TableCell>
                             </TableRow>
                              <TableRow>
                                 <TableCell><CodeExample code={`[{"service": 1, "name": "...", "rate": "0.50"}, ... ]`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.servicesSuccess')}</TableCell>
+                                <TableCell>استجابة ناجحة لطلب قائمة الخدمات.</TableCell>
                             </TableRow>
                              <TableRow>
                                 <TableCell><CodeExample code={`{"balance": "100.50", "currency": "USD"}`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.balanceSuccess')}</TableCell>
+                                <TableCell>استجابة ناجحة لطلب الرصيد.</TableCell>
                             </TableRow>
                              <TableRow>
                                 <TableCell><CodeExample code={`{"error": "Incorrect request"}`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.errorIncorrect')}</TableCell>
+                                <TableCell>خطأ في حالة وجود معلمات ناقصة أو غير صحيحة.</TableCell>
                             </TableRow>
                              <TableRow>
                                 <TableCell><CodeExample code={`{"error": "Not enough funds"}`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.errorFunds')}</TableCell>
+                                <TableCell>خطأ في حالة عدم وجود رصيد كافٍ.</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell><CodeExample code={`{"error": "Invalid API key"}`} language="json" /></TableCell>
-                                <TableCell>{t('api.responses.errorKey')}</TableCell>
+                                <TableCell>خطأ في حالة أن مفتاح API غير صالح.</TableCell>
                             </TableRow>
                         </TableBody>
                      </Table>

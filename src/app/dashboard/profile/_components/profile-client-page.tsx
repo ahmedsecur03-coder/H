@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -24,7 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useTranslation } from 'react-i18next';
 import { GenerateAvatarDialog } from './generate-avatar-dialog';
 import { isAiConfigured } from '@/ai/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,7 +39,6 @@ const passwordSchema = z.object({
 
 
 export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, onUpdate: () => void }) {
-    const { t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser } = useUser();
     const firestore = useFirestore();
@@ -67,7 +64,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         if (!authUser || !firestore) return;
         
         profileForm.formState.isSubmitting = true;
-        toast({ title: t('profile.update.toast.pending') });
+        toast({ title: "جاري تحديث الملف الشخصي..." });
 
         let finalAvatarUrl = values.avatarUrl || '';
 
@@ -84,7 +81,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                 if (!response.ok) throw new Error(error || 'Failed to proxy image.');
                 finalAvatarUrl = dataUri;
             } catch (e: any) {
-                toast({ variant: 'destructive', title: t('profile.update.toast.proxyErrorTitle'), description: e.message });
+                toast({ variant: 'destructive', title: "خطأ في معالجة الصورة", description: e.message });
                 setIsProxying(false);
                 profileForm.formState.isSubmitting = false;
                 return;
@@ -99,7 +96,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         updateDoc(userDocRef, updateData)
             .then(() => {
                 onUpdate(); 
-                toast({ title: t('success'), description: t('profile.update.toast.success') });
+                toast({ title: "نجاح", description: "تم تحديث ملفك الشخصي بنجاح." });
             })
             .catch(error => {
                 const permissionError = new FirestorePermissionError({
@@ -123,15 +120,15 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
             await reauthenticateWithCredential(authUser, credential);
             await updatePassword(authUser, values.newPassword);
             passwordForm.reset();
-            toast({ title: t('success'), description: t('profile.password.toast.success') });
+            toast({ title: "نجاح", description: "تم تغيير كلمة المرور بنجاح." });
         } catch (error: any) {
-             let message = t('profile.password.toast.fail');
+             let message = "فشل تغيير كلمة المرور.";
              if(error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                 message = t('profile.password.toast.wrongPassword');
+                 message = "كلمة المرور الحالية التي أدخلتها غير صحيحة.";
              } else if (error.code === 'auth/too-many-requests') {
-                message = t('profile.password.toast.tooManyRequests');
+                message = "لقد حاولت عدة مرات. يرجى المحاولة مرة أخرى لاحقًا.";
              }
-             toast({ variant: 'destructive', title: t('error'), description: message });
+             toast({ variant: 'destructive', title: 'خطأ', description: message });
         }
     };
     
@@ -142,17 +139,17 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     };
 
     const infoBadges = [
-        { label: t('profile.rank'), value: t(`ranks.${userData.rank}`) },
-        { label: t('profile.referralCode'), value: userData.referralCode },
-        { label: t('profile.userId'), value: userData.id, isMono: true },
+        { label: "الرتبة", value: userData.rank },
+        { label: "كود الإحالة", value: userData.referralCode },
+        { label: "معرف المستخدم", value: userData.id, isMono: true },
     ]
 
     return (
         <div className="space-y-8 pb-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">{t('profile.title')}</h1>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">الملف الشخصي</h1>
                 <p className="text-muted-foreground">
-                    {t('profile.description')}
+                    إدارة معلومات حسابك وتفضيلاتك.
                 </p>
             </div>
 
@@ -191,7 +188,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
+                        <CardTitle>المعلومات الشخصية</CardTitle>
                     </CardHeader>
                     <Form {...profileForm}>
                         <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)}>
@@ -201,9 +198,9 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>{t('profile.personalInfo.name')}</FormLabel>
+                                        <FormLabel>الاسم</FormLabel>
                                         <FormControl>
-                                            <Input placeholder={t('profile.personalInfo.namePlaceholder')} {...field} />
+                                            <Input placeholder="اسمك الكامل" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                         </FormItem>
@@ -214,7 +211,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     name="avatarUrl"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>{t('profile.personalInfo.avatarUrl')}</FormLabel>
+                                        <FormLabel>رابط الصورة الرمزية</FormLabel>
                                         <FormControl>
                                             <Input placeholder="https://example.com/image.png" {...field} />
                                         </FormControl>
@@ -226,7 +223,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             <CardFooter>
                                 <Button type="submit" disabled={profileForm.formState.isSubmitting || isProxying}>
                                     {(profileForm.formState.isSubmitting || isProxying) && <Loader2 className="ml-2 animate-spin" />}
-                                    {t('saveChanges')}
+                                    حفظ التغييرات
                                 </Button>
                             </CardFooter>
                         </form>
@@ -235,7 +232,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('profile.password.title')}</CardTitle>
+                        <CardTitle>تغيير كلمة المرور</CardTitle>
                     </CardHeader>
                         <Form {...passwordForm}>
                         <form onSubmit={passwordForm.handleSubmit(handlePasswordUpdate)}>
@@ -245,7 +242,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     name="currentPassword"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>{t('profile.password.current')}</FormLabel>
+                                        <FormLabel>كلمة المرور الحالية</FormLabel>
                                         <FormControl>
                                             <Input type="password" {...field} />
                                         </FormControl>
@@ -258,7 +255,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     name="newPassword"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>{t('profile.password.new')}</FormLabel>
+                                        <FormLabel>كلمة المرور الجديدة</FormLabel>
                                         <FormControl>
                                             <Input type="password" {...field} />
                                         </FormControl>
@@ -270,7 +267,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             <CardFooter>
                                 <Button type="submit" disabled={passwordForm.formState.isSubmitting}>
                                         {passwordForm.formState.isSubmitting && <Loader2 className="ml-2 animate-spin" />}
-                                    {t('profile.password.submitButton')}
+                                    تغيير كلمة المرور
                                 </Button>
                             </CardFooter>
                         </form>

@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import Logo from "@/components/logo"
@@ -11,14 +9,11 @@ import { dashboardNavItems } from "@/lib/placeholder-data";
 import { usePathname } from "next/navigation";
 import { UserNav } from "../_components/user-nav";
 import type { User as UserType } from '@/lib/types';
-import { useTranslation } from "react-i18next";
 import { Notifications } from "@/components/notifications";
 
 export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData: UserType }) {
-    const { t } = useTranslation();
     const pathname = usePathname();
 
-    // Use userData from Firestore as the source of truth
     const appUser = {
         name: userData.name,
         email: userData.email,
@@ -39,7 +34,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
               <SheetHeader className="text-right mb-6">
                 <SheetTitle><Logo /></SheetTitle>
                 <SheetDescription>
-                  {t('mobileHeader.navDescription')}
+                  مرحباً بك في لوحة تحكم حاجاتي
                 </SheetDescription>
               </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium">
@@ -50,7 +45,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                         className={`flex items-center gap-4 px-2.5 ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         <item.icon className="h-5 w-5" />
-                        {t(item.label)}
+                        {item.label}
                     </Link>
                 ))}
                  {isAdmin && (
@@ -59,7 +54,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                         className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                     >
                        <Shield className="h-5 w-5" />
-                        {t('userNav.adminPanel')}
+                        لوحة التحكم للمسؤول
                     </Link>
                  )}
               </nav>
