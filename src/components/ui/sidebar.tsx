@@ -666,11 +666,11 @@ const SidebarMenuSub = ({ ...props }: React.ComponentProps<typeof Collapsible>) 
 
 const SidebarMenuSubTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<typeof CollapsibleTrigger> & { asChild?: boolean }
->(({ asChild = false, ...props }, ref) => (
-  <CollapsibleTrigger asChild={asChild} {...props} ref={ref}>
+  React.ComponentProps<typeof CollapsibleTrigger>
+>(({ children, ...props }, ref) => (
+  <CollapsibleTrigger asChild {...props} ref={ref}>
     <SidebarMenuButton className="w-full justify-between">
-      {props.children}
+      {children}
     </SidebarMenuButton>
   </CollapsibleTrigger>
 ));
@@ -689,7 +689,7 @@ const SidebarMenuSubButton = React.forwardRef<
     { isActive?: boolean; href: string } & React.ComponentPropsWithoutRef<"a">
 >(({ isActive, className, children, ...props }, ref) => {
     return (
-        <Link href={props.href} passHref legacyBehavior>
+        <Link href={props.href} passHref>
             <a
                 ref={ref}
                 data-active={isActive}
