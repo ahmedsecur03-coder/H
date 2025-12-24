@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User, Order, Ticket } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 
 const chartConfig = {
@@ -73,6 +74,7 @@ function processPerformanceData(users: User[], orders: Order[]) {
 export default function AdminDashboardPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { t, i18n } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState({
         totalRevenue: 0,
@@ -97,9 +99,10 @@ export default function AdminDashboardPage() {
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
                 const sevenDaysAgoTimestamp = Timestamp.fromDate(sevenDaysAgo);
+                const sevenDaysAgoISO = sevenDaysAgo.toISOString();
 
                 const usersCountQuery = query(usersCol);
-                const newUsersCountQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoTimestamp.toDate().toISOString()));
+                const newUsersCountQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoISO));
                 const ordersCountQuery = query(ordersColGroup);
                 const openTicketsCountQuery = query(ticketsColGroup, where('status', '!=', 'مغلقة'));
 
@@ -116,8 +119,8 @@ export default function AdminDashboardPage() {
                 ]);
 
                 // --- Chart Data Queries (last 7 days) ---
-                const usersChartQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoTimestamp.toDate().toISOString()));
-                const ordersChartQuery = query(ordersColGroup, where('orderDate', '>=', sevenDaysAgoTimestamp.toDate().toISOString()));
+                const usersChartQuery = query(usersCol, where('createdAt', '>=', sevenDaysAgoISO));
+                const ordersChartQuery = query(ordersColGroup, where('orderDate', '>=', sevenDaysAgoISO));
                 const revenueQuery = query(ordersColGroup); // still need all for total revenue
 
                 const [
@@ -192,7 +195,7 @@ export default function AdminDashboardPage() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+                    <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                 </CardContent>
             </Card>
              <Card>
@@ -248,17 +251,17 @@ export default function AdminDashboardPage() {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={8}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' })}
                         />
-                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
-                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
+                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="right" />
+                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="left" allowDecimals={false} />
                         <Tooltip
                             content={<ChartTooltipContent
                                 formatter={(value, name) => {
                                     if (name === 'revenue') {
                                         return `$${(value as number).toFixed(2)}`;
                                     }
-                                    return value;
+                                    return value.toLocaleString();
                                 }}
                                 indicator="dot" 
                             />}
