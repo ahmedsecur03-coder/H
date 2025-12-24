@@ -104,64 +104,54 @@ function OrdersPageSkeleton() {
 
 function OrdersPageComponent() {
   const { t } = useTranslation();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
-
-  // Filters state managed by URL
-  const statusFilter = searchParams.get('status') || 'all';
-  const searchTerm = searchParams.get('search') || '';
+  // URL state
   const currentPage = Number(searchParams.get('page')) || 1;
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const currentStatus = searchParams.get('status') || 'all';
+  const currentSearch = searchParams.get('search') || '';
+  
+  // Debounced search term for performance
+  const [debouncedSearch] = useDebounce(currentSearch, 300);
 
-  useEffect(() => {
-    if (!firestore || !user) return;
+  // Firestore query to get all orders for the user
+  const ordersQuery = useMemoFirebase(
+    () => (user ? query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc')) : null),
+    [user, firestore]
+  );
+  const { data: allOrders, isLoading: isOrdersLoading } = useCollection<Order>(ordersQuery);
 
-    const fetchPaginatedOrders = async () => {
-        setIsLoading(true);
-        try {
-            let baseQuery: FirestoreQuery = collection(firestore, `users/${user.uid}/orders`);
-            
-            // Apply status filter at the query level
-            if (statusFilter !== 'all') {
-                baseQuery = query(baseQuery, where('status', '==', statusFilter));
-            }
+  // Memoized client-side filtering
+  const { paginatedOrders, pageCount } = useMemo(() => {
+    if (!allOrders) {
+      return { paginatedOrders: [], pageCount: 0 };
+    }
 
-            const allFilteredDocsSnapshot = await getDocs(baseQuery);
-            let allFilteredOrders = allFilteredDocsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-            
-            // Then apply search term filter on the client-side
-            const finalFiltered = debouncedSearchTerm
-                ? allFilteredOrders.filter(order =>
-                    order.id.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                    order.serviceName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                    (order.link && order.link.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
-                  ).sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
-                : allFilteredOrders.sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+    const filtered = allOrders.filter(order => {
+      const statusMatch = currentStatus === 'all' || order.status === currentStatus;
+      const searchMatch = debouncedSearch
+        ? order.id.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          order.serviceName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          (order.link && order.link.toLowerCase().includes(debouncedSearch.toLowerCase()))
+        : true;
+      return statusMatch && searchMatch;
+    });
 
-            setPageCount(Math.ceil(finalFiltered.length / ITEMS_PER_PAGE));
-            
-            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-            setOrders(finalFiltered.slice(startIndex, startIndex + ITEMS_PER_PAGE));
-
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-        } finally {
-            setIsLoading(false);
-        }
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    
+    return {
+      paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
+      pageCount: totalPages,
     };
-
-    fetchPaginatedOrders();
-  }, [firestore, user, statusFilter, debouncedSearchTerm, currentPage]);
+  }, [allOrders, currentStatus, debouncedSearch, currentPage]);
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     if (value && value !== 'all') {
       params.set(key, value);
     } else {
@@ -171,7 +161,7 @@ function OrdersPageComponent() {
     if (key !== 'page') {
       params.set('page', '1');
     }
-    router.push(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   const renderPaginationItems = () => {
@@ -215,8 +205,10 @@ function OrdersPageComponent() {
       </PaginationItem>
     ));
   };
+  
+  const isLoading = isUserLoading || isOrdersLoading;
 
-  if (isLoading && orders.length === 0) {
+  if (isLoading && !allOrders) {
     return <OrdersPageSkeleton />;
   }
 
@@ -237,11 +229,11 @@ function OrdersPageComponent() {
               <Input
                 placeholder={t('ordersPage.searchPlaceholder')}
                 className="pe-10 rtl:ps-10"
-                defaultValue={searchTerm}
+                value={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
               />
             </div>
-            <Select defaultValue={statusFilter} onValueChange={(value) => handleFilterChange('status', value)}>
+            <Select value={currentStatus} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('ordersPage.statusFilterPlaceholder')} />
               </SelectTrigger>
@@ -256,7 +248,7 @@ function OrdersPageComponent() {
         </CardContent>
       </Card>
 
-      {isLoading && orders.length === 0 ? (
+      {isLoading && paginatedOrders.length === 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -275,7 +267,7 @@ function OrdersPageComponent() {
             </Table>
           </CardContent>
         </Card>
-      ) : orders.length > 0 ? (
+      ) : paginatedOrders.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -291,7 +283,7 @@ function OrdersPageComponent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
                     <TableCell className="font-medium">{order.serviceName}</TableCell>
@@ -354,3 +346,5 @@ export default function OrdersPage() {
     </Suspense>
   )
 }
+
+    
