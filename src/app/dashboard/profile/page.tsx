@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { User as UserType } from '@/lib/types';
@@ -44,4 +45,5 @@ export default function ProfilePage() {
     
     return <ProfileClientPage userData={{...userData, id: authUser.uid}} onUpdate={forceDocUpdate} />;
 }
+
 

@@ -1,265 +1,123 @@
+
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, RotateCw, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User as UserIcon } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { User as UserType } from '@/lib/types';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Badge } from '@/components/ui/badge';
-import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { generateAvatar } from '@/ai/flows/generate-avatar-flow';
+import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 
+interface GenerateAvatarDialogProps {
+    children: React.ReactNode;
+    onAvatarGenerated: (dataUri: string) => void;
+}
 
-const profileSchema = z.object({
-  name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),
-  avatarUrl: z.string().url({ message: "الرجاء إدخال رابط صورة صالح." }).optional().or(z.literal('')),
-});
-
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "كلمة المرور الحالية مطلوبة."),
-  newPassword: z.string().min(6, "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."),
-});
-
-
-export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, onUpdate: () => void }) {
+export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAvatarDialogProps) {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
+    const [prompt, setPrompt] = useState('An astronaut in a futuristic suit, cosmic background, vibrant colors');
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
     const { toast } = useToast();
-    const { user: authUser } = useUser();
-    const firestore = useFirestore();
 
-    const [isProxying, setIsProxying] = useState(false);
-
-    const profileForm = useForm<z.infer<typeof profileSchema>>({
-        resolver: zodResolver(profileSchema),
-        defaultValues: {
-            name: userData.name,
-            avatarUrl: userData.avatarUrl || '',
-        },
-    });
-
-    const passwordForm = useForm<z.infer<typeof passwordSchema>>({
-        resolver: zodResolver(passwordSchema),
-        defaultValues: { currentPassword: '', newPassword: '' },
-    });
-    
-    const currentAvatarUrl = profileForm.watch('avatarUrl');
-
-    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
-        if (!authUser || !firestore) return;
-        
-        profileForm.formState.isSubmitting = true;
-        toast({ title: 'جاري تحديث الملف الشخصي...' });
-
-        let finalAvatarUrl = values.avatarUrl || '';
-
-        // If the URL is not a data URI and not empty, proxy it to convert to a data URI
-        if (finalAvatarUrl && !finalAvatarUrl.startsWith('data:')) {
-            setIsProxying(true);
-            try {
-                const response = await fetch('/api/image-proxy', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imageUrl: finalAvatarUrl })
-                });
-                const { dataUri, error } = await response.json();
-                if (!response.ok) throw new Error(error || 'Failed to proxy image.');
-                finalAvatarUrl = dataUri;
-            } catch (e: any) {
-                toast({ variant: 'destructive', title: 'فشل معالجة الصورة', description: e.message });
-                setIsProxying(false);
-                profileForm.formState.isSubmitting = false;
-                return;
-            }
-            setIsProxying(false);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!prompt.trim()) {
+            toast({ variant: 'destructive', title: 'Error', description: t('avatarGenerator.errors.promptRequired') });
+            return;
         }
-        
-        // Update auth profile (non-blocking by nature)
-        updateProfile(authUser, { displayName: values.name, photoURL: finalAvatarUrl });
 
-        // Update firestore doc (non-blocking)
-        const userDocRef = doc(firestore, 'users', authUser.uid);
-        const updateData = { name: values.name, avatarUrl: finalAvatarUrl };
-        updateDoc(userDocRef, updateData)
-            .then(() => {
-                onUpdate(); // Force re-fetch to reflect changes
-                toast({ title: 'نجاح', description: 'تم تحديث ملفك الشخصي.' });
-            })
-            .catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                 profileForm.formState.isSubmitting = false;
-            });
-    };
-    
-    const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
-        if (!authUser || !authUser.email) return;
-
-        const credential = EmailAuthProvider.credential(authUser.email, values.currentPassword);
+        setIsGenerating(true);
+        setGeneratedImage(null);
+        toast({ title: t('avatarGenerator.toast.generating') });
 
         try {
-            await reauthenticateWithCredential(authUser, credential);
-            await updatePassword(authUser, values.newPassword);
-            passwordForm.reset();
-            toast({ title: 'نجاح', description: 'تم تغيير كلمة المرور بنجاح.' });
+            const result = await generateAvatar({ prompt });
+            if (result.imageDataUri) {
+                setGeneratedImage(result.imageDataUri);
+            } else {
+                throw new Error(t('avatarGenerator.errors.noImage'));
+            }
         } catch (error: any) {
-             let message = 'فشل تغيير كلمة المرور.';
-             if(error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                 message = 'كلمة المرور الحالية غير صحيحة.';
-             } else if (error.code === 'auth/too-many-requests') {
-                message = 'تم إجراء العديد من المحاولات. يرجى المحاولة مرة أخرى لاحقًا.';
-             }
-             toast({ variant: 'destructive', title: 'خطأ', description: message });
+            console.error("AI Avatar Generation Error:", error);
+            toast({ variant: 'destructive', title: t('avatarGenerator.toast.generationFailed'), description: error.message || 'An unknown error occurred.' });
+        } finally {
+            setIsGenerating(false);
         }
     };
 
-    const infoBadges = [
-        { label: 'الرتبة', value: userData.rank },
-        { label: 'كود الإحالة', value: userData.referralCode },
-        { label: 'معرف المستخدم', value: userData.id, isMono: true },
-    ]
+    const handleUseImage = () => {
+        if (generatedImage) {
+            onAvatarGenerated(generatedImage);
+            setOpen(false);
+            setGeneratedImage(null);
+        }
+    }
 
     return (
-        <div className="space-y-8 pb-8">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">بطاقتك الكونية</h1>
-                <p className="text-muted-foreground">
-                    هويتك في مجرة حاجاتي. عرض وتعديل معلومات حسابك.
-                </p>
-            </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>{t('avatarGenerator.title')}</DialogTitle>
+                    <DialogDescription>
+                        {t('avatarGenerator.description')}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <div className="relative aspect-square w-full rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+                        {isGenerating && <Loader2 className="h-10 w-10 animate-spin text-primary" />}
+                        {generatedImage && !isGenerating && (
+                            <Image src={generatedImage} alt="Generated Avatar" layout="fill" objectFit="cover" />
+                        )}
+                        {!generatedImage && !isGenerating && (
+                             <div className="text-center text-muted-foreground p-4">
+                                <Wand2 className="h-10 w-10 mx-auto" />
+                                <p className="mt-2 text-sm">{t('avatarGenerator.placeholder')}</p>
+                             </div>
+                        )}
+                    </div>
 
-            <Card className="overflow-hidden">
-                <div className="bg-gradient-to-r from-primary/10 via-background to-background p-6 flex flex-col md:flex-row items-center gap-6">
-                    <div className="relative">
-                        <Avatar className="h-28 w-28 border-4 border-primary/50 shadow-lg">
-                            <AvatarImage src={currentAvatarUrl || undefined} alt={userData.name} />
-                            <AvatarFallback className="text-4xl"><UserIcon /></AvatarFallback>
-                        </Avatar>
-                        {(profileForm.formState.isSubmitting || isProxying) && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
-                    </div>
-                    <div className="flex-1 text-center md:text-right">
-                        
-                        <h2 className="text-3xl font-bold font-headline">{profileForm.watch('name')}</h2>
-                        <p className="text-muted-foreground">{userData.email}</p>
-                         <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                           {infoBadges.map(badge => (
-                                <Badge key={badge.label} variant="secondary" className={badge.isMono ? 'font-mono' : ''}>
-                                   <span className="font-normal opacity-75 ml-1">{badge.label}:</span> {badge.value}
-                                </Badge>
-                           ))}
-                        </div>
-                    </div>
                 </div>
-            </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>تعديل المعلومات الشخصية</CardTitle>
-                    </CardHeader>
-                    <Form {...profileForm}>
-                        <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)}>
-                            <CardContent className="space-y-4">
-                                    <FormField
-                                    control={profileForm.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>الاسم</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="اسمك الكامل" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                    />
-                                <FormField
-                                    control={profileForm.control}
-                                    name="avatarUrl"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>رابط الصورة الرمزية</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="https://example.com/image.png" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                    />
-                            </CardContent>
-                            <CardFooter>
-                                <Button type="submit" disabled={profileForm.formState.isSubmitting || isProxying}>
-                                    {(profileForm.formState.isSubmitting || isProxying) && <Loader2 className="ml-2 animate-spin" />}
-                                    حفظ التغييرات
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="prompt">{t('avatarGenerator.promptLabel')}</Label>
+                        <Input 
+                            id="prompt" 
+                            value={prompt} 
+                            onChange={(e) => setPrompt(e.target.value)} 
+                            placeholder={t('avatarGenerator.promptPlaceholder')}
+                            required 
+                            disabled={isGenerating}
+                        />
+                    </div>
+                     <DialogFooter className="gap-2 sm:justify-between">
+                       {generatedImage ? (
+                            <>
+                                 <Button type="submit" variant="outline" disabled={isGenerating}>
+                                    <RotateCw className="ml-2 h-4 w-4" />
+                                     {t('retry')}
                                 </Button>
-                            </CardFooter>
-                        </form>
-                    </Form>
-                </Card>
+                                <Button type="button" onClick={handleUseImage}>
+                                    {t('avatarGenerator.useThisImage')}
+                                </Button>
+                            </>
+                       ) : (
+                            <Button type="submit" disabled={isGenerating} className="w-full">
+                                {isGenerating ? <Loader2 className="animate-spin" /> : t('avatarGenerator.generateButton')}
+                            </Button>
+                       )}
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>تغيير كلمة المرور</CardTitle>
-                    </CardHeader>
-                        <Form {...passwordForm}>
-                        <form onSubmit={passwordForm.handleSubmit(handlePasswordUpdate)}>
-                            <CardContent className="space-y-4">
-                                    <FormField
-                                    control={passwordForm.control}
-                                    name="currentPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>كلمة المرور الحالية</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                    />
-                                <FormField
-                                    control={passwordForm.control}
-                                    name="newPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>كلمة المرور الجديدة</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                    />
-                            </CardContent>
-                            <CardFooter>
-                                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>
-                                        {passwordForm.formState.isSubmitting && <Loader2 className="ml-2 animate-spin" />}
-                                    تغيير كلمة المرور
-                                </Button>
-                            </CardFooter>
-                        </form>
-                    </Form>
-                </Card>
-            </div>
-        </div>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }
+
