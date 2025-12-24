@@ -168,7 +168,7 @@ export default function DashboardLayout({
             </SidebarFooter>
         </Sidebar>
         
-        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-start:-16rem] md:peer-data-[state=collapsed]:[margin-inline-start:-3.5rem] md:ms-[16rem] peer-data-[state=collapsed]:md:ms-[3.5rem]">
+        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:[margin-inline-end:16rem] md:peer-data-[state=collapsed]:[margin-inline-end:3.5rem]">
             <MobileHeader isAdmin={isAdmin} userData={userData} />
             <DesktopHeader isAdmin={isAdmin} userData={userData} />
             
