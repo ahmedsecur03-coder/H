@@ -58,12 +58,15 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
         defaultValues: { currentPassword: '', newPassword: '' },
     });
     
+    const { isSubmitting: isProfileSubmitting } = profileForm.formState;
+    const { isSubmitting: isPasswordSubmitting } = passwordForm.formState;
+    const isSaving = isProfileSubmitting || isProxying;
+
     const currentAvatarUrl = profileForm.watch('avatarUrl');
 
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         if (!authUser || !firestore) return;
         
-        profileForm.formState.isSubmitting = true;
         toast({ title: "جاري تحديث الملف الشخصي..." });
 
         let finalAvatarUrl = values.avatarUrl || '';
@@ -83,32 +86,29 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
             } catch (e: any) {
                 toast({ variant: 'destructive', title: "خطأ في معالجة الصورة", description: e.message });
                 setIsProxying(false);
-                profileForm.formState.isSubmitting = false;
                 return;
+            } finally {
+                setIsProxying(false);
             }
-            setIsProxying(false);
         }
         
-        updateProfile(authUser, { displayName: values.name, photoURL: finalAvatarUrl });
+        await updateProfile(authUser, { displayName: values.name, photoURL: finalAvatarUrl });
 
         const userDocRef = doc(firestore, 'users', authUser.uid);
         const updateData = { name: values.name, avatarUrl: finalAvatarUrl };
-        updateDoc(userDocRef, updateData)
-            .then(() => {
-                onUpdate(); 
-                toast({ title: "نجاح", description: "تم تحديث ملفك الشخصي بنجاح." });
-            })
-            .catch(error => {
-                const permissionError = new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                 profileForm.formState.isSubmitting = false;
+        
+        try {
+            await updateDoc(userDocRef, updateData)
+            onUpdate(); 
+            toast({ title: "نجاح", description: "تم تحديث ملفك الشخصي بنجاح." });
+        } catch (error) {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData
             });
+            errorEmitter.emit('permission-error', permissionError);
+        }
     };
     
     const handlePasswordUpdate = async (values: z.infer<typeof passwordSchema>) => {
@@ -160,7 +160,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             <AvatarImage src={currentAvatarUrl || undefined} alt={userData.name} />
                             <AvatarFallback className="text-4xl"><UserIcon /></AvatarFallback>
                         </Avatar>
-                        {(profileForm.formState.isSubmitting || isProxying) && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
+                        {isSaving && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
                         
                          {isAiConfigured() && (
                             <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
@@ -221,8 +221,8 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     />
                             </CardContent>
                             <CardFooter>
-                                <Button type="submit" disabled={profileForm.formState.isSubmitting || isProxying}>
-                                    {(profileForm.formState.isSubmitting || isProxying) && <Loader2 className="ml-2 animate-spin" />}
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving && <Loader2 className="ml-2 animate-spin" />}
                                     حفظ التغييرات
                                 </Button>
                             </CardFooter>
@@ -265,8 +265,8 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     />
                             </CardContent>
                             <CardFooter>
-                                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>
-                                        {passwordForm.formState.isSubmitting && <Loader2 className="ml-2 animate-spin" />}
+                                <Button type="submit" disabled={isPasswordSubmitting}>
+                                    {isPasswordSubmitting && <Loader2 className="ml-2 animate-spin" />}
                                     تغيير كلمة المرور
                                 </Button>
                             </CardFooter>

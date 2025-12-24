@@ -163,6 +163,8 @@ export default function AdminBlogPage() {
         ));
     };
 
+    const showHeaderActions = !isLoading && posts && posts.length > 0;
+
     return (
         <div className="space-y-6 pb-8">
             <div className="flex items-center justify-between">
@@ -170,10 +172,12 @@ export default function AdminBlogPage() {
                     <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المدونة</h1>
                     <p className="text-muted-foreground">إنشاء وتعديل وحذف منشورات الأخبار والإعلانات.</p>
                 </div>
-                 <div className="flex gap-2">
-                    <AiPostDialog onArticleGenerated={handleArticleGenerated} />
-                    <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                </div>
+                 {showHeaderActions && (
+                    <div className="flex gap-2">
+                        <AiPostDialog onArticleGenerated={handleArticleGenerated} />
+                        <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                    </div>
+                 )}
             </div>
             <Card>
                 <CardHeader>
