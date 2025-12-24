@@ -24,7 +24,8 @@ import {
   Home,
   HandCoins,
   AppWindow,
-  UserCircle
+  UserCircle,
+  BarChart2,
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -45,7 +46,8 @@ export const publicNavItems: NestedNavItem[] = [
 ];
 
 export const dashboardNavItems: NestedNavItem[] = [
-  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard', label: ' لوحة التحكم', icon: LayoutDashboard },
+  { href: '/dashboard/analytics', label: 'التحليلات', icon: BarChart2 },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { 
     label: 'الطلبات',
