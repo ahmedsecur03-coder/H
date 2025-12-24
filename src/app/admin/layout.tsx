@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
@@ -58,7 +59,7 @@ function AdminNavItems() {
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <SidebarMenuButton asChild>
+                                <SidebarMenuButton asChild isActive={pathname === item.href}>
                                     <Link href={item.href}>
                                         <item.icon />
                                         <span>{item.label}</span>
