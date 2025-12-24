@@ -130,7 +130,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
 
                 {/* Main Content Column */}
-                <div className="lg:col-span-2 grid auto-rows-max items-start gap-4 md:gap-8">
+                <div className="lg:col-span-2 space-y-6">
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Button variant="outline" className="w-full text-md py-6" asChild>
                             <Link href="/dashboard/campaigns">
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Sidebar Column */}
-                <div className="lg:col-span-1 grid auto-rows-max items-start gap-4 md:gap-8">
+                <div className="lg:col-span-1 space-y-6">
                     <Card>
                         <CardHeader className="pb-2 flex-row items-center justify-between">
                             <CardDescription>الرصيد الأساسي</CardDescription>
