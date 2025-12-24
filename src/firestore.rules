@@ -70,7 +70,6 @@ service cloud.firestore {
 
     function isValidCampaign(data) {
         return data.userId == request.auth.uid &&
-               data.agencyAccountId is string &&
                data.name is string &&
                data.platform is string &&
                data.goal is string &&

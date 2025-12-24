@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Campaign, User as UserType, AgencyAccount } from '@/lib/types';
+import type { Campaign, User as UserType } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import {
@@ -25,13 +25,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useUser, useFirestore, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, query } from 'firebase/firestore';
-import { PLATFORM_ICONS } from '@/lib/icon-data';
+import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { addDoc, collection } from 'firebase/firestore';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
 type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
 
+
+const platforms: { name: Platform; title: string }[] = [
+    { name: 'Google', title: 'Google Ads' },
+    { name: 'Facebook', title: 'Meta (Facebook & Instagram)' },
+    { name: 'TikTok', title: 'TikTok Ads' },
+    { name: 'Snapchat', title: 'Snapchat Ads' },
+];
 
 const goals: { name: Goal; title: string }[] = [
   { name: 'زيادة الوعي', title: 'زيادة الوعي' },
@@ -55,58 +61,42 @@ export function NewCampaignDialog({
   const firestore = useFirestore();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [budget, setBudget] = useState('');
-
-  const accountsQuery = useMemoFirebase(
-    () => (firestore && user ? query(collection(firestore, `users/${user.uid}/agencyAccounts`)) : null),
-    [firestore, user]
-  );
-  const { data: agencyAccounts } = useCollection<AgencyAccount>(accountsQuery);
-
-  const selectedAccount = agencyAccounts?.find(acc => acc.id === selectedAccountId);
-  
-  const platforms = useMemo(() => {
-    if (!agencyAccounts) return [];
-    const uniquePlatforms = [...new Set(agencyAccounts.map(acc => acc.platform))];
-    return uniquePlatforms.map(p => ({ name: p, title: p === 'Meta' ? 'Facebook & Instagram' : `${p} Ads`}));
-  }, [agencyAccounts]);
-
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore || !user || !selectedAccount) {
-        toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء اختيار حساب إعلاني صالح.' });
+    if (!firestore || !user) {
+        toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء تسجيل الدخول أولاً.' });
         return;
     }
 
+    const formData = new FormData(event.currentTarget);
     const campaignBudget = parseFloat(budget);
+
     if (!campaignBudget || campaignBudget <= 0) {
         toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال ميزانية صالحة.' });
         return;
     }
 
-    if (campaignBudget > selectedAccount.balance) {
-        toast({ variant: 'destructive', title: 'ميزانية تتجاوز الرصيد', description: `ميزانية الحملة لا يمكن أن تتجاوز رصيد الحساب المختار (${selectedAccount.balance.toFixed(2)}$).` });
+    if (campaignBudget > userData.adBalance) {
+        toast({ variant: 'destructive', title: 'رصيد إعلانات غير كافٍ', description: `ميزانية الحملة (${campaignBudget.toFixed(2)}$) لا يمكن أن تتجاوز رصيدك الإعلاني (${userData.adBalance.toFixed(2)}$).` });
         return;
     }
 
-
     setLoading(true);
 
-    const formData = new FormData(event.currentTarget);
     const campaignData = {
       name: formData.get('name') as string,
+      platform: formData.get('platform') as Platform,
       goal: formData.get('goal') as Goal,
       targetAudience: formData.get('targetAudience') as string,
       durationDays: parseInt(formData.get('durationDays') as string, 10),
     };
     
-    const newCampaignData: Omit<Campaign, 'id'> = {
+    const newCampaignData: Omit<Campaign, 'id' | 'agencyAccountId'> = {
         userId: user.uid,
-        agencyAccountId: selectedAccount.id, // Link campaign to agency account
         name: campaignData.name,
-        platform: selectedAccount.platform, // Platform is derived from the selected account
+        platform: campaignData.platform,
         goal: campaignData.goal,
         targetAudience: campaignData.targetAudience,
         budget: campaignBudget,
@@ -129,7 +119,6 @@ export function NewCampaignDialog({
         onCampaignCreated();
         setOpen(false);
         (event.target as HTMLFormElement).reset();
-        setSelectedAccountId('');
         setBudget('');
     } catch (error: any) {
        const permissionError = new FirestorePermissionError({ 
@@ -150,46 +139,34 @@ export function NewCampaignDialog({
         <DialogHeader>
           <DialogTitle>حملة إعلانية جديدة</DialogTitle>
           <DialogDescription>
-            اختر الحساب، حدد ميزانية حملتك ومدتها للبدء. ستُرسل الحملة للمراجعة من قبل المسؤول.
+            حدد تفاصيل حملتك. سيقوم فريقنا بمراجعتها وتفعيلها بعد خصم الميزانية من رصيدك الإعلاني.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="agencyAccount">الحساب الإعلاني</Label>
-            <Select name="agencyAccount" required onValueChange={setSelectedAccountId} value={selectedAccountId}>
-              <SelectTrigger id="agencyAccount">
-                <SelectValue placeholder="اختر حسابًا لتشغيل الحملة منه" />
-              </SelectTrigger>
-              <SelectContent>
-                {agencyAccounts && agencyAccounts.length > 0 ? (
-                  agencyAccounts.map((acc) => {
-                    const Icon = PLATFORM_ICONS[acc.platform] || PLATFORM_ICONS.Default;
-                    return (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        <div className="flex items-center gap-2">
-                          <Icon className="w-4 h-4" />
-                          <span>{acc.accountName} (الرصيد: ${acc.balance.toFixed(2)})</span>
-                        </div>
-                      </SelectItem>
-                    )
-                  })
-                ) : (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    يجب عليك شراء حساب إعلاني أولاً.
-                  </div>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          
            <div className="space-y-2">
             <Label htmlFor="name">اسم الحملة</Label>
-            <Input id="name" name="name" required disabled={!selectedAccount} />
+            <Input id="name" name="name" required placeholder="مثال: حملة إطلاق المنتج الجديد" />
+          </div>
+
+           <div className="space-y-2">
+            <Label htmlFor="platform">المنصة الإعلانية</Label>
+             <Select name="platform" required>
+              <SelectTrigger id="platform">
+                <SelectValue placeholder="اختر المنصة" />
+              </SelectTrigger>
+              <SelectContent>
+                {platforms.map((p) => (
+                  <SelectItem key={p.name} value={p.name}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="goal">الهدف من الحملة</Label>
-            <Select name="goal" required disabled={!selectedAccount}>
+            <Select name="goal" required>
               <SelectTrigger id="goal">
                 <SelectValue placeholder="اختر هدف الحملة" />
               </SelectTrigger>
@@ -209,23 +186,22 @@ export function NewCampaignDialog({
               name="targetAudience"
               required
               placeholder="مثال: شباب في مصر مهتمون بكرة القدم والألعاب الإلكترونية"
-              disabled={!selectedAccount}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="budget">الميزانية ($)</Label>
-              <Input id="budget" name="budget" type="number" required min="5" value={budget} onChange={e => setBudget(e.target.value)} disabled={!selectedAccount} max={selectedAccount?.balance}/>
+              <Input id="budget" name="budget" type="number" required min="5" value={budget} onChange={e => setBudget(e.target.value)} max={userData.adBalance}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="durationDays">المدة (أيام)</Label>
-              <Input id="durationDays" name="durationDays" type="number" required min="1" disabled={!selectedAccount}/>
+              <Input id="durationDays" name="durationDays" type="number" required min="1" />
             </div>
           </div>
-           {selectedAccount && <p className="text-xs text-muted-foreground">سيتم خصم الميزانية من رصيد حساب {selectedAccount.accountName}.</p>}
+           <p className="text-xs text-muted-foreground">سيتم خصم الميزانية من رصيد إعلاناتك العام البالغ: <span className="font-bold">${userData.adBalance.toFixed(2)}</span></p>
 
           <DialogFooter>
-            <Button type="submit" disabled={loading || !selectedAccount} className="w-full">
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال للمراجعة'}
             </Button>
           </DialogFooter>
