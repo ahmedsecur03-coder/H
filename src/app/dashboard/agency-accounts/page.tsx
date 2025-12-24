@@ -73,9 +73,9 @@ export default function AgencyAccountsPage() {
     return (
         <div className="space-y-6 pb-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">حساباتي الإعلانية</h1>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">حساباتي الإعلانية (ايجنسي)</h1>
                 <p className="text-muted-foreground">
-                    شراء، شحن، وإدارة حسابات الوكالة الإعلانية الخاصة بك.
+                    شراء وشحن وإدارة حسابات الوكالة الإعلانية الخاصة بك لجميع المنصات.
                 </p>
             </div>
 

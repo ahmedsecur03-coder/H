@@ -35,7 +35,7 @@ const platforms: { name: Platform; title: string }[] = [
   { name: 'Snapchat', title: 'Snapchat Ads' },
 ];
 
-const ACCOUNT_COST = 50; // $50 from Ad Balance
+const ACCOUNT_COST = 40; // $40 from Ad Balance
 
 export function BuyAccountDialog({
   userData,

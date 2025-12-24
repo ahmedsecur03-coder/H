@@ -37,7 +37,7 @@ export const publicNavItems: NestedNavItem[] = [
       children: [
         { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', description: 'شراء وشحن حسابات إعلانية احترافية.', icon: Briefcase },
+        { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية (ايجنسي)', description: 'شراء وشحن حسابات إعلانية احترافية.', icon: Briefcase },
         { href: '/#', label: 'تصميم المواقع', description: 'تصميم وتطوير مواقع احترافية لعملك.', icon: AppWindow },
       ]
     },
@@ -48,19 +48,19 @@ export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { 
-    label: 'الطلبات',
-    icon: ShoppingCart,
-    children: [
-        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
-        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
-    ]
-  },
-   { 
     label: 'الحملات الإعلانية',
     icon: Megaphone,
      children: [
         { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
+        { href: '/dashboard/agency-accounts', label: 'فتح حسابات إعلانية', icon: Briefcase },
+    ]
+  },
+  { 
+    label: 'خدمات SMM',
+    icon: ShoppingCart,
+    children: [
+        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
     ]
   },
   { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
