@@ -30,11 +30,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ChevronLeft, Info } from 'lucide-react';
+import { Search, ChevronLeft, Info, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 function ServicesSkeleton() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <Card>
@@ -67,6 +69,7 @@ function ServicesSkeleton() {
 }
 
 export default function ServicesPage() {
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState('all');
@@ -108,38 +111,38 @@ export default function ServicesPage() {
   return (
     <div className="space-y-6 pb-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">كتالوج الخدمات</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('servicesPage.title')}</h1>
         <p className="text-muted-foreground mt-2">
-          اكتشف مجموعتنا الكاملة من الخدمات المصممة لتعزيز حضورك الرقمي. الأسعار المعروضة هي لكل 1000 وحدة من الخدمة.
+          {t('servicesPage.description')}
         </p>
       </div>
 
       <Card>
         <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="relative sm:col-span-2 md:col-span-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="ابحث بالرقم أو الاسم..."
-              className="pr-10"
+              placeholder={t('servicesPage.searchPlaceholder')}
+              className="pe-10 rtl:ps-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Select value={platformFilter} onValueChange={setPlatformFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="فلترة حسب المنصة" />
+              <SelectValue placeholder={t('servicesPage.platformFilterPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">كل المنصات</SelectItem>
+              <SelectItem value="all">{t('servicesPage.allPlatforms')}</SelectItem>
               {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="فلترة حسب الفئة" />
+              <SelectValue placeholder={t('servicesPage.categoryFilterPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">كل الفئات</SelectItem>
+              <SelectItem value="all">{t('servicesPage.allCategories')}</SelectItem>
               {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -150,25 +153,26 @@ export default function ServicesPage() {
          <Card>
             <CardHeader>
                  <Button variant="ghost" size="sm" onClick={() => setSelectedService(null)} className="self-start">
-                     <ChevronLeft className="h-4 w-4 ml-2"/>
-                     العودة إلى القائمة
+                     <ChevronRight className="h-4 w-4 me-2 rtl:hidden" />
+                     <ChevronLeft className="h-4 w-4 ms-2 ltr:hidden" />
+                     {t('backToList')}
                  </Button>
                  <CardTitle>{selectedService.category} - {selectedService.platform}</CardTitle>
-                 <CardDescription>رقم الخدمة: {selectedService.id}</CardDescription>
+                 <CardDescription>{t('servicesPage.serviceId')}: {selectedService.id}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p>{selectedService.description || 'لا يوجد وصف متاح.'}</p>
+                <p className="text-muted-foreground">{selectedService.description || t('servicesPage.noDescription')}</p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex justify-between border-b pb-2"><span>السعر لكل 1000:</span><span className="font-bold">${selectedService.price.toFixed(4)}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>متوسط الوقت:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>الحد الأدنى للطلب:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span>الحد الأقصى للطلب:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
+                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.pricePer1000')}:</span><span className="font-bold font-mono">${selectedService.price.toFixed(4)}</span></div>
+                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.avgTime')}:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
+                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.minOrder')}:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
+                    <div className="flex justify-between border-b pb-2"><span>{t('servicesPage.maxOrder')}:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
                 </div>
             </CardContent>
              <CardFooter>
                  <Button asChild className="w-full">
                     <Link href={`/login?redirect=/dashboard/mass-order&prefill=${encodeURIComponent(`${selectedService.id}| |`)}`}>
-                        اطلب هذه الخدمة الآن
+                        {t('servicesPage.orderThisService')}
                     </Link>
                  </Button>
             </CardFooter>
@@ -180,11 +184,11 @@ export default function ServicesPage() {
                 <TableHeader>
                 <TableRow>
                     <TableHead>#</TableHead>
-                    <TableHead>الخدمة</TableHead>
-                    <TableHead>المنصة</TableHead>
-                    <TableHead>السعر/1000</TableHead>
-                    <TableHead>الحدود (أدنى/أقصى)</TableHead>
-                    <TableHead className="text-right">إجراء</TableHead>
+                    <TableHead>{t('servicesPage.table.service')}</TableHead>
+                    <TableHead>{t('servicesPage.table.platform')}</TableHead>
+                    <TableHead>{t('servicesPage.table.pricePer1000')}</TableHead>
+                    <TableHead>{t('servicesPage.table.limits')}</TableHead>
+                    <TableHead className="text-right">{t('servicesPage.table.action')}</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -197,8 +201,8 @@ export default function ServicesPage() {
                     <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                         <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
-                            <Info className="h-4 w-4 ml-2"/>
-                            تفاصيل
+                            <Info className="h-4 w-4 me-2" />
+                            {t('details')}
                         </Button>
                     </TableCell>
                     </TableRow>

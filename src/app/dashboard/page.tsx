@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -41,8 +42,33 @@ import { DailyRewardCard } from './_components/daily-reward-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
+
+function WelcomeAlert({ name }: { name: string }) {
+    const { t } = useTranslation();
+    return (
+        <Alert className="bg-primary/5 border-primary/20">
+            <Rocket className="h-4 w-4" />
+            <AlertTitle className="font-bold">{t('dashboard.welcomeAlertTitle', { name })}</AlertTitle>
+            <AlertDescription>
+                {t('dashboard.welcomeAlertDesc')}
+                 <div className="mt-4 flex gap-2">
+                    <Button asChild size="sm">
+                        <Link href="/services">{t('dashboard.exploreServices')}</Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href="/dashboard/add-funds">{t('dashboard.addFunds')}</Link>
+                    </Button>
+                </div>
+            </AlertDescription>
+        </Alert>
+    );
+}
 
 function DealOfTheDay() {
+    const { t } = useTranslation();
     const firestore = useFirestore();
 
     const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
@@ -71,7 +97,7 @@ function DealOfTheDay() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline">
                     <Star className="text-yellow-400" />
-                    <span>صفقة اليوم الكونية</span>
+                    <span>{t('dashboard.dealOfTheDay')}</span>
                 </CardTitle>
                 <CardDescription>
                     {serviceData.platform} - {serviceData.category}
@@ -79,13 +105,14 @@ function DealOfTheDay() {
             </CardHeader>
             <CardContent className="text-center">
                 <p className="text-4xl font-bold font-mono">${serviceData.price.toFixed(3)}</p>
-                <p className="text-sm text-muted-foreground">/ لكل 1000</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.per1000')}</p>
             </CardContent>
              <CardContent>
                 <Button asChild className="w-full">
                    <Link href={prefillUrl}>
-                     <ChevronLeft className="h-4 w-4 ml-2" />
-                        اطلب الآن
+                     <ChevronLeft className="h-4 w-4 ms-2 rtl:hidden" />
+                     <ChevronLeft className="h-4 w-4 me-2 ltr:hidden" />
+                        {t('dashboard.orderNow')}
                    </Link>
                 </Button>
             </CardContent>
@@ -117,6 +144,7 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
+    const { t } = useTranslation();
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
     
@@ -135,14 +163,14 @@ export default function DashboardPage() {
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
   
     const achievements = [
-        { icon: Rocket, title: "المنطلق الصاروخي", completed: (recentOrders?.length || 0) > 0 },
-        { icon: Shield, title: "المستخدم الموثوق", completed: (recentOrders?.length || 0) >= 10 },
-        { icon: ShoppingCart, title: "سيد الطلبات", completed: (recentOrders?.length || 0) >= 50 },
-        { icon: Star, title: "النجم الصاعد", completed: (userData.totalSpent || 0) >= 100 },
-        { icon: DollarSign, title: "ملك الإنفاق", completed: (userData.totalSpent || 0) >= 1000 },
-        { icon: Sparkles, title: "العميل المميز", completed: (userData.rank) === 'سيد المجرة' },
-        { icon: Diamond, title: "الأسطورة الكونية", completed: (userData.rank) === 'سيد كوني' },
-        { icon: Users, title: "المسوق الشبكي", completed: (userData.referralsCount || 0) >= 5 },
+        { icon: Rocket, title: "achievements.rocketMan", completed: (recentOrders?.length || 0) > 0 },
+        { icon: Shield, title: "achievements.trustedUser", completed: (recentOrders?.length || 0) >= 10 },
+        { icon: ShoppingCart, title: "achievements.orderMaster", completed: (recentOrders?.length || 0) >= 50 },
+        { icon: Star, title: "achievements.risingStar", completed: (userData.totalSpent || 0) >= 100 },
+        { icon: DollarSign, title: "achievements.spendingKing", completed: (userData.totalSpent || 0) >= 1000 },
+        { icon: Sparkles, title: "achievements.specialAgent", completed: (userData.rank) === 'سيد المجرة' },
+        { icon: Diamond, title: "achievements.cosmicLegend", completed: (userData.rank) === 'سيد كوني' },
+        { icon: Users, title: "achievements.networker", completed: (userData.referralsCount || 0) >= 5 },
     ];
   
     const statusVariant = {
@@ -157,14 +185,14 @@ export default function DashboardPage() {
         <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 pb-4">
             <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
                 <div className='mb-4'>
-                    <h1 className='text-3xl font-bold font-headline'>أهلاً بك، {userData?.name || 'Hagaaty'}!</h1>
-                    <p className='text-muted-foreground'>هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.</p>
+                    <h1 className='text-3xl font-bold font-headline'>{t('dashboard.welcome', { name: userData?.name || 'Hagaaty' })}</h1>
+                    <p className='text-muted-foreground'>{t('dashboard.welcomeSubtitle')}</p>
                 </div>
             
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                     <Card>
                         <CardHeader className="pb-2 flex-row items-center justify-between">
-                            <CardDescription>الرصيد الأساسي</CardDescription>
+                            <CardDescription>{t('dashboard.mainBalance')}</CardDescription>
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -173,7 +201,7 @@ export default function DashboardPage() {
                     </Card>
                     <Card>
                          <CardHeader className="pb-2 flex-row items-center justify-between">
-                            <CardDescription>الرصيد الإعلاني</CardDescription>
+                            <CardDescription>{t('dashboard.adBalance')}</CardDescription>
                              <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -182,7 +210,7 @@ export default function DashboardPage() {
                     </Card>
                     <Card>
                         <CardHeader className="pb-2 flex-row items-center justify-between">
-                            <CardDescription>إجمالي الإنفاق</CardDescription>
+                            <CardDescription>{t('dashboard.totalSpent')}</CardDescription>
                              <DollarSign className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -191,52 +219,44 @@ export default function DashboardPage() {
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>رتبتك الكونية</CardDescription>
-                            <CardTitle className="text-xl text-primary">{rank.name}</CardTitle>
-                            <p className="text-xs text-muted-foreground">خصم {rank.discount}%</p>
+                            <CardDescription>{t('dashboard.yourRank')}</CardDescription>
+                            <CardTitle className="text-xl text-primary">{t(`ranks.${rank.name}`)}</CardTitle>
+                            <p className="text-xs text-muted-foreground">{t('dashboard.discount', { discount: rank.discount })}</p>
                         </CardHeader>
                     </Card>
                 </div>
 
                 <QuickOrderForm user={authUser} userData={userData} />
 
-                <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">آخر 5 طلبات</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead>الخدمة</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {recentOrders && recentOrders.length > 0 ? (
-                        recentOrders.map((order) => (
-                            <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.serviceName}</TableCell>
-                            <TableCell>
-                                <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
-                            </TableCell>
-                            </TableRow>
-                        ))
-                        ) : (
-                        <TableRow>
-                            <TableCell colSpan={3} className="text-center h-24">
-                                <div className="flex flex-col items-center justify-center py-4">
-                                    <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground" />
-                                    <h3 className="mt-4 font-headline text-xl">لم تقم بأي طلبات بعد</h3>
-                                    <p className="mt-1 text-sm text-muted-foreground">ابدأ بتقديم طلبك الأول من منطقة الإطلاق أعلاه.</p>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                        )}
-                    </TableBody>
-                    </Table>
-                </CardContent>
-                </Card>
+                {(recentOrders && recentOrders.length > 0) ? (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline">{t('dashboard.last5Orders')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t('dashboard.service')}</TableHead>
+                                        <TableHead>{t('dashboard.status')}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentOrders.map((order) => (
+                                        <TableRow key={order.id}>
+                                            <TableCell className="font-medium">{order.serviceName}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={statusVariant[order.status] || 'default'}>{t(`orderStatus.${order.status}`)}</Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <WelcomeAlert name={userData?.name || 'User'} />
+                )}
             </div>
 
             <div className="grid auto-rows-max items-start gap-4 md:gap-8">
@@ -245,10 +265,10 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center justify-between">
-                            <span>الإنجازات الكونية</span>
+                            <span>{t('dashboard.achievements')}</span>
                             <Trophy className="text-primary"/>
                         </CardTitle>
-                        <CardDescription>أكملت {achievements.filter(a => a.completed).length} من {achievements.length} إنجازات</CardDescription>
+                        <CardDescription>{t('dashboard.achievementsCompleted', { completed: achievements.filter(a => a.completed).length, total: achievements.length })}</CardDescription>
                     </CardHeader>
                     <CardContent className='grid grid-cols-4 gap-4'>
                         {achievements.map((ach, i) => (
@@ -263,7 +283,7 @@ export default function DashboardPage() {
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{ach.title}</p>
+                                        <p>{t(ach.title)}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
