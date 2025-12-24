@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -98,21 +99,19 @@ function DepositTable({ status }: { status: Status }) {
             throw new Error('المستخدم غير موجود.');
         }
 
+        const userUpdates: any = {};
+        
         if (newStatus === 'مقبول') {
             const currentBalance = userDoc.data().balance ?? 0;
-            const newBalance = currentBalance + deposit.amount;
-            
-            const userUpdates: any = {
-                balance: newBalance,
-                notifications: arrayUnion({
-                    id: `dep-${deposit.id}`,
-                    message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
-                    type: 'success',
-                    read: false,
-                    createdAt: new Date().toISOString(),
-                    href: '/dashboard/add-funds'
-                })
-            };
+            userUpdates.balance = currentBalance + deposit.amount;
+            userUpdates.notifications = arrayUnion({
+                id: `dep-${deposit.id}`,
+                message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+                type: 'success',
+                read: false,
+                createdAt: new Date().toISOString(),
+                href: '/dashboard/add-funds'
+            });
             transaction.update(userDocRef, userUpdates);
         }
         
@@ -131,7 +130,6 @@ function DepositTable({ status }: { status: Status }) {
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
-            requestResourceData: { status: newStatus } // Pass some data to avoid undefined error
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
