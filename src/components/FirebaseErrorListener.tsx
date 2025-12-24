@@ -27,7 +27,13 @@ export function FirebaseErrorListener() {
             timestamp: new Date().toISOString(),
             metadata: {
                 userId: user?.uid || 'anonymous',
-                request: err.request,
+                request: {
+                  auth: err.request.auth,
+                  method: err.request.method,
+                  path: err.request.path,
+                  // Ensure resource data is not undefined before including it
+                  ...(err.request.resource ? { resource: err.request.resource } : {}),
+                }
             },
         };
         const logsCollection = collection(firestore, 'systemLogs');

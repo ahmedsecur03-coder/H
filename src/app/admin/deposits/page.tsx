@@ -128,6 +128,7 @@ function DepositTable({ status }: { status: Status }) {
         const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'update',
+            requestResourceData: { status: newStatus } // Pass some data to avoid undefined error
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
