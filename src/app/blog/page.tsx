@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 
 function BlogPostSkeleton() {
   return (
@@ -35,6 +36,7 @@ function BlogPostSkeleton() {
 
 export default function BlogPage() {
   const firestore = useFirestore();
+  const { i18n } = useTranslation();
   const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null, [firestore]);
   const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
 
@@ -56,7 +58,7 @@ export default function BlogPage() {
               <CardHeader>
                 <CardTitle className="font-headline text-2xl">{post.title}</CardTitle>
                 <CardDescription>
-                  نُشر في: {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  نُشر في: {new Date(post.publishDate).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </CardDescription>
               </CardHeader>
               <CardContent>

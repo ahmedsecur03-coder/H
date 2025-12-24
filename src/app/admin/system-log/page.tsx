@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, Info, Terminal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const levelConfig = {
   info: {
@@ -42,6 +43,7 @@ const levelConfig = {
 };
 
 export default function SystemLogPage() {
+  const { i18n } = useTranslation();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [logs, setLogs] = useState<SystemLog[]>([]);
@@ -103,7 +105,7 @@ export default function SystemLogPage() {
                 </TableCell>
                 <TableCell className="font-medium">{log.message}</TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">{log.event}</TableCell>
-                <TableCell className="text-muted-foreground">{new Date(log.timestamp).toLocaleString('ar-EG')}</TableCell>
+                <TableCell className="text-muted-foreground">{new Date(log.timestamp).toLocaleString(i18n.language)}</TableCell>
             </TableRow>
         );
     });

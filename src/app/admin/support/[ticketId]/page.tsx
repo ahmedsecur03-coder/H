@@ -31,6 +31,7 @@ import Link from 'next/link';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { useTranslation } from 'react-i18next';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -53,6 +54,7 @@ function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'a
 }
 
 export default function AdminTicketDetailsPage() {
+  const { i18n } = useTranslation();
   const firestore = useFirestore();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -171,7 +173,7 @@ export default function AdminTicketDetailsPage() {
              <div>
                 <CardTitle className="font-headline text-2xl">{ticket.subject}</CardTitle>
                 <CardDescription>
-                    المستخدم: <span className="font-mono">{userId}</span> | تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleString('ar-EG')}
+                    المستخدم: <span className="font-mono">{userId}</span> | تاريخ الإنشاء: {new Date(ticket.createdDate).toLocaleString(i18n.language)}
                 </CardDescription>
              </div>
              <Badge variant={statusVariant[ticket.status] || 'default'} className="text-base px-4 py-1">{ticket.status}</Badge>

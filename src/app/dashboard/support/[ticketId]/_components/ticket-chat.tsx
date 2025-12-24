@@ -11,6 +11,7 @@ import type { Ticket } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, arrayUnion, updateDoc } from 'firebase/firestore';
+import { useTranslation } from 'react-i18next';
 
 function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'admin' }) {
     const isUser = sender === 'user';
@@ -27,6 +28,7 @@ function ChatMessage({ message, sender }: { message: string, sender: 'user' | 'a
 
 export function TicketChat({ ticket }: { ticket: Ticket }) {
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const router = useRouter();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const firestore = useFirestore();

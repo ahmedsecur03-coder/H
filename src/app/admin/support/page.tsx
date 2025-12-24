@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 
 const statusVariant = {
@@ -34,6 +35,7 @@ const statusVariant = {
 } as const;
 
 export default function AdminSupportPage() {
+  const { i18n } = useTranslation();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -94,7 +96,7 @@ export default function AdminSupportPage() {
         <TableCell>
           <Badge variant={statusVariant[ticket.status]}>{ticket.status}</Badge>
         </TableCell>
-        <TableCell>{new Date(ticket.createdDate).toLocaleDateString('ar-EG')}</TableCell>
+        <TableCell>{new Date(ticket.createdDate).toLocaleDateString(i18n.language)}</TableCell>
           <TableCell className="text-right">
           <Button asChild variant="outline" size="sm">
             <Link href={`/admin/support/${ticket.id}?userId=${ticket.userId}`}>

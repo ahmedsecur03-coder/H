@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTranslation } from "react-i18next";
 
 // Inlined CopyButton component
 function CopyButton({ textToCopy }: { textToCopy: string }) {
@@ -206,7 +207,7 @@ function NetworkTree({ userData }: { userData: UserType }) {
                             <div className="w-8 h-1 bg-border-muted-foreground/30 shrink-0"></div>
                              <div className="flex flex-col items-center gap-2 shrink-0">
                                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                                    <span className="text-2xl font-bold">{child.count}</span>
+                                    <span className="text-2xl font-bold">{(child.count).toLocaleString()}</span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">{child.name}</p>
                             </div>
@@ -219,6 +220,7 @@ function NetworkTree({ userData }: { userData: UserType }) {
 }
 
 function TransactionHistoryTable({ userId }: { userId: string }) {
+    const { i18n } = useTranslation();
     const firestore = useFirestore();
 
     const transactionsQuery = useMemoFirebase(() => 
@@ -263,7 +265,7 @@ function TransactionHistoryTable({ userId }: { userId: string }) {
                         {transactions && transactions.length > 0 ? (
                             transactions.map((tx) => (
                                 <TableRow key={tx.id}>
-                                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString('ar-EG')}</TableCell>
+                                    <TableCell>{new Date(tx.transactionDate).toLocaleDateString(i18n.language)}</TableCell>
                                     <TableCell className="font-mono text-xs">{tx.orderId.substring(0,10)}...</TableCell>
                                     <TableCell className="font-mono text-xs">{tx.referralId.substring(0,10)}...</TableCell>
                                     <TableCell className="text-center">{tx.level}</TableCell>
@@ -334,7 +336,7 @@ export default function AffiliatePage() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{userData?.referralsCount ?? 0}</div>
+                    <div className="text-2xl font-bold">{(userData?.referralsCount ?? 0).toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">في جميع مستويات شبكتك</p>
                 </CardContent>
             </Card>
@@ -359,7 +361,7 @@ export default function AffiliatePage() {
                     <CardTitle className="text-sm font-medium">الترقية التالية: {nextLevelKey || 'لا يوجد'}</CardTitle>
                     {nextLevel && referralsCount < 100 /* Update requirement */ ? (
                         <CardDescription>
-                             ادعُ {100 - referralsCount} شخصًا آخر للوصول للمستوى التالي.
+                             ادعُ {(100 - referralsCount).toLocaleString()} شخصًا آخر للوصول للمستوى التالي.
                         </CardDescription>
                     ) : (
                          <CardDescription>
@@ -371,7 +373,7 @@ export default function AffiliatePage() {
                      {nextLevel ? (
                         <>
                             <Progress value={progressToNextLevel} className="h-2 my-2" />
-                            <p className="text-xs text-muted-foreground text-center">{referralsCount} / {100}</p>
+                            <p className="text-xs text-muted-foreground text-center">{(referralsCount).toLocaleString()} / {(100).toLocaleString()}</p>
                         </>
                      ) : (
                          <p className="text-sm font-medium text-center text-primary">🎉 أنت في القمة 🎉</p>

@@ -58,7 +58,7 @@ function UsersPageSkeleton() {
 }
 
 function AdminUsersPageComponent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
@@ -206,7 +206,7 @@ function AdminUsersPageComponent() {
                     <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
                     <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
+                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString(i18n.language) : 'N/A'}</TableCell>
                     <TableCell className="text-right">
                         <EditUserDialog user={user} onUserUpdate={forceCollectionUpdate}>
                             <Button variant="outline" size="sm">{t('edit')}</Button>

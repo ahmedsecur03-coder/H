@@ -27,6 +27,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
 import { GenerateAvatarDialog } from './generate-avatar-dialog';
 import { isAiConfigured } from '@/ai/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),

@@ -28,6 +28,7 @@ import { Check, X, Loader2, HandCoins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from 'react-i18next';
 
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
@@ -35,6 +36,7 @@ type Status = 'معلق' | 'مقبول' | 'مرفوض';
 function WithdrawalTable({ status }: { status: Status }) {
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -176,7 +178,7 @@ function WithdrawalTable({ status }: { status: Status }) {
               {withdrawal.details?.phoneNumber || withdrawal.details?.binanceId || 'N/A'}
             </TableCell>
             <TableCell>
-              {new Date(withdrawal.requestDate).toLocaleString('ar-EG')}
+              {new Date(withdrawal.requestDate).toLocaleString(i18n.language)}
             </TableCell>
             {status === 'معلق' && (
               <TableCell className="text-right">
