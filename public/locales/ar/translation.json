@@ -1,260 +1,322 @@
 {
-  "backToList": "العودة إلى القائمة",
-  "details": "التفاصيل",
-  "edit": "تعديل",
-  "error": "خطأ",
-  "loading": "جاري التحميل...",
-  "page": "صفحة",
-  "processing": "جاري المعالجة...",
-  "success": "نجاح!",
-  "pagination": {
-    "next": "التالي",
-    "previous": "السابق"
-  },
-  "ranks": {
-    "مستكشف نجمي": "مستكشف نجمي",
-    "قائد صاروخي": "قائد صاروخي",
-    "سيد المجرة": "سيد المجرة",
-    "سيد كوني": "سيد كوني"
-  },
-  "roles": {
-      "user": "مستخدم",
-      "admin": "مسؤول"
-  },
-  "orderStatus": {
-    "مكتمل": "مكتمل",
-    "قيد التنفيذ": "قيد التنفيذ",
-    "ملغي": "ملغي",
-    "جزئي": "جزئي"
-  },
-  "mobileHeader": {
-    "navDescription": "تنقل عبر أقسام لوحة التحكم الخاصة بك."
-  },
-  "userNav": {
-    "dashboard": "لوحة التحكم",
-    "profile": "الملف الشخصي",
-    "adminPanel": "لوحة المسؤول",
-    "signOut": "تسجيل الخروج",
-    "signOutSuccessTitle": "تم الخروج بنجاح",
-    "signOutSuccessDesc": "نراك قريباً!",
-    "signOutError": "فشل تسجيل الخروج. حاول مرة أخرى."
-  },
-  "goToAdminPanel": "الذهاب للوحة المسؤول",
-  "dashboard": {
-    "welcome": "أهلاً بك، {{name}}!",
-    "welcomeSubtitle": "هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.",
-    "mainBalance": "الرصيد الأساسي",
-    "adBalance": "الرصيد الإعلاني",
-    "totalSpent": "إجمالي الإنفاق",
-    "yourRank": "رتبتك الكونية",
-    "discount": "خصم {{discount}}%",
-    "last5Orders": "آخر 5 طلبات",
-    "service": "الخدمة",
-    "status": "الحالة",
-    "achievements": "الإنجازات الكونية",
-    "achievementsCompleted": "أكملت {{completed}} من {{total}} إنجازات",
-    "welcomeAlertTitle": "جاهز للانطلاق، {{name}}؟",
-    "welcomeAlertDesc": "ليس لديك أي طلبات بعد. ابدأ رحلتك الآن باستكشاف خدماتنا أو إضافة رصيد لحسابك.",
-    "exploreServices": "استكشف الخدمات",
-    "addFunds": "شحن الرصيد",
-    "dealOfTheDay": "صفقة اليوم",
-    "per1000": "/ لكل 1000",
-    "orderNow": "اطلب الآن"
-  },
-  "achievements": {
-    "rocketMan": "المنطلق الصاروخي",
-    "trustedUser": "المستخدم الموثوق",
-    "orderMaster": "سيد الطلبات",
-    "risingStar": "النجم الصاعد",
-    "spendingKing": "ملك الإنفاق",
-    "specialAgent": "العميل المميز",
-    "cosmicLegend": "الأسطورة الكونية",
-    "networker": "المسوق الشبكي"
-  },
-  "quickOrderForm": {
-    "title": "منطقة الإطلاق السريع",
-    "description": "أنشئ طلبًا جديدًا في ثوانٍ.",
-    "platformPlaceholder": "اختر المنصة...",
-    "categoryPlaceholder": "اختر الفئة...",
-    "servicePlaceholder": "اختر الخدمة...",
-    "linkPlaceholder": "ضع الرابط هنا...",
-    "quantityPlaceholder": "الكمية...",
-    "finalCost": "التكلفة النهائية",
-    "originalCost": "التكلفة الأصلية",
-    "discountApplied": "خصم {{discount}}% لرتبة '{{rankName}}' مطبق!",
-    "submitButton": "إرسال الطلب",
-    "fillAllFieldsError": "الرجاء ملء جميع الحقول.",
-    "quantityErrorTitle": "كمية غير صالحة",
-    "quantityErrorDesc": "الكمية يجب أن تكون بين {{min}} و {{max}}.",
-    "insufficientFundsTitle": "رصيد غير كافٍ",
-    "insufficientFundsDesc": "رصيدك (${{balance}}) لا يكفي لتغطية تكلفة الطلب (${{cost}}).",
-    "successTitle": "تم استلام الطلب!",
-    "successDesc": "طلبك قيد المعالجة الآن.",
-    "submitErrorTitle": "فشل إرسال الطلب"
-  },
-  "massOrder": {
-    "title": "الطلب الجماعي",
-    "description": "وفر الوقت عن طريق تقديم طلبات متعددة دفعة واحدة.",
-    "inputTitle": "أدخل طلباتك هنا",
-    "inputDescription": "كل سطر يمثل طلبًا منفصلاً بالتنسيق التالي:",
-    "example": "مثال",
-    "discountNote": "ملاحظة: سيتم تطبيق خصم رتبتك '{{rankName}}' ({{discount}}%) تلقائيًا على التكلفة الإجمالية.",
-    "submitButton": "معالجة الطلب الجماعي",
-    "emptyFieldError": "حقل الطلب الجماعي لا يمكن أن يكون فارغًا.",
-    "dataLoadingError": "لا يمكن معالجة الطلبات، جاري تحميل بيانات الخدمات.",
-    "resultsTitle": "نتائج المعالجة الجماعية",
-    "results": {
-        "fullSuccess": "نجاح كامل!",
-        "fullSuccessDesc": "تمت معالجة جميع طلباتك بنجاح.",
-        "partialSuccessTitle": "نجاح جزئي",
-        "partialSuccessDesc": "تمت معالجة بعض طلباتك بنجاح بينما فشلت أخرى.",
-        "fullFailureDesc": "فشلت معالجة جميع الطلبات.",
-        "successCount": "الطلبات الناجحة",
-        "errorCount": "الطلبات الفاشلة",
-        "totalCost": "التكلفة الإجمالية",
-        "errorDetails": "تفاصيل الأخطاء"
+    "home": "الرئيسية",
+    "services": "الخدمات",
+    "blog": "المدونة",
+    "login": "تسجيل الدخول",
+    "getStarted": "ابدأ الآن",
+    "goToAdminPanel": "لوحة تحكم المسؤول",
+    "page": "صفحة",
+    "details": "تفاصيل",
+    "backToList": "العودة للقائمة",
+    "edit": "تعديل",
+    "saveChanges": "حفظ التغييرات",
+    "retry": "إعادة المحاولة",
+    "processing": "جاري المعالجة...",
+    "loading": "جاري التحميل...",
+    "success": "نجاح!",
+    "error": "خطأ",
+    "dashboard": {
+        "welcome": "أهلاً بك، {{name}}!",
+        "welcomeSubtitle": "هنا ملخص سريع لحسابك. انطلق واستكشف خدماتنا.",
+        "mainBalance": "الرصيد الأساسي",
+        "adBalance": "الرصيد الإعلاني",
+        "totalSpent": "إجمالي الإنفاق",
+        "yourRank": "رتبتك الكونية",
+        "discount": "خصم {{discount}}%",
+        "last5Orders": "آخر 5 طلبات",
+        "service": "الخدمة",
+        "status": "الحالة",
+        "achievements": "الإنجازات الكونية",
+        "achievementsCompleted": "أكملت {{completed}} من {{total}} إنجازات",
+        "welcomeAlertTitle": "أهلاً بك في مجرة حاجاتي، {{name}}!",
+        "welcomeAlertDesc": "أنت لم تقم بأي طلبات بعد. استكشف خدماتنا أو قم بشحن رصيدك لتبدأ رحلتك.",
+        "exploreServices": "استكشف الخدمات",
+        "addFunds": "شحن الرصيد",
+        "dealOfTheDay": "صفقة اليوم",
+        "per1000": "/ لكل 1000",
+        "orderNow": "اطلب الآن"
     },
-    "line": "السطر",
-    "errors": {
-        "invalidFormat": "تنسيق غير صالح. يجب أن يكون 'id|link|quantity'.",
-        "serviceNotFound": "الخدمة غير موجودة.",
-        "invalidQuantity": "كمية غير صالحة.",
-        "quantityOutOfBounds": "الكمية خارج الحدود (الحد الأدنى: {{min}}، الحد الأقصى: {{max}}).",
-        "noValidOrders": "لم يتم العثور على طلبات صالحة للمعالجة.",
-        "insufficientFunds": "الرصيد غير كافٍ. التكلفة الإجمالية: ${{totalCost}}، رصيدك: ${{balance}}.",
-        "batchSubmitError": "فشل إرسال الدفعة",
-        "permissionError": "فشلت المعاملة بسبب خطأ في الصلاحيات. تحقق من قواعد الأمان."
-    }
-  },
-  "ordersPage": {
-      "title": "سجل الطلبات",
-      "description": "هنا يمكنك عرض جميع طلباتك السابقة والحالية وتتبع حالتها.",
-      "searchPlaceholder": "ابحث بالمعرف، الخدمة، أو الرابط...",
-      "statusFilterPlaceholder": "فلترة حسب الحالة",
-      "allStatuses": "جميع الحالات",
-      "table": {
-          "id": "المعرف",
-          "service": "الخدمة",
-          "link": "الرابط",
-          "quantity": "الكمية",
-          "status": "الحالة",
-          "date": "التاريخ",
-          "cost": "التكلفة"
-      },
-      "noMatchTitle": "لا توجد نتائج مطابقة!",
-      "noMatchDescription": "لم نجد أي طلبات تطابق معايير البحث والتصفية الحالية.",
-      "resetFilters": "إعادة تعيين الفلاتر"
-  },
-  "adminUsers": {
-    "title": "إدارة المستخدمين",
-    "description": "عرض وتعديل والبحث عن جميع المستخدمين في النظام.",
-    "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني...",
-    "fetchError": "فشل جلب المستخدمين.",
-    "noMatch": "لا يوجد مستخدمون يطابقون بحثك.",
-    "table": {
-      "user": "المستخدم",
-      "role": "الدور",
-      "rank": "الرتبة",
-      "balance": "الرصيد",
-      "adBalance": "رصيد الإعلانات",
-      "totalSpent": "إجمالي الإنفاق",
-      "joinDate": "تاريخ الانضمام",
-      "actions": "إجراءات"
-    }
-  },
-  "analytics": {
-    "title": "تحليلات حسابك",
-    "description": "نظرة عميقة على نشاطك وإنفاقك للحصول على رؤى قيمة.",
-    "noData": {
-        "title": "لا توجد بيانات كافية للتحليل",
-        "description": "ابدأ بتقديم بعض الطلبات، وسنبدأ في توليد رسوم بيانية ورؤى مخصصة لك هنا."
+    "orderStatus": {
+        "مكتمل": "مكتمل",
+        "قيد التنفيذ": "قيد التنفيذ",
+        "ملغي": "ملغي",
+        "جزئي": "جزئي"
     },
-    "totalSpend30Days": "إجمالي الإنفاق (آخر 30 يومًا)",
-    "totalOrders30Days": "إجمالي الطلبات (آخر 30 يومًا)",
-    "avgOrderValue": "متوسط قيمة الطلب",
-    "dailySpend": {
-        "title": "الإنفاق اليومي",
-        "description": "نظرة على إنفاقك اليومي خلال الأسبوع الماضي."
+    "ranks": {
+        "مستكشف نجمي": "مستكشف نجمي",
+        "قائد صاروخي": "قائد صاروخي",
+        "سيد المجرة": "سيد المجرة",
+        "سيد كوني": "سيد كوني"
     },
-    "categorySpend": {
-        "title": "الإنفاق حسب الفئة",
-        "description": "توزيع إنفاقك على فئات الخدمات المختلفة."
-    }
-  },
-   "api": {
-    "title": "واجهة برمجة التطبيقات (API)",
-    "description": "أتمتة طلباتك عن طريق دمج خدماتنا مباشرة في تطبيقاتك.",
-    "endpoints": {
-      "title": "نقطة النهاية",
-      "description": "يجب إرسال جميع طلبات API كطلبات POST إلى نقطة النهاية التالية:"
+    "achievements": {
+        "rocketMan": "المنطلق الصاروخي",
+        "trustedUser": "المستخدم الموثوق",
+        "orderMaster": "سيد الطلبات",
+        "risingStar": "النجم الصاعد",
+        "spendingKing": "ملك الإنفاق",
+        "specialAgent": "العميل المميز",
+        "cosmicLegend": "الأسطورة الكونية",
+        "networker": "المسوق الشبكي"
     },
-    "actions": {
-      "title": "الإجراءات المتاحة",
-      "add": {
-        "title": "إضافة طلب (add)",
-        "description": "يستخدم هذا الإجراء لتقديم طلب جديد."
-      },
-      "status": {
-        "title": "حالة الطلب (status)",
-        "description": "يستخدم هذا الإجراء للتحقق من حالة طلب معين."
-      },
-      "services": {
-        "title": "قائمة الخدمات (services)",
-        "description": "يستخدم هذا الإجراء للحصول على قائمة كاملة بجميع الخدمات المتاحة."
-      },
-      "balance": {
-        "title": "الرصيد (balance)",
-        "description": "يستخدم هذا الإجراء للتحقق من رصيد حسابك الحالي."
-      },
-      "add.params": {
-        "key": "مفتاح API الخاص بك.",
-        "action": "القيمة يجب أن تكون 'add'.",
-        "service": "معرف الخدمة التي تريد طلبها.",
-        "link": "الرابط المستهدف للطلب.",
-        "quantity": "الكمية المطلوبة."
-      },
-      "status.params": {
-        "key": "مفتاح API الخاص بك.",
-        "action": "القيمة يجب أن تكون 'status'.",
-        "order": "معرف الطلب الذي تريد التحقق منه."
-      }
+    "mobileHeader": {
+        "navDescription": "تنقل في حسابك وميزاتك من هنا."
     },
-    "parameter": "المعلمة",
-    "parameters": "المعلمات",
-    "responses": {
-      "title": "أمثلة على الاستجابات",
-      "description": "فيما يلي أمثلة على استجابات JSON التي يمكنك توقعها من الـ API.",
-      "response": "الاستجابة",
-      "addSuccess": "استجابة ناجحة عند إضافة طلب جديد. الرقم هو معرف الطلب الجديد.",
-      "statusSuccess": "استجابة ناجحة عند التحقق من حالة الطلب.",
-      "servicesSuccess": "استجابة ناجحة عند طلب قائمة الخدمات.",
-      "balanceSuccess": "استجابة ناجحة عند طلب الرصيد.",
-      "errorIncorrect": "استجابة خطأ في حالة وجود معلمات مفقودة أو غير صالحة.",
-      "errorFunds": "استجابة خطأ في حالة عدم كفاية الرصيد لتقديم الطلب.",
-      "errorKey": "استجابة خطأ في حالة أن مفتاح API غير صالح."
+    "quickOrderForm": {
+        "title": "طلب سريع",
+        "description": "قدم طلبك بسهولة وسرعة.",
+        "platformPlaceholder": "اختر المنصة",
+        "categoryPlaceholder": "اختر الفئة",
+        "servicePlaceholder": "اختر الخدمة",
+        "linkPlaceholder": "ضع الرابط هنا",
+        "quantityPlaceholder": "الكمية",
+        "finalCost": "التكلفة النهائية",
+        "originalCost": "التكلفة الأصلية",
+        "discountApplied": "تم تطبيق خصم {{discount}}% لرتبة {{rankName}}!",
+        "submitButton": "تقديم الطلب",
+        "fillAllFieldsError": "يرجى ملء جميع الحقول و اختيار الخدمة.",
+        "quantityErrorTitle": "خطأ في الكمية",
+        "quantityErrorDesc": "يجب أن تكون الكمية بين {{min}} و {{max}}.",
+        "insufficientFundsTitle": "رصيد غير كافٍ",
+        "insufficientFundsDesc": "رصيدك ({{balance}}$) لا يكفي لتغطية تكلفة الطلب ({{cost}}$).",
+        "submitErrorTitle": "فشل تقديم الطلب",
+
+        "successTitle": "تم استلام الطلب!",
+        "successDesc": "طلبك قيد التنفيذ الآن."
+    },
+    "userNav": {
+        "dashboard": "لوحة التحكم",
+        "profile": "الملف الشخصي",
+        "adminPanel": "لوحة تحكم المسؤول",
+        "signOut": "تسجيل الخروج",
+        "signOutSuccessTitle": "تم تسجيل الخروج",
+        "signOutSuccessDesc": "نراك قريباً!",
+        "signOutError": "فشل تسجيل الخروج. حاول مرة أخرى."
+    },
+    "ordersPage": {
+        "title": "سجل الطلبات",
+        "description": "اعرض تاريخ طلباتك وتتبع حالتها.",
+        "searchPlaceholder": "ابحث بالمعرف، الخدمة، أو الرابط...",
+        "statusFilterPlaceholder": "فلترة حسب الحالة",
+        "allStatuses": "جميع الحالات",
+        "table": {
+            "id": "المعرف",
+            "service": "الخدمة",
+            "link": "الرابط",
+            "quantity": "الكمية",
+            "status": "الحالة",
+            "date": "التاريخ",
+            "cost": "التكلفة"
+        },
+        "noMatchTitle": "لا توجد طلبات تطابق بحثك",
+        "noMatchDescription": "حاول تعديل كلمات البحث أو تغيير الفلاتر.",
+        "resetFilters": "إعادة تعيين الفلاتر"
+    },
+    "pagination": {
+        "previous": "السابق",
+        "next": "التالي"
+    },
+    "massOrder": {
+        "title": "طلب جماعي",
+        "description": "أضف طلبات متعددة دفعة واحدة لتوفير الوقت.",
+        "inputTitle": "صيغة الطلب الجماعي",
+        "inputDescription": "ضع كل طلب في سطر منفصل بالتنسيق التالي:",
+        "example": "مثال",
+        "discountNote": "سيتم تطبيق خصم رتبة {{rankName}} ({{discount}}%) تلقائيًا.",
+        "emptyFieldError": "حقل الطلب الجماعي فارغ.",
+        "dataLoadingError": "لا يمكن معالجة الطلب أثناء تحميل البيانات.",
+        "submitButton": "تقديم الطلبات",
+        "resultsTitle": "نتائج الطلب الجماعي",
+        "errors": {
+            "invalidFormat": "تنسيق غير صالح. يجب أن يكون service_id|link|quantity.",
+            "serviceNotFound": "الخدمة غير موجودة.",
+            "invalidQuantity": "كمية غير صالحة.",
+            "quantityOutOfBounds": "الكمية خارج الحدود المسموح بها (الحد الأدنى: {{min}}، الأقصى: {{max}}).",
+            "noValidOrders": "لم يتم العثور على طلبات صالحة للمعالجة.",
+            "insufficientFunds": "رصيد غير كافٍ. التكلفة الإجمالية ({{totalCost}}$) تتجاوز رصيدك ({{balance}}$).",
+            "permissionError": "خطأ في الصلاحيات أثناء معالجة الطلبات.",
+            "batchSubmitError": "فشل تنفيذ الطلب الجماعي."
+        },
+        "line": "السطر",
+        "results": {
+            "fullSuccess": "نجاح كامل!",
+            "fullSuccessDesc": "تم استلام جميع طلباتك ومعالجتها بنجاح.",
+            "partialSuccessTitle": "نجاح جزئي",
+            "partialSuccessDesc": "تمت معالجة بعض طلباتك بنجاح. يرجى مراجعة الأخطاء أدناه.",
+            "fullFailureDesc": "فشلت معالجة جميع الطلبات. يرجى مراجعة الأخطاء أدناه.",
+            "successCount": "الطلبات الناجحة",
+            "errorCount": "الطلبات الخاطئة",
+            "totalCost": "التكلفة الإجمالية",
+            "errorDetails": "تفاصيل الأخطاء"
+        }
+    },
+    "api": {
+        "title": "واجهة برمجة التطبيقات (API)",
+        "description": "قم بأتمتة طلباتك عن طريق دمج خدماتنا مباشرة في تطبيقاتك.",
+        "endpoints": {
+            "title": "نقطة النهاية (Endpoint)",
+            "description": "يجب إرسال جميع الطلبات كـ POST request بتنسيق JSON إلى عنوان URL التالي:"
+        },
+        "actions": {
+            "title": "الإجراءات المتاحة",
+            "add": {
+                "title": "إضافة طلب (add)",
+                "description": "يستخدم هذا الإجراء لوضع طلب جديد.",
+                "params": {
+                    "key": "مفتاح API الخاص بك.",
+                    "action": "القيمة يجب أن تكون 'add'.",
+                    "service": "معرف الخدمة.",
+                    "link": "الرابط المستهدف.",
+                    "quantity": "الكمية المطلوبة."
+                }
+            },
+            "status": {
+                "title": "حالة الطلب (status)",
+                "description": "يستخدم هذا الإجراء للتحقق من حالة طلب معين.",
+                "params": {
+                    "key": "مفتاح API الخاص بك.",
+                    "action": "القيمة يجب أن تكون 'status'.",
+                    "order": "معرف الطلب الذي تم إرجاعه عند الإنشاء."
+                }
+            },
+            "services": {
+                "title": "قائمة الخدمات (services)",
+                "description": "يستخدم هذا الإجراء للحصول على قائمة بجميع الخدمات المتاحة."
+            },
+            "balance": {
+                "title": "الرصيد (balance)",
+                "description": "يستخدم هذا الإجراء للتحقق من رصيد حسابك الحالي."
+            }
+        },
+        "parameters": "الوسائط (Parameters)",
+        "parameter": "الوسيط",
+        "responses": {
+            "title": "الاستجابات (Responses)",
+            "description": "جميع الاستجابات تكون بتنسيق JSON.",
+            "response": "الاستجابة",
+            "addSuccess": "في حالة النجاح، يتم إرجاع معرف الطلب.",
+            "statusSuccess": "في حالة النجاح، يتم إرجاع تفاصيل حالة الطلب.",
+            "servicesSuccess": "في حالة النجاح، يتم إرجاع مصفوفة من كائنات الخدمات.",
+            "balanceSuccess": "في حالة النجاح، يتم إرجاع الرصيد والعملة.",
+            "errorIncorrect": "خطأ في الطلب (مثل وسيط مفقود).",
+            "errorFunds": "رصيد غير كافٍ.",
+            "errorKey": "مفتاح API غير صالح."
+        }
+    },
+    "profile": {
+        "title": "الملف الشخصي",
+        "description": "عرض وتحديث معلومات حسابك.",
+        "rank": "الرتبة",
+        "referralCode": "كود الإحالة",
+        "userId": "معرف المستخدم",
+        "personalInfo": {
+            "title": "المعلومات الشخصية",
+            "name": "الاسم",
+            "namePlaceholder": "اسمك الكامل",
+            "avatarUrl": "رابط الصورة الرمزية"
+        },
+        "password": {
+            "title": "تغيير كلمة المرور",
+            "current": "كلمة المرور الحالية",
+            "new": "كلمة المرور الجديدة",
+            "submitButton": "تحديث كلمة المرور",
+            "toast": {
+                "success": "تم تحديث كلمة المرور بنجاح.",
+                "fail": "فشل تحديث كلمة المرور.",
+                "wrongPassword": "كلمة المرور الحالية غير صحيحة.",
+                "tooManyRequests": "محاولات كثيرة جدًا. حاول مرة أخرى لاحقًا."
+            }
+        },
+        "update": {
+            "toast": {
+                "pending": "جاري تحديث الملف الشخصي...",
+                "proxyErrorTitle": "خطأ في معالجة الصورة",
+                "success": "تم تحديث ملفك الشخصي بنجاح."
+            }
+        }
+    },
+    "avatarGenerator": {
+        "title": "مولد الصور الرمزية بالذكاء الاصطناعي",
+        "description": "صف الصورة التي تريدها، وسيقوم الذكاء الاصطناعي بتحويلها إلى صورة رمزية فريدة.",
+        "promptLabel": "وصف الصورة",
+        "promptPlaceholder": "مثال: رائد فضاء في بدلة مستقبلية",
+        "placeholder": "سيتم عرض صورتك التي تم إنشاؤها هنا.",
+        "generateButton": "توليد الصورة الرمزية",
+        "useThisImage": "استخدام هذه الصورة",
+        "toast": {
+            "generating": "جاري إنشاء الصورة الرمزية...",
+            "generationFailed": "فشل إنشاء الصورة الرمزية"
+        },
+        "errors": {
+            "promptRequired": "الرجاء إدخال وصف للصورة.",
+            "noImage": "لم يتم إرجاع أي صورة من المولد."
+        }
+    },
+    "adminUsers": {
+        "title": "إدارة المستخدمين",
+        "description": "عرض وتعديل والبحث في جميع حسابات المستخدمين في النظام.",
+        "searchPlaceholder": "ابحث بالبريد الإلكتروني، الاسم، أو المعرف...",
+        "noMatch": "لا يوجد مستخدمون يطابقون بحثك.",
+        "table": {
+            "user": "المستخدم",
+            "role": "الدور",
+            "rank": "الرتبة",
+            "balance": "الرصيد",
+            "adBalance": "رصيد الإعلانات",
+            "totalSpent": "إجمالي الإنفاق",
+            "joinDate": "تاريخ الانضمام",
+            "actions": "إجراءات"
+        }
+    },
+    "roles": {
+        "user": "مستخدم",
+        "admin": "مسؤول"
+    },
+    "analytics": {
+        "title": "تحليلات حسابك",
+        "description": "نظرة عميقة على نشاطك وإنفاقك في آخر 30 يومًا.",
+        "totalSpend30Days": "إجمالي الإنفاق (30 يومًا)",
+        "totalOrders30Days": "إجمالي الطلبات (30 يومًا)",
+        "avgOrderValue": "متوسط قيمة الطلب",
+        "dailySpend": {
+            "title": "الإنفاق اليومي",
+            "description": "إنفاقك خلال آخر 7 أيام."
+        },
+        "categorySpend": {
+            "title": "الإنفاق حسب الفئة",
+            "description": "توزيع إنفاقك على فئات الخدمات المختلفة."
+        },
+        "noData": {
+            "title": "لا توجد بيانات كافية",
+            "description": "ابدأ بتقديم بعض الطلبات لترى تحليلاتك هنا."
+        }
+    },
+    "servicesPage": {
+        "title": "كتالوج الخدمات",
+        "description": "تصفح جميع خدماتنا المتاحة مع الأسعار والتفاصيل.",
+        "searchPlaceholder": "ابحث بالمعرف أو اسم الخدمة...",
+        "platformFilterPlaceholder": "فلترة حسب المنصة",
+        "allPlatforms": "كل المنصات",
+        "categoryFilterPlaceholder": "فلترة حسب الفئة",
+        "allCategories": "كل الفئات",
+        "table": {
+            "service": "الخدمة",
+            "platform": "المنصة",
+            "pricePer1000": "السعر/1000",
+            "limits": "الحدود (أدنى/أقصى)",
+            "action": "إجراء"
+        },
+        "serviceId": "معرف الخدمة",
+        "noDescription": "لا يوجد وصف متاح لهذه الخدمة.",
+        "pricePer1000": "السعر لكل 1000",
+        "avgTime": "متوسط الوقت",
+        "minOrder": "الحد الأدنى للطلب",
+        "maxOrder": "الحد الأقصى للطلب",
+        "orderThisService": "اطلب هذه الخدمة الآن"
+    },
+    "locale": "ar-EG",
+    "theme": {
+        "light": "فاتح",
+        "dark": "داكن",
+        "system": "النظام"
     }
-  },
-  "servicesPage": {
-    "title": "كتالوج الخدمات الكامل",
-    "description": "تصفح وابحث في جميع الخدمات المتاحة لدينا.",
-    "searchPlaceholder": "ابحث بالمعرف أو اسم الخدمة...",
-    "platformFilterPlaceholder": "فلترة حسب المنصة",
-    "categoryFilterPlaceholder": "فلترة حسب الفئة",
-    "allPlatforms": "جميع المنصات",
-    "allCategories": "جميع الفئات",
-    "serviceId": "معرف الخدمة",
-    "noDescription": "لا يوجد وصف متاح لهذه الخدمة.",
-    "pricePer1000": "السعر لكل 1000",
-    "avgTime": "متوسط الوقت",
-    "minOrder": "الحد الأدنى للطلب",
-    "maxOrder": "الحد الأقصى للطلب",
-    "orderThisService": "اطلب هذه الخدمة",
-    "table": {
-      "service": "الخدمة",
-      "platform": "المنصة",
-      "pricePer1000": "السعر/1000",
-      "limits": "الحدود (د/أ)",
-      "action": "إجراء"
-    }
-  }
 }

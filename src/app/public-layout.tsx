@@ -30,6 +30,7 @@ import {
   SheetTrigger,
   SheetClose
 } from '@/components/ui/sheet';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 
 const ListItem = React.forwardRef<
@@ -129,6 +130,7 @@ function Header() {
             </NavigationMenuList>
           </NavigationMenu>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <LanguageToggle />
           <div className="hidden md:flex items-center gap-2">
             {isClient && (

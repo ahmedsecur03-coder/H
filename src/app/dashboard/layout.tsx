@@ -36,6 +36,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { LanguageToggle } from '@/components/language-toggle';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const { t } = useTranslation();
@@ -51,6 +52,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="ms-auto flex items-center gap-2 font-body">
+             <ThemeToggle />
              <LanguageToggle />
              {isAdmin && (
                 <Button variant="outline" size="sm" asChild>
