@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -65,82 +65,79 @@ function AdminUsersPageComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const currentPage = Number(searchParams.get('page')) || 1;
-  const currentSearch = searchParams.get('search') || '';
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [firstVisible, setFirstVisible] = useState<DocumentSnapshot | null>(null);
+  const [lastVisible, setLastVisible] = useState<DocumentSnapshot | null>(null);
   
-  const [debouncedSearch] = useDebounce(currentSearch, 300);
+  const currentSearch = searchParams.get('search') || '';
+  const [debouncedSearch] = useDebounce(currentSearch, 500);
 
-  const usersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users'), orderBy('createdAt', 'desc')) : null),
+  // We need to fetch all users for the EditUserDialog to work without re-fetching
+  const allUsersQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'users')) : null),
     [firestore]
   );
-  const { data: allUsers, isLoading, forceCollectionUpdate } = useCollection<User>(usersQuery);
+  const { forceCollectionUpdate } = useCollection<User>(allUsersQuery);
 
-  const { paginatedUsers, pageCount } = useMemo(() => {
-    if (!allUsers) {
-      return { paginatedUsers: [], pageCount: 0 };
+  const fetchUsers = useCallback(async (direction: 'next' | 'prev' | 'first' = 'first') => {
+    if (!firestore) return;
+    setIsLoading(true);
+
+    let q: Query = collection(firestore, 'users');
+
+    if (debouncedSearch) {
+        q = query(q, where('email', '>=', debouncedSearch), where('email', '<=', debouncedSearch + '\uf8ff'));
+    } else {
+        q = query(q, orderBy('createdAt', 'desc'));
     }
-    const filtered = allUsers.filter(user => 
-        (user.name?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) || 
-        (user.email?.toLowerCase() || '').includes(debouncedSearch.toLowerCase())
-    );
 
-    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    
-    return {
-      paginatedUsers: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
-      pageCount: totalPages,
-    };
-  }, [allUsers, debouncedSearch, currentPage]);
+    if (direction === 'next' && lastVisible) {
+        q = query(q, startAfter(lastVisible));
+    } else if (direction === 'prev' && firstVisible) {
+        q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
+    } else {
+         q = query(q, limit(ITEMS_PER_PAGE));
+    }
+
+    try {
+        const documentSnapshots = await getDocs(q);
+        const newUsers = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        
+        setUsers(newUsers);
+        setFirstVisible(documentSnapshots.docs[0] || null);
+        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+
+        if (direction === 'first') setPage(1);
+        else if (direction === 'next') setPage(p => p + 1);
+        else if (direction === 'prev' && page > 1) setPage(p => p - 1);
+
+    } catch (error) {
+        console.error(error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch users.' });
+    } finally {
+        setIsLoading(false);
+    }
+  }, [firestore, debouncedSearch, lastVisible, firstVisible, page, toast]);
+
+  useEffect(() => {
+    fetchUsers('first');
+  }, [debouncedSearch]);
 
 
-  const handleFilterChange = (key: 'search' | 'page', value: string) => {
+  const handleFilterChange = (key: 'search', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-    if (key !== 'page') {
-      params.set('page', '1');
-    }
     router.replace(`${pathname}?${params.toString()}`);
   };
-  
-   const renderPaginationItems = () => {
-    if (pageCount <= 1) return null;
-    
-    const pageNumbers: (number | 'ellipsis')[] = [];
-    if (pageCount <= 5) {
-      for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
-    } else {
-      pageNumbers.push(1);
-      if (currentPage > 3) pageNumbers.push('ellipsis');
-      
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(pageCount - 1, currentPage + 1);
-
-      if(currentPage <= 2) end = 3;
-      if(currentPage >= pageCount - 1) start = pageCount - 2;
-
-      for (let i = start; i <= end; i++) pageNumbers.push(i);
-
-      if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
-      pageNumbers.push(pageCount);
-    }
-
-    return pageNumbers.map((page, index) => (
-      <PaginationItem key={`${page}-${index}`}>
-        {page === 'ellipsis' ? <PaginationEllipsis /> : (
-          <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
-        )}
-      </PaginationItem>
-    ));
-  };
 
 
-  if (isLoading && !allUsers) {
+  if (isLoading && users.length === 0) {
     return <UsersPageSkeleton />;
   }
 
@@ -180,7 +177,13 @@ function AdminUsersPageComponent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-                {paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
+                {isLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                        </TableRow>
+                    ))
+                ) : users.length > 0 ? users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -208,7 +211,7 @@ function AdminUsersPageComponent() {
                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString(i18n.language) : 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                        <EditUserDialog user={user} onUserUpdate={forceCollectionUpdate}>
+                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
                             <Button variant="outline" size="sm">{t('edit')}</Button>
                         </EditUserDialog>
                     </TableCell>
@@ -221,21 +224,15 @@ function AdminUsersPageComponent() {
             </TableBody>
           </Table>
         </CardContent>
-         {pageCount > 1 && (
-            <CardFooter className="justify-center border-t pt-4">
-               <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
-                    </PaginationItem>
-                     {renderPaginationItems()}
-                    <PaginationItem>
-                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-            </CardFooter>
-        )}
+        <CardFooter className="flex items-center justify-between border-t pt-4">
+            <span className="text-sm text-muted-foreground">
+                Page {page}
+            </span>
+            <div className="flex gap-2">
+                <Button onClick={() => fetchUsers('prev')} disabled={isLoading || page <= 1} variant="outline">Previous</Button>
+                <Button onClick={() => fetchUsers('next')} disabled={isLoading || users.length < ITEMS_PER_PAGE} variant="outline">Next</Button>
+            </div>
+        </CardFooter>
       </Card>
     </div>
   );
