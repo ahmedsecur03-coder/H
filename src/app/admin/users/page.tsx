@@ -67,8 +67,8 @@ function AdminUsersPageComponent() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageCount, setPageCount] = useState(0);
-  const [firstDoc, setFirstDoc] = useState<DocumentSnapshot | null>(null);
-  const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
+  const [firstDoc, setFirstDoc] = useState<any | null>(null);
+  const [lastDoc, setLastDoc] = useState<any | null>(null);
   
   const fetchUsers = useCallback(async (page: number, searchTerm: string, direction: 'next' | 'prev' | 'none' = 'none') => {
     if (!firestore) return;
@@ -122,7 +122,7 @@ function AdminUsersPageComponent() {
 
   useEffect(() => {
     fetchUsers(currentPage, currentSearch);
-  }, [currentSearch, currentPage]);
+  }, [currentSearch, currentPage, fetchUsers]);
 
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
@@ -324,5 +324,3 @@ export default function AdminUsersPage() {
         </Suspense>
     )
 }
-
-    

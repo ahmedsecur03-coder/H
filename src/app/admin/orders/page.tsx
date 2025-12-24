@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useMemo, useState, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useUser } from '@/firebase';
 import { collectionGroup, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
@@ -116,8 +116,8 @@ function AdminOrdersPageComponent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageCount, setPageCount] = useState(0);
-  const [lastDoc, setLastDoc] = useState<DocumentSnapshot | null>(null);
-  const [firstDoc, setFirstDoc] = useState<DocumentSnapshot | null>(null);
+  const [lastDoc, setLastDoc] = useState<any | null>(null);
+  const [firstDoc, setFirstDoc] = useState<any | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!firestore) return;
