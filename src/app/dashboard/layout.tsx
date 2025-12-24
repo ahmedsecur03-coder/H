@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -82,12 +83,10 @@ function NavItems() {
                 </SidebarMenuSubTrigger>
                 <SidebarMenuSubContent>
                     {item.children.map((child) => (
-                      <Link key={child.href} href={child.href || '#'} passHref>
-                          <SidebarMenuSubButton isActive={pathname === child.href}>
-                              {child.icon && <child.icon className="w-4 h-4" />}
-                              <span>{child.label}</span>
-                          </SidebarMenuSubButton>
-                      </Link>
+                       <SidebarMenuSubButton key={child.href} href={child.href || '#'} isActive={pathname === child.href}>
+                            {child.icon && <child.icon className="w-4 h-4" />}
+                            <span>{child.label}</span>
+                        </SidebarMenuSubButton>
                     ))}
                 </SidebarMenuSubContent>
             </SidebarMenuSub>
@@ -107,7 +106,7 @@ function NavItems() {
     );
   };
 
-  return <>{dashboardNavItems.map((item) => renderNavItem(item))}</>;
+  return <>{dashboardNavItems.map(renderNavItem)}</>;
 }
 
 

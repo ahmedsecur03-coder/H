@@ -686,26 +686,24 @@ const SidebarMenuSubContent = ({ ...props }: React.ComponentProps<typeof Collaps
 
 const SidebarMenuSubButton = React.forwardRef<
     HTMLAnchorElement,
-     Omit<React.ComponentPropsWithoutRef<typeof Link>, "href"> & {
-      isActive?: boolean
-      href: string
-    }
-  >(({ isActive, className, children, ...props }, ref) => {
+    { isActive?: boolean; href: string } & React.ComponentPropsWithoutRef<"a">
+>(({ isActive, className, children, ...props }, ref) => {
     return (
-      <Link
-        passHref
-        ref={ref}
-        data-active={isActive}
-        className={cn(
-          "flex h-7 items-center rounded-md px-2 text-sm text-sidebar-foreground/70 outline-none ring-sidebar-ring hover:text-sidebar-accent-foreground focus-visible:ring-2 data-[active=true]:text-sidebar-primary",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </Link>
-    )
-  })
+        <Link href={props.href} passHref legacyBehavior>
+            <a
+                ref={ref}
+                data-active={isActive}
+                className={cn(
+                    "flex h-7 items-center rounded-md px-2 text-sm text-sidebar-foreground/70 outline-none ring-sidebar-ring hover:text-sidebar-accent-foreground focus-visible:ring-2 data-[active=true]:text-sidebar-primary",
+                    className
+                )}
+                {...props}
+            >
+                {children}
+            </a>
+        </Link>
+    );
+});
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
 
 
