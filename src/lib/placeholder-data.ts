@@ -1,3 +1,4 @@
+
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -50,7 +51,7 @@ export const dashboardNavItems: NestedNavItem[] = [
     label: 'الحملات الإعلانية',
     icon: Megaphone,
      children: [
-        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
+        { href: '/dashboard/campaigns', label: 'بدء واداره الحملات اعلانيه', icon: Megaphone },
         { href: '/dashboard/agency-accounts', label: 'فتح حسابات إعلانية (ايجنسي)', icon: Briefcase },
     ]
   },
