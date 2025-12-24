@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useFirestore } from '@/firebase';
+import { useState, useEffect } from 'react';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, runTransaction } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -19,9 +19,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw, DollarSign, Clock } from 'lucide-react';
+import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const statusVariant = {
   'نشط': 'default',
@@ -36,12 +38,26 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
+    // Fetch user data to check adBalance
+    const userDocRef = useMemoFirebase(
+      () => (firestore && campaign.userId ? doc(firestore, 'users', campaign.userId) : null),
+      [firestore, campaign.userId]
+    );
+    const { data: userData, isLoading: isUserLoading } = useDoc<User>(userDocRef);
+
+    const canAfford = userData ? (userData.adBalance ?? 0) >= campaign.budget : false;
+
     const handleApprove = async () => {
         if (!firestore) return;
         setLoading(true);
 
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-        const userDocRef = doc(firestore, `users/${campaign.userId}`);
+        
+        if (!userDocRef) {
+            toast({ variant: 'destructive', title: 'خطأ', description: "لا يمكن العثور على مرجع المستخدم."});
+            setLoading(false);
+            return;
+        }
 
         try {
             await runTransaction(firestore, async (transaction) => {
@@ -50,8 +66,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                     throw new Error("المستخدم المرتبط بالحملة غير موجود.");
                 }
 
-                const userData = userDoc.data() as User;
-                const currentAdBalance = userData.adBalance ?? 0;
+                const currentAdBalance = userDoc.data()?.adBalance ?? 0;
 
                 if (currentAdBalance < campaign.budget) {
                     throw new Error(`رصيد الإعلانات للمستخدم غير كافٍ. المطلوب: $${campaign.budget.toFixed(2)}, المتاح: $${currentAdBalance.toFixed(2)}`);
@@ -103,16 +118,32 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <p><strong>المستخدم:</strong> <span className="font-mono text-xs">{campaign.userId}</span></p>
-                    <p><strong>الميزانية:</strong> ${campaign.budget.toFixed(2)}</p>
+                    <p><strong>الميزانية المطلوبة:</strong> ${campaign.budget.toFixed(2)}</p>
+                     {isUserLoading ? (
+                        <Skeleton className="h-6 w-1/2" />
+                     ) : (
+                         <p><strong>رصيد إعلانات المستخدم:</strong> <span className={`font-bold ${canAfford ? 'text-green-500' : 'text-destructive'}`}>${(userData?.adBalance ?? 0).toFixed(2)}</span></p>
+                     )}
                      <p className="flex items-center gap-2"><strong>المدة:</strong> {campaign.durationDays} أيام <Clock className="w-4 h-4 text-muted-foreground" /></p>
                     <p><strong>المنصة:</strong> {campaign.platform}</p>
                     <div className="flex items-center gap-2"><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></div>
 
                      {campaign.status === 'بانتظار المراجعة' && (
                          <div className="pt-4 border-t">
-                            <Button onClick={handleApprove} disabled={loading} className="w-full">
-                                {loading ? <Loader2 className="animate-spin h-4 w-4" /> : 'الموافقة على الحملة وتفعيلها'}
-                            </Button>
+                             {isUserLoading ? (
+                                <Skeleton className="h-10 w-full" />
+                             ) : !canAfford ? (
+                                <Alert variant="destructive">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertDescription>
+                                        رصيد إعلانات المستخدم غير كافٍ للموافقة على هذه الحملة.
+                                    </AlertDescription>
+                                </Alert>
+                             ) : (
+                                <Button onClick={handleApprove} disabled={loading || isUserLoading} className="w-full">
+                                    {loading ? <Loader2 className="animate-spin h-4 w-4" /> : 'الموافقة على الحملة وتفعيلها'}
+                                </Button>
+                             )}
                          </div>
                     )}
                 </div>
