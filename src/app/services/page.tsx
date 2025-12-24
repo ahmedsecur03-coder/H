@@ -110,7 +110,7 @@ export default function ServicesPage() {
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight font-headline">كتالوج الخدمات</h1>
         <p className="text-muted-foreground mt-2">
-          اكتشف مجموعتنا الكاملة من الخدمات المصممة لتعزيز حضورك الرقمي.
+          اكتشف مجموعتنا الكاملة من الخدمات المصممة لتعزيز حضورك الرقمي. الأسعار المعروضة هي لكل 1000 وحدة من الخدمة.
         </p>
       </div>
 
