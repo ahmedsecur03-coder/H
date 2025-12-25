@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -107,6 +108,7 @@ function DepositTable({ status }: { status: Status }) {
                 const newBalance = (depositorData.balance ?? 0) + deposit.amount;
                 transaction.update(depositorRef, { 
                     balance: newBalance,
+                    totalSpent: increment(deposit.amount), // Also increment totalSpent
                     notifications: arrayUnion({
                         id: `dep-${deposit.id}`,
                         message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
@@ -176,6 +178,17 @@ function DepositTable({ status }: { status: Status }) {
                         break; // End of the chain
                     }
                 }
+            } else { // newStatus is 'مرفوض'
+                 transaction.update(depositorRef, { 
+                    notifications: arrayUnion({
+                        id: `dep-${deposit.id}-rej`,
+                        message: `تم رفض طلب الإيداع الخاص بك بقيمة ${deposit.amount}$. يرجى مراجعة الدعم الفني.`,
+                        type: 'error',
+                        read: false,
+                        createdAt: new Date().toISOString(),
+                        href: '/dashboard/add-funds'
+                    })
+                });
             }
         });
       
