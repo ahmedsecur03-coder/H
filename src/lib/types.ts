@@ -98,6 +98,13 @@ export type Campaign = {
     ctr: number;
     cpc: number;
     results: number;
+    // Detailed targeting fields
+    adLink?: string; // URL for the ad (post, website, etc.)
+    targetCountry?: string;
+    targetAge?: string; // e.g., "18-24", "25-34"
+    targetGender?: 'الكل' | 'رجال' | 'نساء';
+    targetInterests?: string; // Comma-separated list of interests
+    contactInfo?: string; // For call/whatsapp campaigns
 };
 
 export type AgencyAccount = {
@@ -178,4 +185,3 @@ export type DailyStat = {
     totalOrders: number;
     newUsers: number;
 };
-

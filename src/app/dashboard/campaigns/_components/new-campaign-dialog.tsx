@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,6 +27,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
+import { Separator } from '@/components/ui/separator';
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
 type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
@@ -46,6 +48,9 @@ const goals: { name: Goal; title: string }[] = [
   { name: 'تحويلات', title: 'تحويلات' },
 ];
 
+const ageRanges = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+const genders = ["الكل", "رجال", "نساء"];
+
 export function NewCampaignDialog({
   userData,
   children,
@@ -61,6 +66,7 @@ export function NewCampaignDialog({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [budget, setBudget] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform | ''>('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -84,22 +90,20 @@ export function NewCampaignDialog({
 
     setLoading(true);
 
-    const campaignData = {
-      name: formData.get('name') as string,
-      platform: formData.get('platform') as Platform,
-      goal: formData.get('goal') as Goal,
-      targetAudience: formData.get('targetAudience') as string,
-      durationDays: parseInt(formData.get('durationDays') as string, 10),
-    };
-    
-    const newCampaignData: Omit<Campaign, 'id' | 'agencyAccountId'> = {
+    const campaignData: Partial<Campaign> = {
         userId: user.uid,
-        name: campaignData.name,
-        platform: campaignData.platform,
-        goal: campaignData.goal,
-        targetAudience: campaignData.targetAudience,
+        name: formData.get('name') as string,
+        platform: formData.get('platform') as Platform,
+        goal: formData.get('goal') as Goal,
         budget: campaignBudget,
-        durationDays: campaignData.durationDays,
+        durationDays: parseInt(formData.get('durationDays') as string, 10),
+        adLink: formData.get('adLink') as string,
+        // Detailed targeting
+        targetCountry: formData.get('targetCountry') as string,
+        targetAge: formData.get('targetAge') as string,
+        targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
+        targetInterests: formData.get('targetInterests') as string,
+        // Default values
         startDate: new Date().toISOString(),
         spend: 0,
         status: 'بانتظار المراجعة',
@@ -108,22 +112,24 @@ export function NewCampaignDialog({
         results: 0,
         ctr: 0,
         cpc: 0,
+        targetAudience: '' // Deprecated, but keep for schema compatibility
     };
-
+    
     try {
         const campaignsColRef = collection(firestore, `users/${user.uid}/campaigns`);
-        await addDoc(campaignsColRef, newCampaignData);
+        await addDoc(campaignsColRef, campaignData);
 
         toast({ title: "نجاح!", description: "تم استلام حملتك وستتم مراجعتها من قبل الإدارة." });
         onCampaignCreated();
         setOpen(false);
         (event.target as HTMLFormElement).reset();
         setBudget('');
+        setSelectedPlatform('');
     } catch (error: any) {
        const permissionError = new FirestorePermissionError({ 
           path: `users/${user.uid}/campaigns`, 
           operation: 'create',
-          requestResourceData: newCampaignData
+          requestResourceData: campaignData
        });
        errorEmitter.emit('permission-error', permissionError);
     } finally {
@@ -134,59 +140,97 @@ export function NewCampaignDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>إنشاء حملة إعلانية جديدة</DialogTitle>
           <DialogDescription>
             املأ التفاصيل أدناه وسيقوم فريقنا بإطلاق حملتك.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-2">
            <div className="space-y-2">
             <Label htmlFor="name">اسم الحملة</Label>
-            <Input id="name" name="name" required placeholder="مثال: حملة إطلاق المنتج الجديد" />
+            <Input id="name" name="name" required placeholder="مثال: حملة تخفيضات الصيف" />
           </div>
 
+           <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Label htmlFor="platform">المنصة الإعلانية</Label>
+                 <Select name="platform" required onValueChange={(value: Platform) => setSelectedPlatform(value)}>
+                  <SelectTrigger id="platform">
+                    <SelectValue placeholder="اختر منصة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {platforms.map((p) => (
+                      <SelectItem key={p.name} value={p.name}>
+                        {p.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="goal">الهدف من الحملة</Label>
+                <Select name="goal" required>
+                  <SelectTrigger id="goal">
+                    <SelectValue placeholder="اختر هدف" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {goals.map((g) => (
+                      <SelectItem key={g.name} value={g.name}>
+                        {g.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+           </div>
+           
            <div className="space-y-2">
-            <Label htmlFor="platform">المنصة الإعلانية</Label>
-             <Select name="platform" required>
-              <SelectTrigger id="platform">
-                <SelectValue placeholder="اختر منصة إعلانية" />
-              </SelectTrigger>
-              <SelectContent>
-                {platforms.map((p) => (
-                  <SelectItem key={p.name} value={p.name}>
-                    {p.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <Label htmlFor="adLink">رابط المنشور أو الموقع</Label>
+                <Input id="adLink" name="adLink" required placeholder="https://instagram.com/p/..." />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="goal">الهدف من الحملة</Label>
-            <Select name="goal" required>
-              <SelectTrigger id="goal">
-                <SelectValue placeholder="اختر هدف الحملة" />
-              </SelectTrigger>
-              <SelectContent>
-                {goals.map((g) => (
-                  <SelectItem key={g.name} value={g.name}>
-                    {g.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="targetAudience">الجمهور المستهدف</Label>
-            <Textarea
-              id="targetAudience"
-              name="targetAudience"
-              required
-              placeholder="صف جمهورك المستهدف بالتفصيل (العمر، الاهتمامات، الموقع...)"
-            />
-          </div>
+            {/* Dynamic fields for Meta (Facebook) */}
+            {selectedPlatform === 'Facebook' && (
+                <>
+                    <Separator className="my-6" />
+                    <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold text-lg">إعدادات الاستهداف (Meta)</h4>
+                         <div className="space-y-2">
+                            <Label htmlFor="targetCountry">الدولة</Label>
+                            <Input id="targetCountry" name="targetCountry" required placeholder="مثال: مصر, السعودية" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="targetAge">الفئة العمرية</Label>
+                                <Select name="targetAge" required>
+                                    <SelectTrigger id="targetAge"><SelectValue placeholder="اختر الأعمار" /></SelectTrigger>
+                                    <SelectContent>
+                                        {ageRanges.map(age => <SelectItem key={age} value={age}>{age}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="targetGender">الجنس</Label>
+                                <Select name="targetGender" required defaultValue="الكل">
+                                    <SelectTrigger id="targetGender"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        {genders.map(gender => <SelectItem key={gender} value={gender}>{gender}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="targetInterests">الاهتمامات</Label>
+                            <Textarea id="targetInterests" name="targetInterests" placeholder="اكتب الاهتمامات مفصولة بفاصلة (مثال: كرة القدم, التسويق, ألعاب الفيديو)" />
+                        </div>
+                    </div>
+                </>
+            )}
+
+           <Separator className="my-6" />
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="budget">الميزانية ($)</Label>
@@ -194,12 +238,12 @@ export function NewCampaignDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="durationDays">مدة الحملة (أيام)</Label>
-              <Input id="durationDays" name="durationDays" type="number" required min="1" />
+              <Input id="durationDays" name="durationDays" type="number" required min="1" defaultValue="7" />
             </div>
           </div>
-           <p className="text-xs text-muted-foreground">ملاحظة: سيتم خصم الميزانية من "رصيد الإعلانات" الخاص بك (المتاح: ${userData.adBalance.toFixed(2)}) عند موافقة الإدارة.</p>
+           <p className="text-xs text-muted-foreground">ملاحظة: سيتم حجز الميزانية من "رصيد الإعلانات" (المتاح: ${userData.adBalance.toFixed(2)}) عند موافقة الإدارة.</p>
 
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال الحملة للمراجعة'}
             </Button>

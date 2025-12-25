@@ -19,11 +19,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle } from 'lucide-react';
+import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle, LinkIcon, MapPin, Cake, Users, Bullseye } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import Link from 'next/link';
 
 const statusVariant = {
   'نشط': 'default',
@@ -103,30 +104,58 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
             setLoading(false);
         }
     };
+    
+    const targetingDetails = [
+      { label: "الدولة", value: campaign.targetCountry, icon: MapPin, hide: !campaign.targetCountry },
+      { label: "العمر", value: campaign.targetAge, icon: Cake, hide: !campaign.targetAge },
+      { label: "الجنس", value: campaign.targetGender, icon: Users, hide: !campaign.targetGender },
+      { label: "الاهتمامات", value: campaign.targetInterests, icon: Bullseye, hide: !campaign.targetInterests },
+    ].filter(detail => !detail.hide);
+
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">تفاصيل</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
                 <DialogHeader>
                     <DialogTitle>إجراءات الحملة: {campaign.name}</DialogTitle>
                     <DialogDescription>
                         مراجعة تفاصيل الحملة واتخاذ الإجراء المناسب.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto px-2">
                     <p><strong>المستخدم:</strong> <span className="font-mono text-xs">{campaign.userId}</span></p>
-                    <p><strong>الميزانية المطلوبة:</strong> ${campaign.budget.toFixed(2)}</p>
+                    <p className="flex items-center gap-2"><strong>رابط الإعلان:</strong> <Link href={campaign.adLink || '#'} target="_blank" className="text-primary hover:underline truncate max-w-xs"><LinkIcon className="inline-block w-4 h-4" /> {campaign.adLink || "غير محدد"}</Link></p>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2 text-sm"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>الميزانية:</strong> ${campaign.budget.toFixed(2)}</div>
+                        <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-muted-foreground" /> <strong>المدة:</strong> {campaign.durationDays} أيام</div>
+                    </div>
                      {isUserLoading ? (
                         <Skeleton className="h-6 w-1/2" />
                      ) : (
                          <p><strong>رصيد إعلانات المستخدم:</strong> <span className={`font-bold ${canAfford ? 'text-green-500' : 'text-destructive'}`}>${(userData?.adBalance ?? 0).toFixed(2)}</span></p>
                      )}
-                     <p className="flex items-center gap-2"><strong>المدة:</strong> {campaign.durationDays} أيام <Clock className="w-4 h-4 text-muted-foreground" /></p>
-                    <p><strong>المنصة:</strong> {campaign.platform}</p>
                     <div className="flex items-center gap-2"><strong>الحالة الحالية:</strong> <Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></div>
+
+                    {targetingDetails.length > 0 && (
+                        <div className="space-y-3 pt-4 border-t">
+                            <h4 className="font-semibold">تفاصيل الاستهداف</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                {targetingDetails.map(({ label, value, icon: Icon }) => (
+                                    <div key={label} className="flex items-start gap-2">
+                                        <Icon className="w-4 h-4 mt-1 text-muted-foreground shrink-0" />
+                                        <div>
+                                            <p className="font-medium text-muted-foreground">{label}</p>
+                                            <p className="font-semibold">{value}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
 
                      {campaign.status === 'بانتظار المراجعة' && (
                          <div className="pt-4 border-t">
