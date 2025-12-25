@@ -80,19 +80,23 @@ export function useDoc<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        const contextualError = new FirestorePermissionError({
-          operation: 'get',
-          path: memoizedDocRef.path,
-        })
+        // Handle permission-denied errors gracefully
+        if (error.code === 'permission-denied') {
+          const contextualError = new FirestorePermissionError({
+            operation: 'get',
+            path: memoizedDocRef.path,
+          });
+          // Do not set local error state; the global listener will handle it.
+          // This prevents crashing the component and allows the UI to remain functional.
+          errorEmitter.emit('permission-error', contextualError);
+        } else {
+          // For other errors, set the local error state.
+          console.error("useDoc Firestore Error:", error);
+          setError(error);
+        }
         
-        // Do not set component-level error state here for permission denied,
-        // as the global error listener will handle it.
-        // setError(contextualError);
-        setData(null)
-        setIsLoading(false)
-
-        // trigger global error propagation
-        errorEmitter.emit('permission-error', contextualError);
+        setData(null);
+        setIsLoading(false);
       }
     );
 
