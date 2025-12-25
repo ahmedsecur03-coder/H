@@ -90,7 +90,7 @@ export default function AdminSettingsPage() {
 
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    const fiveDaysAgoISOString = fiveDaysAgo.toISOString(); // Use ISO string for comparison
+    const fiveDaysAgoISOString = fiveDaysAgo.toISOString();
 
     let collectionName = '';
     let dateField = '';
@@ -107,21 +107,21 @@ export default function AdminSettingsPage() {
 
     try {
         let q: any;
+        const collectionGroupRef = collectionGroup(firestore, collectionName);
         
         // Construct the query based on the type
         if (statusWhereClause) {
             q = query(
-                collectionGroup(firestore, collectionName),
+                collectionGroupRef,
                 statusWhereClause,
                 where(dateField, '<', fiveDaysAgoISOString)
             );
         } else {
              q = query(
-                collectionGroup(firestore, collectionName),
+                collectionGroupRef,
                 where(dateField, '<', fiveDaysAgoISOString)
             );
         }
-
 
         const snapshot = await getDocs(q);
         
@@ -156,11 +156,6 @@ export default function AdminSettingsPage() {
 
     } catch (error) {
         console.error(`Error cleaning up ${type}:`, error);
-        toast({
-            variant: 'destructive',
-            title: "فشل التنظيف",
-            description: "حدث خطأ أثناء عملية الحذف. تحقق من صلاحيات الأمان.",
-        });
         // We can emit a generic error here as we are dealing with multiple paths
         const permissionError = new FirestorePermissionError({
             path: `collectionGroup(${collectionName})`,
@@ -301,3 +296,4 @@ export default function AdminSettingsPage() {
   );
 
     
+

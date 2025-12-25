@@ -1,12 +1,22 @@
 rules_version = '2';
 
 service cloud.firestore {
-    match /databases/{database}/documents {
-          // Allow any user (authenticated or not) to perform any action on any document.
-              // This is a highly permissive rule set designed to prevent all permission errors as requested.
-                  // WARNING: This is insecure and not recommended for production environments.
-                      match /{document=**} {
-                              allow read, write: if true;
-                      }
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the authenticated user is the admin.
+    function isAdmin() {
+      return request.auth.token.email == 'hagaaty@gmail.com';
     }
+
+    // Rule for Admins: Admins can do anything, anywhere. This rule is checked first.
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Default permissive rule for all other users to prevent permission errors during development.
+    // This is less specific than the admin rule, so it's checked second.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
 }
