@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -110,18 +110,16 @@ export default function AdminSettingsPage() {
         const collectionGroupRef = collectionGroup(firestore, collectionName);
         
         // Construct the query based on the type
+        const queryConstraints = [
+            where(dateField, '<', fiveDaysAgoISOString),
+            orderBy(dateField, 'desc') // Ensure this matches the index order
+        ];
+
         if (statusWhereClause) {
-            q = query(
-                collectionGroupRef,
-                statusWhereClause,
-                where(dateField, '<', fiveDaysAgoISOString)
-            );
-        } else {
-             q = query(
-                collectionGroupRef,
-                where(dateField, '<', fiveDaysAgoISOString)
-            );
+            queryConstraints.unshift(statusWhereClause);
         }
+
+        q = query(collectionGroupRef, ...queryConstraints);
 
         const snapshot = await getDocs(q);
         
@@ -296,4 +294,3 @@ export default function AdminSettingsPage() {
   );
 
     
-
