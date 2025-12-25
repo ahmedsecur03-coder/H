@@ -33,6 +33,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/icons';
 import { SMM_SERVICES } from '@/lib/smm-services';
+import { motion } from 'framer-motion';
+
 
 function FeaturedServices() {
     const firestore = useFirestore();
@@ -55,7 +57,7 @@ function FeaturedServices() {
             {featuredServices.map(service => {
                 const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
                 return (
-                    <Card key={service.id} className="flex flex-col group">
+                    <Card key={service.id} className="flex flex-col group transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
                         <CardHeader className="flex-row items-center gap-4">
                             <div className="p-3 bg-muted rounded-full">
                                 <Icon className="w-6 h-6 text-foreground" />
@@ -94,7 +96,7 @@ function Testimonials() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
-                <Card key={i}>
+                <Card key={i} className="transition-all duration-300 hover:scale-105 hover:shadow-secondary/20">
                     <CardHeader>
                         <div className="flex items-center gap-4">
                             <Avatar>
@@ -128,8 +130,16 @@ function Partners() {
         <div className="bg-muted/50 rounded-xl border border-border/50 py-8 px-4">
             <h3 className="text-center text-lg font-semibold text-muted-foreground mb-6">شريك معتمد لدى أكبر المنصات العالمية</h3>
             <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
-                {partners.map(partner => (
-                     <partner.icon key={partner.name} className="h-8 text-foreground/80" />
+                {partners.map((partner, i) => (
+                     <motion.div
+                        key={partner.name}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: i * 0.1 }}
+                        viewport={{ once: true }}
+                     >
+                        <partner.icon className="h-8 text-foreground/80 transition-colors hover:text-foreground" />
+                    </motion.div>
                 ))}
             </div>
         </div>
@@ -150,19 +160,52 @@ export default function HomePage() {
       label: "استكشف الخدمات"
   }
 
+  const featureCards = [
+    {
+        icon: DollarSign,
+        title: "أسعار تنافسية",
+        description: "أفضل الأسعار في السوق مع الحفاظ على أعلى جودة للخدمات."
+    },
+    {
+        icon: Shield,
+        title: "دعم فني فوري",
+        description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة تواجهك."
+    },
+    {
+        icon: Sparkles,
+        title: "نظام متكامل",
+        description: "كل ما تحتاجه في مكان واحد، من خدمات SMM إلى إدارة الحملات ونظام الإحالة."
+    }
+  ];
+
   return (
     <div className="space-y-24 pb-8">
         <section className="relative text-center py-20 overflow-hidden">
             <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
             <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background to-primary/5"></div>
             
-            <h1 className="text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400">
+             <motion.h1 
+                initial={{ opacity: 0, y: -30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+                className="text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400"
+            >
                 شريكك المعتمد للنمو الرقمي
-            </h1>
-            <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
+            </motion.h1>
+             <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+                className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto"
+            >
                 منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
-            </p>
-            <div className="mt-10 flex justify-center gap-4">
+            </motion.p>
+             <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
+                className="mt-10 flex justify-center gap-4"
+            >
                 <Button size="lg" asChild className="text-lg py-7" disabled={isUserLoading}>
                     <Link href={primaryAction.href}>
                          <primaryAction.icon className={`ml-2 ${isUserLoading ? 'animate-spin' : ''}`} />
@@ -175,7 +218,7 @@ export default function HomePage() {
                         {secondaryAction.label}
                     </Link>
                 </Button>
-            </div>
+            </motion.div>
         </section>
         
         <Partners />
@@ -186,33 +229,20 @@ export default function HomePage() {
                 <p className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card className="text-center">
-                    <CardHeader className="items-center">
-                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
-                            <DollarSign className="h-8 w-8 text-primary" />
-                        </div>
-                        <CardTitle>أسعار تنافسية</CardTitle>
-                        <CardDescription>أفضل الأسعار في السوق مع الحفاظ على أعلى جودة للخدمات.</CardDescription>
-                    </CardHeader>
-                </Card>
-                <Card className="text-center">
-                    <CardHeader className="items-center">
-                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
-                            <Shield className="h-8 w-8 text-primary" />
-                        </div>
-                        <CardTitle>دعم فني فوري</CardTitle>
-                        <CardDescription>فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة تواجهك.</CardDescription>
-                    </CardHeader>
-                </Card>
-                <Card className="text-center">
-                    <CardHeader className="items-center">
-                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
-                            <Sparkles className="h-8 w-8 text-primary" />
-                        </div>
-                        <CardTitle>نظام متكامل</CardTitle>
-                        <CardDescription>كل ما تحتاجه في مكان واحد، من خدمات SMM إلى إدارة الحملات ونظام الإحالة.</CardDescription>
-                    </CardHeader>
-                </Card>
+                {featureCards.map((feature, i) => {
+                    const Icon = feature.icon;
+                    return (
+                        <Card key={i} className="text-center transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
+                            <CardHeader className="items-center">
+                                <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
+                                    <Icon className="h-8 w-8 text-primary" />
+                                </div>
+                                <CardTitle>{feature.title}</CardTitle>
+                                <CardDescription>{feature.description}</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    )
+                })}
             </div>
         </section>
 
@@ -288,3 +318,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
