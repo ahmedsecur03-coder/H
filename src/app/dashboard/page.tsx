@@ -18,12 +18,13 @@ import {
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
 import type { User as UserType, Order, Service } from '@/lib/types';
-import { getRankForSpend } from '@/lib/service';
+import { getRankForSpend, RANKS } from '@/lib/service';
 import { QuickOrderForm } from './_components/quick-order-form';
 import { DailyRewardCard } from './_components/daily-reward-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Progress } from '@/components/ui/progress';
 
 
 function DealOfTheDay() {
@@ -120,6 +121,11 @@ export default function DashboardPage() {
     }
   
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
+    const currentRankIndex = RANKS.findIndex(r => r.name === rank.name);
+    const nextRank = currentRankIndex < RANKS.length - 1 ? RANKS[currentRankIndex + 1] : null;
+
+    const progressToNextRank = nextRank ? ((userData.totalSpent - rank.spend) / (nextRank.spend - rank.spend)) * 100 : 100;
+    const amountToNextRank = nextRank ? nextRank.spend - userData.totalSpent : 0;
 
     return (
         <div className="space-y-6 pb-4">
@@ -163,8 +169,19 @@ export default function DashboardPage() {
                         <CardHeader className="pb-2">
                             <CardDescription>رتبتك الحالية</CardDescription>
                             <CardTitle className="text-xl text-primary">{rank.name}</CardTitle>
-                            <p className="text-xs text-muted-foreground">خصم {rank.discount}% على كل الطلبات</p>
                         </CardHeader>
+                        <CardContent>
+                            {nextRank ? (
+                                <>
+                                    <Progress value={progressToNextRank} className="h-2 my-2" />
+                                    <p className="text-xs text-muted-foreground text-center">
+                                       أنفق ${amountToNextRank.toFixed(2)} للوصول لرتبة {nextRank.name} والحصول على خصم {nextRank.discount}%.
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="text-sm font-semibold text-center text-primary">🎉 أنت في أعلى رتبة!</p>
+                            )}
+                        </CardContent>
                     </Card>
                     <DealOfTheDay />
                     <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
