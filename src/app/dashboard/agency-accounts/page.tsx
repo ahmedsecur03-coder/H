@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -55,9 +54,15 @@ export default function AgencyAccountsPage() {
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
-    const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
     const isLoading = isUserLoading || accountsLoading || userLoading;
+    
+    // Combine force updates
+    const forceUpdateAll = () => {
+        forceCollectionUpdate();
+        forceDocUpdate();
+    }
 
     if (isLoading || !userData || !authUser) {
         return <AgencyAccountsSkeleton />;
@@ -108,7 +113,7 @@ export default function AgencyAccountsPage() {
                         <CardTitle>قائمة الحسابات</CardTitle>
                         <CardDescription>جميع حسابات الوكالة التي قمت بشرائها.</CardDescription>
                     </div>
-                    <BuyAccountDialog userData={userData} onPurchaseComplete={forceCollectionUpdate}>
+                    <BuyAccountDialog userData={userData} onPurchaseComplete={forceUpdateAll}>
                         <Button>
                             <PlusCircle className="ml-2 h-4 w-4" />
                             شراء حساب جديد
@@ -142,7 +147,7 @@ export default function AgencyAccountsPage() {
                                             <TableCell><Badge variant={statusVariant[account.status]}>{account.status}</Badge></TableCell>
                                             <TableCell className="font-mono font-bold">${account.balance.toFixed(2)}</TableCell>
                                             <TableCell className="text-right">
-                                                 <ChargeAccountDialog account={account} userData={userData} onChargeComplete={forceCollectionUpdate}>
+                                                 <ChargeAccountDialog account={account} userData={userData} onChargeComplete={forceUpdateAll}>
                                                     <Button variant="outline" size="sm">شحن الرصيد</Button>
                                                  </ChargeAccountDialog>
                                             </TableCell>
@@ -158,7 +163,7 @@ export default function AgencyAccountsPage() {
                             <p className="mt-2 text-sm text-muted-foreground">
                                 ليس لديك أي حسابات إعلانية حتى الآن.
                             </p>
-                             <BuyAccountDialog userData={userData} onPurchaseComplete={forceCollectionUpdate}>
+                             <BuyAccountDialog userData={userData} onPurchaseComplete={forceUpdateAll}>
                                <Button className="mt-4">
                                     <PlusCircle className="ml-2 h-4 w-4" />
                                     شراء حساب إعلاني
@@ -171,5 +176,3 @@ export default function AgencyAccountsPage() {
         </div>
     );
 }
-
-    
