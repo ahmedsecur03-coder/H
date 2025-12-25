@@ -20,6 +20,8 @@ import {
   Zap,
   LayoutDashboard,
   Loader2,
+  Megaphone,
+  Briefcase,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -144,7 +146,7 @@ export default function HomePage() {
   }
 
   const secondaryAction = {
-      href: isUserLoading ? "#" : user ? "/dashboard/services" : "/services",
+      href: "/services",
       label: "استكشف الخدمات"
   }
 
@@ -220,6 +222,60 @@ export default function HomePage() {
                 <p className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</p>
             </div>
             <FeaturedServices />
+        </section>
+
+        <section>
+            <div className="text-center mb-12">
+                 <h2 className="text-4xl font-bold font-headline">أطلق حملاتك الإعلانية نحو النجاح</h2>
+                 <p className="text-muted-foreground mt-2">أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.</p>
+            </div>
+            <Card className="bg-card/50">
+                 <CardContent className="p-10 flex flex-col lg:flex-row items-center gap-8">
+                    <div className="flex-1">
+                        <Megaphone className="h-16 w-16 text-primary mb-4" />
+                        <h3 className="text-2xl font-semibold mb-2">إدارة احترافية لحملاتك</h3>
+                        <p className="text-muted-foreground">
+                           سواء كنت تستهدف زيادة الوعي بعلامتك التجارية، جلب زيارات لموقعك، أو تحقيق مبيعات مباشرة، فإن فريقنا المختص جاهز لإدارة حملاتك على منصات مثل جوجل وميتا وتيك توك لضمان تحقيق أفضل النتائج بأقل تكلفة.
+                        </p>
+                         <Button asChild size="lg" className="mt-6">
+                            <Link href="/dashboard/campaigns">أطلق حملتك الآن</Link>
+                        </Button>
+                    </div>
+                    <div className="flex-1 w-full flex items-center justify-center">
+                        {/* Placeholder for an image or graphic */}
+                        <div className="w-full max-w-sm h-64 bg-muted rounded-lg flex items-center justify-center">
+                           <p className="text-muted-foreground">صورة توضيحية للحملات</p>
+                        </div>
+                    </div>
+                 </CardContent>
+            </Card>
+        </section>
+
+        <section>
+            <div className="text-center mb-12">
+                 <h2 className="text-4xl font-bold font-headline">حسابات إعلانية جاهزة وموثوقة</h2>
+                 <p className="text-muted-foreground mt-2">تجاوز قيود الحسابات الجديدة واحصل على حسابات وكالة إعلانية قوية.</p>
+            </div>
+            <Card className="bg-card/50">
+                 <CardContent className="p-10 flex flex-col lg:flex-row-reverse items-center gap-8">
+                    <div className="flex-1">
+                        <Briefcase className="h-16 w-16 text-primary mb-4" />
+                        <h3 className="text-2xl font-semibold mb-2">حسابات ايجنسي (وكالة)</h3>
+                        <p className="text-muted-foreground">
+                          نوفر لك حسابات إعلانية (ايجنسي) على منصات مثل فيسبوك وجوجل، تتميز بحدود إنفاق أعلى وموثوقية أكبر. اشترِ حسابك، اشحن رصيدك، وأطلق حملاتك دون القلق من الإغلاق المفاجئ.
+                        </p>
+                         <Button asChild size="lg" className="mt-6">
+                            <Link href="/dashboard/agency-accounts">تصفح حسابات الوكالة</Link>
+                        </Button>
+                    </div>
+                    <div className="flex-1 w-full flex items-center justify-center">
+                        {/* Placeholder for an image or graphic */}
+                        <div className="w-full max-w-sm h-64 bg-muted rounded-lg flex items-center justify-center">
+                           <p className="text-muted-foreground">صورة توضيحية للحسابات</p>
+                        </div>
+                    </div>
+                 </CardContent>
+            </Card>
         </section>
 
          <section>
