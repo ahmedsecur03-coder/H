@@ -1,72 +1,37 @@
-
-'use client';
-
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { useEffect, useState } from 'react';
-import { initializeFirebase } from '@/firebase/client-provider';
+import { initializeFirebaseServer } from '@/firebase/server';
 
 
-function BlogPostSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <Skeleton className="h-8 w-1/3" />
-        <Skeleton className="h-5 w-2/3 mt-2" />
-      </div>
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/4 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full mt-2" />
-              <Skeleton className="h-4 w-1/2 mt-2" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+async function getBlogPosts(): Promise<BlogPost[]> {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) {
+        // In a real-world scenario, you might want to log this error.
+        // For the user, we'll just show an empty blog.
+        console.error("Firestore is not initialized on the server.");
+        return [];
+    }
+    
+    try {
+        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+        const querySnapshot = await getDocs(postsQuery);
+        const fetchedPosts: BlogPost[] = [];
+        querySnapshot.forEach(doc => {
+            fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
+        });
+        return fetchedPosts;
+    } catch (e) {
+        console.error("Could not fetch blog posts from server:", e);
+        return []; // Return empty on error
+    }
 }
 
 
-export default function BlogPage() {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const { firestore } = initializeFirebase(); // Using client-side SDK
-
-    useEffect(() => {
-        const fetchPosts = async () => {
-            if (!firestore) {
-                setIsLoading(false);
-                return;
-            }
-            try {
-                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-                const querySnapshot = await getDocs(postsQuery);
-                const fetchedPosts: BlogPost[] = [];
-                querySnapshot.forEach(doc => {
-                    fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
-                });
-                setPosts(fetchedPosts);
-            } catch(e) {
-                console.error("Could not fetch blog posts", e);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchPosts();
-    }, [firestore]);
-
+export default async function BlogPage() {
+    const posts = await getBlogPosts();
 
   return (
     <div className="space-y-6 pb-8">
@@ -77,9 +42,7 @@ export default function BlogPage() {
         </p>
       </div>
 
-      {isLoading ? (
-        <BlogPostSkeleton />
-      ) : posts && posts.length > 0 ? (
+      {posts && posts.length > 0 ? (
         <div className="space-y-6">
           {posts.map(post => (
             <Card key={post.id}>
