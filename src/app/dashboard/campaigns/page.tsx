@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Clock, Briefcase } from "lucide-react";
+import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
@@ -22,9 +22,10 @@ function CampaignsSkeleton() {
                 <Skeleton className="h-8 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Skeleton className="h-28" />
-                 <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
             </div>
             <Card>
                 <CardHeader>
@@ -56,6 +57,15 @@ export default function CampaignsPage() {
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
 
+    const stats = useMemo(() => {
+        if (!campaigns) return { active: 0, totalSpend: 0 };
+        return campaigns.reduce((acc, c) => {
+            if (c.status === 'نشط') acc.active++;
+            acc.totalSpend += c.spend || 0;
+            return acc;
+        }, { active: 0, totalSpend: 0 });
+    }, [campaigns]);
+
     if (isLoading || !userData || !authUser) {
         return <CampaignsSkeleton />;
     }
@@ -75,6 +85,39 @@ export default function CampaignsPage() {
             <p className="text-muted-foreground">
              أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.
             </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${(userData.adBalance || 0).toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">يُستخدم لشراء وشحن الحسابات الإعلانية.</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">الحملات النشطة</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.active}</div>
+                     <p className="text-xs text-muted-foreground">إجمالي الحملات التي تعمل حاليًا.</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${stats.totalSpend.toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">مجموع ما تم إنفاقه على كل الحملات.</p>
+                </CardContent>
+            </Card>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -104,7 +147,7 @@ export default function CampaignsPage() {
                             <TableRow>
                                 <TableHead>اسم الحملة</TableHead>
                                 <TableHead>الحالة</TableHead>
-                                <TableHead>المدة</TableHead>
+                                <TableHead>الإنفاق / الميزانية</TableHead>
                                 <TableHead className="text-right">الإجراءات</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -120,11 +163,8 @@ export default function CampaignsPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
-                                    <TableCell>
-                                        <div className='flex items-center gap-1 text-muted-foreground'>
-                                            <Clock className="w-3.5 h-3.5" />
-                                            <span>{campaign.durationDays} أيام</span>
-                                        </div>
+                                    <TableCell className="font-mono">
+                                        ${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <UserCampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
