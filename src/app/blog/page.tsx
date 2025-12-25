@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -8,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useEffect, useState } from 'react';
-import { initializeFirebaseServer } from '@/firebase/server';
+import { initializeFirebase } from '@/firebase/client-provider';
 
 
 function BlogPostSkeleton() {
@@ -35,35 +36,14 @@ function BlogPostSkeleton() {
   );
 }
 
-// This is now a server component function to fetch data
-async function getBlogPosts() {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) {
-        return [];
-    }
-    const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-    const querySnapshot = await getDocs(postsQuery);
-    const posts: BlogPost[] = [];
-    querySnapshot.forEach(doc => {
-        posts.push({ id: doc.id, ...doc.data() } as BlogPost);
-    });
-    return posts;
-}
-
 
 export default function BlogPage() {
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { firestore } = initializeFirebase(); // Using client-side SDK
 
     useEffect(() => {
-        // Since we cannot use async functions directly in client components for initial render,
-        // we'll fetch the data in a useEffect. For true static generation, this page would need to be refactored.
-        // This simulates a static-like fetch on the client side.
         const fetchPosts = async () => {
-            // This is a bit of a workaround because we can't use server-side fetching directly
-            // in this client component setup without a larger refactor.
-            // We use the client-side SDK to fetch the posts.
-            const { firestore } = initializeFirebase();
             if (!firestore) {
                 setIsLoading(false);
                 return;
@@ -83,7 +63,7 @@ export default function BlogPage() {
             }
         };
         fetchPosts();
-    }, []);
+    }, [firestore]);
 
 
   return (
@@ -127,3 +107,4 @@ export default function BlogPage() {
     </div>
   );
 }
+
