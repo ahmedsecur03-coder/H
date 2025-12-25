@@ -67,9 +67,15 @@ function Header() {
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -98,7 +104,10 @@ function Header() {
 
 
   return (
-    <header className="sticky top-0 z-50 bg-background/50 backdrop-blur-lg border-b border-border">
+    <header className={cn(
+      "sticky top-0 z-50 transition-all duration-300",
+      scrolled ? "bg-background/80 backdrop-blur-lg border-b border-border" : "bg-transparent border-b border-transparent"
+    )}>
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
          <NavigationMenu className="hidden md:flex">
