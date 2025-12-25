@@ -35,6 +35,7 @@ import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 
 function FeaturedServices() {
@@ -213,6 +214,10 @@ export default function HomePage() {
     }
   ];
 
+  const campaignsImage = PlaceHolderImages.find(p => p.id === 'campaigns-placeholder');
+  const agencyAccountsImage = PlaceHolderImages.find(p => p.id === 'agency-accounts-placeholder');
+
+
   return (
     <div className="space-y-24 pb-8">
         <section className="relative text-center py-20 overflow-hidden">
@@ -344,11 +349,17 @@ export default function HomePage() {
                             <Link href="/dashboard/campaigns">أطلق حملتك الآن</Link>
                         </Button>
                     </div>
-                    <div className="flex-1 w-full flex items-center justify-center">
-                        {/* Placeholder for an image or graphic */}
-                        <div className="w-full max-w-sm h-64 bg-muted rounded-lg flex items-center justify-center">
-                           <p className="text-muted-foreground">صورة توضيحية للحملات</p>
-                        </div>
+                     <div className="flex-1 w-full flex items-center justify-center">
+                         {campaignsImage && (
+                            <Image
+                                src={campaignsImage.imageUrl}
+                                alt={campaignsImage.description}
+                                width={500}
+                                height={333}
+                                className="rounded-lg shadow-lg"
+                                data-ai-hint={campaignsImage.imageHint}
+                            />
+                         )}
                     </div>
                  </CardContent>
             </Card>
@@ -381,11 +392,17 @@ export default function HomePage() {
                             <Link href="/dashboard/agency-accounts">تصفح حسابات الوكالة</Link>
                         </Button>
                     </div>
-                    <div className="flex-1 w-full flex items-center justify-center">
-                        {/* Placeholder for an image or graphic */}
-                        <div className="w-full max-w-sm h-64 bg-muted rounded-lg flex items-center justify-center">
-                           <p className="text-muted-foreground">صورة توضيحية للحسابات</p>
-                        </div>
+                     <div className="flex-1 w-full flex items-center justify-center">
+                        {agencyAccountsImage && (
+                             <Image
+                                src={agencyAccountsImage.imageUrl}
+                                alt={agencyAccountsImage.description}
+                                width={500}
+                                height={333}
+                                className="rounded-lg shadow-lg"
+                                data-ai-hint={agencyAccountsImage.imageHint}
+                            />
+                        )}
                     </div>
                  </CardContent>
             </Card>
