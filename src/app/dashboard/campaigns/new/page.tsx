@@ -34,23 +34,75 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
-type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفاعل مع المنشور' | 'زيادة الوعي' | 'تحويلات';
+type Goal = string; // Goal is now a generic string
 
-
-const platforms: { name: Platform; title: string; enabled: boolean }[] = [
-    { name: 'Facebook', title: 'Meta (Facebook & Instagram)', enabled: true },
-    { name: 'Google', title: 'Google Ads', enabled: true },
-    { name: 'TikTok', title: 'TikTok Ads', enabled: true },
-    { name: 'Snapchat', title: 'Snapchat Ads', enabled: true },
-];
-
-const goals: { name: Goal; title: string }[] = [
-  { name: 'زيادة الوعي', title: 'زيادة الوعي (Brand Awareness)' },
-  { name: 'زيارات للموقع', title: 'زيارات للموقع (Website Traffic)' },
-  { name: 'تفاعل مع المنشور', title: 'تفاعل مع المنشور (Engagement)' },
-  { name: 'مشاهدات فيديو', title: 'مشاهدات فيديو (Video Views)' },
-  { name: 'تحويلات', title: 'تحويلات (Conversions)' },
-];
+// --- Platform-specific configurations ---
+const platformConfig = {
+  Facebook: {
+    title: 'Meta (Facebook & Instagram)',
+    enabled: true,
+    goals: [
+      'زيادة الوعي', 
+      'زيارات للموقع', 
+      'تفاعل مع المنشور', 
+      'مشاهدات فيديو', 
+      'تحويلات',
+      'رسائل'
+    ],
+    linkField: {
+        label: "رابط المنشور أو الموقع",
+        placeholder: "https://instagram.com/p/..."
+    }
+  },
+  Google: {
+    title: 'Google Ads',
+    enabled: true,
+    goals: [
+      'حملة بحث',
+      'حملة أداء أقصى (Performance Max)',
+      'حملة فيديو (YouTube)',
+      'حملة تسوق',
+      'حملة تطبيقات',
+      'مكالمات هاتفية',
+    ],
+     linkField: {
+        label: "رابط الموقع الإلكتروني",
+        placeholder: "https://your-business.com"
+    }
+  },
+  TikTok: {
+    title: 'TikTok Ads',
+    enabled: true,
+    goals: [
+      'الوصول', 
+      'زيارات للموقع', 
+      'مشاهدات فيديو', 
+      'تفاعل المجتمع', 
+      'الترويج للتطبيق',
+      'تحويلات'
+    ],
+    linkField: {
+        label: "رابط فيديو تيك توك أو الموقع",
+        placeholder: "https://tiktok.com/@user/video/..."
+    }
+  },
+  Snapchat: {
+    title: 'Snapchat Ads',
+    enabled: true,
+    goals: [
+      'زيادة الوعي', 
+      'زيارات للموقع', 
+      'مشاهدات فيديو', 
+      'تثبيت التطبيق', 
+      'الفلاتر والعدسات'
+    ],
+     linkField: {
+        label: "رابط الموقع أو العدسة",
+        placeholder: "https://snapchat.com/unlock/..."
+    }
+  },
+};
+// --- ---
 
 const ageRanges = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
 const genders = ["الكل", "رجال", "نساء"];
@@ -75,6 +127,8 @@ export default function NewCampaignPage() {
     const [step, setStep] = useState(1);
     const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
     const [loading, setLoading] = useState(false);
+    
+    const currentConfig = selectedPlatform ? platformConfig[selectedPlatform] : null;
 
     const handlePlatformSelect = (platform: Platform) => {
         setSelectedPlatform(platform);
@@ -150,21 +204,22 @@ export default function NewCampaignPage() {
                          <Card>
                             <CardHeader><CardTitle>الخطوة 1: اختر منصة الإعلان</CardTitle></CardHeader>
                             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {platforms.map((p) => {
-                                    const Icon = PLATFORM_ICONS[p.name];
+                                {(Object.keys(platformConfig) as Platform[]).map((p) => {
+                                    const config = platformConfig[p];
+                                    const Icon = PLATFORM_ICONS[p];
                                     return (
                                         <button
-                                            key={p.name}
-                                            onClick={() => p.enabled && handlePlatformSelect(p.name)}
-                                            disabled={!p.enabled}
+                                            key={p}
+                                            onClick={() => config.enabled && handlePlatformSelect(p)}
+                                            disabled={!config.enabled}
                                             className={cn(
                                                 "p-6 border rounded-lg text-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
-                                                p.enabled ? "hover:border-primary hover:bg-primary/10 hover:scale-105" : "bg-muted/50"
+                                                config.enabled ? "hover:border-primary hover:bg-primary/10 hover:scale-105" : "bg-muted/50"
                                             )}
                                         >
                                             <Icon className="h-12 w-12 mx-auto mb-2" />
-                                            <p className="font-semibold">{p.title}</p>
-                                            {!p.enabled && <p className="text-xs text-muted-foreground">(قريباً)</p>}
+                                            <p className="font-semibold">{config.title}</p>
+                                            {!config.enabled && <p className="text-xs text-muted-foreground">(قريباً)</p>}
                                         </button>
                                     );
                                 })}
@@ -173,7 +228,7 @@ export default function NewCampaignPage() {
                     </motion.div>
                 )}
 
-                {step === 2 && selectedPlatform && (
+                {step === 2 && selectedPlatform && currentConfig && (
                     <motion.div key="step2" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}>
                         <form onSubmit={handleSubmit}>
                             <Card>
@@ -181,7 +236,7 @@ export default function NewCampaignPage() {
                                     <div className="flex items-center gap-4">
                                          <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground"><ArrowRight className="h-5 w-5" /></button>
                                         <div>
-                                            <CardTitle>الخطوة 2: تفاصيل حملة {selectedPlatform}</CardTitle>
+                                            <CardTitle>الخطوة 2: تفاصيل حملة {currentConfig.title}</CardTitle>
                                             <CardDescription>املأ بيانات حملتك. سيتم حجز الميزانية من رصيد إعلاناتك (${userData?.adBalance.toFixed(2)}) عند موافقة الإدارة.</CardDescription>
                                         </div>
                                     </div>
@@ -189,8 +244,8 @@ export default function NewCampaignPage() {
                                 <CardContent className="space-y-4">
                                     {/* General Fields */}
                                     <div className="space-y-2"><Label htmlFor="name">اسم الحملة</Label><Input id="name" name="name" required placeholder="مثال: حملة تخفيضات الصيف" /></div>
-                                    <div className="space-y-2"><Label htmlFor="goal">الهدف من الحملة</Label><Select name="goal" required><SelectTrigger id="goal"><SelectValue placeholder="اختر هدف" /></SelectTrigger><SelectContent>{goals.map((g) => (<SelectItem key={g.name} value={g.name}>{g.title}</SelectItem>))}</SelectContent></Select></div>
-                                    <div className="space-y-2"><Label htmlFor="adLink">رابط المنشور أو الموقع</Label><Input id="adLink" name="adLink" required placeholder="https://instagram.com/p/..." /></div>
+                                    <div className="space-y-2"><Label htmlFor="goal">الهدف من الحملة</Label><Select name="goal" required><SelectTrigger id="goal"><SelectValue placeholder="اختر هدف" /></SelectTrigger><SelectContent>{currentConfig.goals.map((g) => (<SelectItem key={g} value={g}>{g}</SelectItem>))}</SelectContent></Select></div>
+                                    <div className="space-y-2"><Label htmlFor="adLink">{currentConfig.linkField.label}</Label><Input id="adLink" name="adLink" required placeholder={currentConfig.linkField.placeholder} /></div>
                                     
                                     <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
                                         <h4 className="font-semibold">إعدادات الاستهداف</h4>
@@ -199,7 +254,7 @@ export default function NewCampaignPage() {
                                             <div className="space-y-2"><Label htmlFor="targetAge">الفئة العمرية</Label><Select name="targetAge" required><SelectTrigger id="targetAge"><SelectValue placeholder="اختر الأعمار" /></SelectTrigger><SelectContent>{ageRanges.map(age => <SelectItem key={age} value={age}>{age}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-2"><Label htmlFor="targetGender">الجنس</Label><Select name="targetGender" required defaultValue="الكل"><SelectTrigger id="targetGender"><SelectValue /></SelectTrigger><SelectContent>{genders.map(gender => <SelectItem key={gender} value={gender}>{gender}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
-                                        <div className="space-y-2"><Label htmlFor="targetInterests">الاهتمامات</Label><Textarea id="targetInterests" name="targetInterests" placeholder="اكتب الاهتمامات مفصولة بفاصلة (مثال: كرة القدم, التسويق)" /></div>
+                                        <div className="space-y-2"><Label htmlFor="targetInterests">الاهتمامات (اختياري)</Label><Textarea id="targetInterests" name="targetInterests" placeholder="اكتب الاهتمامات مفصولة بفاصلة (مثال: كرة القدم, التسويق)" /></div>
                                     </div>
                                    
 
@@ -225,7 +280,9 @@ export default function NewCampaignPage() {
                     <motion.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
                         <Card>
                             <CardContent className="p-10">
-                                 <Rocket className="h-16 w-16 mx-auto text-green-500" />
+                                 <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto">
+                                     <Rocket className="h-8 w-8" />
+                                 </div>
                                 <h2 className="text-2xl font-bold mt-4">تم استلام حملتك بنجاح!</h2>
                                 <p className="text-muted-foreground mt-2">
                                     قام فريقنا باستلام طلب حملتك الإعلانية، وستتم مراجعتها وتفعيلها في أقرب وقت ممكن. يمكنك متابعة حالتها من صفحة إدارة الحملات.
