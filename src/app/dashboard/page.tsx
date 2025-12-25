@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -31,6 +32,7 @@ import { SMM_SERVICES } from '@/lib/smm-services';
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { NewCampaignDialog } from './campaigns/_components/new-campaign-dialog';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -39,55 +41,6 @@ const statusVariant = {
   'جزئي': 'outline',
 } as const;
 
-
-function DealOfTheDay() {
-    const getDayOfYear = () => {
-        const now = new Date();
-        const start = new Date(now.getFullYear(), 0, 0);
-        const diff = (now as any) - (start as any);
-        const oneDay = 1000 * 60 * 60 * 24;
-        return Math.floor(diff / oneDay);
-    };
-
-    const service = useMemo(() => {
-        if (!SMM_SERVICES || SMM_SERVICES.length === 0) return null;
-        const dayOfYear = getDayOfYear();
-        const dealIndex = dayOfYear % SMM_SERVICES.length;
-        return SMM_SERVICES[dealIndex];
-    }, []);
-
-    if (!service) {
-        return null; 
-    }
-    
-    const prefillUrl = `/dashboard/mass-order?prefill=${encodeURIComponent(`${service.id}| |`)}`;
-
-    return (
-        <Card className="bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent border-primary/30">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline">
-                    <Star className="text-yellow-400" />
-                    <span>صفقة اليوم</span>
-                </CardTitle>
-                <CardDescription>
-                    {service.platform} - {service.category}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-                <p className="text-4xl font-bold font-mono">${(service.price * 1.50).toFixed(3)}</p>
-                <p className="text-xs text-muted-foreground">/ لكل 1000</p>
-            </CardContent>
-             <CardContent>
-                <Button asChild className="w-full">
-                   <Link href={prefillUrl}>
-                     <ChevronLeft className="h-4 w-4 me-2" />
-                        اطلب الآن
-                   </Link>
-                </Button>
-            </CardContent>
-        </Card>
-    );
-}
 
 function DashboardSkeleton() {
     return (
@@ -103,11 +56,17 @@ function DashboardSkeleton() {
                         <Skeleton className="h-28" />
                         <Skeleton className="h-28" />
                     </div>
-                    <Skeleton className="h-96" />
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Skeleton className="h-20" />
+                        <Skeleton className="h-20" />
+                     </div>
+                    <Skeleton className="h-[500px]" />
+                    <Skeleton className="h-64" />
                 </div>
                 <div className="lg:col-span-1 space-y-4">
                      <Skeleton className="h-40" />
                     <Skeleton className="h-44 w-full" />
+                     <Skeleton className="h-44 w-full" />
                 </div>
             </div>
         </div>
@@ -179,6 +138,23 @@ export default function DashboardPage() {
                           </CardContent>
                         </Card>
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <NewCampaignDialog userData={userData} onCampaignCreated={() => {}}>
+                            <Button className="w-full text-lg py-7" variant="outline">
+                                <PlusCircle className="ml-2 h-5 w-5" />
+                                إنشاء حملة جديدة
+                            </Button>
+                        </NewCampaignDialog>
+                        <Button variant="outline" className="w-full text-lg py-7" asChild>
+                            <Link href="/dashboard/agency-accounts">
+                                <Briefcase className="ml-2 h-5 w-5" />
+                                إدارة حسابات الوكالة
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <QuickOrderForm user={authUser} userData={userData} />
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
