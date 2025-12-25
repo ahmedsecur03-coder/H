@@ -38,6 +38,7 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
             if (remaining <= 0) {
                 setTimeLeft('');
                 clearInterval(intervalId);
+                // We might need to force a re-render here if the parent doesn't automatically do it
             } else {
                 const hours = Math.floor(remaining / (1000 * 60 * 60));
                 const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -57,7 +58,6 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
         setIsClaiming(true);
         const userRef = doc(firestore, 'users', authUser.uid);
         
-        // This is a transaction, so we await it. The non-blocking refactor is for simple writes.
         try {
             await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userRef);
