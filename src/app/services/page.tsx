@@ -207,7 +207,7 @@ export default function ServicesPage() {
               </CardContent>
               <CardFooter>
                   <Button asChild className="w-full">
-                      <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${selectedService.id}|link|quantity`)}`}>
+                      <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${selectedService.id}| |`)}`}>
                           اطلب هذه الخدمة
                       </Link>
                   </Button>
