@@ -25,6 +25,7 @@ import {
   HandCoins,
   AppWindow,
   UserCircle,
+  Info,
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -41,6 +42,7 @@ export const publicNavItems: NestedNavItem[] = [
         { href: '/#', label: 'تصميم المواقع', description: 'تصميم وتطوير مواقع احترافية لعملك.', icon: AppWindow },
       ]
     },
+    { href: '/about', label: 'من نحن', icon: Info },
     { href: '/blog', label: 'المدونة', icon: BookOpen },
 ];
 
