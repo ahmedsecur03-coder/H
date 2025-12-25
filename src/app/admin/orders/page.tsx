@@ -118,6 +118,8 @@ function AdminOrdersPageComponent() {
   const [pageCount, setPageCount] = useState(0);
   const [lastDoc, setLastDoc] = useState<any | null>(null);
   const [firstDoc, setFirstDoc] = useState<any | null>(null);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+
 
   const fetchOrders = useCallback(async () => {
     if (!firestore) return;
@@ -126,50 +128,52 @@ function AdminOrdersPageComponent() {
     try {
         let q: FirestoreQuery = collectionGroup(firestore, 'orders');
         
-        // Firestore doesn't support complex text search + inequality filters well.
-        // We will filter by status in the query, and search will be a simplified client-side filter
-        // on the fetched page data. This is a compromise for performance. A better solution
-        // would involve a dedicated search service like Algolia.
         if (currentStatus !== 'all') {
             q = query(q, where('status', '==', currentStatus));
         }
-
-        // We apply ordering after status filter
-        q = query(q, orderBy('orderDate', 'desc'));
         
-        // Pagination logic would be more complex with cursors and changing queries.
-        // For simplicity and given the constraints, we'll fetch a slightly larger set and paginate client-side for now.
-        // A production-ready solution would store pagination cursors.
+        q = query(q, orderBy('orderDate', 'desc'));
+
         const snapshot = await getDocs(q);
         let ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-
-        // Client-side search on the (potentially status-filtered) results
-        if(currentSearch) {
-            ordersData = ordersData.filter(order => 
-                order.id.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                order.userId.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                order.serviceName.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                (order.link && order.link.toLowerCase().includes(currentSearch.toLowerCase()))
-            );
-        }
         
-        const totalPages = Math.ceil(ordersData.length / ITEMS_PER_PAGE);
-        setPageCount(totalPages);
-
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        setOrders(ordersData.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+        setAllOrders(ordersData);
 
     } catch(error) {
         console.error("Failed to fetch orders:", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.'})
+        toast({ variant: 'destructive', title: "Error", description: 'Could not fetch orders.'})
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, currentStatus, currentSearch, currentPage]);
+  }, [firestore, toast, currentStatus]);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  const { paginatedOrders, totalPages } = useMemo(() => {
+    if (!allOrders) return { paginatedOrders: [], totalPages: 0 };
+    
+    const filtered = allOrders.filter(order => 
+        currentSearch
+        ? order.id.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          order.userId.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          order.serviceName.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          (order.link && order.link.toLowerCase().includes(currentSearch.toLowerCase()))
+        : true
+    );
+
+    const total = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    return { paginatedOrders: paginated, totalPages: total };
+
+  }, [allOrders, currentSearch, currentPage]);
+
+  useEffect(() => {
+    setPageCount(totalPages);
+  }, [totalPages]);
 
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
@@ -227,7 +231,7 @@ function AdminOrdersPageComponent() {
     ));
   };
   
-  if (isLoading && orders.length === 0) {
+  if (isLoading && allOrders.length === 0) {
     return <OrdersPageSkeleton />;
   }
 
@@ -297,15 +301,15 @@ function AdminOrdersPageComponent() {
         </CardContent>
       </Card>
 
-      {isLoading && orders.length === 0 ? (
+      {isLoading && paginatedOrders.length === 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
         </div>
-      ) : orders.length > 0 ? (
+      ) : paginatedOrders.length > 0 ? (
         <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
-                {orders.map(order => <OrderCard key={order.id} order={order} />)}
+                {paginatedOrders.map(order => <OrderCard key={order.id} order={order} />)}
             </div>
 
             {/* Desktop View */}
@@ -324,7 +328,7 @@ function AdminOrdersPageComponent() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {orders.map((order) => (
+                    {paginatedOrders.map((order) => (
                     <TableRow key={order.id}>
                         <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
                         <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>

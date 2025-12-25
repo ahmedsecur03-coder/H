@@ -67,49 +67,42 @@ function AdminUsersPageComponent() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageCount, setPageCount] = useState(0);
-  const [firstDoc, setFirstDoc] = useState<any | null>(null);
-  const [lastDoc, setLastDoc] = useState<any | null>(null);
   
-  const fetchUsers = useCallback(async (page: number, searchTerm: string, direction: 'next' | 'prev' | 'none' = 'none') => {
+  const fetchUsers = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-        let baseQuery: Query;
-        if (searchTerm) {
-            // Firestore doesn't support full-text search on multiple fields natively with case-insensitivity.
-            // This is a workaround that searches for an exact match on email, which is more likely to be unique.
-            // A more robust solution would use a dedicated search service like Algolia or Typesense.
-             baseQuery = query(collection(firestore, 'users'), where('email', '>=', searchTerm), where('email', '<=', searchTerm + '\uf8ff'));
-        } else {
-            baseQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+        let baseQuery: Query = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+        
+        if (currentSearch) {
+             baseQuery = query(collection(firestore, 'users'), where('email', '>=', currentSearch), where('email', '<=', currentSearch + '\uf8ff'));
         }
-
-        const countQuery = baseQuery; // Use the same base query for counting
+        
+        const countQuery = baseQuery;
         const totalUsersSnapshot = await getCountFromServer(countQuery);
         const totalUsers = totalUsersSnapshot.data().count;
-        setPageCount(Math.ceil(totalUsers / ITEMS_PER_PAGE));
-        
+        const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
+        setPageCount(totalPages);
+
         let finalQuery = baseQuery;
-        if (direction === 'next' && lastDoc) {
-          finalQuery = query(baseQuery, startAfter(lastDoc), limit(ITEMS_PER_PAGE));
-        } else if (direction === 'prev' && firstDoc) {
-          finalQuery = query(baseQuery, endBefore(firstDoc), limitToLast(ITEMS_PER_PAGE));
+        if (currentPage > 1) {
+            const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+            // For robust pagination with dynamic queries, a server-side solution or more complex cursor management is ideal.
+            // As a client-side simplification, we'll refetch and slice.
+            // This is less efficient but works for moderate datasets.
+            const allMatchingUsersSnapshot = await getDocs(baseQuery);
+            const allUsers = allMatchingUsersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+            setUsers(allUsers.slice(offset, offset + ITEMS_PER_PAGE));
+            return;
         } else {
-          // For initial load or direct page jumps (simplified)
-           if (page > 1 && !searchTerm) { // Pagination without cursors is complex with variable queries, simplifying for non-search
-               // This is a simplification and might not be perfectly accurate on direct page jumps with search.
-               // A full cursor-based pagination would require storing cursors for every page.
-           }
-           finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
+             finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
         }
 
         const snapshot = await getDocs(finalQuery);
         const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
         
         setUsers(usersData);
-        setFirstDoc(snapshot.docs[0] || null);
-        setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
 
     } catch (error) {
         console.error(error);
@@ -117,17 +110,16 @@ function AdminUsersPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, lastDoc, firstDoc]);
+  }, [firestore, toast, currentSearch, currentPage]);
 
 
   useEffect(() => {
-    fetchUsers(currentPage, currentSearch);
-  }, [currentSearch, currentPage, fetchUsers]);
+    fetchUsers();
+  }, [fetchUsers]);
 
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    const direction = key === 'page' ? (Number(value) > currentPage ? 'next' : 'prev') : 'none';
     if (value) {
       params.set(key, value);
     } else {
@@ -137,7 +129,6 @@ function AdminUsersPageComponent() {
       params.set('page', '1');
     }
     router.replace(`${pathname}?${params.toString()}`);
-    // The useEffect will trigger the fetch
   };
   
    const renderPaginationItems = () => {
@@ -195,7 +186,7 @@ function AdminUsersPageComponent() {
             </div>
         </CardContent>
         <CardFooter>
-            <EditUserDialog user={user} onUserUpdate={() => fetchUsers(currentPage, currentSearch)}>
+            <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
                 <Button variant="outline" size="sm" className="w-full">تعديل</Button>
             </EditUserDialog>
         </CardFooter>
@@ -282,7 +273,7 @@ function AdminUsersPageComponent() {
                                     <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
-                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers(currentPage, currentSearch)}>
+                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
                                             <Button variant="outline" size="sm">تعديل</Button>
                                         </EditUserDialog>
                                     </TableCell>
