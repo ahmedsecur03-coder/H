@@ -76,40 +76,27 @@ function AdminServicesPageComponent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
   
-  const [services, setServices] = useState<Service[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
+  
 
   const fetchServiceData = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-        // Step 1: Get dynamic prices from Firestore
         const pricesSnapshot = await getDocs(collection(firestore, 'servicePrices'));
         const pricesMap = new Map<string, number>();
         pricesSnapshot.forEach(doc => {
             pricesMap.set(doc.id, doc.data().price);
         });
 
-        // Step 2: Merge with static data from SMM_SERVICES
-        const allServices = SMM_SERVICES.map(service => ({
+        const mergedServices = SMM_SERVICES.map(service => ({
             ...service,
-            price: pricesMap.get(service.id) ?? service.price, // Use Firestore price if available, otherwise fallback
+            price: pricesMap.get(String(service.id)) ?? service.price,
         }));
         
-        // Step 3: Apply client-side filtering and pagination
-        const filtered = allServices.filter(service =>
-          service.id.toString().includes(currentSearch) ||
-          service.category.toLowerCase().includes(currentSearch.toLowerCase()) ||
-          service.platform.toLowerCase().includes(currentSearch.toLowerCase())
-        );
-
-        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-        setPageCount(totalPages);
-
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        setServices(filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+        setAllServices(mergedServices);
 
     } catch (error) {
         console.error("Error fetching services data: ", error);
@@ -117,13 +104,27 @@ function AdminServicesPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, currentSearch, currentPage, toast]);
+  }, [firestore, toast]);
 
 
   useEffect(() => {
     fetchServiceData();
   }, [fetchServiceData]);
 
+  const { paginatedServices, pageCount } = useMemo(() => {
+    const filtered = allServices.filter(service =>
+        !currentSearch ||
+        String(service.id).includes(currentSearch) ||
+        service.category.toLowerCase().includes(currentSearch.toLowerCase()) ||
+        service.platform.toLowerCase().includes(currentSearch.toLowerCase())
+    );
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    return { paginatedServices: paginated, pageCount: totalPages };
+  }, [allServices, currentSearch, currentPage]);
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -166,14 +167,14 @@ function AdminServicesPageComponent() {
   const handleSaveService = (data: { price: number }) => {
     if (!firestore || !selectedService) return;
 
-    const priceDocRef = doc(firestore, 'servicePrices', selectedService.id);
+    const priceDocRef = doc(firestore, 'servicePrices', String(selectedService.id));
     
     toast({ title: 'جاري حفظ السعر...' });
 
     updateDoc(priceDocRef, data)
     .then(() => {
         toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
-        fetchServiceData(); // Re-fetch data to show updated price
+        fetchServiceData(); 
         setIsDialogOpen(false);
         setSelectedService(undefined);
     }).catch(serverError => {
@@ -186,62 +187,24 @@ function AdminServicesPageComponent() {
     });
   };
 
-  const handleDeleteService = (id: string) => {
-      if (!firestore) return;
-      // This now only deletes the price document, leaving the static data intact.
-      // The service will still appear in the list but may use a fallback price.
-      const priceDocRef = doc(firestore, 'servicePrices', id);
-      deleteDoc(priceDocRef)
-        .then(() => {
-            toast({ title: 'نجاح', description: 'تم حذف السعر المخصص للخدمة.' });
-            fetchServiceData();
-        })
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({ path: priceDocRef.path, operation: 'delete' });
-            errorEmitter.emit('permission-error', permissionError);
-        });
-  };
-
   const handleOpenDialog = (service?: Service) => {
       setSelectedService(service);
       setIsDialogOpen(true);
   }
-
-  const ServiceCard = ({ service }: { service: Service }) => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium truncate">{service.category}</CardTitle>
-        <CardDescription>{service.platform} - #{service.id}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <div className="flex justify-between">
-            <span className="text-muted-foreground">السعر/1000</span>
-            <span className="font-semibold">${service.price.toFixed(4)}</span>
-        </div>
-        <div className="flex justify-between">
-            <span className="text-muted-foreground">الحدود</span>
-            <span>{service.min} / {service.max}</span>
-        </div>
-         <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">ضمان</span>
-            {service.guarantee ? <Badge variant="default" className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 ml-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 ml-1" />لا</Badge>}
-        </div>
-      </CardContent>
-      <CardFooter className="gap-2">
-         <Button variant="ghost" size="sm" className="flex-1" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
-      </CardFooter>
-    </Card>
-  );
+  
+  if (isLoading && allServices.length === 0) {
+    return <ServicesPageSkeleton />;
+  }
 
   const renderContent = () => {
-    if (isLoading) {
-      return Array.from({length: 10}).map((_, i) => (
+    if (isLoading && paginatedServices.length === 0) {
+      return Array.from({length: ITEMS_PER_PAGE}).map((_, i) => (
         <TableRow key={i}>
           {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
         </TableRow>
       ));
     }
-     if (!services || services.length === 0) {
+     if (paginatedServices.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={8}>
@@ -261,7 +224,7 @@ function AdminServicesPageComponent() {
         </TableRow>
       );
     }
-    return services.map(service => (
+    return paginatedServices.map(service => (
       <TableRow key={service.id}>
           <TableCell className="font-mono text-xs">{service.id}</TableCell>
           <TableCell>{service.category}</TableCell>
@@ -310,39 +273,25 @@ function AdminServicesPageComponent() {
             </form>
         </CardHeader>
         <CardContent className="p-0">
-          {isLoading ? (
-             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {Array.from({ length: 12 }).map((_, i) => <Skeleton key={i} className="h-60" />)}
-            </div>
-          ) : !services || services.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="mx-auto bg-muted p-4 rounded-full"><ListFilter className="h-12 w-12 text-muted-foreground" /></div>
-                <h3 className="mt-4 font-headline text-2xl">{currentSearch ? "لا توجد خدمات تطابق بحثك" : "لا توجد خدمات لعرضها"}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{currentSearch ? "حاول تغيير كلمات البحث." : "ابدأ بمزامنة أسعار الخدمات."}</p>
-            </div>
-          ) : (
-            <>
-              <div className="hidden lg:block">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>رقم الخدمة</TableHead>
-                            <TableHead>الاسم</TableHead>
-                            <TableHead>المنصة</TableHead>
-                            <TableHead>السعر/1000</TableHead>
-                            <TableHead>الحدود</TableHead>
-                            <TableHead className="text-center">ضمان</TableHead>
-                            <TableHead className="text-center">إعادة تعبئة</TableHead>
-                            <TableHead className="text-right">إجراءات</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {renderContent()}
-                    </TableBody>
-                </Table>
-              </div>
-            </>
-          )}
+          <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>رقم الخدمة</TableHead>
+                        <TableHead>الاسم</TableHead>
+                        <TableHead>المنصة</TableHead>
+                        <TableHead>السعر/1000</TableHead>
+                        <TableHead>الحدود</TableHead>
+                        <TableHead className="text-center">ضمان</TableHead>
+                        <TableHead className="text-center">إعادة تعبئة</TableHead>
+                        <TableHead className="text-right">إجراءات</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {renderContent()}
+                </TableBody>
+            </Table>
+          </div>
         </CardContent>
          {pageCount > 1 && (
             <CardFooter className="flex items-center justify-center border-t pt-4">
