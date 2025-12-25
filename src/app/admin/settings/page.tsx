@@ -89,7 +89,7 @@ export default function AdminSettingsPage() {
 
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    const fiveDaysAgoTimestamp = Timestamp.fromDate(fiveDaysAgo);
+    const fiveDaysAgoISOString = fiveDaysAgo.toISOString(); // Use ISO string for comparison
 
     let collectionName = '';
     let dateField = '';
@@ -107,7 +107,7 @@ export default function AdminSettingsPage() {
     try {
         let q = query(
             collectionGroup(firestore, collectionName),
-            where(dateField, '<', fiveDaysAgoTimestamp.toDate().toISOString())
+            where(dateField, '<', fiveDaysAgoISOString) // Compare string with string
         );
 
         if (statusWhereClause) {
@@ -290,4 +290,5 @@ export default function AdminSettingsPage() {
         </CardFooter>
     </div>
   );
-}
+
+    
