@@ -41,7 +41,6 @@ export default function AdminSettingsPage() {
   const [binanceId, setBinanceId] = useState('');
   const [usdRate, setUsdRate] = useState('');
   const [whatsappSupport, setWhatsappSupport] = useState('');
-  const [dealOfTheDay, setDealOfTheDay] = useState('');
 
   useEffect(() => {
     if (settingsData) {
@@ -49,7 +48,6 @@ export default function AdminSettingsPage() {
       setBinanceId(settingsData.binanceId || '');
       setUsdRate(settingsData.usdRate?.toString() || '');
       setWhatsappSupport(settingsData.whatsappSupport || '');
-      setDealOfTheDay(settingsData.dealOfTheDay || '');
     }
   }, [settingsData]);
 
@@ -63,7 +61,6 @@ export default function AdminSettingsPage() {
         binanceId,
         usdRate: parseFloat(usdRate) || 0,
         whatsappSupport,
-        dealOfTheDay,
     };
 
     setDoc(settingsDocRef, settingsToSave, { merge: true })
@@ -226,10 +223,6 @@ export default function AdminSettingsPage() {
                      <div className="space-y-2">
                         <Label htmlFor="whatsapp-support">رابط دعم واتساب</Label>
                         <Input id="whatsapp-support" value={whatsappSupport} onChange={e => setWhatsappSupport(e.target.value)} placeholder="https://wa.me/2010xxxxxxxx" />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="deal-of-day">معرف خدمة "صفقة اليوم"</Label>
-                        <Input id="deal-of-day" value={dealOfTheDay} onChange={e => setDealOfTheDay(e.target.value)} placeholder="أدخل ID الخدمة" />
                     </div>
                 </CardContent>
              </Card>

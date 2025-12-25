@@ -25,44 +25,31 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
+import { SMM_SERVICES } from '@/lib/smm-services';
+import { useMemo } from 'react';
 
 
 function DealOfTheDay() {
-    const firestore = useFirestore();
+    const getDayOfYear = () => {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 0);
+        const diff = (now as any) - (start as any);
+        const oneDay = 1000 * 60 * 60 * 24;
+        return Math.floor(diff / oneDay);
+    };
 
-    const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
-    const { data: settingsData, isLoading: settingsLoading } = useDoc<any>(settingsDocRef);
-    
-    const serviceId = settingsData?.dealOfTheDay;
+    const service = useMemo(() => {
+        if (!SMM_SERVICES || SMM_SERVICES.length === 0) return null;
+        const dayOfYear = getDayOfYear();
+        const dealIndex = dayOfYear % SMM_SERVICES.length;
+        return SMM_SERVICES[dealIndex];
+    }, []);
 
-    // We can't query for a specific document by ID with useDoc and a variable like this easily,
-    // so we will fetch all services and find the one. This is not ideal for performance if there are many services.
-    // A better approach would be a dedicated hook or a server component.
-    // For now, let's assume SMM_SERVICES is available on the client for this component.
-    // A better way is to fetch the single service doc.
-    const serviceDocRef = useMemoFirebase(() => (firestore && serviceId) ? doc(firestore, 'servicePrices', serviceId) : null, [firestore, serviceId]);
-    const { data: servicePriceData, isLoading: serviceLoading } = useDoc<Service>(serviceDocRef);
-    
-    const serviceStaticData = useMemoFirebase(() => {
-        const { SMM_SERVICES } = require('@/lib/smm-services');
-        return SMM_SERVICES.find((s: Service) => s.id === serviceId);
-    }, [serviceId]);
-
-
-    const isLoading = settingsLoading || serviceLoading;
-
-    if (isLoading) {
-        return <Skeleton className="h-44 w-full" />;
+    if (!service) {
+        return null; 
     }
     
-    if (!serviceId || !serviceStaticData) {
-        return null; // Don't render if no deal is set or service not found
-    }
-    
-    const serviceData = { ...serviceStaticData, price: servicePriceData?.price ?? serviceStaticData.price };
-
-    const prefillUrl = `/dashboard/mass-order?prefill=${encodeURIComponent(`${serviceData.id}| |`)}`;
-
+    const prefillUrl = `/dashboard/mass-order?prefill=${encodeURIComponent(`${service.id}| |`)}`;
 
     return (
         <Card className="bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent border-primary/30">
@@ -72,11 +59,11 @@ function DealOfTheDay() {
                     <span>صفقة اليوم</span>
                 </CardTitle>
                 <CardDescription>
-                    {serviceData.platform} - {serviceData.category}
+                    {service.platform} - {service.category}
                 </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-                <p className="text-4xl font-bold font-mono">${serviceData.price.toFixed(3)}</p>
+                <p className="text-4xl font-bold font-mono">${service.price.toFixed(3)}</p>
                 <p className="text-xs text-muted-foreground">/ لكل 1000</p>
             </CardContent>
              <CardContent>
