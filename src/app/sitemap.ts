@@ -8,10 +8,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const publicRoutes = [
     '/',
     '/services',
+    '/about',
     '/blog',
-    '/agency-accounts',
-    '/login',
-    '/signup'
+    '/auth/login',
+    '/auth/signup'
   ];
 
   const publicUrls = publicRoutes.map((route) => ({
@@ -29,6 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       '/dashboard/add-funds',
       '/dashboard/affiliate',
       '/dashboard/campaigns',
+      '/dashboard/agency-accounts',
       '/dashboard/support',
       '/dashboard/api',
       '/dashboard/system-status',
