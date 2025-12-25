@@ -220,79 +220,28 @@
       "type": "object",
       "description": "Represents an advertising campaign.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the campaign entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Campaign)"
-        },
-        "name": {
-            "type": "string",
-            "description": "Name of the campaign."
-        },
-        "platform": {
-          "type": "string",
-          "enum": ["Google", "Facebook", "TikTok", "Snapchat"],
-          "description": "Platform the campaign is running on."
-        },
-        "goal": {
-          "type": "string",
-          "enum": ["زيارات للموقع", "مشاهدات فيديو", "تفاعل مع المنشور", "زيادة الوعي", "تحويلات"],
-          "description": "The objective of the campaign."
-        },
-        "targetAudience": {
-            "type": "string",
-            "description": "A description of the target audience for the campaign."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "Date and time the campaign started.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "Date and time the campaign ended.",
-          "format": "date-time"
-        },
-        "budget": {
-          "type": "number",
-          "description": "Budget allocated to the campaign."
-        },
-        "durationDays": {
-            "type": "number",
-            "description": "Duration of the campaign in days."
-        },
-        "spend": {
-            "type": "number",
-            "description": "Amount of the budget already spent."
-        },
-        "status": {
-          "type": "string",
-          "enum": ["نشط", "متوقف", "مكتمل", "بانتظار المراجعة"],
-          "description": "Current status of the campaign."
-        },
-        "impressions": {
-            "type": "number",
-            "description": "Total number of times the ad was shown."
-        },
-        "clicks": {
-            "type": "number",
-            "description": "Total number of clicks on the ad."
-        },
-        "ctr": {
-            "type": "number",
-            "description": "Click-Through Rate (clicks / impressions)."
-        },
-        "cpc": {
-            "type": "number",
-            "description": "Cost Per Click (spend / clicks)."
-        },
-        "results": {
-            "type": "number",
-            "description": "Number of results achieved, based on the campaign goal."
-        }
+        "id": { "type": "string", "description": "Unique identifier for the campaign." },
+        "userId": { "type": "string", "description": "Reference to the User who created the campaign." },
+        "name": { "type": "string", "description": "Name of the campaign." },
+        "platform": { "type": "string", "description": "Platform the campaign is running on." },
+        "goal": { "type": "string", "description": "The objective of the campaign." },
+        "adLink": { "type": "string", "description": "The URL to the ad creative (post, website, etc.)." },
+        "targetCountry": { "type": "string", "description": "Target country for the ad." },
+        "targetAge": { "type": "string", "description": "Target age range for the ad." },
+        "targetGender": { "type": "string", "enum": ["الكل", "رجال", "نساء"], "description": "Target gender for the ad." },
+        "targetInterests": { "type": "string", "description": "Comma-separated list of target interests." },
+        "targetAudience": { "type": "string", "description": "A description of the target audience for the campaign." },
+        "startDate": { "type": "string", "description": "Date the campaign started.", "format": "date-time" },
+        "endDate": { "type": "string", "description": "Date the campaign ended.", "format": "date-time" },
+        "budget": { "type": "number", "description": "Budget allocated to the campaign." },
+        "durationDays": { "type": "number", "description": "Duration of the campaign in days." },
+        "spend": { "type": "number", "description": "Amount of the budget already spent." },
+        "status": { "type": "string", "enum": ["نشط", "متوقف", "مكتمل", "بانتظار المراجعة"], "description": "Current status of the campaign." },
+        "impressions": { "type": "number", "description": "Total number of times the ad was shown." },
+        "clicks": { "type": "number", "description": "Total number of clicks on the ad." },
+        "ctr": { "type": "number", "description": "Click-Through Rate (clicks / impressions)." },
+        "cpc": { "type": "number", "description": "Cost Per Click (spend / clicks)." },
+        "results": { "type": "number", "description": "Number of results achieved, based on the campaign goal." }
       },
       "required": [
         "id",
@@ -300,11 +249,12 @@
         "name",
         "platform",
         "goal",
-        "targetAudience",
-        "startDate",
+        "adLink",
+        "targetCountry",
+        "targetAge",
+        "targetGender",
         "budget",
         "durationDays",
-        "spend",
         "status"
       ]
     },
@@ -643,4 +593,3 @@
     }
   }
 }
-
