@@ -146,39 +146,39 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
     ]
 
     return (
-        <div class="space-y-8 pb-8">
+        <div className="space-y-8 pb-8">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight font-headline">الملف الشخصي</h1>
-                <p class="text-muted-foreground">
+                <h1 className="text-3xl font-bold tracking-tight font-headline">الملف الشخصي</h1>
+                <p className="text-muted-foreground">
                     إدارة معلومات حسابك وتفضيلاتك.
                 </p>
             </div>
 
-            <Card class="overflow-hidden">
-                <div class="bg-gradient-to-r from-primary/10 via-background to-background p-6 flex flex-col md:flex-row items-center gap-6">
-                    <div class="relative">
-                        <Avatar class="h-28 w-28 border-4 border-primary/50 shadow-lg">
+            <Card className="overflow-hidden">
+                <div className="bg-gradient-to-r from-primary/10 via-background to-background p-6 flex flex-col md:flex-row items-center gap-6">
+                    <div className="relative">
+                        <Avatar className="h-28 w-28 border-4 border-primary/50 shadow-lg">
                             <AvatarImage src={currentAvatarUrl || undefined} alt={userData.name} />
-                            <AvatarFallback class="text-4xl"><UserIcon /></AvatarFallback>
+                            <AvatarFallback className="text-4xl"><UserIcon /></AvatarFallback>
                         </Avatar>
-                        {isSaving && <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 class="animate-spin text-primary"/></div>}
+                        {isSaving && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
                         
                          {isAiConfigured() && (
                             <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
-                                <Button size="icon" class="absolute -bottom-2 -end-2 h-8 w-8 rounded-full border-2 border-background">
-                                    <Palette class="h-4 w-4"/>
+                                <Button size="icon" className="absolute -bottom-2 -end-2 h-8 w-8 rounded-full border-2 border-background">
+                                    <Palette className="h-4 w-4"/>
                                 </Button>
                             </GenerateAvatarDialog>
                         )}
                     </div>
-                    <div class="flex-1 text-center md:text-right">
+                    <div className="flex-1 text-center md:text-right">
                         
-                        <h2 class="text-3xl font-bold font-headline">{profileForm.watch('name')}</h2>
-                        <p class="text-muted-foreground">{userData.email}</p>
-                         <div class="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
+                        <h2 className="text-3xl font-bold font-headline">{profileForm.watch('name')}</h2>
+                        <p className="text-muted-foreground">{userData.email}</p>
+                         <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
                            {infoBadges.map(badge => (
-                                <Badge key={badge.label} variant="secondary" class={badge.isMono ? 'font-mono' : ''}>
-                                   <span class="font-normal opacity-75 ml-1">{badge.label}:</span> {badge.value}
+                                <Badge key={badge.label} variant="secondary" className={badge.isMono ? 'font-mono' : ''}>
+                                   <span className="font-normal opacity-75 ml-1">{badge.label}:</span> {badge.value}
                                 </Badge>
                            ))}
                         </div>
@@ -186,14 +186,14 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                 </div>
             </Card>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card>
                     <CardHeader>
                         <CardTitle>المعلومات الشخصية</CardTitle>
                     </CardHeader>
                     <Form {...profileForm}>
                         <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)}>
-                            <CardContent class="space-y-4">
+                            <CardContent className="space-y-4">
                                     <FormField
                                     control={profileForm.control}
                                     name="name"
@@ -223,7 +223,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             </CardContent>
                             <CardFooter>
                                 <Button type="submit" disabled={isSaving}>
-                                    {isSaving && <Loader2 class="ml-2 animate-spin" />}
+                                    {isSaving && <Loader2 className="ml-2 animate-spin" />}
                                     حفظ التغييرات
                                 </Button>
                             </CardFooter>
@@ -237,7 +237,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                     </CardHeader>
                         <Form {...passwordForm}>
                         <form onSubmit={passwordForm.handleSubmit(handlePasswordUpdate)}>
-                            <CardContent class="space-y-4">
+                            <CardContent className="space-y-4">
                                     <FormField
                                     control={passwordForm.control}
                                     name="currentPassword"
@@ -267,7 +267,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             </CardContent>
                             <CardFooter>
                                 <Button type="submit" disabled={isPasswordSubmitting}>
-                                    {isPasswordSubmitting && <Loader2 class="ml-2 animate-spin" />}
+                                    {isPasswordSubmitting && <Loader2 className="ml-2 animate-spin" />}
                                     تغيير كلمة المرور
                                 </Button>
                             </CardFooter>

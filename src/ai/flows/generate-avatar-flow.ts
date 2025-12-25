@@ -34,7 +34,7 @@ const generateAvatarFlow = ai.defineFlow(
     const enhancedPrompt = `cinematic, fantasy, space, cosmic, astronaut, close-up portrait of ${input.prompt}, professional illustration, epic, stunning, highly detailed, octane render, 8k`;
 
     const { media } = await ai.generate({
-      model: 'googleai/imagen-2.0-fast-image-preview', // Using Imagen 2 for image generation
+      model: 'googleai/imagen-4.0-fast-generate-001', // Using a newer, faster model
       prompt: enhancedPrompt,
       config: {
         // You can add specific image generation parameters here if needed
