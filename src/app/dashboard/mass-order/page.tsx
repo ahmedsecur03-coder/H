@@ -5,7 +5,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@
 import { runTransaction, collection, doc, query } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListOrdered, Loader2, PlusCircle, Trash2 } from "lucide-react";
+import { ListOrdered, Loader2, PlusCircle, Trash2, Copy } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from '@/hooks/use-toast';
 import type { Service, Order, User } from '@/lib/types';
@@ -36,6 +36,7 @@ function MassOrderRow({
     row,
     updateRow,
     removeRow,
+    duplicateRow,
     platforms,
     categories,
     services,
@@ -45,6 +46,7 @@ function MassOrderRow({
     row: OrderRow;
     updateRow: (id: number, data: Partial<OrderRow>) => void;
     removeRow: (id: number) => void;
+    duplicateRow: (id: number) => void;
     platforms: string[];
     categories: string[];
     services: Service[];
@@ -75,6 +77,14 @@ function MassOrderRow({
 
     return (
         <div className="p-4 border rounded-lg space-y-3 relative bg-muted/30">
+             <div className="absolute top-1 right-1 rtl:left-1 rtl:right-auto flex gap-1">
+                 <Button type="button" variant="ghost" size="icon" onClick={() => duplicateRow(row.id)} disabled={isProcessing} className="h-7 w-7 text-muted-foreground hover:text-primary">
+                    <Copy className="h-4 w-4" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon" onClick={() => removeRow(row.id)} disabled={isProcessing} className="h-7 w-7 text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Select value={row.platform} onValueChange={handlePlatformChange} disabled={isProcessing}>
                     <SelectTrigger><SelectValue placeholder="اختر المنصة" /></SelectTrigger>
@@ -108,9 +118,6 @@ function MassOrderRow({
                 />
             </div>
             <div className="flex justify-between items-center text-sm">
-                 <Button type="button" variant="ghost" size="icon" onClick={() => removeRow(row.id)} disabled={isProcessing} className="text-destructive hover:text-destructive absolute top-1 right-1 rtl:left-1 rtl:right-auto">
-                    <Trash2 className="h-4 w-4" />
-                </Button>
                 <div className="text-muted-foreground">
                     {selectedService && `الحدود: ${selectedService.min} / ${selectedService.max}`}
                 </div>
@@ -181,6 +188,20 @@ function MassOrderPageComponent() {
 
     const removeRow = (id: number) => {
         setRows(prev => prev.filter(row => row.id !== id));
+    };
+
+    const duplicateRow = (id: number) => {
+        setRows(prev => {
+            const rowIndex = prev.findIndex(row => row.id === id);
+            if (rowIndex === -1) return prev;
+            
+            const rowToDuplicate = prev[rowIndex];
+            const newRow = { ...rowToDuplicate, id: ++rowIdCounter };
+            
+            const newRows = [...prev];
+            newRows.splice(rowIndex + 1, 0, newRow);
+            return newRows;
+        });
     };
     
     const { totalCost, validRows } = useMemo(() => {
@@ -264,6 +285,7 @@ function MassOrderPageComponent() {
                             row={row}
                             updateRow={updateRow}
                             removeRow={removeRow}
+                            duplicateRow={duplicateRow}
                             platforms={platforms}
                             categories={getCategoriesForPlatform(row.platform)}
                             services={getServicesForCategory(row.platform, row.category)}
