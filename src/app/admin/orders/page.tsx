@@ -78,20 +78,22 @@ function OrdersPageSkeleton() {
             </Card>
             <Card>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                                <TableRow key={i}>
-                                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
                  <CardFooter className="justify-center border-t pt-4">
                     <Skeleton className="h-9 w-64" />
@@ -315,36 +317,38 @@ function AdminOrdersPageComponent() {
             {/* Desktop View */}
             <Card className="hidden md:block">
             <CardContent className="p-0">
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>المعرف</TableHead>
-                    <TableHead>المستخدم</TableHead>
-                    <TableHead>الخدمة</TableHead>
-                    <TableHead>الرابط</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead className="text-right">التكلفة</TableHead>
-                    <TableHead className="text-right">إجراءات</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {paginatedOrders.map((order) => (
-                    <TableRow key={order.id}>
-                        <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
-                        <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
-                        <TableCell className="font-medium">{order.serviceName}</TableCell>
-                        <TableCell><a href={order.link} className="text-primary hover:underline" target="_blank">{order.link}</a></TableCell>
-                        <TableCell>
-                            <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">
-                            <OrderActions order={order} onOrderUpdate={fetchOrders} />
-                        </TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
+                <div className="overflow-x-auto">
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>المعرف</TableHead>
+                        <TableHead>المستخدم</TableHead>
+                        <TableHead>الخدمة</TableHead>
+                        <TableHead>الرابط</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead className="text-right">التكلفة</TableHead>
+                        <TableHead className="text-right">إجراءات</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedOrders.map((order) => (
+                        <TableRow key={order.id}>
+                            <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
+                            <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
+                            <TableCell className="font-medium">{order.serviceName}</TableCell>
+                            <TableCell><a href={order.link} className="text-primary hover:underline" target="_blank">{order.link}</a></TableCell>
+                            <TableCell>
+                                <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                                <OrderActions order={order} onOrderUpdate={fetchOrders} />
+                            </TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                    </Table>
+                </div>
             </CardContent>
             </Card>
             {pageCount > 1 && (

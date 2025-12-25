@@ -80,13 +80,13 @@ function OrdersPageSkeleton() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                                {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                                 <TableRow key={i}>
-                                    {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                                    {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -255,42 +255,44 @@ function OrdersPageComponent() {
       {paginatedOrders.length > 0 ? (
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">المعرف</TableHead>
-                  <TableHead>الخدمة</TableHead>
-                  <TableHead>الرابط</TableHead>
-                  <TableHead className="text-center">الكمية</TableHead>
-                  <TableHead className="text-center">الحالة</TableHead>
-                  <TableHead className="text-center">التاريخ</TableHead>
-                  <TableHead className="text-right">التكلفة</TableHead>
-                   <TableHead className="text-right">إجراء</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
-                    <TableCell className="font-medium">{order.serviceName}</TableCell>
-                    <TableCell><a href={order.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block max-w-xs">{order.link}</a></TableCell>
-                    <TableCell className="text-center">{order.quantity.toLocaleString()}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
-                    <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
-                            <RefreshCw className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">المعرف</TableHead>
+                    <TableHead>الخدمة</TableHead>
+                    <TableHead>الرابط</TableHead>
+                    <TableHead className="text-center">الكمية</TableHead>
+                    <TableHead className="text-center">الحالة</TableHead>
+                    <TableHead className="text-center">التاريخ</TableHead>
+                    <TableHead className="text-right">التكلفة</TableHead>
+                    <TableHead className="text-right">إجراء</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
+                      <TableCell className="font-medium">{order.serviceName}</TableCell>
+                      <TableCell><a href={order.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block max-w-xs">{order.link}</a></TableCell>
+                      <TableCell className="text-center">{order.quantity.toLocaleString()}</TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
+                      <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="icon" asChild>
+                          <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
+                              <RefreshCw className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
            {pageCount > 1 && (
              <CardFooter className="justify-center border-t pt-4">
@@ -322,7 +324,7 @@ function OrdersPageComponent() {
                 <p className="text-muted-foreground">
                     حاول تغيير فلاتر البحث أو قم بإنشاء طلب جديد.
                 </p>
-                <Button variant="outline" onClick={() => router.push(pathname)} className="mt-4">
+                <Button variant="outline" onClick={() => router.replace(pathname)} className="mt-4">
                   إعادة تعيين الفلاتر
                 </Button>
             </CardContent>
