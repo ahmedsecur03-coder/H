@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { runTransaction, collection, doc, query } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { SMM_SERVICES } from '@/lib/smm-services';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSearchParams } from 'next/navigation';
 
 // A unique ID for each row to handle React keys
 let rowIdCounter = 0;
@@ -121,10 +122,11 @@ function MassOrderRow({
     );
 }
 
-export default function MassOrderPage() {
+function MassOrderPageComponent() {
     const { user: authUser } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
 
     const [rows, setRows] = useState<OrderRow[]>([{ id: ++rowIdCounter, platform: '', category: '', serviceId: '', link: '', quantity: '', cost: 0 }]);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -132,6 +134,30 @@ export default function MassOrderPage() {
     const userDocRef = useMemoFirebase(() => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null), [firestore, authUser]);
     const { data: userData, isLoading: isUserLoading } = useDoc<User>(userDocRef);
     
+    useEffect(() => {
+        const prefillData = searchParams.get('prefill');
+        if (prefillData) {
+            try {
+                const [serviceId, link, quantity] = decodeURIComponent(prefillData).split('|');
+                const service = SMM_SERVICES.find(s => s.id === serviceId);
+                if (service) {
+                    const newRow: OrderRow = {
+                        id: ++rowIdCounter,
+                        platform: service.platform,
+                        category: service.category,
+                        serviceId: service.id,
+                        link: link.trim(),
+                        quantity: quantity.trim(),
+                        cost: 0, // Will be recalculated by useEffect in MassOrderRow
+                    };
+                    setRows([newRow]);
+                }
+            } catch (e) {
+                console.error("Failed to parse prefill data", e);
+            }
+        }
+    }, [searchParams]);
+
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
     const discountPercentage = rank.discount / 100;
 
@@ -161,7 +187,7 @@ export default function MassOrderPage() {
         const validRows = rows.filter(row => {
             const service = SMM_SERVICES.find(s => s.id === row.serviceId);
             const quantity = parseInt(row.quantity, 10);
-            return service && row.link && quantity >= service.min && quantity <= service.max;
+            return service && row.link && !isNaN(quantity) && quantity >= service.min && quantity <= service.max;
         });
         const totalCost = validRows.reduce((acc, row) => acc + row.cost, 0);
         return { totalCost, validRows };
@@ -264,4 +290,13 @@ export default function MassOrderPage() {
             </Card>
         </div>
     );
+}
+
+
+export default function MassOrderPage() {
+    return (
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <MassOrderPageComponent />
+        </Suspense>
+    )
 }

@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ListFilter } from 'lucide-react';
+import { Search, ListFilter, RefreshCw } from 'lucide-react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
@@ -42,6 +42,7 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -264,6 +265,7 @@ function OrdersPageComponent() {
                   <TableHead className="text-center">الحالة</TableHead>
                   <TableHead className="text-center">التاريخ</TableHead>
                   <TableHead className="text-right">التكلفة</TableHead>
+                   <TableHead className="text-right">إجراء</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -278,6 +280,13 @@ function OrdersPageComponent() {
                     </TableCell>
                     <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
+                            <RefreshCw className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
