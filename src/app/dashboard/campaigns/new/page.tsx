@@ -39,9 +39,9 @@ type Goal = 'زيارات للموقع' | 'مشاهدات فيديو' | 'تفا�
 
 const platforms: { name: Platform; title: string; enabled: boolean }[] = [
     { name: 'Facebook', title: 'Meta (Facebook & Instagram)', enabled: true },
-    { name: 'Google', title: 'Google Ads', enabled: false },
-    { name: 'TikTok', title: 'TikTok Ads', enabled: false },
-    { name: 'Snapchat', title: 'Snapchat Ads', enabled: false },
+    { name: 'Google', title: 'Google Ads', enabled: true },
+    { name: 'TikTok', title: 'TikTok Ads', enabled: true },
+    { name: 'Snapchat', title: 'Snapchat Ads', enabled: true },
 ];
 
 const goals: { name: Goal; title: string }[] = [
@@ -192,18 +192,16 @@ export default function NewCampaignPage() {
                                     <div className="space-y-2"><Label htmlFor="goal">الهدف من الحملة</Label><Select name="goal" required><SelectTrigger id="goal"><SelectValue placeholder="اختر هدف" /></SelectTrigger><SelectContent>{goals.map((g) => (<SelectItem key={g.name} value={g.name}>{g.title}</SelectItem>))}</SelectContent></Select></div>
                                     <div className="space-y-2"><Label htmlFor="adLink">رابط المنشور أو الموقع</Label><Input id="adLink" name="adLink" required placeholder="https://instagram.com/p/..." /></div>
                                     
-                                    {/* Platform-specific fields */}
-                                    {selectedPlatform === 'Facebook' && (
-                                        <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-                                            <h4 className="font-semibold">إعدادات الاستهداف (Meta)</h4>
-                                            <div className="space-y-2"><Label htmlFor="targetCountry">الدولة</Label><Input id="targetCountry" name="targetCountry" required placeholder="مثال: مصر, السعودية" /></div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2"><Label htmlFor="targetAge">الفئة العمرية</Label><Select name="targetAge" required><SelectTrigger id="targetAge"><SelectValue placeholder="اختر الأعمار" /></SelectTrigger><SelectContent>{ageRanges.map(age => <SelectItem key={age} value={age}>{age}</SelectItem>)}</SelectContent></Select></div>
-                                                <div className="space-y-2"><Label htmlFor="targetGender">الجنس</Label><Select name="targetGender" required defaultValue="الكل"><SelectTrigger id="targetGender"><SelectValue /></SelectTrigger><SelectContent>{genders.map(gender => <SelectItem key={gender} value={gender}>{gender}</SelectItem>)}</SelectContent></Select></div>
-                                            </div>
-                                            <div className="space-y-2"><Label htmlFor="targetInterests">الاهتمامات</Label><Textarea id="targetInterests" name="targetInterests" placeholder="اكتب الاهتمامات مفصولة بفاصلة (مثال: كرة القدم, التسويق)" /></div>
+                                    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                                        <h4 className="font-semibold">إعدادات الاستهداف</h4>
+                                        <div className="space-y-2"><Label htmlFor="targetCountry">الدولة</Label><Input id="targetCountry" name="targetCountry" required placeholder="مثال: مصر, السعودية" /></div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2"><Label htmlFor="targetAge">الفئة العمرية</Label><Select name="targetAge" required><SelectTrigger id="targetAge"><SelectValue placeholder="اختر الأعمار" /></SelectTrigger><SelectContent>{ageRanges.map(age => <SelectItem key={age} value={age}>{age}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-2"><Label htmlFor="targetGender">الجنس</Label><Select name="targetGender" required defaultValue="الكل"><SelectTrigger id="targetGender"><SelectValue /></SelectTrigger><SelectContent>{genders.map(gender => <SelectItem key={gender} value={gender}>{gender}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
-                                    )}
+                                        <div className="space-y-2"><Label htmlFor="targetInterests">الاهتمامات</Label><Textarea id="targetInterests" name="targetInterests" placeholder="اكتب الاهتمامات مفصولة بفاصلة (مثال: كرة القدم, التسويق)" /></div>
+                                    </div>
+                                   
 
                                     <Separator />
 
