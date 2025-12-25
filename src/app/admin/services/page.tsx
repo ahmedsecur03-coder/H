@@ -1,26 +1,24 @@
+
 'use client';
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
-import { useFirestore } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, setDoc, orderBy, getDocs, writeBatch } from 'firebase/firestore';
-import type { Service, ServicePrice } from '@/lib/types';
-import { SMM_SERVICES } from '@/lib/smm-services';
+import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Upload, Trash2, ListFilter, Pencil, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Upload, ListFilter, Pencil, CheckCircle, XCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ServiceDialog } from './_components/service-dialog';
 import { ImportDialog } from './_components/import-dialog';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
-import { FirestorePermissionError } from '@/firebase/errors';
-import { errorEmitter } from '@/firebase/error-emitter';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+import { useServices } from '@/hooks/useServices';
 
 
 const ITEMS_PER_PAGE = 25;
@@ -47,7 +45,7 @@ function ServicesPageSkeleton() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {Array.from({ length: 15 }).map((_, i) => (
+                            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                                 <TableRow key={i}>
                                     {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
                                 </TableRow>
@@ -76,42 +74,21 @@ function AdminServicesPageComponent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
   
-  const [allServices, setAllServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
+  const { services: allServices, isLoading } = useServices();
 
-  const fetchServiceData = useCallback(async () => {
-    if (!firestore) return;
-    setIsLoading(true);
-
-    try {
-        const pricesSnapshot = await getDocs(collection(firestore, 'servicePrices'));
-        const pricesMap = new Map<string, number>();
-        pricesSnapshot.forEach(doc => {
-            pricesMap.set(doc.id, doc.data().price);
-        });
-
-        const mergedServices = SMM_SERVICES.map(service => ({
-            ...service,
-            price: pricesMap.get(String(service.id)) ?? service.price,
-        }));
-        
-        setAllServices(mergedServices);
-
-    } catch (error) {
-        console.error("Error fetching services data: ", error);
-        toast({variant: 'destructive', title: "خطأ", description: "فشل في جلب بيانات الخدمات."});
-    } finally {
-        setIsLoading(false);
-    }
-  }, [firestore, toast]);
-
+  const fetchServiceData = useCallback(() => {
+    // This function is now a placeholder as useServices handles fetching.
+    // It can be used to trigger a re-fetch if useServices is updated to support it.
+  }, []);
 
   useEffect(() => {
-    fetchServiceData();
-  }, [fetchServiceData]);
+    // Data is fetched by the hook, no need for manual fetch here.
+  }, []);
 
   const { paginatedServices, pageCount } = useMemo(() => {
+    if (!allServices) {
+        return { paginatedServices: [], pageCount: 0 };
+    }
     const filtered = allServices.filter(service =>
         !currentSearch ||
         String(service.id).includes(currentSearch) ||
@@ -192,19 +169,12 @@ function AdminServicesPageComponent() {
       setIsDialogOpen(true);
   }
   
-  if (isLoading && allServices.length === 0) {
+  if (isLoading) {
     return <ServicesPageSkeleton />;
   }
 
   const renderContent = () => {
-    if (isLoading && paginatedServices.length === 0) {
-      return Array.from({length: ITEMS_PER_PAGE}).map((_, i) => (
-        <TableRow key={i}>
-          {Array.from({length: 8}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
-        </TableRow>
-      ));
-    }
-     if (paginatedServices.length === 0) {
+    if (paginatedServices.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={8}>

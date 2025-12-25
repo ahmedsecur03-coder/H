@@ -1,9 +1,7 @@
+
 'use client';
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, getDocs } from 'firebase/firestore';
 import type { Service, ServicePrice } from '@/lib/types';
-import { SMM_SERVICES } from '@/lib/smm-services';
 import {
   Card,
   CardContent,
@@ -33,8 +31,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useServices } from '@/hooks/useServices';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 
 const PROFIT_MARGIN = 1.50; // 50% profit margin
+const ITEMS_PER_PAGE = 20;
 
 function ServicesSkeleton() {
   return (
@@ -55,7 +64,7 @@ function ServicesSkeleton() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Array.from({ length: 10 }).map((_, i) => (
+          {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
             <TableRow key={i}>
               {Array.from({ length: 6 }).map((_, j) => (
                 <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
@@ -69,53 +78,21 @@ function ServicesSkeleton() {
 }
 
 export default function ServicesPage() {
-  const firestore = useFirestore();
+  const { services: allServices, isLoading } = useServices();
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [allServices, setAllServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
- useEffect(() => {
-    const fetchServices = async () => {
-        if (!firestore) {
-            // If firestore is not available, use static data as fallback
-            setAllServices(SMM_SERVICES);
-            setIsLoading(false);
-            return;
-        };
-
-        try {
-            const pricesSnapshot = await getDocs(collection(firestore, 'servicePrices'));
-            const pricesMap = new Map<string, number>();
-            pricesSnapshot.forEach(doc => {
-                pricesMap.set(doc.id, doc.data().price);
-            });
-
-            const mergedServices = SMM_SERVICES.map(service => ({
-                ...service,
-                price: pricesMap.get(service.id) ?? service.price,
-            }));
-
-            setAllServices(mergedServices);
-        } catch (error) {
-            console.error("Error fetching dynamic prices, falling back to static data: ", error);
-            setAllServices(SMM_SERVICES);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchServices();
-  }, [firestore]);
-
-
-  const { platforms, categories, filteredServices } = useMemo(() => {
+  const { platforms, categories, filteredServices, pageCount } = useMemo(() => {
     if (!allServices) {
-      return { platforms: [], categories: [], filteredServices: [] };
+      return { platforms: [], categories: [], filteredServices: [], pageCount: 0 };
     }
 
     const platforms = [...new Set(allServices.map(s => s.platform))];
-    const categories = [...new Set(allServices.map(s => s.category))];
+    const availableCategories = platformFilter === 'all' 
+      ? [...new Set(allServices.map(s => s.category))]
+      : [...new Set(allServices.filter(s => s.platform === platformFilter).map(s => s.category))];
 
     const filtered = allServices.filter(service => {
       const searchMatch =
@@ -127,12 +104,48 @@ export default function ServicesPage() {
       return searchMatch && platformMatch && categoryMatch;
     });
 
-    return { platforms, categories, filteredServices: filtered.slice(0, 100) }; // Limit to 100 results for performance
-  }, [allServices, searchTerm, platformFilter, categoryFilter]);
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    return { platforms, categories: availableCategories, filteredServices: paginated, pageCount: totalPages };
+  }, [allServices, searchTerm, platformFilter, categoryFilter, currentPage]);
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  if (isLoading || !allServices) {
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, platformFilter, categoryFilter]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0);
+  }
+
+  const renderPaginationItems = () => {
+    if (pageCount <= 1) return null;
+    const pageNumbers: (number | 'ellipsis')[] = [];
+    if (pageCount <= 7) {
+        for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
+    } else {
+        pageNumbers.push(1);
+        if (currentPage > 3) pageNumbers.push('ellipsis');
+        let start = Math.max(2, currentPage - 1);
+        let end = Math.min(pageCount - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) pageNumbers.push(i);
+        if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
+        pageNumbers.push(pageCount);
+    }
+    return pageNumbers.map((page, index) => (
+        <PaginationItem key={`${page}-${index}`}>
+            {page === 'ellipsis' ? <PaginationEllipsis /> : (
+                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page as number); }}>{page}</PaginationLink>
+            )}
+        </PaginationItem>
+    ));
+  };
+
+
+  if (isLoading) {
     return <ServicesSkeleton />;
   }
 
@@ -156,7 +169,7 @@ export default function ServicesPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Select value={platformFilter} onValueChange={setPlatformFilter}>
+          <Select value={platformFilter} onValueChange={(value) => { setPlatformFilter(value); setCategoryFilter('all'); }}>
             <SelectTrigger>
               <SelectValue placeholder="فلترة حسب المنصة" />
             </SelectTrigger>
@@ -231,7 +244,7 @@ export default function ServicesPage() {
               </TableRow>
               </TableHeader>
               <TableBody>
-              {filteredServices.map(service => (
+              {filteredServices.length > 0 ? filteredServices.map(service => (
                   <TableRow key={service.id} className={selectedService?.id === service.id ? 'bg-muted/50' : ''}>
                   <TableCell className="font-mono text-xs">{service.id}</TableCell>
                   <TableCell className="font-medium">{service.category}</TableCell>
@@ -245,10 +258,31 @@ export default function ServicesPage() {
                       </Button>
                   </TableCell>
                   </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    لا توجد خدمات تطابق بحثك.
+                  </TableCell>
+                </TableRow>
+              )}
               </TableBody>
           </Table>
           </CardContent>
+          {pageCount > 1 && (
+            <CardFooter className="justify-center border-t pt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} disabled={currentPage === 1} />
+                  </PaginationItem>
+                  {renderPaginationItems()}
+                  <PaginationItem>
+                    <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} disabled={currentPage === pageCount} />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </CardFooter>
+          )}
       </Card>
     </div>
   );

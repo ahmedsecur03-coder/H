@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
@@ -17,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearchParams } from 'next/navigation';
+import { useServices } from '@/hooks/useServices';
 
 // A unique ID for each row to handle React keys
 let rowIdCounter = 0;
@@ -138,15 +140,19 @@ function MassOrderPageComponent() {
     const [rows, setRows] = useState<OrderRow[]>([{ id: ++rowIdCounter, platform: '', category: '', serviceId: '', link: '', quantity: '', cost: 0 }]);
     const [isProcessing, setIsProcessing] = useState(false);
     
+    const { services: allServices, isLoading: servicesLoading } = useServices();
+
     const userDocRef = useMemoFirebase(() => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null), [firestore, authUser]);
     const { data: userData, isLoading: isUserLoading } = useDoc<User>(userDocRef);
     
     useEffect(() => {
+        if (servicesLoading || allServices.length === 0) return; // Wait for services to load
+
         const prefillData = searchParams.get('prefill');
         if (prefillData) {
             try {
                 const [serviceId, link, quantity] = decodeURIComponent(prefillData).split('|');
-                const service = SMM_SERVICES.find(s => s.id === serviceId);
+                const service = allServices.find(s => s.id === serviceId);
                 if (service) {
                     const newRow: OrderRow = {
                         id: ++rowIdCounter,
@@ -163,20 +169,22 @@ function MassOrderPageComponent() {
                 console.error("Failed to parse prefill data", e);
             }
         }
-    }, [searchParams]);
+    }, [searchParams, allServices, servicesLoading]);
 
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
     const discountPercentage = rank.discount / 100;
 
-    const platforms = useMemo(() => [...new Set(SMM_SERVICES.map(s => s.platform))], []);
+    const platforms = useMemo(() => [...new Set(allServices.map(s => s.platform))], [allServices]);
 
-    const getCategoriesForPlatform = (platform: string) => {
-        return [...new Set(SMM_SERVICES.filter(s => s.platform === platform).map(s => s.category))];
-    };
+    const getCategoriesForPlatform = useCallback((platform: string) => {
+        if (!platform) return [];
+        return [...new Set(allServices.filter(s => s.platform === platform).map(s => s.category))];
+    }, [allServices]);
 
-    const getServicesForCategory = (platform: string, category: string) => {
-        return SMM_SERVICES.filter(s => s.platform === platform && s.category === category);
-    };
+    const getServicesForCategory = useCallback((platform: string, category: string) => {
+         if (!platform || !category) return [];
+        return allServices.filter(s => s.platform === platform && s.category === category);
+    }, [allServices]);
 
     const addRow = () => {
         setRows(prev => [...prev, { id: ++rowIdCounter, platform: '', category: '', serviceId: '', link: '', quantity: '', cost: 0 }]);
@@ -206,13 +214,13 @@ function MassOrderPageComponent() {
     
     const { totalCost, validRows } = useMemo(() => {
         const validRows = rows.filter(row => {
-            const service = SMM_SERVICES.find(s => s.id === row.serviceId);
+            const service = allServices.find(s => s.id === row.serviceId);
             const quantity = parseInt(row.quantity, 10);
             return service && row.link && !isNaN(quantity) && quantity >= service.min && quantity <= service.max;
         });
         const totalCost = validRows.reduce((acc, row) => acc + row.cost, 0);
         return { totalCost, validRows };
-    }, [rows]);
+    }, [rows, allServices]);
 
     const handleMassOrderSubmit = async () => {
         if (!userData || !firestore || !authUser) {
@@ -236,7 +244,7 @@ function MassOrderPageComponent() {
         try {
             await runTransaction(firestore, async (transaction) => {
                 for (const row of validRows) {
-                    const service = SMM_SERVICES.find(s => s.id === row.serviceId)!; // We know it's valid
+                    const service = allServices.find(s => s.id === row.serviceId)!; // We know it's valid
                     const orderData: Omit<Order, 'id'> = {
                         userId: authUser.uid,
                         serviceId: service.id,
@@ -261,7 +269,7 @@ function MassOrderPageComponent() {
         }
     };
     
-    if (isUserLoading) {
+    if (isUserLoading || servicesLoading) {
         return <Skeleton className="h-96 w-full" />;
     }
 
