@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo, useState, useEffect } from 'react';
 import { useFirestore, useMemoFirebase } from '@/firebase';
@@ -34,6 +33,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+
+const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 function ServicesSkeleton() {
   return (
@@ -198,7 +199,7 @@ export default function ServicesPage() {
               <CardContent className="space-y-4">
                   <p className="text-muted-foreground">{selectedService.description || 'لا يوجد وصف متاح لهذه الخدمة.'}</p>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex justify-between border-b pb-2"><span>السعر لكل 1000:</span><span className="font-bold font-mono">${selectedService.price.toFixed(4)}</span></div>
+                      <div className="flex justify-between border-b pb-2"><span>السعر لكل 1000:</span><span className="font-bold font-mono">${(selectedService.price * PROFIT_MARGIN).toFixed(4)}</span></div>
                       <div className="flex justify-between border-b pb-2"><span>متوسط الوقت:</span><span className="font-bold">{selectedService.avgTime || 'N/A'}</span></div>
                       <div className="flex justify-between border-b pb-2"><span>الحد الأدنى للطلب:</span><span className="font-bold">{selectedService.min.toLocaleString()}</span></div>
                       <div className="flex justify-between border-b pb-2"><span>الحد الأقصى للطلب:</span><span className="font-bold">{selectedService.max.toLocaleString()}</span></div>
@@ -235,7 +236,7 @@ export default function ServicesPage() {
                   <TableCell className="font-mono text-xs">{service.id}</TableCell>
                   <TableCell className="font-medium">{service.category}</TableCell>
                   <TableCell>{service.platform}</TableCell>
-                  <TableCell>${service.price.toFixed(4)}</TableCell>
+                  <TableCell>${(service.price * PROFIT_MARGIN).toFixed(4)}</TableCell>
                   <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
                   <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>

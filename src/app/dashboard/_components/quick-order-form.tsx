@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -22,6 +21,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SMM_SERVICES } from '@/lib/smm-services';
+
+const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 function ServiceDescription({ service }: { service: Service }) {
     if (!service) return null;
@@ -108,7 +109,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     const orderCost = useMemo(() => {
         if (!selectedService || !quantity) return { base: 0, final: 0 };
         const qty = parseInt(quantity);
-        const baseCost = (qty / 1000) * selectedService.price;
+        const baseCost = (qty / 1000) * selectedService.price * PROFIT_MARGIN; // Apply profit margin
         const discount = baseCost * discountPercentage;
         const finalCost = baseCost - discount;
         return { base: baseCost, final: finalCost };
@@ -227,7 +228,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                                 <SelectContent>
                                     {services.map(s => 
                                         <SelectItem key={s.id} value={s.id}>
-                                            {`#${s.id} - ${s.description} - $${s.price.toFixed(4)}`}
+                                            {`#${s.id} - ${s.description} - $${(s.price * PROFIT_MARGIN).toFixed(4)}`}
                                         </SelectItem>
                                     )}
                                 </SelectContent>
@@ -277,6 +278,3 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         </Card>
     );
 }
-
-
-    
