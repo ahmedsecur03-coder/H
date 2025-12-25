@@ -39,9 +39,10 @@ export function getRankForSpend(spend: number) {
  * This function encapsulates the logic for:
  * - Updating user's balance and total spent.
  * - Checking for rank promotion and applying rewards.
- * - Calculating and applying multi-level affiliate commissions.
  * - Creating the order document.
- * - Creating affiliate transaction documents for each level.
+ * 
+ * NOTE: Affiliate commissions have been moved to the deposit approval logic.
+ * This function now only handles order-related finances.
  * 
  * @param transaction The Firestore transaction object.
  * @param firestore The Firestore instance.
@@ -105,87 +106,17 @@ export async function processOrderInTransaction(
     
     transaction.update(userRef, userUpdates);
 
-    // 3. Create the new order document
+    // Create the new order document
     const newOrderRef = doc(collection(firestore, `users/${userId}/orders`));
     transaction.set(newOrderRef, orderData);
 
-    // 4. Aggregate daily stats
+    // Aggregate daily stats
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const dailyStatRef = doc(firestore, 'dailyStats', today);
     transaction.set(dailyStatRef, {
         totalRevenue: increment(cost),
         totalOrders: increment(1)
     }, { merge: true });
-
-
-    // 5. Handle multi-level affiliate commissions
-    let currentReferrerId = userData.referrerId;
-    let directReferrer: DocumentSnapshot | null = null;
-
-    // Get the direct referrer (Level 1) first to apply their specific commission rate
-    if (currentReferrerId) {
-        const directReferrerRef = doc(firestore, 'users', currentReferrerId);
-        directReferrer = await transaction.get(directReferrerRef);
-
-        if (directReferrer.exists()) {
-            const referrerData = directReferrer.data() as User;
-            const affiliateLevel = referrerData.affiliateLevel || 'برونزي';
-            const directCommissionRate = AFFILIATE_LEVELS[affiliateLevel].commission / 100;
-            const directCommissionAmount = cost * directCommissionRate;
-
-            if (directCommissionAmount > 0) {
-                 transaction.update(directReferrerRef, {
-                    affiliateEarnings: (referrerData.affiliateEarnings || 0) + directCommissionAmount
-                });
-                const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
-                transaction.set(newTransactionRef, {
-                    userId: currentReferrerId,
-                    referralId: userId,
-                    orderId: newOrderRef.id,
-                    amount: directCommissionAmount,
-                    transactionDate: new Date().toISOString(),
-                    level: 1,
-                });
-            }
-        }
-    }
-
-    // Now, handle the multi-level (network) commissions for levels 2 and up
-    let indirectReferrerId = directReferrer?.exists() ? (directReferrer.data() as User).referrerId : null;
-
-    for (let i = 0; i < MULTI_LEVEL_COMMISSIONS.length && indirectReferrerId; i++) {
-        const commissionRate = MULTI_LEVEL_COMMISSIONS[i] / 100;
-        const commissionAmount = cost * commissionRate;
-        const level = i + 2; // Starts from level 2
-
-        if (commissionAmount > 0) {
-            const referrerRef = doc(firestore, 'users', indirectReferrerId);
-            const referrerDoc = await transaction.get(referrerRef);
-
-            if (referrerDoc.exists()) {
-                const referrerData = referrerDoc.data() as User;
-                
-                transaction.update(referrerRef, {
-                    affiliateEarnings: (referrerData.affiliateEarnings || 0) + commissionAmount
-                });
-
-                const newTransactionRef = doc(collection(firestore, `users/${indirectReferrerId}/affiliateTransactions`));
-                transaction.set(newTransactionRef, {
-                    userId: indirectReferrerId,
-                    referralId: userId,
-                    orderId: newOrderRef.id,
-                    amount: commissionAmount,
-                    transactionDate: new Date().toISOString(),
-                    level: level,
-                });
-
-                indirectReferrerId = referrerData.referrerId;
-            } else {
-                break;
-            }
-        }
-    }
-
 
     return { promotion };
 }

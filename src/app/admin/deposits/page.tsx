@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
 import {
   collectionGroup,
   query,
@@ -41,6 +41,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
+
+// Commission rates
+const DIRECT_COMMISSION_RATE = 0.20; // 20%
+const NETWORK_COMMISSION_RATE = 0.02; // 2% for each of the 5 levels
+const NETWORK_LEVELS = 5;
 
 function DepositTable({ status }: { status: Status }) {
   const firestore = useFirestore();
@@ -82,33 +87,91 @@ function DepositTable({ status }: { status: Status }) {
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
     if (!firestore) return;
     setLoadingAction(deposit.id);
-    const userDocRef = doc(firestore, 'users', deposit.userId);
+    
+    const depositorRef = doc(firestore, 'users', deposit.userId);
     const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
 
     try {
         await runTransaction(firestore, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-            if (!userDoc.exists()) {
-                throw new Error('المستخدم غير موجود.');
+            const depositorDoc = await transaction.get(depositorRef);
+            if (!depositorDoc.exists()) {
+                throw new Error('المستخدم صاحب الإيداع غير موجود.');
             }
+            const depositorData = depositorDoc.data() as User;
 
-            let userUpdates: any = {};
+            // Update deposit status first
+            transaction.update(depositDocRef, { status: newStatus });
             
             if (newStatus === 'مقبول') {
-                const currentBalance = userDoc.data().balance ?? 0;
-                userUpdates.balance = currentBalance + deposit.amount;
-                userUpdates.notifications = arrayUnion({
-                    id: `dep-${deposit.id}`,
-                    message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
-                    type: 'success',
-                    read: false,
-                    createdAt: new Date().toISOString(),
-                    href: '/dashboard/add-funds'
+                // 1. Add balance to the depositor's account
+                const newBalance = (depositorData.balance ?? 0) + deposit.amount;
+                transaction.update(depositorRef, { 
+                    balance: newBalance,
+                    notifications: arrayUnion({
+                        id: `dep-${deposit.id}`,
+                        message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+                        type: 'success',
+                        read: false,
+                        createdAt: new Date().toISOString(),
+                        href: '/dashboard/add-funds'
+                    })
                 });
-                transaction.update(userDocRef, userUpdates);
+
+                // 2. Handle Affiliate Commissions
+                let currentReferrerId = depositorData.referrerId;
+
+                // Level 1: Direct Referrer (20%)
+                if (currentReferrerId) {
+                    const directReferrerRef = doc(firestore, 'users', currentReferrerId);
+                    const directCommissionAmount = deposit.amount * DIRECT_COMMISSION_RATE;
+                    
+                    transaction.update(directReferrerRef, { affiliateEarnings: increment(directCommissionAmount) });
+                    
+                    const newTransactionRefLvl1 = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                    transaction.set(newTransactionRefLvl1, {
+                        userId: currentReferrerId,
+                        referralId: deposit.userId,
+                        orderId: deposit.id, // Using deposit ID as the source
+                        amount: directCommissionAmount,
+                        transactionDate: new Date().toISOString(),
+                        level: 1,
+                    });
+                    
+                    // Get the next referrer for network commission
+                    const directReferrerDoc = await transaction.get(directReferrerRef);
+                    if(directReferrerDoc.exists()) {
+                       currentReferrerId = (directReferrerDoc.data() as User).referrerId;
+                    } else {
+                       currentReferrerId = null;
+                    }
+                }
+
+                // Levels 2 to 6: Network Referrers (10% distributed)
+                for (let i = 0; i < NETWORK_LEVELS && currentReferrerId; i++) {
+                    const networkCommissionAmount = deposit.amount * NETWORK_COMMISSION_RATE;
+                    const networkReferrerRef = doc(firestore, 'users', currentReferrerId);
+                    
+                    transaction.update(networkReferrerRef, { affiliateEarnings: increment(networkCommissionAmount) });
+
+                    const newTransactionRefNetwork = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                    transaction.set(newTransactionRefNetwork, {
+                        userId: currentReferrerId,
+                        referralId: deposit.userId,
+                        orderId: deposit.id, // Using deposit ID
+                        amount: networkCommissionAmount,
+                        transactionDate: new Date().toISOString(),
+                        level: i + 2, // Level 2, 3, 4, 5, 6
+                    });
+
+                    // Get the next referrer in the chain
+                    const networkReferrerDoc = await transaction.get(networkReferrerRef);
+                    if (networkReferrerDoc.exists()) {
+                        currentReferrerId = (networkReferrerDoc.data() as User).referrerId;
+                    } else {
+                        break; // End of the chain
+                    }
+                }
             }
-            
-            transaction.update(depositDocRef, { status: newStatus });
         });
       
       setDeposits(prev => prev.filter(d => d.id !== deposit.id));
@@ -118,11 +181,15 @@ function DepositTable({ status }: { status: Status }) {
         description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
       });
     } catch (error: any) {
-        let errorData = newStatus === 'مقبول' ? { balance: '...', notifications: '...' } : { status: newStatus };
+        console.error("Deposit Action Error:", error);
+        toast({
+            variant: 'destructive',
+            title: 'فشل الإجراء',
+            description: error.message || 'حدث خطأ أثناء معالجة الطلب. قد يكون بسبب الصلاحيات.',
+        });
         const permissionError = new FirestorePermissionError({
-            path: userDocRef.path, // The primary document being operated on
+            path: depositorRef.path,
             operation: 'update',
-            requestResourceData: errorData 
         });
         errorEmitter.emit('permission-error', permissionError);
     } finally {
@@ -185,7 +252,7 @@ function DepositTable({ status }: { status: Status }) {
             <TableCell>${deposit.amount.toFixed(2)}</TableCell>
             <TableCell>{deposit.paymentMethod}</TableCell>
             <TableCell className="font-mono text-xs">
-              {deposit.details?.phoneNumber || deposit.details?.transactionId || 'N/A'}
+              {deposit.details?.phoneNumber || deposit.details?.transactionId || deposit.details?.binanceId || 'N/A'}
             </TableCell>
             <TableCell>
               {new Date(deposit.depositDate).toLocaleString('ar-EG')}
