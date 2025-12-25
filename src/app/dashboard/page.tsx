@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Card,
@@ -32,7 +31,6 @@ import { SMM_SERVICES } from '@/lib/smm-services';
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { NewCampaignDialog } from './campaigns/_components/new-campaign-dialog';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -140,12 +138,12 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <NewCampaignDialog userData={userData} onCampaignCreated={() => {}}>
-                            <Button className="w-full text-lg py-7" variant="outline">
+                        <Button className="w-full text-lg py-7" variant="outline" asChild>
+                           <Link href="/dashboard/campaigns/new">
                                 <PlusCircle className="ml-2 h-5 w-5" />
                                 إنشاء حملة جديدة
-                            </Button>
-                        </NewCampaignDialog>
+                            </Link>
+                        </Button>
                         <Button variant="outline" className="w-full text-lg py-7" asChild>
                             <Link href="/dashboard/agency-accounts">
                                 <Briefcase className="ml-2 h-5 w-5" />

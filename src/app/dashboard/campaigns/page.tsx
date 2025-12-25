@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import { NewCampaignDialog } from './_components/new-campaign-dialog';
 import { UserCampaignActions } from './_components/user-campaign-actions';
 import Link from 'next/link';
 
@@ -121,13 +120,13 @@ export default function CampaignsPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
-                <Button className="w-full text-lg py-7">
+            <Button className="w-full text-lg py-7" asChild>
+                <Link href="/dashboard/campaigns/new">
                     <PlusCircle className="ml-2 h-5 w-5" />
                     إنشاء حملة جديدة
-                </Button>
-            </NewCampaignDialog>
-             <Button variant="outline" className="w-full text-lg py-7" asChild>
+                </Link>
+            </Button>
+            <Button variant="outline" className="w-full text-lg py-7" asChild>
                 <Link href="/dashboard/agency-accounts">
                     <Briefcase className="ml-2 h-5 w-5" />
                     إدارة حسابات الوكالة
@@ -181,12 +180,12 @@ export default function CampaignsPage() {
                         <p className="mt-2 text-sm text-muted-foreground">
                             ليس لديك أي حملات حتى الآن. انقر أدناه لإنشاء حملتك الأولى.
                         </p>
-                         <NewCampaignDialog userData={userData} onCampaignCreated={forceCollectionUpdate}>
-                           <Button className="mt-4">
+                        <Button className="mt-4" asChild>
+                            <Link href="/dashboard/campaigns/new">
                                 <PlusCircle className="ml-2 h-4 w-4" />
                                 إنشاء حملة جديدة
-                            </Button>
-                        </NewCampaignDialog>
+                            </Link>
+                        </Button>
                     </div>
                 )}
             </CardContent>
