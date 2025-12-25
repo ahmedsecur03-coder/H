@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -59,31 +60,31 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent class="max-w-md">
                 <DialogHeader>
                     <DialogTitle>توليد صورة رمزية بالذكاء الاصطناعي</DialogTitle>
                     <DialogDescription>
                         صف الصورة الرمزية التي تريدها، وسيقوم الذكاء الاصطناعي بإنشائها لك.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                    <div className="relative aspect-square w-full rounded-lg bg-muted overflow-hidden flex items-center justify-center">
-                        {isGenerating && <Loader2 className="h-10 w-10 animate-spin text-primary" />}
+                <div class="py-4">
+                    <div class="relative aspect-square w-full rounded-lg bg-muted overflow-hidden flex items-center justify-center">
+                        {isGenerating && <Loader2 class="h-10 w-10 animate-spin text-primary" />}
                         {generatedImage && !isGenerating && (
                             <Image src={generatedImage} alt="Generated Avatar" layout="fill" objectFit="cover" />
                         )}
                         {!generatedImage && !isGenerating && (
-                             <div className="text-center text-muted-foreground p-4">
-                                <Palette className="h-10 w-10 mx-auto" />
-                                <p className="mt-2 text-sm">ستظهر الصورة المولدة هنا.</p>
+                             <div class="text-center text-muted-foreground p-4">
+                                <Palette class="h-10 w-10 mx-auto" />
+                                <p class="mt-2 text-sm">ستظهر الصورة المولدة هنا.</p>
                              </div>
                         )}
                     </div>
 
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
+                <form onSubmit={handleSubmit} class="space-y-4">
+                    <div class="space-y-2">
                         <Label htmlFor="prompt">وصف الصورة</Label>
                         <Input 
                             id="prompt" 
@@ -94,11 +95,11 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
                             disabled={isGenerating}
                         />
                     </div>
-                     <DialogFooter className="gap-2 sm:justify-between">
+                     <DialogFooter class="gap-2 sm:justify-between">
                        {generatedImage ? (
                             <>
                                  <Button type="submit" variant="outline" disabled={isGenerating}>
-                                    <RotateCw className="ml-2 h-4 w-4" />
+                                    <RotateCw class="ml-2 h-4 w-4" />
                                      إعادة المحاولة
                                 </Button>
                                 <Button type="button" onClick={handleUseImage}>
@@ -106,8 +107,8 @@ export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAv
                                 </Button>
                             </>
                        ) : (
-                            <Button type="submit" disabled={isGenerating} className="w-full">
-                                {isGenerating ? <Loader2 className="animate-spin" /> : 'توليد الصورة'}
+                            <Button type="submit" disabled={isGenerating} class="w-full">
+                                {isGenerating ? <Loader2 class="animate-spin" /> : 'توليد الصورة'}
                             </Button>
                        )}
 

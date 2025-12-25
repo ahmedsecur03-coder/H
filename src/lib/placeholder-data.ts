@@ -73,8 +73,8 @@ export const dashboardNavItems: NestedNavItem[] = [
       icon: UserCircle,
       children: [
         { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
-        { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
         { href: '/dashboard/api', label: 'API', icon: Code2 },
+        { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
       ]
    },
    { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
