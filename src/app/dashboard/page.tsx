@@ -35,8 +35,19 @@ function DealOfTheDay() {
     
     const serviceId = settingsData?.dealOfTheDay;
 
-    const serviceDocRef = useMemoFirebase(() => (firestore && serviceId) ? doc(firestore, 'services', serviceId) : null, [firestore, serviceId]);
-    const { data: serviceData, isLoading: serviceLoading } = useDoc<Service>(serviceDocRef);
+    // We can't query for a specific document by ID with useDoc and a variable like this easily,
+    // so we will fetch all services and find the one. This is not ideal for performance if there are many services.
+    // A better approach would be a dedicated hook or a server component.
+    // For now, let's assume SMM_SERVICES is available on the client for this component.
+    // A better way is to fetch the single service doc.
+    const serviceDocRef = useMemoFirebase(() => (firestore && serviceId) ? doc(firestore, 'servicePrices', serviceId) : null, [firestore, serviceId]);
+    const { data: servicePriceData, isLoading: serviceLoading } = useDoc<Service>(serviceDocRef);
+    
+    const serviceStaticData = useMemoFirebase(() => {
+        const { SMM_SERVICES } = require('@/lib/smm-services');
+        return SMM_SERVICES.find((s: Service) => s.id === serviceId);
+    }, [serviceId]);
+
 
     const isLoading = settingsLoading || serviceLoading;
 
@@ -44,10 +55,12 @@ function DealOfTheDay() {
         return <Skeleton className="h-44 w-full" />;
     }
     
-    if (!serviceData) {
-        return null; // Don't render if no deal is set
+    if (!serviceId || !serviceStaticData) {
+        return null; // Don't render if no deal is set or service not found
     }
     
+    const serviceData = { ...serviceStaticData, price: servicePriceData?.price ?? serviceStaticData.price };
+
     const prefillUrl = `/dashboard/mass-order?prefill=${encodeURIComponent(`${serviceData.id}| |`)}`;
 
 
