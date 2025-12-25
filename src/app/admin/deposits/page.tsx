@@ -43,9 +43,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
 // Commission rates
-const DIRECT_COMMISSION_RATE = 0.20; // 20%
-const NETWORK_COMMISSION_RATE = 0.02; // 2% for each of the 5 levels
-const NETWORK_LEVELS = 5;
+const DIRECT_COMMISSION_RATE = 0.20; // 20% for the direct referrer
+const NETWORK_MATCHING_BONUS_RATE = 0.50; // 50% of the earnings of the level below
+const NETWORK_LEVELS = 5; // How many levels up the matching bonus goes
 
 function DepositTable({ status }: { status: Status }) {
   const firestore = useFirestore();
@@ -117,13 +117,15 @@ function DepositTable({ status }: { status: Status }) {
                     })
                 });
 
-                // 2. Handle Affiliate Commissions
+                // 2. Handle Affiliate Commissions using the new Matching Bonus logic
                 let currentReferrerId = depositorData.referrerId;
+                let lastCommissionAmount = 0;
 
-                // Level 1: Direct Referrer (20%)
+                // Level 1: Direct Referrer (20% of deposit amount)
                 if (currentReferrerId) {
                     const directReferrerRef = doc(firestore, 'users', currentReferrerId);
                     const directCommissionAmount = deposit.amount * DIRECT_COMMISSION_RATE;
+                    lastCommissionAmount = directCommissionAmount; // This is the basis for the first matching bonus
                     
                     transaction.update(directReferrerRef, { affiliateEarnings: increment(directCommissionAmount) });
                     
@@ -146,22 +148,25 @@ function DepositTable({ status }: { status: Status }) {
                     }
                 }
 
-                // Levels 2 to 6: Network Referrers (10% distributed)
-                for (let i = 0; i < NETWORK_LEVELS && currentReferrerId; i++) {
-                    const networkCommissionAmount = deposit.amount * NETWORK_COMMISSION_RATE;
+                // Levels 2 to 6: Network Referrers (Matching Bonus)
+                // They get 50% of the earnings of the person they referred
+                for (let i = 0; i < NETWORK_LEVELS && currentReferrerId && lastCommissionAmount > 0; i++) {
+                    const matchingBonusAmount = lastCommissionAmount * NETWORK_MATCHING_BONUS_RATE;
                     const networkReferrerRef = doc(firestore, 'users', currentReferrerId);
                     
-                    transaction.update(networkReferrerRef, { affiliateEarnings: increment(networkCommissionAmount) });
+                    transaction.update(networkReferrerRef, { affiliateEarnings: increment(matchingBonusAmount) });
 
                     const newTransactionRefNetwork = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
                     transaction.set(newTransactionRefNetwork, {
                         userId: currentReferrerId,
-                        referralId: deposit.userId,
+                        referralId: deposit.userId, // The original depositor
                         orderId: deposit.id, // Using deposit ID
-                        amount: networkCommissionAmount,
+                        amount: matchingBonusAmount,
                         transactionDate: new Date().toISOString(),
                         level: i + 2, // Level 2, 3, 4, 5, 6
                     });
+                    
+                    lastCommissionAmount = matchingBonusAmount; // The next bonus is based on this amount
 
                     // Get the next referrer in the chain
                     const networkReferrerDoc = await transaction.get(networkReferrerRef);
