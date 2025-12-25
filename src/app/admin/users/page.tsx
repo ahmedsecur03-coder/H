@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
@@ -31,20 +32,22 @@ function UsersPageSkeleton() {
                     <Skeleton className="h-10 w-full" />
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                                <TableRow key={i}>
-                                    {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
                 <CardFooter className="justify-center border-t pt-4">
                     <Skeleton className="h-9 w-64" />
@@ -88,13 +91,9 @@ function AdminUsersPageComponent() {
         let finalQuery = baseQuery;
         if (currentPage > 1) {
             const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-            // For robust pagination with dynamic queries, a server-side solution or more complex cursor management is ideal.
-            // As a client-side simplification, we'll refetch and slice.
-            // This is less efficient but works for moderate datasets.
-            const allMatchingUsersSnapshot = await getDocs(baseQuery);
-            const allUsers = allMatchingUsersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-            setUsers(allUsers.slice(offset, offset + ITEMS_PER_PAGE));
-            return;
+            const prevPagesSnapshot = await getDocs(query(baseQuery, limit(offset)));
+            const lastDoc = prevPagesSnapshot.docs[prevPagesSnapshot.docs.length - 1];
+            finalQuery = query(baseQuery, startAfter(lastDoc), limit(ITEMS_PER_PAGE));
         } else {
              finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
         }
@@ -230,7 +229,7 @@ function AdminUsersPageComponent() {
                          {users.map((user) => <UserCard key={user.id} user={user} />)}
                     </div>
                     {/* Desktop View */}
-                    <div className="hidden md:block">
+                    <div className="hidden md:block overflow-x-auto">
                         <Table>
                             <TableHeader>
                             <TableRow>
@@ -315,3 +314,5 @@ export default function AdminUsersPage() {
         </Suspense>
     )
 }
+
+    
