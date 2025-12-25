@@ -1,12 +1,15 @@
 'use client';
 
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { useEffect, useState } from 'react';
+import { initializeFirebaseServer } from '@/firebase/server';
+
 
 function BlogPostSkeleton() {
   return (
@@ -32,10 +35,53 @@ function BlogPostSkeleton() {
   );
 }
 
+// This is now a server component function to fetch data
+async function getBlogPosts() {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) {
+        return [];
+    }
+    const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+    const querySnapshot = await getDocs(postsQuery);
+    const posts: BlogPost[] = [];
+    querySnapshot.forEach(doc => {
+        posts.push({ id: doc.id, ...doc.data() } as BlogPost);
+    });
+    return posts;
+}
+
+
 export default function BlogPage() {
-  const firestore = useFirestore();
-  const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null, [firestore]);
-  const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // Since we cannot use async functions directly in client components for initial render,
+        // we'll fetch the data in a useEffect. For true static generation, this page would need to be refactored.
+        // This simulates a static-like fetch on the client side.
+        const fetchPosts = async () => {
+            const { firestore } = initializeFirebaseServer();
+            if (!firestore) {
+                setIsLoading(false);
+                return;
+            }
+            try {
+                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+                const querySnapshot = await getDocs(postsQuery);
+                const fetchedPosts: BlogPost[] = [];
+                querySnapshot.forEach(doc => {
+                    fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
+                });
+                setPosts(fetchedPosts);
+            } catch(e) {
+                console.error("Could not fetch blog posts", e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchPosts();
+    }, []);
+
 
   return (
     <div className="space-y-6 pb-8">
