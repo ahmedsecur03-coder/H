@@ -98,7 +98,7 @@ function Header() {
 
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 bg-background/50 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
          <NavigationMenu className="hidden md:flex">
@@ -227,7 +227,7 @@ export default function PublicLayout({
             {children}
         </div>
       </main>
-      <footer className="bg-card/50 border-t border-border z-10">
+      <footer className="bg-card/30 border-t border-border z-10">
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
             <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
             <nav className="flex gap-4 sm:gap-6">

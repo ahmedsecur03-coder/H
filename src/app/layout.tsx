@@ -3,7 +3,7 @@
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Tajawal } from 'next/font/google';
+import { Exo_2 } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -13,14 +13,14 @@ import { WhatsAppIcon } from '@/components/ui/icons';
 import { doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 
-const fontSans = Tajawal({
-  subsets: ['arabic'],
-  weight: ['400', '500', '700', '800'],
+const fontSans = Exo_2({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
   variable: '--font-sans',
 });
 
-const fontHeadline = Tajawal({
-  subsets: ['arabic'],
+const fontHeadline = Exo_2({
+  subsets: ['latin'],
   weight: ['800'],
   variable: '--font-headline',
 });
@@ -53,8 +53,8 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
-        <title>Hajaty Hub - منصة حاجتي للخدمات الرقمية</title>
-        <meta name="description" content="منصة حاجتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM لجميع المنصات، إدارة حملات إعلانية، نظام إحالة، والمزيد لنمو أعمالك." />
+        <title>Hajaty Hub - رحلتك الكونية للخدمات الرقمية</title>
+        <meta name="description" content="انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ." />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
@@ -66,6 +66,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
+            <div className="cosmic-background"></div>
             {children}
             <WhatsappSupportButton />
             <Toaster />

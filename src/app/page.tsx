@@ -55,7 +55,7 @@ function FeaturedServices() {
             {featuredServices.map(service => {
                 const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
                 return (
-                    <Card key={service.id} className="flex flex-col bg-card/50 hover:bg-card hover:border-primary/50 transition-all duration-300 group">
+                    <Card key={service.id} className="flex flex-col group">
                         <CardHeader className="flex-row items-center gap-4">
                             <div className="p-3 bg-muted rounded-full">
                                 <Icon className="w-6 h-6 text-foreground" />
@@ -94,7 +94,7 @@ function Testimonials() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
-                <Card key={i} className="bg-card/50 border-border/50">
+                <Card key={i}>
                     <CardHeader>
                         <div className="flex items-center gap-4">
                             <Avatar>
@@ -153,8 +153,8 @@ export default function HomePage() {
   return (
     <div className="space-y-24 pb-8">
         <section className="relative text-center py-20 overflow-hidden">
-            <div className="absolute inset-0 -z-10 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
-            <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background to-primary/10"></div>
+            <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
+            <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background to-primary/5"></div>
             
             <h1 className="text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400">
                 شريكك المعتمد للنمو الرقمي
@@ -186,7 +186,7 @@ export default function HomePage() {
                 <p className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card className="text-center bg-card/50 hover:bg-card transition-colors">
+                <Card className="text-center">
                     <CardHeader className="items-center">
                         <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
                             <DollarSign className="h-8 w-8 text-primary" />
@@ -195,7 +195,7 @@ export default function HomePage() {
                         <CardDescription>أفضل الأسعار في السوق مع الحفاظ على أعلى جودة للخدمات.</CardDescription>
                     </CardHeader>
                 </Card>
-                <Card className="text-center bg-card/50 hover:bg-card transition-colors">
+                <Card className="text-center">
                     <CardHeader className="items-center">
                         <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
                             <Shield className="h-8 w-8 text-primary" />
@@ -204,7 +204,7 @@ export default function HomePage() {
                         <CardDescription>فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة تواجهك.</CardDescription>
                     </CardHeader>
                 </Card>
-                <Card className="text-center bg-card/50 hover:bg-card transition-colors">
+                <Card className="text-center">
                     <CardHeader className="items-center">
                         <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4">
                             <Sparkles className="h-8 w-8 text-primary" />
@@ -229,7 +229,7 @@ export default function HomePage() {
                  <h2 className="text-4xl font-bold font-headline">أطلق حملاتك الإعلانية نحو النجاح</h2>
                  <p className="text-muted-foreground mt-2">أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.</p>
             </div>
-            <Card className="bg-card/50">
+            <Card>
                  <CardContent className="p-10 flex flex-col lg:flex-row items-center gap-8">
                     <div className="flex-1">
                         <Megaphone className="h-16 w-16 text-primary mb-4" />
@@ -256,7 +256,7 @@ export default function HomePage() {
                  <h2 className="text-4xl font-bold font-headline">حسابات إعلانية جاهزة وموثوقة</h2>
                  <p className="text-muted-foreground mt-2">تجاوز قيود الحسابات الجديدة واحصل على حسابات وكالة إعلانية قوية.</p>
             </div>
-            <Card className="bg-card/50">
+            <Card>
                  <CardContent className="p-10 flex flex-col lg:flex-row-reverse items-center gap-8">
                     <div className="flex-1">
                         <Briefcase className="h-16 w-16 text-primary mb-4" />
