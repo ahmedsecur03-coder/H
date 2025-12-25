@@ -114,8 +114,8 @@ export default function CampaignsPage() {
                                 return (
                                 <TableRow key={campaign.id}>
                                     <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <Icon className="w-4 h-4 text-muted-foreground" />
+                                        <div className="flex items-center gap-3">
+                                            <Icon className="w-5 h-5 text-muted-foreground" />
                                             <span>{campaign.name}</span>
                                         </div>
                                     </TableCell>

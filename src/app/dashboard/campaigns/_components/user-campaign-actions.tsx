@@ -6,7 +6,7 @@ import { doc, runTransaction } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, PauseCircle } from 'lucide-react';
+import { Loader2, PauseCircle, MoreHorizontal } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import {
@@ -20,6 +20,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 import { CampaignDetailsDialog } from './campaign-details-dialog';
 
 
@@ -76,31 +83,44 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
     return (
        <div className="flex gap-2 justify-end">
             <CampaignDetailsDialog campaign={campaign} />
-             {campaign.status === 'نشط' && (
-                <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-                    <AlertDialogTrigger asChild>
-                         <Button variant="destructive" size="sm">
-                            <PauseCircle className="ml-2 h-4 w-4" />
-                            إيقاف
+
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">فتح الإجراءات</span>
                         </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>هل أنت متأكد من إيقاف الحملة؟</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                سيتم إيقاف عرض الإعلانات وإعادة الميزانية المتبقية إلى رصيد إعلاناتك. لا يمكن التراجع عن هذا الإجراء.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel disabled={loading}>إلغاء</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleStopCampaign} disabled={loading} className="bg-destructive hover:bg-destructive/90">
-                                {loading && <Loader2 className="ml-2 animate-spin" />}
-                                نعم، قم بالإيقاف
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                         {campaign.status === 'نشط' && (
+                            <AlertDialogTrigger asChild>
+                                 <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                                    <PauseCircle className="ml-2 h-4 w-4" />
+                                    إيقاف الحملة
+                                </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                         )}
+                         {/* Future actions can be added here */}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>هل أنت متأكد من إيقاف الحملة؟</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            سيتم إيقاف عرض الإعلانات وإعادة الميزانية المتبقية إلى رصيد إعلاناتك. لا يمكن التراجع عن هذا الإجراء.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={loading}>إلغاء</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleStopCampaign} disabled={loading} className="bg-destructive hover:bg-destructive/90">
+                            {loading && <Loader2 className="ml-2 animate-spin" />}
+                            نعم، قم بالإيقاف
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
        </div>
     );
 }
