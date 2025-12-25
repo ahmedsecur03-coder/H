@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle, LinkIcon, MapPin, Cake, Users, Bullseye } from 'lucide-react';
+import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle, Link as LinkIcon, MapPin, Cake, Users, Bullseye } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { Skeleton } from '@/components/ui/skeleton';
