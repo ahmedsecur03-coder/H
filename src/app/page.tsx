@@ -34,6 +34,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/icons';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 
 
 function FeaturedServices() {
@@ -54,32 +55,40 @@ function FeaturedServices() {
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featuredServices.map(service => {
+            {featuredServices.map((service, i) => {
                 const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
                 return (
-                    <Card key={service.id} className="flex flex-col group transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
-                        <CardHeader className="flex-row items-center gap-4">
-                            <div className="p-3 bg-muted rounded-full">
-                                <Icon className="w-6 h-6 text-foreground" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-lg leading-tight">{service.category}</CardTitle>
-                                <CardDescription>{service.platform}</CardDescription>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="flex-grow flex flex-col justify-end">
-                            <div className="text-center">
-                                <p className="text-3xl font-bold text-primary">${service.price.toFixed(3)}</p>
-                                <p className="text-xs text-muted-foreground">/ لكل 1000</p>
-                            </div>
-                            <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                <Link href="/services">
-                                    <ChevronLeft className="h-4 w-4 ml-2" />
-                                    اطلب الآن
-                                </Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
+                     <motion.div
+                        key={service.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: i * 0.05 }}
+                        viewport={{ once: true }}
+                    >
+                        <Card className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
+                            <CardHeader className="flex-row items-center gap-4">
+                                <div className="p-3 bg-muted rounded-full">
+                                    <Icon className="w-6 h-6 text-foreground" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg leading-tight">{service.category}</CardTitle>
+                                    <CardDescription>{service.platform}</CardDescription>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-grow flex flex-col justify-end">
+                                <div className="text-center">
+                                    <p className="text-3xl font-bold text-primary">${service.price.toFixed(3)}</p>
+                                    <p className="text-xs text-muted-foreground">/ لكل 1000</p>
+                                </div>
+                                <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                    <Link href="/services">
+                                        <ChevronLeft className="h-4 w-4 ml-2" />
+                                        اطلب الآن
+                                    </Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
                 )
             })}
         </div>
@@ -91,29 +100,55 @@ function Testimonials() {
         { name: "أحمد المصري", role: "مسوق رقمي", text: "منصة حاجاتي غيرت طريقة عملي بالكامل. السرعة والدعم الفني لا يعلى عليهما. أنصح بها بشدة!", avatar: PlaceHolderImages.find(p => p.id === 'avatar1')?.imageUrl },
         { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: PlaceHolderImages.find(p => p.id === 'avatar2')?.imageUrl },
         { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: PlaceHolderImages.find(p => p.id === 'avatar3')?.imageUrl },
+        { name: "سارة العبدالله", role: "مؤثرة على انستغرام", text: "أفضل ما في حاجاتي هو تنوع الخدمات وجودتها. كل ما أحتاجه لنمو حسابي أجده في مكان واحد وبأسعار ممتازة.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+        { name: "يوسف المغربي", role: "صانع محتوى يوتيوب", text: "خدمة ساعات المشاهدة ساعدتني في تحقيق شروط يوتيوب بسرعة لم أكن أتوقعها. فريق الدعم كان متعاونًا جدًا.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
     ];
 
+    const duplicatedTestimonials = [...testimonials, ...testimonials];
+
+    const carouselVariants = {
+        animate: {
+            x: [0, -100 * testimonials.length],
+            transition: {
+                x: {
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    duration: testimonials.length * 5, 
+                    ease: "linear",
+                },
+            },
+        },
+    };
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-                <Card key={i} className="transition-all duration-300 hover:scale-105 hover:shadow-secondary/20">
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
-                            <Avatar>
-                                <AvatarImage src={t.avatar} alt={t.name} />
-                                <AvatarFallback>{t.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <CardTitle className="text-base">{t.name}</CardTitle>
-                                <CardDescription>{t.role}</CardDescription>
+        <div className="w-full overflow-hidden relative">
+            <motion.div
+                className="flex gap-8"
+                variants={carouselVariants}
+                animate="animate"
+            >
+                {duplicatedTestimonials.map((t, i) => (
+                    <Card key={i} className="flex-shrink-0 w-[350px]">
+                        <CardHeader>
+                            <div className="flex items-center gap-4">
+                                <Avatar>
+                                    <AvatarImage src={t.avatar} alt={t.name} />
+                                    <AvatarFallback>{t.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <CardTitle className="text-base">{t.name}</CardTitle>
+                                    <CardDescription>{t.role}</CardDescription>
+                                </div>
                             </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground italic">"{t.text}"</p>
-                    </CardContent>
-                </Card>
-            ))}
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-muted-foreground italic">"{t.text}"</p>
+                        </CardContent>
+                    </Card>
+                ))}
+            </motion.div>
+             <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent"></div>
+             <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent"></div>
         </div>
     );
 }
@@ -225,22 +260,40 @@ export default function HomePage() {
 
         <section>
             <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold font-headline">لماذا تختار حاجاتي؟</h2>
-                <p className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</p>
+                <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">لماذا تختار حاجاتي؟</motion.h2>
+                <motion.p 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</motion.p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {featureCards.map((feature, i) => {
                     const Icon = feature.icon;
                     return (
-                        <Card key={i} className="text-center transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
-                            <CardHeader className="items-center">
-                                <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
-                                    <Icon className="h-8 w-8 text-primary" />
-                                </div>
-                                <CardTitle>{feature.title}</CardTitle>
-                                <CardDescription>{feature.description}</CardDescription>
-                            </CardHeader>
-                        </Card>
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: i * 0.1 }}
+                          viewport={{ once: true }}
+                        >
+                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
+                                <CardHeader className="items-center">
+                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
+                                        <Icon className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <CardTitle>{feature.title}</CardTitle>
+                                    <CardDescription>{feature.description}</CardDescription>
+                                </CardHeader>
+                            </Card>
+                        </motion.div>
                     )
                 })}
             </div>
@@ -248,16 +301,36 @@ export default function HomePage() {
 
         <section>
             <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold font-headline">نظرة على خدماتنا الكونية</h2>
-                <p className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</p>
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">نظرة على خدماتنا الكونية</motion.h2>
+                 <motion.p 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</motion.p>
             </div>
             <FeaturedServices />
         </section>
 
         <section>
             <div className="text-center mb-12">
-                 <h2 className="text-4xl font-bold font-headline">أطلق حملاتك الإعلانية نحو النجاح</h2>
-                 <p className="text-muted-foreground mt-2">أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.</p>
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">أطلق حملاتك الإعلانية نحو النجاح</motion.h2>
+                 <motion.p 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.</motion.p>
             </div>
             <Card>
                  <CardContent className="p-10 flex flex-col lg:flex-row items-center gap-8">
@@ -283,8 +356,18 @@ export default function HomePage() {
 
         <section>
             <div className="text-center mb-12">
-                 <h2 className="text-4xl font-bold font-headline">حسابات إعلانية جاهزة وموثوقة</h2>
-                 <p className="text-muted-foreground mt-2">تجاوز قيود الحسابات الجديدة واحصل على حسابات وكالة إعلانية قوية.</p>
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">حسابات إعلانية جاهزة وموثوقة</motion.h2>
+                 <motion.p 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">تجاوز قيود الحسابات الجديدة واحصل على حسابات وكالة إعلانية قوية.</motion.p>
             </div>
             <Card>
                  <CardContent className="p-10 flex flex-col lg:flex-row-reverse items-center gap-8">
@@ -308,15 +391,23 @@ export default function HomePage() {
             </Card>
         </section>
 
-         <section>
+         <section className="overflow-x-hidden">
             <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</h2>
-                <p className="text-muted-foreground mt-2">آراء عملائنا هي النجوم التي نهتدي بها.</p>
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</motion.h2>
+                 <motion.p 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">آراء عملائنا هي النجوم التي نهتدي بها.</motion.p>
             </div>
             <Testimonials />
         </section>
     </div>
   );
 }
-
-    
