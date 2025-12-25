@@ -33,6 +33,7 @@ export function getRankForSpend(spend: number) {
   return currentRank;
 }
 
+const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 /**
  * Processes a new order within a Firestore transaction.

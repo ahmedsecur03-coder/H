@@ -60,7 +60,7 @@ function MassOrderRow({
     useEffect(() => {
         let finalCost = 0;
         if (selectedService && row.quantity) {
-            const baseCost = (parseInt(row.quantity, 10) / 1000) * selectedService.price * PROFIT_MARGIN; // Apply profit margin
+            const baseCost = (parseInt(row.quantity, 10) / 1000) * selectedService.price;
             finalCost = baseCost - (baseCost * discountPercentage);
         }
         if (finalCost !== row.cost) {
@@ -100,7 +100,7 @@ function MassOrderRow({
 
                 <Select value={row.serviceId} onValueChange={(v) => updateRow(row.id, { serviceId: v })} disabled={!row.category || isProcessing}>
                     <SelectTrigger><SelectValue placeholder="اختر الخدمة" /></SelectTrigger>
-                    <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{`#${s.id} - ${s.description} - $${(s.price * PROFIT_MARGIN).toFixed(4)}`}</SelectItem>)}</SelectContent>
+                    <SelectContent>{services.map(s => <SelectItem key={s.id} value={s.id}>{`#${s.id} - ${s.description} - $${(s.price).toFixed(4)}`}</SelectItem>)}</SelectContent>
                 </Select>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">

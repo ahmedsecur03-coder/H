@@ -22,6 +22,7 @@ import { useServices } from '@/hooks/useServices';
 
 
 const ITEMS_PER_PAGE = 25;
+const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 function ServicesPageSkeleton() {
     return (
@@ -199,7 +200,7 @@ function AdminServicesPageComponent() {
           <TableCell className="font-mono text-xs">{service.id}</TableCell>
           <TableCell>{service.category}</TableCell>
           <TableCell>{service.platform}</TableCell>
-          <TableCell>${service.price.toFixed(4)}</TableCell>
+          <TableCell>${(service.price * PROFIT_MARGIN).toFixed(4)}</TableCell>
           <TableCell>{service.min} / {service.max}</TableCell>
           <TableCell className="text-center">
              {service.guarantee ? <Badge variant="default" className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 ml-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 ml-1" />لا</Badge>}
