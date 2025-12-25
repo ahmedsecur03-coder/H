@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -61,7 +62,7 @@ export default function SystemLogPage() {
             setLogs(fetchedLogs);
         } catch (error) {
             console.error("Error fetching system logs:", error);
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب سجلات النظام.' });
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب سجلات النظام. قد يكون السبب مشكلة في الصلاحيات.' });
         } finally {
             setIsLoading(false);
         }

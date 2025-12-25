@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -105,14 +106,22 @@ export default function AdminSettingsPage() {
     }
 
     try {
-        let q = query(
-            collectionGroup(firestore, collectionName),
-            where(dateField, '<', fiveDaysAgoISOString) // Compare string with string
-        );
-
+        let q: any;
+        
+        // Construct the query based on the type
         if (statusWhereClause) {
-            q = query(q, statusWhereClause);
+            q = query(
+                collectionGroup(firestore, collectionName),
+                statusWhereClause,
+                where(dateField, '<', fiveDaysAgoISOString)
+            );
+        } else {
+             q = query(
+                collectionGroup(firestore, collectionName),
+                where(dateField, '<', fiveDaysAgoISOString)
+            );
         }
+
 
         const snapshot = await getDocs(q);
         
