@@ -60,7 +60,10 @@ export default function BlogPage() {
         // we'll fetch the data in a useEffect. For true static generation, this page would need to be refactored.
         // This simulates a static-like fetch on the client side.
         const fetchPosts = async () => {
-            const { firestore } = initializeFirebaseServer();
+            // This is a bit of a workaround because we can't use server-side fetching directly
+            // in this client component setup without a larger refactor.
+            // We use the client-side SDK to fetch the posts.
+            const { firestore } = initializeFirebase();
             if (!firestore) {
                 setIsLoading(false);
                 return;

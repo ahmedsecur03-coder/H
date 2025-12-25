@@ -15,7 +15,7 @@ import {
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Bar, ComposedChart } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getCountFromServer, Timestamp, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, getCountFromServer, Timestamp, orderBy, limit, getDocs, collectionGroup, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { User, Order, Ticket, DailyStat } from '@/lib/types';
@@ -25,11 +25,11 @@ import { useToast } from '@/hooks/use-toast';
 const chartConfig = {
   revenue: {
     label: 'الإيرادات ($)',
-    color: 'hsl(var(--primary))',
+    color: 'hsl(var(--chart-1))',
   },
   users: {
     label: 'مستخدمون جدد',
-    color: 'hsl(var(--accent-foreground))',
+    color: 'hsl(var(--chart-2))',
   },
 } as const;
 
