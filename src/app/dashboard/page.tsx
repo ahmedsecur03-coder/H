@@ -13,6 +13,9 @@ import {
   Briefcase,
   ChevronLeft,
   Star,
+  Crown,
+  ShoppingBag,
+  ListOrdered,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
@@ -26,6 +29,15 @@ import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { useMemo } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+
+const statusVariant = {
+  'مكتمل': 'default',
+  'قيد التنفيذ': 'secondary',
+  'ملغي': 'destructive',
+  'جزئي': 'outline',
+} as const;
 
 
 function DealOfTheDay() {
@@ -62,7 +74,7 @@ function DealOfTheDay() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-                <p className="text-4xl font-bold font-mono">${service.price.toFixed(3)}</p>
+                <p className="text-4xl font-bold font-mono">${(service.price * 1.50).toFixed(3)}</p>
                 <p className="text-xs text-muted-foreground">/ لكل 1000</p>
             </CardContent>
              <CardContent>
@@ -86,17 +98,16 @@ function DashboardSkeleton() {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Skeleton className="h-16" />
-                        <Skeleton className="h-16" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <Skeleton className="h-28" />
+                        <Skeleton className="h-28" />
+                        <Skeleton className="h-28" />
                     </div>
                     <Skeleton className="h-96" />
                 </div>
                 <div className="lg:col-span-1 space-y-4">
-                     <Skeleton className="h-28" />
-                     <Skeleton className="h-28" />
+                     <Skeleton className="h-40" />
                     <Skeleton className="h-44 w-full" />
-                    <Skeleton className="h-40" />
                 </div>
             </div>
         </div>
@@ -136,21 +147,84 @@ export default function DashboardPage() {
 
                 {/* Main Content Column */}
                 <div className="lg:col-span-2 space-y-6">
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Button variant="outline" className="w-full text-md py-6" asChild>
-                            <Link href="/dashboard/campaigns">
-                                <PlusCircle className="ml-2 h-5 w-5" />
-                                إنشاء حملة إعلانية
-                            </Link>
-                        </Button>
-                        <Button variant="outline" className="w-full text-md py-6" asChild>
-                            <Link href="/dashboard/agency-accounts">
-                                <Briefcase className="ml-2 h-5 w-5" />
-                                فتح حسابات إعلانية (ايجنسي)
-                            </Link>
-                        </Button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                       <Card>
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">${userData.totalSpent.toFixed(2)}</div>
+                            <p className="text-xs text-muted-foreground">على جميع الطلبات والخدمات</p>
+                          </CardContent>
+                        </Card>
+                         <Card>
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">رتبتك الحالية</CardTitle>
+                            <Crown className="h-4 w-4 text-muted-foreground" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-primary">{rank.name}</div>
+                            <p className="text-xs text-muted-foreground">خصم {rank.discount}% على كل الطلبات</p>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
+                            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{recentOrders?.length || 0}</div>
+                            <p className="text-xs text-muted-foreground">إجمالي عدد الطلبات المنفذة</p>
+                          </CardContent>
+                        </Card>
                     </div>
-                    <QuickOrderForm user={authUser} userData={userData} />
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle className="font-headline text-xl">آخر الطلبات</CardTitle>
+                                <CardDescription>نظرة سريعة على آخر 5 طلبات قمت بها.</CardDescription>
+                            </div>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href="/dashboard/orders">
+                                    <ListOrdered className="ml-2 h-4 w-4" />
+                                    عرض الكل
+                                </Link>
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                             <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead>الخدمة</TableHead>
+                                    <TableHead>الحالة</TableHead>
+                                    <TableHead className="text-right">التكلفة</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentOrders && recentOrders.length > 0 ? (
+                                        recentOrders.map(order => (
+                                            <TableRow key={order.id}>
+                                                <TableCell className="font-medium">{order.serviceName}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono">${order.charge.toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-24 text-center">
+                                                لا توجد طلبات حديثة.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+
                 </div>
 
                 {/* Sidebar Column */}
@@ -163,11 +237,19 @@ export default function DashboardPage() {
                         <CardContent>
                              <div className="text-3xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
                         </CardContent>
+                         <CardContent>
+                            <Button asChild className="w-full">
+                                <Link href="/dashboard/add-funds">
+                                    <PlusCircle className="ml-2 h-4 w-4" />
+                                    شحن الرصيد
+                                </Link>
+                            </Button>
+                        </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>رتبتك الحالية</CardDescription>
-                            <CardTitle className="text-xl text-primary">{rank.name}</CardTitle>
+                            <CardDescription>الترقية التالية</CardDescription>
+                            <CardTitle className="text-xl text-primary">{nextRank ? nextRank.name : 'لقد وصلت للقمة!'}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {nextRank ? (
@@ -182,7 +264,6 @@ export default function DashboardPage() {
                             )}
                         </CardContent>
                     </Card>
-                    <DealOfTheDay />
                     <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 </div>
             </div>

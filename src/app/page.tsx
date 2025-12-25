@@ -78,7 +78,7 @@ function FeaturedServices() {
                             </CardHeader>
                             <CardContent className="flex-grow flex flex-col justify-end">
                                 <div className="text-center">
-                                    <p className="text-3xl font-bold text-primary">${service.price.toFixed(3)}</p>
+                                    <p className="text-3xl font-bold text-primary">${(service.price * 1.50).toFixed(3)}</p>
                                     <p className="text-xs text-muted-foreground">/ لكل 1000</p>
                                 </div>
                                 <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -416,7 +416,7 @@ export default function HomePage() {
                      transition={{ duration: 0.5 }}
                      viewport={{ once: true }}
                     className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</motion.h2>
-                 <motion.p 
+                 <motion.p
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5, delay: 0.1 }}
