@@ -41,7 +41,7 @@ export default function Error({
             </div>
 
             {error?.digest && (
-                <p className="mt-4 text-xs text-muted-foreground font-mono">
+                <p key={error.digest} className="mt-4 text-xs text-muted-foreground font-mono">
                     معرف الخطأ: {error.digest}
                 </p>
             )}
