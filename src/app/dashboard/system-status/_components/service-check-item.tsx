@@ -53,10 +53,12 @@ export function ServiceCheckItem({ name, checkFn, Icon }: ServiceCheckItemProps)
             }
         };
 
-        performCheck();
+        // Add a small delay to allow the initial "checking" state to be visible
+        const timer = setTimeout(performCheck, 500);
 
         return () => {
             isMounted = false;
+            clearTimeout(timer);
         };
     }, [checkFn, name]);
 

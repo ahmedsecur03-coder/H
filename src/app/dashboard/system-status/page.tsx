@@ -15,7 +15,7 @@ export default function SystemStatusPage() {
     // These functions represent the "check" for each service.
     const checkDatabase = async () => {
         if (!firestore) throw new Error("Firestore not available");
-        const servicesCol = collection(firestore, 'services');
+        const servicesCol = collection(firestore, 'servicePrices');
         await getCountFromServer(servicesCol);
         return true;
     };
