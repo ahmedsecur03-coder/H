@@ -40,7 +40,7 @@ function ServiceDescription({ service }: { service: Service }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 p-4 border rounded-lg bg-muted/50 space-y-3 text-sm"
+            className="mt-4 p-4 border rounded-lg bg-muted/50 space-y-3 text-sm overflow-hidden"
         >
              <h4 className="font-semibold text-foreground flex items-center gap-2 border-b pb-2 mb-3"><Info className="h-4 w-4"/>وصف الخدمة</h4>
              {service.description && (
@@ -187,8 +187,9 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     };
     
     const cardVariants = {
-        hidden: { opacity: 0, y: -20 },
-        visible: { opacity: 1, y: 0 },
+        hidden: { opacity: 0, y: -10 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+        exit: { opacity: 0, y: -10, transition: { duration: 0.2, ease: 'easeIn' } },
     };
 
     return (
@@ -212,7 +213,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     
                     <AnimatePresence>
                     {platform && (
-                        <motion.div key="category-select" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
+                        <motion.div key="category-select" initial="hidden" animate="visible" exit="exit" variants={cardVariants}>
                             <Select onValueChange={setCategory} disabled={!platform || pricesLoading} value={category}>
                                 <SelectTrigger><SelectValue placeholder="2. اختر الفئة" /></SelectTrigger>
                                 <SelectContent>
@@ -221,8 +222,11 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                             </Select>
                         </motion.div>
                     )}
+                    </AnimatePresence>
+
+                     <AnimatePresence>
                     {category && (
-                         <motion.div key="service-select" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4">
+                         <motion.div key="service-select" initial="hidden" animate="visible" exit="exit" variants={cardVariants}>
                             <Select onValueChange={setServiceId} value={serviceId} disabled={!category || pricesLoading}>
                                 <SelectTrigger><SelectValue placeholder="3. اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
@@ -242,13 +246,16 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     </AnimatePresence>
 
 
+                    <AnimatePresence>
                     {serviceId && (
-                         <motion.div key="order-inputs" initial="hidden" animate="visible" exit="hidden" variants={cardVariants} className="space-y-4 pt-4 border-t">
+                         <motion.div key="order-inputs" initial="hidden" animate="visible" exit="exit" variants={cardVariants} className="space-y-4 pt-4 border-t">
                             <Input placeholder="4. أدخل الرابط" value={link} onChange={e => setLink(e.target.value)} required />
                             <Input type="number" placeholder={`5. أدخل الكمية (بين ${selectedService?.min} و ${selectedService?.max})`} value={quantity} onChange={e => setQuantity(e.target.value)} required min={selectedService?.min} max={selectedService?.max}/>
                         </motion.div>
                     )}
-
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
                     {selectedService && quantity && (
                         <motion.div key="order-cost" initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center">
                             <p className="text-sm text-muted-foreground">التكلفة النهائية</p>
@@ -265,15 +272,21 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                             )}
                         </motion.div>
                     )}
+                    </AnimatePresence>
                 </CardContent>
+
+                <AnimatePresence>
                 {serviceId && (
-                    <CardFooter>
-                        <Button type="submit" className="w-full" disabled={isSubmitting || pricesLoading}>
-                            {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
-                            إرسال الطلب
-                        </Button>
-                    </CardFooter>
+                    <motion.div key="footer-submit" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <CardFooter>
+                            <Button type="submit" className="w-full" disabled={isSubmitting || pricesLoading}>
+                                {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
+                                إرسال الطلب
+                            </Button>
+                        </CardFooter>
+                    </motion.div>
                 )}
+                </AnimatePresence>
             </form>
         </Card>
     );
