@@ -4,7 +4,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, DollarSign, Users, Crown, Loader2, Target, Check } from "lucide-react";
+import { Copy, DollarSign, Users, Crown, Loader2, Target, Check, Share2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import type { User as UserType, AffiliateTransaction, Withdrawal } from "@/lib/types";
@@ -26,6 +26,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { WhatsAppIcon } from "@/components/ui/icons";
+import { Twitter, Facebook } from "lucide-react";
 
 // Inlined CopyButton component
 function CopyButton({ textToCopy }: { textToCopy: string }) {
@@ -149,6 +152,39 @@ function WithdrawalDialog({ user, children }: { user: UserType, children: React.
                 </form>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function ShareButtons({ referralLink }: { referralLink: string }) {
+    const shareText = encodeURIComponent(`انضم إلى منصة حاجاتي عبر الرابط الخاص بي واحصل على بداية قوية لرحلتك الرقمية!`);
+    const encodedLink = encodeURIComponent(referralLink);
+
+    const shareTargets = [
+        { name: 'WhatsApp', icon: WhatsAppIcon, url: `https://api.whatsapp.com/send?text=${shareText}%20${encodedLink}` },
+        { name: 'X', icon: Twitter, url: `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedLink}` },
+        { name: 'Facebook', icon: Facebook, url: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}` },
+    ];
+    
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button size="icon" variant="outline"><Share2 className="h-4 w-4"/></Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+                <div className="flex gap-2">
+                    {shareTargets.map(target => {
+                        const Icon = target.icon;
+                        return (
+                            <Button key={target.name} size="icon" variant="ghost" asChild>
+                                <a href={target.url} target="_blank" rel="noopener noreferrer">
+                                    <Icon className="h-5 w-5" />
+                                </a>
+                            </Button>
+                        )
+                    })}
+                </div>
+            </PopoverContent>
+        </Popover>
     );
 }
 
@@ -389,6 +425,7 @@ export default function AffiliatePage() {
                 <CardContent className="flex items-center gap-2">
                     <Input readOnly value={referralLink} placeholder="جاري تحميل الرابط..." />
                     <CopyButton textToCopy={referralLink} />
+                    <ShareButtons referralLink={referralLink} />
                 </CardContent>
             </Card>
             <div className="lg:col-span-2">
@@ -399,5 +436,7 @@ export default function AffiliatePage() {
     </div>
   );
 }
+
+    
 
     
