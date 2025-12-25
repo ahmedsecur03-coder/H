@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { LogIn, UserPlus, Menu, X, ArrowUp } from 'lucide-react';
+import { LogIn, UserPlus, Menu, X, ArrowUp, ChevronDown } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
@@ -31,6 +31,8 @@ import {
   SheetDescription
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
+import type { NestedNavItem } from '@/lib/types';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 
 const ListItem = React.forwardRef<
@@ -101,6 +103,46 @@ function Header() {
   } : null;
 
   const isAdmin = userData?.role === 'admin';
+
+  const renderMobileNavItem = (item: NestedNavItem, isSubItem = false) => {
+    const Icon = item.icon;
+    const isActive = pathname === item.href;
+
+    if (item.children) {
+      return (
+        <Collapsible key={item.label} className="w-full">
+          <CollapsibleTrigger asChild>
+            <div className={cn("flex w-full items-center justify-between rounded-md p-2 hover:bg-muted text-lg font-medium", isActive && "bg-muted")}>
+              <div className="flex items-center gap-4">
+                <Icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </div>
+              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="ps-8 mt-2 space-y-2">
+            {item.children.map(child => renderMobileNavItem(child, true))}
+          </CollapsibleContent>
+        </Collapsible>
+      );
+    }
+
+    return (
+      <SheetClose asChild key={item.href}>
+        <Link
+          href={item.href || '#'}
+          className={cn(
+            'flex items-center gap-4 rounded-md p-2',
+            isActive ? 'bg-muted font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground',
+            isSubItem ? 'text-base' : 'text-lg font-medium'
+          )}
+        >
+          {Icon && <Icon className="h-5 w-5" />}
+          {item.label}
+        </Link>
+      </SheetClose>
+    );
+  };
 
 
   return (
@@ -177,18 +219,14 @@ function Header() {
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left">
+              <SheetContent side="right">
                 <SheetHeader>
                   <SheetTitle><Logo /></SheetTitle>
                   <SheetDescription>قائمة التنقل الرئيسية لمنصة حاجاتي.</SheetDescription>
                 </SheetHeader>
-                <div className="flex flex-col space-y-4 py-6">
-                  {publicNavItems.map(item => (
-                     <SheetClose asChild key={item.label}>
-                      <Link href={item.href || '#'} className="text-lg font-medium hover:text-primary">{item.label}</Link>
-                    </SheetClose>
-                  ))}
-                </div>
+                 <div className="flex flex-col space-y-2 py-6">
+                    {publicNavItems.map(item => renderMobileNavItem(item))}
+                  </div>
                  <div className="mt-auto pt-6 border-t">
                   {isClient && (
                     isUserLoading ? (
