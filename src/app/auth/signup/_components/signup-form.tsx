@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
@@ -113,6 +112,11 @@ export default function SignupForm() {
       let description = 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
       if (error.code === 'auth/email-already-in-use') {
           description = 'هذا البريد الإلكتروني مستخدم بالفعل.';
+           errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: `auth`,
+                operation: 'create',
+                requestResourceData: { email: email, error: 'email-already-in-use' }
+            }));
       } else if (error.code === 'auth/weak-password') {
           description = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
       } else if (error.code === 'auth/invalid-email') {
