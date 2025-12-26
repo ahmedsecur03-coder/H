@@ -3,24 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    function isAdmin() {
-      // Safely check for admin role.
-      // Assumes the user document exists. It should for any logged-in user.
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Admins can do anything, anywhere. This rule is evaluated first.
-    match /{document=**} {
-      allow read, write: if isAdmin();
-    }
-    
-    // Users can create their own user document upon signup.
-    match /users/{userId} {
-      allow create: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Default rule for all other authenticated users.
-    // This is less specific than the admin and user creation rules.
+    // Allow any authenticated user to perform read and write operations.
+    // This is a permissive rule set to prevent permission errors during development.
     match /{document=**} {
       allow read, write: if request.auth != null;
     }
