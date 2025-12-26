@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, updateDoc, increment } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,95 +39,87 @@ export default function SignupForm() {
       const newUser = userCredential.user;
       const avatarUrl = `https://i.pravatar.cc/150?u=${newUser.uid}`;
 
-      // Now, handle the creation of the user document and referral logic in a transaction
-      await runTransaction(firestore, async (transaction) => {
-        let referrerId: string | null = null;
+      let referrerId: string | null = null;
         
-        // 1. Find the referrer if a referral code is present
-        if (referralCode) {
-            const usersRef = collection(firestore, 'users');
-            const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-            const querySnapshot = await getDocs(q); // Use getDocs for transactions, not from transaction object
-            if (!querySnapshot.empty) {
-                const referrerDoc = querySnapshot.docs[0];
-                referrerId = referrerDoc.id;
-                
-                // 2. Update the referrer's referralsCount
-                const newReferralsCount = (referrerDoc.data().referralsCount || 0) + 1;
-                transaction.update(referrerDoc.ref, { referralsCount: newReferralsCount });
-            }
-        }
-        
-        // 3. Create the new user's document
-        const newUserProfile: Omit<User, 'id'> = {
-            name: name,
-            email: newUser.email || 'N/A',
-            avatarUrl: avatarUrl,
-            rank: 'مستكشف نجمي',
-            role: 'user', // Set default role for new users
-            balance: 0,
-            adBalance: 0,
-            totalSpent: 0,
-            apiKey: `hy_${crypto.randomUUID()}`,
-            referralCode: newUser.uid.substring(0, 8).toUpperCase(),
-            referrerId: referrerId, // Set the referrerId here
-            createdAt: new Date().toISOString(),
-            lastRewardClaimedAt: undefined,
-            affiliateEarnings: 0,
-            referralsCount: 0,
-            affiliateLevel: 'برونزي',
-            notificationPreferences: {
-                newsletter: false,
-                orderUpdates: true
-            }
-        };
-        
-        const newUserDocRef = doc(firestore, 'users', newUser.uid);
-        transaction.set(newUserDocRef, newUserProfile);
-      }).catch(serverError => {
-          // This will catch transaction-specific errors (e.g., contention)
-          // or permission errors if the rules are violated during the transaction.
-          const permissionError = new FirestorePermissionError({
-            path: `users/${newUser.uid}`,
-            operation: 'create',
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          throw permissionError; // Re-throw to be caught by outer catch
-      });
+      // 1. Find the referrer if a referral code is present and update their count
+      if (referralCode) {
+          const usersRef = collection(firestore, 'users');
+          const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+              const referrerDoc = querySnapshot.docs[0];
+              referrerId = referrerDoc.id;
+              // Directly update the referrer's document
+              await updateDoc(referrerDoc.ref, { referralsCount: increment(1) });
+          }
+      }
 
-      // 4. Update the user's auth profile (displayName, photoURL) - can be done outside transaction
+      // 2. Create the new user's document
+      const newUserProfile: Omit<User, 'id'> = {
+          name: name,
+          email: newUser.email || 'N/A',
+          avatarUrl: avatarUrl,
+          rank: 'مستكشف نجمي',
+          role: 'user', // Set default role for new users
+          balance: 0,
+          adBalance: 0,
+          totalSpent: 0,
+          apiKey: `hy_${crypto.randomUUID()}`,
+          referralCode: newUser.uid.substring(0, 8).toUpperCase(),
+          referrerId: referrerId,
+          createdAt: new Date().toISOString(),
+          lastRewardClaimedAt: undefined,
+          affiliateEarnings: 0,
+          referralsCount: 0,
+          affiliateLevel: 'برونزي',
+          notificationPreferences: {
+              newsletter: false,
+              orderUpdates: true
+          }
+      };
+
+      const newUserDocRef = doc(firestore, 'users', newUser.uid);
+      await setDoc(newUserDocRef, newUserProfile);
+
+      // 3. Update the user's auth profile (displayName, photoURL)
       await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
       
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
 
     } catch (error: any) {
-      // Don't show toast if it's our custom permission error, as it will be handled by the listener
-      if (error instanceof FirestorePermissionError) {
-        setLoading(false);
-        return;
-      }
-
-      console.error("Signup Error:", error);
-      let description = 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
-      if (error.code === 'auth/email-already-in-use') {
-          description = 'هذا البريد الإلكتروني مستخدم بالفعل.';
-           errorEmitter.emit('permission-error', new FirestorePermissionError({
+        if (error.code === 'auth/email-already-in-use') {
+            toast({
+                variant: 'destructive',
+                title: 'فشل إنشاء الحساب',
+                description: 'هذا البريد الإلكتروني مستخدم بالفعل.',
+            });
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: `auth`,
                 operation: 'create',
                 requestResourceData: { email: email, error: 'email-already-in-use' }
             }));
-      } else if (error.code === 'auth/weak-password') {
-          description = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
-      } else if (error.code === 'auth/invalid-email') {
-          description = 'البريد الإلكتروني الذي أدخلته غير صالح.';
-      }
-      
-      toast({
-        variant: 'destructive',
-        title: 'فشل إنشاء الحساب',
-        description,
-      });
+        } else if (error.code === 'auth/weak-password') {
+            toast({
+                variant: 'destructive',
+                title: 'فشل إنشاء الحساب',
+                description: 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.',
+            });
+        } else if (error.code === 'auth/invalid-email') {
+            toast({
+                variant: 'destructive',
+                title: 'فشل إنشاء الحساب',
+                description: 'البريد الإلكتروني الذي أدخلته غير صالح.',
+            });
+        } else {
+             // For other errors, including potential permission errors from setDoc/updateDoc
+             console.error("Signup Error:", error);
+             const permissionError = new FirestorePermissionError({
+                path: `users/${auth.currentUser?.uid || 'unknown'}`,
+                operation: 'create',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
     } finally {
         setLoading(false);
     }
