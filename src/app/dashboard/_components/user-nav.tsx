@@ -41,7 +41,7 @@ export function UserNav({ user, isAdmin }: { user: UserProps, isAdmin: boolean }
         title: "تم تسجيل الخروج",
         description: "نراك قريباً!",
       });
-      router.push('/login');
+      router.push('/auth/login');
     } catch (error) {
       toast({
         variant: 'destructive',

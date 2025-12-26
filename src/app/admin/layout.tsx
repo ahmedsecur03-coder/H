@@ -111,7 +111,7 @@ export default function AdminLayout({
   // Security check: This effect handles redirection for unauthorized users.
   useEffect(() => {
     if (!isUserLoading && (!user || user.email !== 'hagaaty@gmail.com')) {
-      redirect('/login'); // Redirect non-admins or logged-out users immediately
+      redirect('/auth/login'); // Redirect non-admins or logged-out users immediately
     }
   }, [user, isUserLoading]);
 
