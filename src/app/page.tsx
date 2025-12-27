@@ -100,7 +100,7 @@ function FeaturedServices() {
 function Testimonials() {
     const testimonials = [
         { name: "أحمد المصري", role: "مسوق رقمي", text: "منصة حاجاتي غيرت طريقة عملي بالكامل. السرعة والدعم الفني لا يعلى عليهما. أنصح بها بشدة!", avatar: PlaceHolderImages.find(p => p.id === 'avatar1')?.imageUrl },
-        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: PlaceHolderImages.find(p => p.id === 'avatar2')?.imageUrl },
         { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: PlaceHolderImages.find(p => p.id === 'avatar3')?.imageUrl },
         { name: "سارة العبدالله", role: "مؤثرة على انستغرام", text: "أفضل ما في حاجاتي هو تنوع الخدمات وجودتها. كل ما أحتاجه لنمو حسابي أجده في مكان واحد وبأسعار ممتازة.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
         { name: "يوسف المغربي", role: "صانع محتوى يوتيوب", text: "خدمة ساعات المشاهدة ساعدتني في تحقيق شروط يوتيوب بسرعة لم أكن أتوقعها. فريق الدعم كان متعاونًا جدًا.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
@@ -157,10 +157,10 @@ function Testimonials() {
 
 function Partners() {
     const partners = [
-        { name: "Meta", icon: MetaPartnerIcon },
-        { name: "Google", icon: GooglePartnerIcon },
-        { name: "TikTok", icon: TikTokPartnerIcon },
-        { name: "Snapchat", icon: SnapchatPartnerIcon },
+        { name: "Meta", src: "https://storage.googleapis.com/cdn.worldvectorlogo.com/logos/meta-partner-1.svg", width: 140, height: 26 },
+        { name: "Google", src: "https://storage.googleapis.com/upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Partners_logo.svg/1200px-Google_Partners_logo.svg.png", width: 140, height: 35 },
+        { name: "TikTok", src: "https://storage.googleapis.com/marka-logo.com/wp-content/uploads/2022/12/TikTok-Marketing-Partner-Logo.png", width: 140, height: 38 },
+        { name: "Snapchat", src: "https://storage.googleapis.com/pincel-production-storage/files/3e72c815-5a7a-4299-8d7a-8742878d6556.png", width: 140, height: 35 },
     ];
 
     return (
@@ -176,7 +176,14 @@ function Partners() {
                         viewport={{ once: true }}
                         className="flex flex-col items-center justify-center gap-2"
                      >
-                        <partner.icon className="h-20 w-auto" />
+                        <div className="relative" style={{ width: partner.width, height: partner.height }}>
+                           <Image 
+                                src={partner.src}
+                                alt={`${partner.name} Partner Logo`}
+                                layout="fill"
+                                objectFit="contain"
+                            />
+                        </div>
                     </motion.div>
                 ))}
             </div>
