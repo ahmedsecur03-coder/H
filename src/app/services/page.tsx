@@ -46,7 +46,7 @@ import {
 const PROFIT_MARGIN = 1.50; // 50% profit margin
 const ITEMS_PER_PAGE = 20;
 
-function ServicesPageSkeleton() {
+function ServicesSkeleton() {
   return (
     <div className="space-y-6">
       <Card>
