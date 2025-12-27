@@ -5,8 +5,8 @@ import React, { useMemo, type ReactNode, useEffect } from 'react';
 import { FirebaseProvider, useUser } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
 import { User } from 'firebase/auth';
-import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion } from 'firebase/firestore';
-import type { User as UserType } from '@/lib/types';
+import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
+import type { User as UserType, SystemLog } from '@/lib/types';
 
 
 // This component now handles creating the user document if it doesn't exist
@@ -49,7 +49,7 @@ function UserInitializer() {
                 notifications: [
                   {
                     id: `welcome-${Date.now()}`,
-                    message: 'مرحباً بك في حاجاتي! نحن سعداء بانضمامك إلى رحلتنا الكونية.',
+                    message: 'مرحباً بك في حاجاتي! نحن سعداء بانضمامك إلى رحلتنا الكونية. انقر هنا للذهاب إلى لوحة التحكم.',
                     type: 'success',
                     read: false,
                     createdAt: new Date().toISOString(),
@@ -66,14 +66,24 @@ function UserInitializer() {
                   newUsers: increment(1)
               }, { merge: true });
 
+              // Log this event to system logs
+               const logData: Omit<SystemLog, 'id'> = {
+                    event: 'user_created',
+                    level: 'info',
+                    message: `New user signed up: ${user.email}`,
+                    timestamp: new Date().toISOString(),
+                    metadata: { userId: user.uid, email: user.email },
+                };
+                // We add this outside the transaction, as it's a non-critical log
+                addDoc(collection(firestore, 'systemLogs'), logData);
+
             } else if (!userDoc.data().role) {
                 // Document exists but is missing the role (older user), update it
                 transaction.update(userDocRef, { role: 'user' });
             }
-            // If doc exists and has a role, do nothing.
           });
         } catch (error) {
-             // Silently catch errors here, as this is a background process.
+             console.error("UserInitializer transaction failed: ", error);
         }
       };
 
@@ -105,3 +115,5 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     </FirebaseProvider>
   );
 }
+
+    

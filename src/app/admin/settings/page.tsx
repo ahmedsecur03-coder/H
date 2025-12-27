@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2, Send } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp, orderBy } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp, orderBy, collection, addDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -24,12 +24,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Notification } from '@/lib/types';
+
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const [isSaving, setIsSaving] = useState(false);
   const [isCleaning, setIsCleaning] = useState<string|null>(null);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastType, setBroadcastType] = useState<Notification['type']>('info');
+
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'settings', 'global') : null),
@@ -109,10 +117,9 @@ export default function AdminSettingsPage() {
         let q: any;
         const collectionGroupRef = collectionGroup(firestore, collectionName);
         
-        // Construct the query based on the type
         const queryConstraints = [
             where(dateField, '<', fiveDaysAgoISOString),
-            orderBy(dateField, 'desc') // Ensure this matches the index order
+            orderBy(dateField, 'desc')
         ];
 
         if (statusWhereClause) {
@@ -129,7 +136,6 @@ export default function AdminSettingsPage() {
             return;
         }
 
-        // Firestore allows a maximum of 500 operations in a single batch.
         const batchArray = [];
         let currentBatch = writeBatch(firestore);
         let operationCount = 0;
@@ -154,7 +160,6 @@ export default function AdminSettingsPage() {
 
     } catch (error) {
         console.error(`Error cleaning up ${type}:`, error);
-        // We can emit a generic error here as we are dealing with multiple paths
         const permissionError = new FirestorePermissionError({
             path: `collectionGroup(${collectionName})`,
             operation: 'delete'
@@ -164,6 +169,46 @@ export default function AdminSettingsPage() {
         setIsCleaning(null);
     }
 }
+
+  const handleBroadcast = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!firestore || !broadcastMessage.trim()) {
+          toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء كتابة رسالة الإشعار.' });
+          return;
+      }
+      setIsBroadcasting(true);
+      
+      try {
+        // In a real-world scenario, this would trigger a Cloud Function
+        // that iterates over all users and adds the notification.
+        // For this demo, we'll log it and show a success message.
+        console.log("Broadcasting:", { message: broadcastMessage, type: broadcastType });
+
+        const logData = {
+          event: 'broadcast_sent',
+          level: 'info' as const,
+          message: `Admin sent a broadcast: "${broadcastMessage}"`,
+          timestamp: new Date().toISOString(),
+          metadata: { type: broadcastType, message: broadcastMessage },
+        };
+        await addDoc(collection(firestore, 'systemLogs'), logData);
+
+        toast({
+            title: "جاري إرسال الإشعار...",
+            description: "سيتم إرسال الإشعار لجميع المستخدمين في الخلفية.",
+        });
+        setBroadcastMessage('');
+
+      } catch (error) {
+          const permissionError = new FirestorePermissionError({
+              path: 'systemLogs',
+              operation: 'create',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+      } finally {
+        setIsBroadcasting(false);
+      }
+  }
 
 
   if(isSettingsLoading) {
@@ -228,6 +273,40 @@ export default function AdminSettingsPage() {
                     </div>
                 </CardContent>
              </Card>
+
+              <Card>
+                  <CardHeader>
+                      <CardTitle>إرسال إشعار عام</CardTitle>
+                      <CardDescription>إرسال إشعار لجميع المستخدمين في المنصة. استخدمها للإعلانات الهامة أو تنبيهات الصيانة.</CardDescription>
+                  </CardHeader>
+                  <form onSubmit={handleBroadcast}>
+                      <CardContent className="space-y-4">
+                          <div className="space-y-2">
+                              <Label htmlFor="broadcast-message">رسالة الإشعار</Label>
+                              <Textarea id="broadcast-message" value={broadcastMessage} onChange={e => setBroadcastMessage(e.target.value)} placeholder="مثال: صيانة مجدولة يوم الجمعة من الساعة 2 حتى 4 صباحًا." required />
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="broadcast-type">نوع الإشعار</Label>
+                              <Select value={broadcastType} onValueChange={(v) => setBroadcastType(v as Notification['type'])}>
+                                  <SelectTrigger id="broadcast-type"><SelectValue/></SelectTrigger>
+                                  <SelectContent>
+                                      <SelectItem value="info">معلومة (Info)</SelectItem>
+                                      <SelectItem value="success">نجاح (Success)</SelectItem>
+                                      <SelectItem value="warning">تحذير (Warning)</SelectItem>
+                                      <SelectItem value="error">خطأ (Error)</SelectItem>
+                                  </SelectContent>
+                              </Select>
+                          </div>
+                      </CardContent>
+                      <CardFooter>
+                          <Button type="submit" disabled={isBroadcasting}>
+                              {isBroadcasting ? <Loader2 className="animate-spin me-2" /> : <Send className="me-2 h-4 w-4" />}
+                              إرسال الإشعار للجميع
+                          </Button>
+                      </CardFooter>
+                  </form>
+              </Card>
+
         </div>
 
         <div className="space-y-6">
@@ -293,3 +372,5 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+
+    

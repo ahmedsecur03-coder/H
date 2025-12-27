@@ -29,8 +29,8 @@ export default function SystemStatusPage() {
     
     const checkApi = async () => {
         // In a real scenario, this would ping the actual API endpoint.
-        // For this demo, we'll simulate a successful check.
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const response = await fetch('/api/v2');
+        if(!response.ok) throw new Error("API is not responsive");
         return true;
     }
     
@@ -92,3 +92,5 @@ export default function SystemStatusPage() {
         </div>
     );
 }
+
+    

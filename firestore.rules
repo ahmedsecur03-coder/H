@@ -10,7 +10,24 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Check for the existence of the user document and the role field.
+      // Use exists() for safe checks.
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isNewUserCreation(userId, data) {
+        return request.auth.uid == userId
+                && data.name is string
+                && data.email == request.auth.token.email
+                && data.balance == 0
+                && data.adBalance == 0
+                && data.totalSpent == 0
+                && data.role == 'user'
+                && data.rank == 'مستكشف نجمي'
+                && data.apiKey is string
+                && data.referralCode is string
+                && data.createdAt is string;
     }
 
     // USERS
@@ -18,18 +35,13 @@ service cloud.firestore {
       // READ: Users can read their own profile. Admins can read any profile.
       allow read: if isOwner(userId) || isAdmin();
       
+      // LIST: Admins can list all users for management purposes.
+      allow list: if isAdmin();
+      
       // CREATE: Any authenticated user can create their own user document.
-      allow create: if isOwner(userId) 
-                    && request.resource.data.name is string
-                    && request.resource.data.email == request.auth.token.email
-                    && request.resource.data.balance == 0
-                    && request.resource.data.adBalance == 0
-                    && request.resource.data.totalSpent == 0
-                    && request.resource.data.role == 'user'
-                    && request.resource.data.rank == 'مستكشف نجمي';
+      allow create: if isNewUserCreation(userId, request.resource.data);
 
-      // UPDATE: Users can only update their name, avatar, and notification preferences.
-      // Admins can update more fields.
+      // UPDATE: Users can only update specific fields. Admins can update more fields.
       allow update: if (isOwner(userId) 
                       && request.resource.data.name == request.resource.data.name
                       && request.resource.data.avatarUrl == request.resource.data.avatarUrl
@@ -46,42 +58,8 @@ service cloud.firestore {
     }
     
     // USER SUBCOLLECTIONS
-    // Orders
-    match /users/{userId}/orders/{orderId} {
-        allow read, delete: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId)
-                    && request.resource.data.userId == userId
-                    && request.resource.data.status == 'قيد التنفيذ'
-                    && request.resource.data.charge > 0;
-        // Only admin can update order status
-        allow update: if isAdmin();
-    }
-
-    // Deposits
-    match /users/{userId}/deposits/{depositId} {
-        allow read, delete: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId)
-                      && request.resource.data.userId == userId
-                      && request.resource.data.amount > 0
-                      && request.resource.data.status == 'معلق';
-        // Only admin can update deposit status
-        allow update: if isAdmin();
-    }
-
-    // Withdrawals
-    match /users/{userId}/withdrawals/{withdrawalId} {
-        allow read, delete: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId)
-                      && request.resource.data.userId == userId
-                      && request.resource.data.amount > 0
-                      && request.resource.data.status == 'معلق';
-        // Only admin can update status
-        allow update: if isAdmin();
-    }
-
-    // Campaigns, Tickets, Agency Accounts, Affiliate Transactions
     match /users/{userId}/{collection}/{docId} {
-        // General rule for other user-owned collections
+        // General rule for user-owned subcollections (orders, campaigns, tickets, etc.)
         allow read, write, create, delete: if isOwner(userId) || isAdmin();
     }
 
@@ -99,20 +77,24 @@ service cloud.firestore {
         allow write: if isAdmin();
     }
     
-    // SETTINGS (Admin only write)
+    // SETTINGS (Admin write, authenticated users can read)
     match /settings/global {
-        allow read: if request.auth != null; // All users can read settings
+        allow read: if request.auth != null;
         allow write: if isAdmin();
     }
     
-    // LOGS & STATS (Admin read, Server write simulation)
+    // LOGS & STATS (Admin only)
     match /systemLogs/{logId} {
-        allow read: if isAdmin();
-        allow write: if false; // Should only be written by backend/functions
+        allow read, write: if isAdmin(); 
     }
+    
     match /dailyStats/{date} {
         allow read: if isAdmin();
-        allow write: if false; // Should only be written by backend/functions
+        // Writes to dailyStats should ideally be done by a trusted server environment/function.
+        // For client-side admin updates, an admin check is needed.
+        allow write: if isAdmin(); 
     }
   }
 }
+
+    
