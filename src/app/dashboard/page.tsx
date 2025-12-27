@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   DollarSign,
@@ -22,7 +23,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
+import { doc, collection, query, orderBy, limit, where } from 'firebase/firestore';
 import type { User as UserType, Order, Service, AgencyAccount, Campaign } from '@/lib/types';
 import { getRankForSpend, RANKS } from '@/lib/service';
 import { QuickOrderForm } from './_components/quick-order-form';
@@ -110,7 +111,31 @@ export default function DashboardPage() {
                 {/* Main Content Column */}
                 <div className="lg:col-span-2 space-y-6">
                     <QuickOrderForm user={authUser} userData={userData} />
-                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                         <Card>
+                            <CardHeader className="pb-2">
+                                <CardDescription>الترقية التالية</CardDescription>
+                                <CardTitle className="text-xl text-primary flex items-center gap-2">
+                                    {nextRank ? <>{nextRank.icon && <nextRank.icon/>} {nextRank.name}</> : <><Crown/> لقد وصلت للقمة!</>}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {nextRank ? (
+                                    <>
+                                        <Progress value={progressToNextRank} className="h-2 my-2" />
+                                        <p className="text-xs text-muted-foreground text-center">
+                                        أنفق ${amountToNextRank.toFixed(2)} للوصول لرتبة {nextRank.name} والحصول على خصم {nextRank.discount}%.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p className="text-sm font-semibold text-center text-primary">🎉 أنت في أعلى رتبة!</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
@@ -215,27 +240,6 @@ export default function DashboardPage() {
                                 </Link>
                             </Button>
                         </CardFooter>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription>الترقية التالية</CardDescription>
-                            <CardTitle className="text-xl text-primary flex items-center gap-2">
-                                {nextRank ? <>{nextRank.icon && <nextRank.icon/>} {nextRank.name}</> : <><Crown/> لقد وصلت للقمة!</>}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {nextRank ? (
-                                <>
-                                    <Progress value={progressToNextRank} className="h-2 my-2" />
-                                    <p className="text-xs text-muted-foreground text-center">
-                                       أنفق ${amountToNextRank.toFixed(2)} للوصول لرتبة {nextRank.name} والحصول على خصم {nextRank.discount}%.
-                                    </p>
-                                </>
-                            ) : (
-                                <p className="text-sm font-semibold text-center text-primary">🎉 أنت في أعلى رتبة!</p>
-                            )}
-                        </CardContent>
                     </Card>
                     
                 </div>
