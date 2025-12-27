@@ -157,7 +157,7 @@ function Testimonials() {
 function Partners() {
     const partners = [
         { name: "Meta", src: "https://cdn.worldvectorlogo.com/logos/meta-partner-1.svg", width: 140, height: 26 },
-        { name: "Google", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Partners_logo.svg/1200px-Google_Partners_logo.svg.png", width: 140, height: 35 },
+        { name: "Google", src: "https://pincel-production-storage.s3.amazonaws.com/files/356393b4-f051-4e3f-8618-944f235779c3.png", width: 140, height: 35 },
         { name: "TikTok", src: "https://marka-logo.com/wp-content/uploads/2022/12/TikTok-Marketing-Partner-Logo.png", width: 140, height: 38 },
         { name: "Snapchat", src: "https://pincel-production-storage.s3.amazonaws.com/files/3e72c815-5a7a-4299-8d7a-8742878d6556.png", width: 140, height: 35 },
     ];
