@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from 'next/link';
-import { Bell, Shield, ChevronDown } from 'lucide-react';
+import { Bell, Shield, ChevronDown, Loader2 } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,

@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle, Link as LinkIcon, MapPin, Cake, Users, Bullseye } from 'lucide-react';
+import { Loader2, RefreshCw, DollarSign, Clock, AlertTriangle, Link as LinkIcon, MapPin, Cake, Users, Crosshair } from 'lucide-react';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -109,7 +109,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
       { label: "الدولة", value: campaign.targetCountry, icon: MapPin, hide: !campaign.targetCountry },
       { label: "العمر", value: campaign.targetAge, icon: Cake, hide: !campaign.targetAge },
       { label: "الجنس", value: campaign.targetGender, icon: Users, hide: !campaign.targetGender },
-      { label: "الاهتمامات", value: campaign.targetInterests, icon: Bullseye, hide: !campaign.targetInterests },
+      { label: "الاهتمامات", value: campaign.targetInterests, icon: Crosshair, hide: !campaign.targetInterests },
     ].filter(detail => !detail.hide);
 
 
