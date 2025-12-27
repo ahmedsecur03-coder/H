@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -13,17 +14,77 @@ service cloud.firestore {
     }
 
     // USERS
-    // Users can read/update their own profile. Admins can read/update any profile.
     match /users/{userId} {
-      allow read, update: if isOwner(userId) || isAdmin();
-      // Allow user creation for any authenticated user (during signup)
-      allow create: if request.auth != null;
+      // READ: Users can read their own profile. Admins can read any profile.
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // CREATE: Any authenticated user can create their own user document.
+      allow create: if isOwner(userId) 
+                    && request.resource.data.name is string
+                    && request.resource.data.email == request.auth.token.email
+                    && request.resource.data.balance == 0
+                    && request.resource.data.adBalance == 0
+                    && request.resource.data.totalSpent == 0
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.rank == 'مستكشف نجمي';
+
+      // UPDATE: Users can only update their name, avatar, and notification preferences.
+      // Admins can update more fields.
+      allow update: if (isOwner(userId) 
+                      && request.resource.data.name == request.resource.data.name
+                      && request.resource.data.avatarUrl == request.resource.data.avatarUrl
+                      && request.resource.data.notificationPreferences == request.resource.data.notificationPreferences
+                      && request.resource.data.notifications == request.resource.data.notifications
+                      // Ensure they cannot change other fields
+                      && resource.data.balance == request.resource.data.balance
+                      && resource.data.adBalance == request.resource.data.adBalance
+                      && resource.data.totalSpent == request.resource.data.totalSpent
+                      && resource.data.role == request.resource.data.role
+                      && resource.data.apiKey == request.resource.data.apiKey
+                      && resource.data.rank == request.resource.data.rank
+                      ) || isAdmin();
     }
     
-    // USER SUBCOLLECTIONS (Private to user or admin)
+    // USER SUBCOLLECTIONS
+    // Orders
+    match /users/{userId}/orders/{orderId} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId)
+                    && request.resource.data.userId == userId
+                    && request.resource.data.status == 'قيد التنفيذ'
+                    && request.resource.data.charge > 0;
+        // Only admin can update order status
+        allow update: if isAdmin();
+    }
+
+    // Deposits
+    match /users/{userId}/deposits/{depositId} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId)
+                      && request.resource.data.userId == userId
+                      && request.resource.data.amount > 0
+                      && request.resource.data.status == 'معلق';
+        // Only admin can update deposit status
+        allow update: if isAdmin();
+    }
+
+    // Withdrawals
+    match /users/{userId}/withdrawals/{withdrawalId} {
+        allow read, delete: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId)
+                      && request.resource.data.userId == userId
+                      && request.resource.data.amount > 0
+                      && request.resource.data.status == 'معلق';
+        // Only admin can update status
+        allow update: if isAdmin();
+    }
+
+    // Campaigns, Tickets, Agency Accounts, Affiliate Transactions
     match /users/{userId}/{collection}/{docId} {
+        // General rule for other user-owned collections
         allow read, write, create, delete: if isOwner(userId) || isAdmin();
     }
+
 
     // PUBLIC COLLECTIONS
     // Blog posts are publicly readable. Only admins can write.
@@ -38,18 +99,20 @@ service cloud.firestore {
         allow write: if isAdmin();
     }
     
-    // SETTINGS (Admin only)
+    // SETTINGS (Admin only write)
     match /settings/global {
         allow read: if request.auth != null; // All users can read settings
         allow write: if isAdmin();
     }
     
-    // LOGS & STATS (Admin only)
+    // LOGS & STATS (Admin read, Server write simulation)
     match /systemLogs/{logId} {
-        allow read, write: if isAdmin();
+        allow read: if isAdmin();
+        allow write: if false; // Should only be written by backend/functions
     }
     match /dailyStats/{date} {
-        allow read, write: if isAdmin();
+        allow read: if isAdmin();
+        allow write: if false; // Should only be written by backend/functions
     }
   }
 }
