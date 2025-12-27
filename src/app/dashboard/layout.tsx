@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -131,7 +132,7 @@ export default function DashboardLayout({
     
     React.useEffect(() => {
         if(!isUserLoading && !user) {
-            redirect('/login');
+            redirect('/auth/login');
         }
     }, [isUserLoading, user]);
 
