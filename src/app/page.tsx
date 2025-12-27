@@ -190,12 +190,12 @@ export default function HomePage() {
   }
 
  const featureCards = [
-    { icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط." },
-    { icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة من دعواتك وأرباحًا من شبكتك حتى 5 مستويات." },
-    { icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية." },
-    { icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة." },
-    { icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة." },
-    { icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح." }
+    { icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط.", href: "/dashboard/campaigns/new" },
+    { icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة من دعواتك وأرباحًا من شبكتك حتى 5 مستويات.", href: "/dashboard/affiliate" },
+    { icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية.", href: "/dashboard/agency-accounts" },
+    { icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة.", href: "/dashboard/services" },
+    { icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة.", href: "/dashboard/support" },
+    { icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح.", href: "/services" }
 ];
 
   const howItWorksSteps = [
@@ -273,16 +273,19 @@ export default function HomePage() {
                           whileInView={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: i * 0.1 }}
                           viewport={{ once: true }}
+                           className="h-full"
                         >
-                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-2">
-                                <CardHeader className="items-center">
-                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
-                                        <Icon className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <CardTitle>{feature.title}</CardTitle>
-                                    <CardDescription className="pt-2">{feature.description}</CardDescription>
-                                </CardHeader>
-                            </Card>
+                             <Link href={feature.href} className="h-full block">
+                                <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-2">
+                                    <CardHeader className="items-center">
+                                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
+                                            <Icon className="h-8 w-8 text-primary" />
+                                        </div>
+                                        <CardTitle>{feature.title}</CardTitle>
+                                        <CardDescription className="pt-2">{feature.description}</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
                         </motion.div>
                     )
                 })}
