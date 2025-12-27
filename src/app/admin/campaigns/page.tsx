@@ -35,6 +35,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CampaignActions } from './_components/campaign-actions';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign, ListChecks, Hourglass, BarChart2 } from 'lucide-react';
+import Link from 'next/link';
 
 const statusVariant = {
   'نشط': 'default',
@@ -132,7 +133,9 @@ export default function AdminCampaignsPage() {
     return filteredCampaigns.map((campaign) => (
       <TableRow key={campaign.id}>
         <TableCell className="font-medium">{campaign.name}</TableCell>
-        <TableCell className="font-mono text-xs">{campaign.userId.substring(0, 10)}...</TableCell>
+        <TableCell>
+            <Link href={`/admin/users?search=${campaign.userId}`} className="font-mono text-xs text-primary hover:underline">{campaign.userId.substring(0, 10)}...</Link>
+        </TableCell>
         <TableCell>{campaign.platform}</TableCell>
         <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
         <TableCell>${(campaign.spend || 0).toFixed(2)}</TableCell>

@@ -25,6 +25,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination';
+import Link from 'next/link';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -205,7 +206,7 @@ function AdminUsersPageComponent() {
 
        <Card>
         <CardHeader>
-          <div className="relative pt-4">
+          <div className="relative">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."

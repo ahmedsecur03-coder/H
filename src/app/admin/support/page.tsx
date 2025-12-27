@@ -36,47 +36,8 @@ const statusVariant = {
 type Status = keyof typeof statusVariant;
 
 
-function TicketsTable({ statusFilter }: { statusFilter: Status | 'all' }) {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-    const [tickets, setTickets] = useState<Ticket[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        if (!firestore) return;
-
-        const fetchTickets = async () => {
-            setIsLoading(true);
-            try {
-                let ticketsQuery;
-                if (statusFilter === 'all') {
-                     ticketsQuery = query(collectionGroup(firestore, 'tickets'));
-                } else if (statusFilter === 'مفتوحة') {
-                    // Combine 'مفتوحة' and 'قيد المراجعة' for the active view
-                    ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
-                } else {
-                    ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', '==', statusFilter));
-                }
-
-                const querySnapshot = await getDocs(ticketsQuery);
-                const fetchedTickets: Ticket[] = [];
-                querySnapshot.forEach(doc => {
-                    const pathSegments = doc.ref.path.split('/');
-                    const userId = pathSegments[1];
-                    fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
-                });
-                setTickets(fetchedTickets);
-            } catch (error) {
-                console.error("Error fetching tickets:", error);
-                toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        fetchTickets();
-    }, [firestore, toast, statusFilter]);
-
+function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: boolean }) {
+   
     if (isLoading) {
         return (
              <Table>
@@ -123,7 +84,9 @@ function TicketsTable({ statusFilter }: { statusFilter: Status | 'all' }) {
                  {tickets.map((ticket) => (
                     <TableRow key={ticket.id}>
                         <TableCell className="font-medium">{ticket.subject}</TableCell>
-                        <TableCell className="font-mono text-xs">{ticket.userId}</TableCell>
+                        <TableCell>
+                            <Link href={`/admin/users?search=${ticket.userId}`} className="font-mono text-xs text-primary hover:underline">{ticket.userId}</Link>
+                        </TableCell>
                         <TableCell>
                         <Badge variant={statusVariant[ticket.status] || 'default'}>{ticket.status}</Badge>
                         </TableCell>
@@ -143,6 +106,35 @@ function TicketsTable({ statusFilter }: { statusFilter: Status | 'all' }) {
 };
 
 export default function AdminSupportPage() {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!firestore) return;
+    setIsLoading(true);
+    const ticketsQuery = query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc'));
+    getDocs(ticketsQuery).then(snapshot => {
+        const fetchedTickets: Ticket[] = [];
+        snapshot.forEach(doc => {
+            const pathSegments = doc.ref.path.split('/');
+            const userId = pathSegments[1];
+            fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
+        });
+        setAllTickets(fetchedTickets);
+    }).catch(error => {
+        console.error("Error fetching tickets:", error);
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
+    }).finally(() => {
+        setIsLoading(false);
+    });
+  }, [firestore, toast]);
+  
+  const activeTickets = allTickets.filter(t => t.status !== 'مغلقة');
+  const closedTickets = allTickets.filter(t => t.status === 'مغلقة');
+
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -158,10 +150,10 @@ export default function AdminSupportPage() {
             <Card className="mt-4">
                 <CardContent className="p-0">
                     <TabsContent value="open" className="m-0">
-                        <TicketsTable statusFilter="مفتوحة" />
+                        <TicketsTable tickets={activeTickets} isLoading={isLoading} />
                     </TabsContent>
                     <TabsContent value="closed" className="m-0">
-                       <TicketsTable statusFilter="مغلقة" />
+                       <TicketsTable tickets={closedTickets} isLoading={isLoading} />
                     </TabsContent>
                 </CardContent>
             </Card>

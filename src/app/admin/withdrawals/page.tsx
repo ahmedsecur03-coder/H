@@ -11,7 +11,8 @@ import {
   runTransaction,
   orderBy,
   Query,
-  getDocs
+  getDocs,
+  limit,
 } from 'firebase/firestore';
 import type { Withdrawal, User } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,94 +29,14 @@ import { Check, X, Loader2, HandCoins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
-function WithdrawalTable({ status }: { status: Status }) {
-  const firestore = useFirestore();
-  const { toast } = useToast();
-  const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const withdrawalsQuery = useMemoFirebase(
-    () => {
-        if (!firestore) return null;
-        return query(
-            collectionGroup(firestore, 'withdrawals'), 
-            where('status', '==', status), 
-            orderBy('requestDate', 'desc')
-        );
-    },
-    [firestore, status]
-  );
+function WithdrawalTable({ withdrawals, isLoading, onAction, loadingActionId }: { withdrawals: Withdrawal[], isLoading: boolean, onAction: (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => void, loadingActionId: string | null }) {
   
-  const fetchWithdrawals = async () => {
-    if (!withdrawalsQuery) {
-        setIsLoading(false);
-        return;
-    }
-    setIsLoading(true);
-
-    try {
-        const snapshot = await getDocs(withdrawalsQuery);
-        const fetchedWithdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Withdrawal));
-        setWithdrawals(fetchedWithdrawals);
-    } catch (err) {
-        console.error("Error fetching withdrawals: ", err);
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب طلبات السحب.' });
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchWithdrawals();
-  }, [withdrawalsQuery]);
-
-  const handleWithdrawalAction = async (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => {
-    if (!firestore) return;
-    setLoadingAction(withdrawal.id);
-    const userDocRef = doc(firestore, 'users', withdrawal.userId);
-    const withdrawalDocRef = doc(firestore, `users/${withdrawal.userId}/withdrawals`, withdrawal.id);
-
-    try {
-      await runTransaction(firestore, async (transaction) => {
-        const userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists()) {
-            throw new Error('المستخدم غير موجود.');
-        }
-        const userData = userDoc.data() as User;
-        
-        if (newStatus === 'مقبول') {
-            const currentEarnings = userData.affiliateEarnings ?? 0;
-            if (currentEarnings < withdrawal.amount) {
-                throw new Error('رصيد أرباح المستخدم غير كافٍ.');
-            }
-            const newEarnings = currentEarnings - withdrawal.amount;
-            transaction.update(userDocRef, { affiliateEarnings: newEarnings });
-        }
-        
-        transaction.update(withdrawalDocRef, { status: newStatus });
-      });
-      
-      setWithdrawals(prev => prev.filter(w => w.id !== withdrawal.id));
-
-      toast({
-        title: 'نجاح',
-        description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.`,
-      });
-    } catch (error: any) {
-        const permissionError = new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'update',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
-      setLoadingAction(null);
-    }
-  };
+  const status = withdrawals.length > 0 ? withdrawals[0].status : 'معلق';
   
   if (isLoading) {
     return (
@@ -164,11 +85,10 @@ function WithdrawalTable({ status }: { status: Status }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {withdrawals.map((withdrawal) => {
-          return (
+        {withdrawals.map((withdrawal) => (
           <TableRow key={withdrawal.id}>
             <TableCell>
-              <div className="font-mono text-xs text-muted-foreground">{withdrawal.userId}</div>
+              <Link href={`/admin/users?search=${withdrawal.userId}`} className="font-mono text-xs text-primary hover:underline">{withdrawal.userId}</Link>
             </TableCell>
             <TableCell>${withdrawal.amount.toFixed(2)}</TableCell>
             <TableCell>{withdrawal.method}</TableCell>
@@ -180,12 +100,12 @@ function WithdrawalTable({ status }: { status: Status }) {
             </TableCell>
             {status === 'معلق' && (
               <TableCell className="text-right">
-                {loadingAction === withdrawal.id ? <Loader2 className="animate-spin mx-auto" /> : (
+                {loadingActionId === withdrawal.id ? <Loader2 className="animate-spin mx-auto" /> : (
                   <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="icon" onClick={() => handleWithdrawalAction(withdrawal, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
+                      <Button variant="outline" size="icon" onClick={() => onAction(withdrawal, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
                           <Check className="h-4 w-4"/>
                       </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleWithdrawalAction(withdrawal, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
+                      <Button variant="outline" size="icon" onClick={() => onAction(withdrawal, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
                           <X className="h-4 w-4"/>
                       </Button>
                   </div>
@@ -193,13 +113,91 @@ function WithdrawalTable({ status }: { status: Status }) {
               </TableCell>
             )}
           </TableRow>
-        )})}
+        ))}
       </TableBody>
     </Table>
   )
 }
 
 export default function AdminWithdrawalsPage() {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [allWithdrawals, setAllWithdrawals] = useState<Withdrawal[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
+
+    const fetchAllData = async () => {
+        if (!firestore) return;
+        setIsLoading(true);
+        try {
+            const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), orderBy('requestDate', 'desc'), limit(300));
+            const snapshot = await getDocs(withdrawalsQuery);
+            const fetchedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Withdrawal));
+            setAllWithdrawals(fetchedData);
+        } catch (err) {
+            console.error("Error fetching all withdrawals: ", err);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات طلبات السحب.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchAllData();
+    }, [firestore]);
+
+
+    const handleWithdrawalAction = async (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => {
+        if (!firestore) return;
+        setLoadingActionId(withdrawal.id);
+        const userDocRef = doc(firestore, 'users', withdrawal.userId);
+        const withdrawalDocRef = doc(firestore, `users/${withdrawal.userId}/withdrawals`, withdrawal.id);
+
+        try {
+          await runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            if (!userDoc.exists()) {
+                throw new Error('المستخدم غير موجود.');
+            }
+            const userData = userDoc.data() as User;
+            
+            if (newStatus === 'مقبول') {
+                const currentEarnings = userData.affiliateEarnings ?? 0;
+                if (currentEarnings < withdrawal.amount) {
+                    throw new Error('رصيد أرباح المستخدم غير كافٍ.');
+                }
+                const newEarnings = currentEarnings - withdrawal.amount;
+                transaction.update(userDocRef, { affiliateEarnings: newEarnings });
+            }
+            
+            transaction.update(withdrawalDocRef, { status: newStatus });
+          });
+          
+          setAllWithdrawals(prev => prev.map(w => w.id === withdrawal.id ? {...w, status: newStatus} : w));
+
+          toast({
+            title: 'نجاح',
+            description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.`,
+          });
+        } catch (error: any) {
+            const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+          setLoadingActionId(null);
+        }
+    };
+  
+    const filteredWithdrawals = useMemo(() => {
+        return {
+            pending: allWithdrawals.filter(d => d.status === 'معلق'),
+            approved: allWithdrawals.filter(d => d.status === 'مقبول'),
+            rejected: allWithdrawals.filter(d => d.status === 'مرفوض'),
+        }
+    }, [allWithdrawals]);
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -221,13 +219,13 @@ export default function AdminWithdrawalsPage() {
         <Card className="mt-4">
           <CardContent className="p-0">
             <TabsContent value="معلق" className="m-0">
-              <WithdrawalTable status="معلق" />
+              <WithdrawalTable withdrawals={filteredWithdrawals.pending} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
             </TabsContent>
             <TabsContent value="مقبول" className="m-0">
-              <WithdrawalTable status="مقبول" />
+              <WithdrawalTable withdrawals={filteredWithdrawals.approved} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
             </TabsContent>
             <TabsContent value="مرفوض" className="m-0">
-              <WithdrawalTable status="مرفوض" />
+              <WithdrawalTable withdrawals={filteredWithdrawals.rejected} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
             </TabsContent>
           </CardContent>
         </Card>

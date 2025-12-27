@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useCollection } from '@/firebase';
+import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   collectionGroup,
   query,
@@ -23,9 +23,6 @@ import type { Deposit, User } from '@/lib/types';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import {
   Table,
@@ -40,6 +37,7 @@ import { Check, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
@@ -48,162 +46,9 @@ const DIRECT_COMMISSION_RATE = 0.20; // 20% for the direct referrer
 const NETWORK_MATCHING_BONUS_RATE = 0.50; // 50% of the earnings of the level below
 const NETWORK_LEVELS = 5; // How many levels up the matching bonus goes
 
-function DepositTable({ status }: { status: Status }) {
-  const firestore = useFirestore();
-  const { toast } = useToast();
-  const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  const [deposits, setDeposits] = useState<Deposit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  const depositsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-        collectionGroup(firestore, 'deposits'), 
-        where('status', '==', status), 
-        orderBy('depositDate', 'desc'),
-        limit(100)
-    );
-  }, [firestore, status]);
+function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { deposits: Deposit[], isLoading: boolean, onAction: (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => void, loadingActionId: string | null }) {
 
-  const { data: fetchedDeposits, isLoading: depositsLoading, forceCollectionUpdate } = useCollection<Deposit>(depositsQuery);
-  
-  useEffect(() => {
-      setIsLoading(depositsLoading);
-      if(fetchedDeposits){
-          setDeposits(fetchedDeposits);
-      }
-  }, [fetchedDeposits, depositsLoading])
-
-
-  const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
-    if (!firestore) return;
-    setLoadingAction(deposit.id);
-    
-    const depositorRef = doc(firestore, 'users', deposit.userId);
-    const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
-
-    try {
-        await runTransaction(firestore, async (transaction) => {
-            const depositorDoc = await transaction.get(depositorRef);
-            if (!depositorDoc.exists()) {
-                throw new Error('المستخدم صاحب الإيداع غير موجود.');
-            }
-            const depositorData = depositorDoc.data() as User;
-
-            // Update deposit status first
-            transaction.update(depositDocRef, { status: newStatus });
-            
-            if (newStatus === 'مقبول') {
-                // 1. Add balance to the depositor's account
-                const newBalance = (depositorData.balance ?? 0) + deposit.amount;
-                transaction.update(depositorRef, { 
-                    balance: newBalance,
-                    totalSpent: increment(deposit.amount), // Also increment totalSpent
-                    notifications: arrayUnion({
-                        id: `dep-${deposit.id}`,
-                        message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
-                        type: 'success',
-                        read: false,
-                        createdAt: new Date().toISOString(),
-                        href: '/dashboard/add-funds'
-                    })
-                });
-
-                // 2. Handle Affiliate Commissions using the new Matching Bonus logic
-                let currentReferrerId = depositorData.referrerId;
-                let lastCommissionAmount = 0;
-
-                // Level 1: Direct Referrer (20% of deposit amount)
-                if (currentReferrerId) {
-                    const directReferrerRef = doc(firestore, 'users', currentReferrerId);
-                    const directCommissionAmount = deposit.amount * DIRECT_COMMISSION_RATE;
-                    lastCommissionAmount = directCommissionAmount; // This is the basis for the first matching bonus
-                    
-                    transaction.update(directReferrerRef, { affiliateEarnings: increment(directCommissionAmount) });
-                    
-                    const newTransactionRefLvl1 = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
-                    transaction.set(newTransactionRefLvl1, {
-                        userId: currentReferrerId,
-                        referralId: deposit.userId,
-                        orderId: deposit.id, // Using deposit ID as the source
-                        amount: directCommissionAmount,
-                        transactionDate: new Date().toISOString(),
-                        level: 1,
-                    });
-                    
-                    // Get the next referrer for network commission
-                    const directReferrerDoc = await transaction.get(directReferrerRef);
-                    if(directReferrerDoc.exists()) {
-                       currentReferrerId = (directReferrerDoc.data() as User).referrerId;
-                    } else {
-                       currentReferrerId = null;
-                    }
-                }
-
-                // Levels 2 to 6: Network Referrers (Matching Bonus)
-                // They get 50% of the earnings of the person they referred
-                for (let i = 0; i < NETWORK_LEVELS && currentReferrerId && lastCommissionAmount > 0; i++) {
-                    const matchingBonusAmount = lastCommissionAmount * NETWORK_MATCHING_BONUS_RATE;
-                    const networkReferrerRef = doc(firestore, 'users', currentReferrerId);
-                    
-                    transaction.update(networkReferrerRef, { affiliateEarnings: increment(matchingBonusAmount) });
-
-                    const newTransactionRefNetwork = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
-                    transaction.set(newTransactionRefNetwork, {
-                        userId: currentReferrerId,
-                        referralId: deposit.userId, // The original depositor
-                        orderId: deposit.id, // Using deposit ID
-                        amount: matchingBonusAmount,
-                        transactionDate: new Date().toISOString(),
-                        level: i + 2, // Level 2, 3, 4, 5, 6
-                    });
-                    
-                    lastCommissionAmount = matchingBonusAmount; // The next bonus is based on this amount
-
-                    // Get the next referrer in the chain
-                    const networkReferrerDoc = await transaction.get(networkReferrerRef);
-                    if (networkReferrerDoc.exists()) {
-                        currentReferrerId = (networkReferrerDoc.data() as User).referrerId;
-                    } else {
-                        break; // End of the chain
-                    }
-                }
-            } else { // newStatus is 'مرفوض'
-                 transaction.update(depositorRef, { 
-                    notifications: arrayUnion({
-                        id: `dep-${deposit.id}-rej`,
-                        message: `تم رفض طلب الإيداع الخاص بك بقيمة ${deposit.amount}$. يرجى مراجعة الدعم الفني.`,
-                        type: 'error',
-                        read: false,
-                        createdAt: new Date().toISOString(),
-                        href: '/dashboard/add-funds'
-                    })
-                });
-            }
-        });
-      
-      forceCollectionUpdate();
-
-      toast({
-        title: 'نجاح',
-        description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
-      });
-    } catch (error: any) {
-        console.error("Deposit Action Error:", error);
-        toast({
-            variant: 'destructive',
-            title: 'فشل الإجراء',
-            description: error.message || 'حدث خطأ أثناء معالجة الطلب. قد يكون بسبب الصلاحيات.',
-        });
-        const permissionError = new FirestorePermissionError({
-            path: depositorRef.path,
-            operation: 'update',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
-      setLoadingAction(null);
-    }
-  };
+  const status = deposits.length > 0 ? deposits[0].status : 'معلق';
   
   if (isLoading) {
     return (
@@ -255,7 +100,7 @@ function DepositTable({ status }: { status: Status }) {
         {deposits.map((deposit) => (
           <TableRow key={deposit.id}>
             <TableCell>
-              <div className="font-mono text-xs text-muted-foreground">{deposit.userId}</div>
+              <Link href={`/admin/users?search=${deposit.userId}`} className="font-mono text-xs text-primary hover:underline">{deposit.userId}</Link>
             </TableCell>
             <TableCell>${deposit.amount.toFixed(2)}</TableCell>
             <TableCell>{deposit.paymentMethod}</TableCell>
@@ -267,12 +112,12 @@ function DepositTable({ status }: { status: Status }) {
             </TableCell>
             {status === 'معلق' && (
               <TableCell className="text-right">
-                {loadingAction === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
+                {loadingActionId === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
                   <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="icon" onClick={() => handleDepositAction(deposit, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
+                      <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
                           <Check className="h-4 w-4"/>
                       </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleDepositAction(deposit, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
+                      <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
                           <X className="h-4 w-4"/>
                       </Button>
                   </div>
@@ -287,6 +132,173 @@ function DepositTable({ status }: { status: Status }) {
 }
 
 export default function AdminDepositsPage() {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [allDeposits, setAllDeposits] = useState<Deposit[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
+
+    const fetchAllData = async () => {
+        if(!firestore) return;
+        setIsLoading(true);
+        try {
+            const depositsQuery = query(collectionGroup(firestore, 'deposits'), orderBy('depositDate', 'desc'), limit(300));
+            const snapshot = await getDocs(depositsQuery);
+            const fetchedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()} as Deposit));
+            setAllDeposits(fetchedData);
+        } catch (error) {
+            console.error("Error fetching all deposits:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchAllData();
+    }, [firestore]);
+
+
+    const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
+        if (!firestore) return;
+        setLoadingActionId(deposit.id);
+        
+        const depositorRef = doc(firestore, 'users', deposit.userId);
+        const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
+
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const depositorDoc = await transaction.get(depositorRef);
+                if (!depositorDoc.exists()) {
+                    throw new Error('المستخدم صاحب الإيداع غير موجود.');
+                }
+                const depositorData = depositorDoc.data() as User;
+
+                // Update deposit status first
+                transaction.update(depositDocRef, { status: newStatus });
+                
+                if (newStatus === 'مقبول') {
+                    // 1. Add balance to the depositor's account
+                    const newBalance = (depositorData.balance ?? 0) + deposit.amount;
+                    transaction.update(depositorRef, { 
+                        balance: newBalance,
+                        totalSpent: increment(deposit.amount), // Also increment totalSpent
+                        notifications: arrayUnion({
+                            id: `dep-${deposit.id}`,
+                            message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+                            type: 'success',
+                            read: false,
+                            createdAt: new Date().toISOString(),
+                            href: '/dashboard/add-funds'
+                        })
+                    });
+
+                    // 2. Handle Affiliate Commissions using the new Matching Bonus logic
+                    let currentReferrerId = depositorData.referrerId;
+                    let lastCommissionAmount = 0;
+
+                    // Level 1: Direct Referrer (20% of deposit amount)
+                    if (currentReferrerId) {
+                        const directReferrerRef = doc(firestore, 'users', currentReferrerId);
+                        const directCommissionAmount = deposit.amount * DIRECT_COMMISSION_RATE;
+                        lastCommissionAmount = directCommissionAmount; // This is the basis for the first matching bonus
+                        
+                        transaction.update(directReferrerRef, { affiliateEarnings: increment(directCommissionAmount) });
+                        
+                        const newTransactionRefLvl1 = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                        transaction.set(newTransactionRefLvl1, {
+                            userId: currentReferrerId,
+                            referralId: deposit.userId,
+                            orderId: deposit.id, // Using deposit ID as the source
+                            amount: directCommissionAmount,
+                            transactionDate: new Date().toISOString(),
+                            level: 1,
+                        });
+                        
+                        // Get the next referrer for network commission
+                        const directReferrerDoc = await transaction.get(directReferrerRef);
+                        if(directReferrerDoc.exists()) {
+                           currentReferrerId = (directReferrerDoc.data() as User).referrerId;
+                        } else {
+                           currentReferrerId = null;
+                        }
+                    }
+
+                    // Levels 2 to 6: Network Referrers (Matching Bonus)
+                    // They get 50% of the earnings of the person they referred
+                    for (let i = 0; i < NETWORK_LEVELS && currentReferrerId && lastCommissionAmount > 0; i++) {
+                        const matchingBonusAmount = lastCommissionAmount * NETWORK_MATCHING_BONUS_RATE;
+                        const networkReferrerRef = doc(firestore, 'users', currentReferrerId);
+                        
+                        transaction.update(networkReferrerRef, { affiliateEarnings: increment(matchingBonusAmount) });
+
+                        const newTransactionRefNetwork = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                        transaction.set(newTransactionRefNetwork, {
+                            userId: currentReferrerId,
+                            referralId: deposit.userId, // The original depositor
+                            orderId: deposit.id, // Using deposit ID
+                            amount: matchingBonusAmount,
+                            transactionDate: new Date().toISOString(),
+                            level: i + 2, // Level 2, 3, 4, 5, 6
+                        });
+                        
+                        lastCommissionAmount = matchingBonusAmount; // The next bonus is based on this amount
+
+                        // Get the next referrer in the chain
+                        const networkReferrerDoc = await transaction.get(networkReferrerRef);
+                        if (networkReferrerDoc.exists()) {
+                            currentReferrerId = (networkReferrerDoc.data() as User).referrerId;
+                        } else {
+                            break; // End of the chain
+                        }
+                    }
+                } else { // newStatus is 'مرفوض'
+                     transaction.update(depositorRef, { 
+                        notifications: arrayUnion({
+                            id: `dep-${deposit.id}-rej`,
+                            message: `تم رفض طلب الإيداع الخاص بك بقيمة ${deposit.amount}$. يرجى مراجعة الدعم الفني.`,
+                            type: 'error',
+                            read: false,
+                            createdAt: new Date().toISOString(),
+                            href: '/dashboard/add-funds'
+                        })
+                    });
+                }
+            });
+          
+            // Optimistically update UI
+            setAllDeposits(prev => prev.map(d => d.id === deposit.id ? {...d, status: newStatus} : d));
+
+            toast({
+                title: 'نجاح',
+                description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
+            });
+        } catch (error: any) {
+            console.error("Deposit Action Error:", error);
+            toast({
+                variant: 'destructive',
+                title: 'فشل الإجراء',
+                description: error.message || 'حدث خطأ أثناء معالجة الطلب. قد يكون بسبب الصلاحيات.',
+            });
+            const permissionError = new FirestorePermissionError({
+                path: depositorRef.path,
+                operation: 'update',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+          setLoadingActionId(null);
+        }
+  };
+
+  const filteredDeposits = useMemo(() => {
+    return {
+        pending: allDeposits.filter(d => d.status === 'معلق'),
+        approved: allDeposits.filter(d => d.status === 'مقبول'),
+        rejected: allDeposits.filter(d => d.status === 'مرفوض'),
+    }
+  }, [allDeposits]);
+
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -305,13 +317,13 @@ export default function AdminDepositsPage() {
         <Card className="mt-4">
           <CardContent className="p-0">
             <TabsContent value="معلق" className="m-0">
-              <DepositTable status="معلق" />
+              <DepositTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
             </TabsContent>
             <TabsContent value="مقبول" className="m-0">
-              <DepositTable status="مقبول" />
+              <DepositTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
             </TabsContent>
             <TabsContent value="مرفوض" className="m-0">
-              <DepositTable status="مرفوض" />
+              <DepositTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
             </TabsContent>
           </CardContent>
         </Card>

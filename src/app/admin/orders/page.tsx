@@ -45,6 +45,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { OrderActions } from './_components/order-actions';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -248,7 +249,7 @@ function AdminOrdersPageComponent() {
       <CardContent className="space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">المستخدم</span>
-          <span className="font-mono text-xs">{order.userId}</span>
+          <Link href={`/admin/users?search=${order.userId}`} className="font-mono text-xs text-primary hover:underline">{order.userId}</Link>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">التكلفة</span>
@@ -332,7 +333,9 @@ function AdminOrdersPageComponent() {
                         {paginatedOrders.map((order) => (
                         <TableRow key={order.id}>
                             <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
-                            <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
+                            <TableCell>
+                               <Link href={`/admin/users?search=${order.userId}`} className="font-mono text-xs text-primary hover:underline">{order.userId.substring(0,8)}...</Link>
+                            </TableCell>
                             <TableCell className="font-medium">{order.serviceName}</TableCell>
                             <TableCell><a href={order.link} className="text-primary hover:underline truncate block max-w-xs" target="_blank">{order.link}</a></TableCell>
                             <TableCell>
