@@ -192,8 +192,8 @@ export default function HomePage() {
 
  const featureCards = [
     { icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط.", href: "/dashboard/campaigns/new" },
-    { icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة من دعواتك وأرباحًا من شبكتك حتى 5 مستويات.", href: "/dashboard/affiliate" },
     { icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية.", href: "/dashboard/agency-accounts" },
+    { icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة وشبكية من دعواتك حتى 5 مستويات.", href: "/dashboard/affiliate" },
     { icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة.", href: "/dashboard/services" },
     { icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة.", href: "/dashboard/support" },
     { icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح.", href: "/services" }

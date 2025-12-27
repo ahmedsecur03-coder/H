@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -17,10 +18,12 @@ import {
   ShoppingBag,
   ListOrdered,
   Wallet,
+  Megaphone,
+  TrendingUp,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
-import type { User as UserType, Order, Service } from '@/lib/types';
+import type { User as UserType, Order, Service, AgencyAccount, Campaign } from '@/lib/types';
 import { getRankForSpend, RANKS } from '@/lib/service';
 import { QuickOrderForm } from './_components/quick-order-form';
 import { DailyRewardCard } from './_components/daily-reward-card';
@@ -72,8 +75,18 @@ export default function DashboardPage() {
 
     const ordersQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/orders`), orderBy('orderDate', 'desc'), limit(5)) : null, [authUser, firestore]);
     const { data: recentOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+    
+    const accountsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/agencyAccounts`)) : null, [authUser, firestore]);
+    const { data: agencyAccounts, isLoading: areAccountsLoading } = useCollection<AgencyAccount>(accountsQuery);
 
-    const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading;
+    const campaignsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), where('status', '==', 'نشط')) : null, [authUser, firestore]);
+    const { data: activeCampaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsQuery);
+
+
+    const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areAccountsLoading || areCampaignsLoading;
+    
+    const totalAgencyBalance = useMemo(() => agencyAccounts?.reduce((sum, acc) => sum + acc.balance, 0) || 0, [agencyAccounts]);
+
 
     if (isLoading || !userData || !authUser) {
         return <DashboardSkeleton />;
@@ -97,7 +110,7 @@ export default function DashboardPage() {
                 {/* Main Content Column */}
                 <div className="lg:col-span-2 space-y-6">
                     <QuickOrderForm user={authUser} userData={userData} />
-
+                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
@@ -166,12 +179,44 @@ export default function DashboardPage() {
                                     <p className="text-sm text-muted-foreground">رصيد الإعلانات</p>
                                     <p className="text-2xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</p>
                                  </div>
-                                  <Button asChild size="sm" variant="outline">
-                                    <Link href="/dashboard/agency-accounts"><Briefcase className="h-4 w-4" /></Link>
-                                 </Button>
                             </div>
                         </CardContent>
                     </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">الحملات النشطة</CardTitle>
+                            <Megaphone className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{activeCampaigns?.length ?? 0}</div>
+                        </CardContent>
+                         <CardFooter>
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/dashboard/campaigns">
+                                    إدارة الحملات
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">أرصدة حسابات الوكالة</CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">${totalAgencyBalance.toFixed(2)}</div>
+                        </CardContent>
+                        <CardFooter>
+                           <Button asChild className="w-full">
+                                <Link href="/dashboard/agency-accounts">
+                                    شراء أو شحن حساب
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardDescription>الترقية التالية</CardDescription>
@@ -192,7 +237,7 @@ export default function DashboardPage() {
                             )}
                         </CardContent>
                     </Card>
-                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                    
                 </div>
             </div>
         </div>
