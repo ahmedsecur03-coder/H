@@ -40,6 +40,41 @@ function AgencyAccountsSkeleton() {
     );
 }
 
+function AgencyAccountCard({ account, userData, onActionComplete }: { account: AgencyAccount, userData: UserType, onActionComplete: () => void }) {
+    const Icon = PLATFORM_ICONS[account.platform] || PLATFORM_ICONS.Default;
+    const statusVariant = {
+        'Active': 'default',
+        'Suspended': 'destructive',
+    } as const;
+
+    return (
+        <Card className="flex flex-col">
+            <CardHeader className="flex-row items-start gap-4">
+                <Icon className="w-8 h-8 text-muted-foreground" />
+                <div>
+                    <CardTitle className="text-base">{account.accountName}</CardTitle>
+                    <CardDescription>{new Date(account.createdAt).toLocaleDateString('ar-EG')}</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm flex-grow">
+                 <div className="flex justify-between">
+                    <span className="text-muted-foreground">الحالة</span>
+                    <Badge variant={statusVariant[account.status]}>{account.status}</Badge>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">الرصيد</span>
+                    <span className="font-mono font-bold text-lg">${account.balance.toFixed(2)}</span>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <ChargeAccountDialog account={account} userData={userData} onChargeComplete={onActionComplete}>
+                    <Button variant="outline" size="sm" className="w-full">شحن الرصيد</Button>
+                 </ChargeAccountDialog>
+            </CardFooter>
+        </Card>
+    )
+}
+
 export default function AgencyAccountsPage() {
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
@@ -109,7 +144,7 @@ export default function AgencyAccountsPage() {
             </div>
             
             <Card>
-                <CardHeader className="flex flex-row justify-between items-center">
+                <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <CardTitle>قائمة الحسابات</CardTitle>
                         <CardDescription>جميع حسابات الوكالة التي قمت بشرائها.</CardDescription>
@@ -123,40 +158,51 @@ export default function AgencyAccountsPage() {
                 </CardHeader>
                 <CardContent>
                     {accounts && accounts.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>المنصة</TableHead>
-                                    <TableHead>اسم الحساب</TableHead>
-                                    <TableHead>الحالة</TableHead>
-                                    <TableHead>الرصيد</TableHead>
-                                    <TableHead className="text-right">الإجراءات</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {accounts.map((account) => {
-                                    const Icon = PLATFORM_ICONS[account.platform] || PLATFORM_ICONS.Default;
-                                    return (
-                                        <TableRow key={account.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <Icon className="w-5 h-5 text-muted-foreground" />
-                                                    <span>{account.platform}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="font-medium">{account.accountName}</TableCell>
-                                            <TableCell><Badge variant={statusVariant[account.status]}>{account.status}</Badge></TableCell>
-                                            <TableCell className="font-mono font-bold">${account.balance.toFixed(2)}</TableCell>
-                                            <TableCell className="text-right">
-                                                 <ChargeAccountDialog account={account} userData={userData} onChargeComplete={forceUpdateAll}>
-                                                    <Button variant="outline" size="sm">شحن الرصيد</Button>
-                                                 </ChargeAccountDialog>
-                                            </TableCell>
+                        <>
+                             {/* Mobile View */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
+                                {accounts.map(account => (
+                                    <AgencyAccountCard key={account.id} account={account} userData={userData} onActionComplete={forceUpdateAll} />
+                                ))}
+                            </div>
+                            {/* Desktop View */}
+                            <div className="hidden md:block">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>المنصة</TableHead>
+                                            <TableHead>اسم الحساب</TableHead>
+                                            <TableHead>الحالة</TableHead>
+                                            <TableHead>الرصيد</TableHead>
+                                            <TableHead className="text-right">الإجراءات</TableHead>
                                         </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {accounts.map((account) => {
+                                            const Icon = PLATFORM_ICONS[account.platform] || PLATFORM_ICONS.Default;
+                                            return (
+                                                <TableRow key={account.id}>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Icon className="w-5 h-5 text-muted-foreground" />
+                                                            <span>{account.platform}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">{account.accountName}</TableCell>
+                                                    <TableCell><Badge variant={statusVariant[account.status]}>{account.status}</Badge></TableCell>
+                                                    <TableCell className="font-mono font-bold">${account.balance.toFixed(2)}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <ChargeAccountDialog account={account} userData={userData} onChargeComplete={forceUpdateAll}>
+                                                            <Button variant="outline" size="sm">شحن الرصيد</Button>
+                                                        </ChargeAccountDialog>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </>
                     ) : (
                         <div className="text-center py-10">
                             <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -177,5 +223,3 @@ export default function AgencyAccountsPage() {
         </div>
     );
 }
-
-    

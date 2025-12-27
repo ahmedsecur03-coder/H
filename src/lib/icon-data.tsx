@@ -5,7 +5,7 @@ import { WhatsAppIcon } from '@/components/ui/icons';
 
 export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   Instagram: InstagramIcon,
-  TikTok: Rss, // Using a generic icon as placeholder
+  TikTok: Clapperboard, // Changed from Rss
   Facebook: Facebook,
   YouTube: Youtube,
   Telegram: Send,
@@ -21,7 +21,7 @@ export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   'Kwai': Star,
   'WhatsApp': WhatsAppIcon,
   'VK': Users,
-  'Threads': Rss,
+  'Threads': MessageSquare, // Changed from Rss
   'Kick': Radio,
   'Clubhouse': Club,
   Meta: Facebook, // Using facebook as a representative icon for Meta

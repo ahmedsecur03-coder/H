@@ -33,10 +33,10 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
             return (
                 <Collapsible key={item.label} className="w-full">
                     <CollapsibleTrigger asChild>
-                        <div className={cn("flex w-full items-center justify-between rounded-md p-2 hover:bg-muted", isActive && "bg-muted")}>
+                        <div className={cn("flex w-full items-center justify-between rounded-md p-2 hover:bg-muted text-lg font-medium", isActive && "bg-muted")}>
                              <div className="flex items-center gap-4">
                                 <Icon className="h-5 w-5" />
-                                <span className="text-lg font-medium">{item.label}</span>
+                                <span>{item.label}</span>
                             </div>
                             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
                         </div>

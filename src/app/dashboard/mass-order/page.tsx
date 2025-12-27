@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
@@ -21,7 +22,6 @@ import { useServices } from '@/hooks/useServices';
 
 // A unique ID for each row to handle React keys
 let rowIdCounter = 0;
-const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 type OrderRow = {
     id: number;
