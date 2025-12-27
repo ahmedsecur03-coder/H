@@ -29,6 +29,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { doc } from 'firebase/firestore';
 import type { User, NestedNavItem } from '@/lib/types';
 import { Notifications } from '@/components/notifications';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 
 function AdminHeader({ userData }: { userData: User }) {
@@ -42,7 +43,8 @@ function AdminHeader({ userData }: { userData: User }) {
   return (
      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <SidebarTrigger className="md:hidden" />
-        <div className="ms-auto flex items-center gap-4">
+        <div className="ms-auto flex items-center gap-2">
+            <ThemeToggle />
              <Notifications userData={userData} />
             <UserNav user={adminUser} isAdmin={true} />
         </div>
@@ -65,7 +67,6 @@ function AdminNavItems() {
                             {Icon && <Icon className="h-4 w-4" />}
                             <span>{item.label}</span>
                         </div>
-                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                     </SidebarMenuSubTrigger>
                     <SidebarMenuSubContent>
                         {item.children.map((child) => (
@@ -110,65 +111,47 @@ export default function AdminLayout({
   
   // Security check: This effect handles redirection for unauthorized users.
   useEffect(() => {
-    if (!isUserLoading && (!user || user.email !== 'hagaaty@gmail.com')) {
+    if (!isUserLoading && (!user || (userData && userData.role !== 'admin'))) {
       redirect('/auth/login'); // Redirect non-admins or logged-out users immediately
     }
-  }, [user, isUserLoading]);
+  }, [user, isUserLoading, userData]);
 
 
-  if (isLoading || !user || !userData || user.email !== 'hagaaty@gmail.com') {
+  if (isLoading || !user || !userData || userData.role !== 'admin') {
     // This loading state is now primarily for authorized users while their data loads.
     // Unauthorized users will be redirected by the useEffect hook before this renders.
     return (
-      <div className="flex min-h-screen w-full">
-        <div className="hidden w-64 border-e bg-muted/40 p-4 md:block">
-          <div className="mb-4 flex h-12 items-center justify-center px-4">
-            <Logo />
-          </div>
-          <div className="flex flex-col gap-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
+        <div className="flex min-h-screen w-full items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
-        <div className="flex-1">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-            <Skeleton className="h-8 w-8 md:hidden" />
-            <div className="ms-auto flex items-center gap-2">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <Skeleton className="h-10 w-10 rounded-full" />
-            </div>
-          </header>
-          <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <Skeleton className="h-[80vh] w-full" />
-          </main>
-        </div>
-      </div>
     );
   }
   
   return (
     <SidebarProvider>
-      <Sidebar side="right" collapsible="icon">
-        <SidebarHeader>
-           <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-              <Logo className="group-data-[collapsible=icon]:hidden" />
-              <div className="hidden group-data-[collapsible=icon]:block">
-                <Logo/>
+      <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
+        <Sidebar side="right" collapsible="icon" className="hidden md:flex">
+            <SidebarHeader>
+              <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+                  <Logo className="group-data-[collapsible=icon]:hidden" />
+                  <div className="hidden group-data-[collapsible=icon]:block">
+                  <Logo/>
+                  </div>
               </div>
-            </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-             <AdminNavItems />
-          </SidebarMenu>
-        </SidebarContent>
-      </Sidebar>
-      <div className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
-        <AdminHeader userData={userData} />
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          {children}
-        </main>
+            </SidebarHeader>
+            <SidebarContent>
+            <SidebarMenu>
+                <AdminNavItems />
+            </SidebarMenu>
+            </SidebarContent>
+        </Sidebar>
+        
+        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
+            <AdminHeader userData={userData} />
+            <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+              {children}
+            </main>
+        </div>
       </div>
     </SidebarProvider>
   );

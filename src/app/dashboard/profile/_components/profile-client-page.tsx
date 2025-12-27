@@ -212,7 +212,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                                     name="avatarUrl"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>رابط الصورة الرمزية</FormLabel>
+                                        <FormLabel>رابط الصورة الرمزية (اختياري)</FormLabel>
                                         <FormControl>
                                             <Input placeholder="https://example.com/image.png" {...field} />
                                         </FormControl>
@@ -223,7 +223,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             </CardContent>
                             <CardFooter>
                                 <Button type="submit" disabled={isSaving}>
-                                    {isSaving && <Loader2 className="ml-2 animate-spin" />}
+                                    {(isSaving) && <Loader2 className="ml-2 animate-spin" />}
                                     حفظ التغييرات
                                 </Button>
                             </CardFooter>

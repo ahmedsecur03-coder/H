@@ -31,8 +31,9 @@ import {
   SheetDescription
 } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
-import type { NestedNavItem } from '@/lib/types';
+import type { NestedNavItem, User } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Loader2 } from 'lucide-react';
 
 
 const ListItem = React.forwardRef<
@@ -67,12 +68,10 @@ function Header() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const pathname = usePathname();
-  const [isClient, setIsClient] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<User | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
@@ -86,19 +85,21 @@ function Header() {
               const userDocRef = doc(firestore, 'users', user.uid);
               const userDoc = await getDoc(userDocRef);
               if (userDoc.exists()) {
-                  setUserData(userDoc.data());
+                  setUserData(userDoc.data() as User);
               }
           } else {
             setUserData(null);
           }
       };
-      fetchUserData();
-  }, [user, firestore]);
+      if(!isUserLoading){
+        fetchUserData();
+      }
+  }, [user, firestore, isUserLoading]);
 
    const appUser = user ? {
-      name: user.displayName || `User`,
-      email: user.email || "Registered User",
-      avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+      name: userData?.name || user.displayName || `User`,
+      email: userData?.email || user.email || "Registered User",
+      avatarUrl: userData?.avatarUrl || user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
       id: user.uid
   } : null;
 
@@ -112,12 +113,12 @@ function Header() {
       return (
         <Collapsible key={item.label} className="w-full">
           <CollapsibleTrigger asChild>
-            <div className={cn("flex w-full items-center justify-between rounded-md p-2 hover:bg-muted text-lg font-medium", isActive && "bg-muted")}>
-              <div className="flex items-center gap-4">
-                <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </div>
-              <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+             <div className={cn("flex w-full items-center justify-between rounded-md p-2 hover:bg-muted text-lg font-medium", isActive && "bg-muted")}>
+                 <div className="flex items-center gap-4">
+                     {Icon && <Icon className="h-5 w-5" />}
+                    <span>{item.label}</span>
+                </div>
+                 <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="ps-8 mt-2 space-y-2">
@@ -183,15 +184,14 @@ function Header() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <div className="hidden md:flex items-center gap-2">
-            {isClient && (
-              isUserLoading ? (
-                  <div className="h-10 w-24 rounded-md bg-muted animate-pulse" />
-              ) : user ? (
+            {isUserLoading ? (
+                 <Loader2 className="animate-spin text-primary" />
+              ) : user && appUser ? (
                   <>
                   <Button asChild>
                       <Link href="/dashboard">لوحة التحكم</Link>
                   </Button>
-                  {appUser && <UserNav user={appUser} isAdmin={isAdmin}/>}
+                  <UserNav user={appUser} isAdmin={isAdmin}/>
                   </>
               ) : (
                   <>
@@ -209,7 +209,7 @@ function Header() {
                   </Button>
                   </>
               )
-            )}
+            }
           </div>
           <div className="md:hidden">
             <Sheet>
@@ -228,8 +228,7 @@ function Header() {
                     {publicNavItems.map(item => renderMobileNavItem(item))}
                   </div>
                  <div className="mt-auto pt-6 border-t">
-                  {isClient && (
-                    isUserLoading ? (
+                  {isUserLoading ? (
                         <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
                     ) : user ? (
                          <Button asChild className="w-full">
@@ -249,7 +248,7 @@ function Header() {
                         </SheetClose>
                       </div>
                     )
-                  )}
+                  }
                 </div>
               </SheetContent>
             </Sheet>

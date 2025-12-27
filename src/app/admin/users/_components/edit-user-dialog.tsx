@@ -115,6 +115,7 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
                     <Button onClick={handleSave} disabled={isSaving}>
                         {isSaving ? <Loader2 className="animate-spin" /> : 'حفظ التغييرات'}
                     </Button>
+                     <Button variant="secondary" onClick={() => setOpen(false)}>إلغاء</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

@@ -66,7 +66,7 @@ function FeaturedServices() {
                         transition={{ duration: 0.5, delay: i * 0.05 }}
                         viewport={{ once: true }}
                     >
-                        <Card className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
+                        <Card className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:border-primary/50">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="p-3 bg-muted rounded-full">
                                     <Icon className="w-6 h-6 text-foreground" />
@@ -129,7 +129,7 @@ function Testimonials() {
                 animate="animate"
             >
                 {duplicatedTestimonials.map((t, i) => (
-                    <Card key={i} className="flex-shrink-0 w-[350px]">
+                    <Card key={i} className="flex-shrink-0 w-[350px] bg-card/70">
                         <CardHeader>
                             <div className="flex items-center gap-4">
                                 <Avatar>
@@ -289,13 +289,13 @@ export default function HomePage() {
                           transition={{ duration: 0.5, delay: i * 0.1 }}
                           viewport={{ once: true }}
                         >
-                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
+                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:border-primary/50">
                                 <CardHeader className="items-center">
                                     <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
                                         <Icon className="h-8 w-8 text-primary" />
                                     </div>
                                     <CardTitle>{feature.title}</CardTitle>
-                                    <CardDescription>{feature.description}</CardDescription>
+                                    <CardDescription className="pt-2">{feature.description}</CardDescription>
                                 </CardHeader>
                             </Card>
                         </motion.div>

@@ -23,16 +23,17 @@ import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
 import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
-import { ChevronDown, Shield } from 'lucide-react';
+import { ChevronDown, Shield, Loader2 } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getRankForSpend } from '@/lib/service';
+import { getRankForSpend, RANKS } from '@/lib/service';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Notifications } from '@/components/notifications';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const appUser = {
@@ -48,13 +49,6 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
         <div className="ms-auto flex items-center gap-2 font-body">
              <ThemeToggle />
              <Notifications userData={userData} />
-             {isAdmin && (
-                <Button variant="outline" size="sm" asChild>
-                    <Link href="/admin/dashboard">
-                        <Shield className="me-2 h-4 w-4"/>لوحة تحكم المسؤول
-                    </Link>
-                </Button>
-             )}
             <UserNav user={appUser} isAdmin={isAdmin} />
         </div>
     </header>
@@ -75,7 +69,6 @@ function NavItems({ isAdmin }: { isAdmin: boolean }) {
               {Icon && <Icon className="h-4 w-4" />}
               <span>{item.label}</span>
             </div>
-            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"/>
           </SidebarMenuSubTrigger>
           <SidebarMenuSubContent>
             {item.children.map((child) => (
@@ -104,16 +97,6 @@ function NavItems({ isAdmin }: { isAdmin: boolean }) {
   return (
     <>
       {dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}
-      {isAdmin && (
-        <SidebarMenuItem>
-          <Link href="/admin/dashboard" passHref>
-            <SidebarMenuButton isActive={pathname.startsWith('/admin')}>
-              <Shield className="h-4 w-4" />
-              <span>لوحة تحكم المسؤول</span>
-            </SidebarMenuButton>
-          </Link>
-        </SidebarMenuItem>
-      )}
     </>
   );
 }
@@ -139,12 +122,16 @@ export default function DashboardLayout({
     if (isUserLoading || isUserDataLoading || !user || !userData) {
       return (
            <div className="flex min-h-screen w-full items-center justify-center">
-                <Skeleton className="h-10 w-48" />
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
       )
     }
   
-    const isAdmin = user.email === 'hagaaty@gmail.com';
+    const isAdmin = userData.role === 'admin';
+    const rank = getRankForSpend(userData.totalSpent);
+    const currentRankIndex = RANKS.findIndex(r => r.name === rank.name);
+    const nextRank = currentRankIndex < RANKS.length - 1 ? RANKS[currentRankIndex + 1] : null;
+    const progressToNextRank = nextRank ? ((userData.totalSpent - rank.spend) / (nextRank.spend - rank.spend)) * 100 : 100;
 
     return (
         <SidebarProvider>
@@ -159,10 +146,34 @@ export default function DashboardLayout({
                     </div>
                     </SidebarHeader>
                     <SidebarContent>
-                    <SidebarMenu>
-                        <NavItems isAdmin={isAdmin} />
-                    </SidebarMenu>
+                      <div className="flex flex-col p-2 items-center gap-2 group-data-[collapsible=icon]:hidden">
+                        <Avatar className="h-20 w-20 border-2 border-primary">
+                          <AvatarImage src={userData.avatarUrl}/>
+                          <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <p className="font-semibold">{userData.name}</p>
+                        <Badge>{rank.name}</Badge>
+                        {nextRank && (
+                          <div className="w-full text-center mt-2">
+                             <Progress value={progressToNextRank} className="h-1"/>
+                             <p className="text-xs text-muted-foreground mt-1">الترقية التالية: {nextRank.name}</p>
+                          </div>
+                        )}
+                      </div>
+                      <SidebarMenu>
+                          <NavItems isAdmin={isAdmin} />
+                      </SidebarMenu>
                     </SidebarContent>
+                    {isAdmin && (
+                       <SidebarFooter>
+                          <Link href="/admin/dashboard" passHref>
+                              <SidebarMenuButton>
+                                  <Shield className="h-4 w-4 text-primary" />
+                                  <span>لوحة تحكم المسؤول</span>
+                              </SidebarMenuButton>
+                          </Link>
+                      </SidebarFooter>
+                    )}
                 </Sidebar>
                 
                 <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">

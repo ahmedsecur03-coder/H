@@ -147,7 +147,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full",
+              "group/sidebar-wrapper",
               className
             )}
             ref={ref}
@@ -518,7 +518,7 @@ const sidebarMenuButtonVariants = cva(
         lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
       },
       isActive: {
-        true: "bg-sidebar-accent font-medium text-sidebar-accent-foreground",
+        true: "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90",
         false: "text-sidebar-foreground/80",
       },
     },
@@ -669,6 +669,7 @@ const SidebarMenuSubTrigger = React.forwardRef<
   <CollapsibleTrigger asChild {...props} ref={ref}>
     <SidebarMenuButton className="w-full justify-between">
       {children}
+       <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
     </SidebarMenuButton>
   </CollapsibleTrigger>
 ));
