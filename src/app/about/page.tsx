@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -105,7 +104,7 @@ export default function AboutPage() {
                         transition={{ duration: 0.5, delay: i * 0.1 }}
                         viewport={{ once: true }}
                     >
-                        <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20">
+                        <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card">
                             <CardHeader className="items-center">
                                 <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
                                     <Icon className="h-8 w-8 text-primary" />
