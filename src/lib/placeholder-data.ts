@@ -1,4 +1,3 @@
-
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -84,14 +83,38 @@ export const dashboardNavItems: NestedNavItem[] = [
 export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
     { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
-    { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
-    { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
-    { href: '/admin/orders', label: 'الطلبات', icon: ShoppingCart },
-    { href: '/admin/campaigns', label: 'الحملات', icon: Megaphone },
+    { 
+        label: 'المعاملات المالية',
+        icon: DollarSign,
+        children: [
+           { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
+           { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
+        ]
+    },
+    { 
+        label: 'الطلبات والحملات',
+        icon: ShoppingCart,
+        children: [
+           { href: '/admin/orders', label: 'طلبات SMM', icon: ListOrdered },
+           { href: '/admin/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+        ]
+    },
     { href: '/admin/services', label: 'الخدمات', icon: Package },
     { href: '/admin/support', label: 'الدعم', icon: MessageSquare },
-    { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
-    { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
-    { href: '/admin/system-log', label: 'سجل النظام', icon: Terminal },
+    { 
+        label: 'إدارة المحتوى',
+        icon: PenSquare,
+        children: [
+           { href: '/admin/blog', label: 'المدونة', icon: BookOpen },
+        ]
+    },
+    { 
+        label: 'النظام',
+        icon: Settings,
+        children: [
+            { href: '/admin/settings', label: 'الإعدادات العامة', icon: Settings },
+            { href: '/admin/system-log', label: 'سجل النظام', icon: Terminal },
+        ]
+    },
     { href: '/dashboard', label: 'عرض كـ مستخدم', icon: Shield },
 ];

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -35,6 +34,7 @@ import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from 'next/image';
 
 
 const serviceCategories = [
