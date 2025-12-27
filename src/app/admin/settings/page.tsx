@@ -243,8 +243,8 @@ export default function AdminSettingsPage() {
                     
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
-                                {isCleaning === 'orders' ? <Loader2 className="ml-2 animate-spin" /> : <Trash2 className="ml-2"/>}
+                             <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
+                                {isCleaning === 'orders' ? <Loader2 className="me-2 animate-spin" /> : <Trash2 className="me-2 h-4 w-4"/>}
                                 حذف الطلبات القديمة
                             </Button>
                         </AlertDialogTrigger>
@@ -263,7 +263,7 @@ export default function AdminSettingsPage() {
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
-                                {isCleaning === 'deposits' ? <Loader2 className="ml-2 animate-spin" /> : <Trash2 className="ml-2"/>}
+                                {isCleaning === 'deposits' ? <Loader2 className="me-2 animate-spin" /> : <Trash2 className="me-2 h-4 w-4"/>}
                                 حذف الإيداعات المرفوضة
                             </Button>
                         </AlertDialogTrigger>

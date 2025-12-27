@@ -243,7 +243,7 @@ export default function AdminLayout({
         
         <div className="flex flex-1 flex-col md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem] transition-all duration-300 ease-in-out">
             <AdminHeader userData={userData} />
-            <main className="flex-1 p-4 sm:px-6 sm:py-6">
+            <main className="flex-1 p-4 sm:px-6 sm:py-6 overflow-auto">
               {children}
             </main>
         </div>
