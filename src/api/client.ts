@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -65,7 +66,6 @@ function AdminNavItems() {
                             {Icon && <Icon className="h-4 w-4" />}
                             <span>{item.label}</span>
                         </div>
-                        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                     </SidebarMenuSubTrigger>
                     <SidebarMenuSubContent>
                         {item.children.map((child) => (
@@ -166,7 +166,7 @@ export default function AdminLayout({
       </Sidebar>
       <div className="bg-transparent transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
         <AdminHeader userData={userData} />
-        <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
         </main>
       </div>

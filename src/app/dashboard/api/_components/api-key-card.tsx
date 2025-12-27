@@ -1,11 +1,13 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, RefreshCw, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 function CopyButton({ textToCopy }: { textToCopy: string }) {
     const { toast } = useToast();
@@ -25,7 +27,7 @@ function CopyButton({ textToCopy }: { textToCopy: string }) {
     );
 }
 
-export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
+export const ApiKeyCard = ({ apiKey, onRegenerate, isRegenerating }: { apiKey: string; onRegenerate: () => void; isRegenerating: boolean; }) => {
 
     return (
          <Card>
@@ -40,9 +42,29 @@ export const ApiKeyCard = ({ apiKey }: { apiKey: string }) => {
                 <CopyButton textToCopy={apiKey} />
             </CardContent>
              <CardFooter>
-                 <p className="text-xs text-muted-foreground">
-                    إذا كنت تعتقد أن مفتاحك قد تم اختراقه، يرجى الاتصال بالدعم لإنشاء مفتاح جديد.
-                 </p>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                            <RefreshCw className="me-2 h-4 w-4" />
+                             إنشاء مفتاح جديد
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                سيتم إنشاء مفتاح API جديد وإلغاء صلاحية المفتاح الحالي. أي تطبيقات تستخدم المفتاح القديم ستتوقف عن العمل. هذا الإجراء لا يمكن التراجع عنه.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                            <AlertDialogAction onClick={onRegenerate} disabled={isRegenerating}>
+                                {isRegenerating ? <Loader2 className="me-2 animate-spin" /> : null}
+                                نعم، قم بإنشاء مفتاح جديد
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </CardFooter>
         </Card>
     )

@@ -4,8 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeFirebaseServer } from '@/firebase/server';
 import { FieldValue } from 'firebase-admin/firestore';
-import type { Service, Order, User } from '@/lib/types';
+import type { Service, Order, User, ServicePrice } from '@/lib/types';
 import { serverProcessOrderInTransaction } from '@/lib/server-service';
+import { SMM_SERVICES } from '@/lib/smm-services';
 
 // Helper function to find user by API key
 async function getUserByApiKey(apiKey: string) {
@@ -59,20 +60,32 @@ export async function POST(request: NextRequest) {
 
         switch (action) {
             case 'services': {
-                const servicesSnapshot = await firestore.collection('services').get();
-                const services = servicesSnapshot.docs.map(doc => {
-                    const data = doc.data() as Service;
+                // Fetch dynamic prices from Firestore
+                const pricesSnapshot = await firestore.collection('servicePrices').get();
+                const pricesMap = new Map<string, number>();
+                pricesSnapshot.forEach(doc => {
+                    const data = doc.data() as ServicePrice;
+                    pricesMap.set(doc.id, data.price);
+                });
+
+                // Merge static service data with dynamic prices
+                const mergedServices = SMM_SERVICES.map(service => {
+                    const dynamicPrice = pricesMap.get(String(service.id));
+                    const price = dynamicPrice ?? service.price; // Fallback to static price
+                    const finalPrice = price * 1.50; // Apply 50% profit margin
+
                     return {
-                        service: data.id,
-                        name: `${data.platform} - ${data.category}`,
+                        service: service.id,
+                        name: `${service.platform} - ${service.category}`,
                         type: "Default",
-                        category: data.category,
-                        rate: data.price,
-                        min: data.min,
-                        max: data.max,
+                        category: service.category,
+                        rate: finalPrice.toFixed(4),
+                        min: service.min,
+                        max: service.max,
                     }
                 });
-                return NextResponse.json(services);
+
+                return NextResponse.json(mergedServices);
             }
 
             case 'balance': {
@@ -87,27 +100,35 @@ export async function POST(request: NextRequest) {
                 if (!serviceId || !link || !quantity) {
                     return NextResponse.json({ error: 'Missing parameters for add action (service, link, quantity)' }, { status: 400 });
                 }
-
-                const serviceDoc = await firestore.collection('services').doc(String(serviceId)).get();
-                if (!serviceDoc.exists) {
+                
+                const staticService = SMM_SERVICES.find(s => s.id === String(serviceId));
+                if (!staticService) {
                     return NextResponse.json({ error: 'Invalid service ID' }, { status: 400 });
                 }
-                const service = serviceDoc.data() as Service;
+
+                // Fetch the dynamic price for this specific service
+                const priceDoc = await firestore.collection('servicePrices').doc(String(serviceId)).get();
+                const price = priceDoc.exists ? (priceDoc.data() as ServicePrice).price : staticService.price;
+                const finalPrice = price * 1.50; // Apply 50% profit margin
+
+                const mergedService = { ...staticService, price: finalPrice };
 
                 const numQuantity = parseInt(quantity, 10);
-                if (isNaN(numQuantity) || numQuantity < service.min || numQuantity > service.max) {
-                    return NextResponse.json({ error: `Quantity must be between ${service.min} and ${service.max}` }, { status: 400 });
+                if (isNaN(numQuantity) || numQuantity < mergedService.min || numQuantity > mergedService.max) {
+                    return NextResponse.json({ error: `Quantity must be between ${mergedService.min} and ${mergedService.max}` }, { status: 400 });
                 }
-
-                const cost = (numQuantity / 1000) * service.price;
+                
+                // Server-side cost calculation
+                const cost = (numQuantity / 1000) * mergedService.price;
+                
                 if (user.balance < cost) {
                     return NextResponse.json({ error: 'Not enough funds' }, { status: 400 });
                 }
                 
                 const orderData: Omit<Order, 'id'> = {
                     userId: user.id,
-                    serviceId: service.id,
-                    serviceName: `${service.platform} - ${service.category}`,
+                    serviceId: mergedService.id,
+                    serviceName: `${mergedService.platform} - ${mergedService.category}`,
                     link: link,
                     quantity: numQuantity,
                     charge: cost,
@@ -115,7 +136,6 @@ export async function POST(request: NextRequest) {
                     status: 'قيد التنفيذ',
                 };
                 
-                // Using the unified server-side transaction for safety and consistency
                 const { orderId } = await firestore.runTransaction(async (transaction) => {
                      return await serverProcessOrderInTransaction(transaction, firestore, user.id, orderData);
                 });

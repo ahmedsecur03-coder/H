@@ -1,13 +1,16 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
 import type { User as UserType } from '@/lib/types';
-import { doc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { ApiKeyCard } from "./_components/api-key-card";
 import { CodeExample } from "./_components/code-example";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 function ApiPageSkeleton() {
     return (
@@ -26,9 +29,33 @@ function ApiPageSkeleton() {
 export default function ApiPage() {
     const { user } = useUser();
     const firestore = useFirestore();
+    const { toast } = useToast();
+    const [isRegenerating, setIsRegenerating] = useState(false);
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, 'users', user.uid) : null), [firestore, user]);
-    const { data: userData, isLoading } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
+
+    const handleRegenerateApiKey = async () => {
+        if (!userDocRef) return;
+        setIsRegenerating(true);
+        const newApiKey = `hy_${crypto.randomUUID()}`;
+        
+        try {
+            await updateDoc(userDocRef, { apiKey: newApiKey });
+            forceDocUpdate();
+            toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
+        } catch (error) {
+             const permissionError = new FirestorePermissionError({
+                path: userDocRef.path,
+                operation: 'update',
+                requestResourceData: { apiKey: 'REDACTED' },
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setIsRegenerating(false);
+        }
+    }
+
 
     if (isLoading || !userData) {
         return <ApiPageSkeleton />;
@@ -73,7 +100,7 @@ export default function ApiPage() {
                 </p>
             </div>
             
-            <ApiKeyCard apiKey={apiKey} />
+            <ApiKeyCard apiKey={apiKey} onRegenerate={handleRegenerateApiKey} isRegenerating={isRegenerating} />
 
             <Card>
                 <CardHeader>

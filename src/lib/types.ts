@@ -18,7 +18,7 @@ export type User = {
   balance: number;
   adBalance: number;
   totalSpent: number;
-  apiKey?: string;
+  apiKey: string;
   referralCode: string;
   referrerId: string | null;
   createdAt: string;
