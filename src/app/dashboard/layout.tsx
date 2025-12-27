@@ -34,6 +34,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { Notifications } from '@/components/notifications';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const appUser = {
