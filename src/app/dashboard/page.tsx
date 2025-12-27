@@ -32,7 +32,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
-import { SMM_SERVICES } from '@/lib/smm-services';
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +50,10 @@ function DashboardSkeleton() {
              <div className='mb-4'>
                 <Skeleton className="h-9 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Skeleton className="h-20" />
+                <Skeleton className="h-20" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
                 <div className="lg:col-span-2 space-y-6">
@@ -105,20 +108,22 @@ export default function DashboardPage() {
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
                 <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. كل شيء تحت السيطرة.</p>
             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button className="w-full text-lg py-7" asChild>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Button className="w-full text-lg py-7 h-auto" asChild>
                     <Link href="/dashboard/campaigns/new">
                         <PlusCircle className="ml-2 h-5 w-5" />
                         إنشاء حملة جديدة
                     </Link>
                 </Button>
-                <Button variant="outline" className="w-full text-lg py-7" asChild>
+                <Button variant="outline" className="w-full text-lg py-7 h-auto" asChild>
                     <Link href="/dashboard/agency-accounts">
                         <Briefcase className="ml-2 h-5 w-5" />
                         إدارة حسابات الوكالة
                     </Link>
                 </Button>
             </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
 
                 {/* Main Content Column */}

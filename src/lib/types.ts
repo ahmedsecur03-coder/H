@@ -26,6 +26,7 @@ export type User = {
   affiliateEarnings?: number;
   referralsCount?: number;
   affiliateLevel?: 'برونزي' | 'فضي' | 'ذهبي' | 'ماسي';
+  favoriteServices?: string[]; // Array of service IDs
   notificationPreferences?: {
     newsletter?: boolean;
     orderUpdates?: boolean;

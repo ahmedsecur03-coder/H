@@ -47,7 +47,7 @@ export function useServices() {
             setServices(mergedServices);
         } else {
             // Fallback to static data if pricesData is null/undefined after loading (e.g., Firestore error)
-            console.warn("Could not fetch dynamic prices from Firestore. Falling back to static prices.");
+            // console.warn("Could not fetch dynamic prices from Firestore. Falling back to static prices.");
             setServices(SMM_SERVICES);
         }
         

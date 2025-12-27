@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
  
 export default function Error({
   error,
@@ -18,9 +19,14 @@ export default function Error({
   }, [error])
  
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center overflow-hidden">
         <div className="cosmic-background"></div>
-         <div className="z-10 flex flex-col items-center">
+        <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="z-10 flex flex-col items-center"
+        >
             <AlertTriangle className="h-24 w-24 text-destructive animate-pulse" />
              <h1 className="mt-8 text-3xl font-bold font-headline">
                 عذراً... حدث خطأ غير متوقع
@@ -46,7 +52,7 @@ export default function Error({
                     معرف الخطأ: {error.digest}
                 </p>
             )}
-        </div>
+        </motion.div>
     </div>
   )
 }
