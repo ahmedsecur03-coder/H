@@ -22,6 +22,7 @@ import {
   Loader2,
   Megaphone,
   Briefcase,
+  CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -173,8 +174,10 @@ function Partners() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: i * 0.1 }}
                         viewport={{ once: true }}
+                        className="flex items-center gap-2"
                      >
-                        <partner.icon className="h-8 text-foreground/80 transition-colors hover:text-foreground" />
+                        <partner.icon className="h-8" />
+                        <CheckCircle className="h-5 w-5 text-blue-500" />
                     </motion.div>
                 ))}
             </div>
