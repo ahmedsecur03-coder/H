@@ -6,7 +6,6 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { ProfileClientPage } from './_components/profile-client-page';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc } from 'firebase/firestore';
-import { redirect } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 
 function ProfilePageSkeleton() {
@@ -49,12 +48,10 @@ export default function ProfilePage() {
     );
     const { data: userData, isLoading: isUserDataLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
-    if (isUserLoading || isUserDataLoading) {
+    // The layout (`/dashboard/layout.tsx`) already handles the redirection for unauthenticated users.
+    // We just need to handle the loading state here.
+    if (isUserLoading || isUserDataLoading || !authUser || !userData) {
         return <ProfilePageSkeleton />;
-    }
-    
-    if (!authUser || !userData) {
-       redirect('/auth/login');
     }
     
     return <ProfileClientPage userData={{...userData, id: authUser.uid}} onUpdate={forceDocUpdate} />;
