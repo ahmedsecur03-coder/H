@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -156,35 +155,32 @@ function Testimonials() {
 
 function Partners() {
     const partners = [
-        { name: "Meta", src: "https://cdn.worldvectorlogo.com/logos/meta-partner-1.svg", width: 140, height: 26 },
-        { name: "Google", src: "https://pincel-production-storage.s3.amazonaws.com/files/356393b4-f051-4e3f-8618-944f235779c3.png", width: 140, height: 35 },
-        { name: "TikTok", src: "https://marka-logo.com/wp-content/uploads/2022/12/TikTok-Marketing-Partner-Logo.png", width: 140, height: 38 },
-        { name: "Snapchat", src: "https://pincel-production-storage.s3.amazonaws.com/files/3e72c815-5a7a-4299-8d7a-8742878d6556.png", width: 140, height: 35 },
+        { name: "Meta Partner", icon: PLATFORM_ICONS['Meta'] },
+        { name: "Google Partner", icon: PLATFORM_ICONS['Google'] },
+        { name: "TikTok Partner", icon: PLATFORM_ICONS['TikTok'] },
+        { name: "Snapchat Partner", icon: PLATFORM_ICONS['Snapchat'] },
     ];
 
     return (
         <div className="bg-muted/50 rounded-xl border border-border/50 py-8 px-4">
             <h3 className="text-center text-lg font-semibold text-muted-foreground mb-8">شريك معتمد لدى أكبر المنصات العالمية</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
-                {partners.map((partner, i) => (
-                     <motion.div
-                        key={partner.name}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: i * 0.1 }}
-                        viewport={{ once: true }}
-                        className="flex flex-col items-center justify-center gap-2"
-                     >
-                        <div className="relative" style={{ width: partner.width, height: partner.height }}>
-                           <Image 
-                                src={partner.src}
-                                alt={`${partner.name} Partner Logo`}
-                                layout="fill"
-                                objectFit="contain"
-                            />
-                        </div>
-                    </motion.div>
-                ))}
+                {partners.map((partner, i) => {
+                    const Icon = partner.icon;
+                    return (
+                        <motion.div
+                            key={partner.name}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: i * 0.1 }}
+                            viewport={{ once: true }}
+                            className="flex flex-col items-center justify-center gap-2"
+                        >
+                            <Icon className="h-10 w-10 text-muted-foreground transition-colors group-hover:text-primary" />
+                            <p className="text-sm font-semibold text-muted-foreground">{partner.name}</p>
+                        </motion.div>
+                    )
+                })}
             </div>
         </div>
     )
