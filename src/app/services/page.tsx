@@ -204,8 +204,9 @@ function ServicesPageComponent() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            className="sticky top-20 z-20"
           >
-            <Card>
+            <Card className="glassmorphism-card">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
@@ -240,41 +241,43 @@ function ServicesPageComponent() {
 
       <Card>
           <CardContent className="p-0">
-          <Table>
-              <TableHeader>
-              <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>الخدمة</TableHead>
-                  <TableHead>المنصة</TableHead>
-                  <TableHead>السعر/1000</TableHead>
-                  <TableHead>الحدود</TableHead>
-                  <TableHead className="text-right">إجراء</TableHead>
-              </TableRow>
-              </TableHeader>
-              <TableBody>
-              {paginatedServices.length > 0 ? paginatedServices.map(service => (
-                  <TableRow key={service.id} className={selectedService?.id === service.id ? 'bg-muted/50' : ''}>
-                  <TableCell className="font-mono text-xs">{service.id}</TableCell>
-                  <TableCell className="font-medium">{service.category}</TableCell>
-                  <TableCell>{service.platform}</TableCell>
-                  <TableCell>${(service.price * PROFIT_MARGIN).toFixed(4)}</TableCell>
-                  <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
-                          <Info className="h-4 w-4 me-2" />
-                          تفاصيل
-                      </Button>
-                  </TableCell>
-                  </TableRow>
-              )) : (
+          <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    لا توجد خدمات تطابق بحثك.
-                  </TableCell>
+                    <TableHead>#</TableHead>
+                    <TableHead>الخدمة</TableHead>
+                    <TableHead>المنصة</TableHead>
+                    <TableHead>السعر/1000</TableHead>
+                    <TableHead>الحدود</TableHead>
+                    <TableHead className="text-right">إجراء</TableHead>
                 </TableRow>
-              )}
-              </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                {paginatedServices.length > 0 ? paginatedServices.map(service => (
+                    <TableRow key={service.id} className={selectedService?.id === service.id ? 'bg-muted/50' : ''}>
+                    <TableCell className="font-mono text-xs">{service.id}</TableCell>
+                    <TableCell className="font-medium">{service.category}</TableCell>
+                    <TableCell>{service.platform}</TableCell>
+                    <TableCell>${(service.price * PROFIT_MARGIN).toFixed(4)}</TableCell>
+                    <TableCell>{service.min.toLocaleString()} / {service.max.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedService(service)}>
+                            <Info className="h-4 w-4 me-2" />
+                            تفاصيل
+                        </Button>
+                    </TableCell>
+                    </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      لا توجد خدمات تطابق بحثك.
+                    </TableCell>
+                  </TableRow>
+                )}
+                </TableBody>
+            </Table>
+            </div>
           </CardContent>
           {pageCount > 1 && (
             <CardFooter className="justify-center border-t pt-4">
