@@ -4,7 +4,7 @@
 import Logo from "@/components/logo"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { PanelLeft, Shield, ChevronDown } from "lucide-react"
+import { PanelLeft, Shield, ChevronDown, DollarSign, Wallet } from "lucide-react"
 import Link from "next/link";
 import { dashboardNavItems } from "@/lib/placeholder-data";
 import { usePathname } from "next/navigation";
@@ -14,6 +14,7 @@ import { Notifications } from "@/components/notifications";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData: UserType }) {
     const pathname = usePathname();
@@ -74,14 +75,24 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-xs">
-              <SheetHeader className="text-right mb-6">
+            <SheetContent side="right" className="sm:max-w-xs flex flex-col">
+              <SheetHeader className="text-right mb-2">
                 <SheetTitle><Logo /></SheetTitle>
-                <SheetDescription>
-                  مرحباً بك في لوحة تحكم حاجاتي
-                </SheetDescription>
               </SheetHeader>
-              <nav className="grid gap-2">
+
+              <div className="flex items-center gap-4 px-2 py-4">
+                <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">الرصيد الأساسي</div>
+                    <div className="font-bold font-mono text-lg">${(userData.balance ?? 0).toFixed(2)}</div>
+                </div>
+                 <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">رصيد الإعلانات</div>
+                    <div className="font-bold font-mono text-lg">${(userData.adBalance ?? 0).toFixed(2)}</div>
+                </div>
+              </div>
+
+              <Separator />
+              <nav className="grid gap-2 py-4 flex-1 overflow-y-auto">
                  {dashboardNavItems.map(item => renderNavItem(item))}
                  {isAdmin && (
                     <SheetClose asChild>
@@ -90,7 +101,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                             className="flex items-center gap-4 px-2.5 text-lg font-medium text-muted-foreground hover:text-foreground"
                         >
                            <Shield className="h-5 w-5" />
-                            لوحة التحكم للمسؤول
+                            لوحة تحكم المسؤول
                         </Link>
                     </SheetClose>
                  )}

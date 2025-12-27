@@ -24,7 +24,7 @@ import type { NestedNavItem, User } from '@/lib/types';
 import React from 'react';
 import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
-import { ChevronDown, Shield, Loader2 } from 'lucide-react';
+import { ChevronDown, Shield, Loader2, Wallet, DollarSign } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend, RANKS } from '@/lib/service';
@@ -48,7 +48,27 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <SidebarTrigger />
-        <div className="ms-auto flex items-center gap-2 font-sans">
+        <div className="ms-auto flex items-center gap-4 font-sans">
+             <div className="flex items-center gap-4 border-s ps-4">
+                <div className="flex items-center gap-2">
+                     <div className="p-2 bg-muted rounded-md">
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                     </div>
+                    <div>
+                        <div className="text-xs text-muted-foreground">الرصيد الأساسي</div>
+                        <div className="font-bold font-mono">${(userData.balance ?? 0).toFixed(2)}</div>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <div className="p-2 bg-muted rounded-md">
+                        <Wallet className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                     <div>
+                        <div className="text-xs text-muted-foreground">رصيد الإعلانات</div>
+                        <div className="font-bold font-mono">${(userData.adBalance ?? 0).toFixed(2)}</div>
+                    </div>
+                </div>
+             </div>
              <ThemeToggle />
              <Notifications userData={userData} />
             <UserNav user={appUser} isAdmin={isAdmin} />
