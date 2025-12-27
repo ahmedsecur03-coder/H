@@ -70,14 +70,12 @@ function OrdersPageSkeleton() {
                 <Skeleton className="h-5 w-1/2" />
             </div>
             <Card>
-                <CardContent className="p-4">
+                <CardHeader>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
                     </div>
-                </CardContent>
-            </Card>
-            <Card>
+                </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <Table>
@@ -241,14 +239,13 @@ function AdminOrdersPageComponent() {
   const OrderCard = ({ order }: { order: Order }) => (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium truncate">{order.serviceName}</CardTitle>
-        <CardDescription className="font-mono text-xs">{order.id}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">الحالة</span>
+        <div className='flex justify-between items-start'>
+          <CardTitle className="text-sm font-medium leading-tight">{order.serviceName}</CardTitle>
           <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
         </div>
+        <CardDescription className="font-mono text-xs pt-1">{order.id}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">المستخدم</span>
           <span className="font-mono text-xs">{order.userId}</span>
@@ -257,7 +254,7 @@ function AdminOrdersPageComponent() {
           <span className="text-muted-foreground">التكلفة</span>
           <span className="font-semibold">${order.charge.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <span className="text-muted-foreground">الرابط</span>
            <a href={order.link} className="text-primary hover:underline truncate block max-w-[150px]" target="_blank">{order.link}</a>
         </div>
@@ -278,7 +275,7 @@ function AdminOrdersPageComponent() {
       </div>
 
        <Card>
-        <CardContent className="p-4">
+        <CardHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -301,7 +298,7 @@ function AdminOrdersPageComponent() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
       {isLoading && paginatedOrders.length === 0 ? (
@@ -337,7 +334,7 @@ function AdminOrdersPageComponent() {
                             <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
                             <TableCell className="font-mono text-xs">{order.userId.substring(0,8)}...</TableCell>
                             <TableCell className="font-medium">{order.serviceName}</TableCell>
-                            <TableCell><a href={order.link} className="text-primary hover:underline" target="_blank">{order.link}</a></TableCell>
+                            <TableCell><a href={order.link} className="text-primary hover:underline truncate block max-w-xs" target="_blank">{order.link}</a></TableCell>
                             <TableCell>
                                 <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
                             </TableCell>

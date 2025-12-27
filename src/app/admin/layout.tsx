@@ -18,20 +18,117 @@ import {
   SidebarMenuSubContent,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { adminNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter, usePathname, redirect } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { doc } from 'firebase/firestore';
+import { doc, collectionGroup, query, where, getCountFromServer } from 'firebase/firestore';
 import type { User, NestedNavItem } from '@/lib/types';
 import { Notifications } from '@/components/notifications';
 import { ThemeToggle } from '@/components/theme-toggle';
 
+
+function AdminNotifications() {
+    const firestore = useFirestore();
+    const [counts, setCounts] = useState({ deposits: 0, withdrawals: 0, campaigns: 0, tickets: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore) return;
+        
+        const fetchCounts = async () => {
+            setIsLoading(true);
+            try {
+                const depositsQuery = query(collectionGroup(firestore, 'deposits'), where('status', '==', 'معلق'));
+                const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), where('status', '==', 'معلق'));
+                const campaignsQuery = query(collectionGroup(firestore, 'campaigns'), where('status', '==', 'بانتظار المراجعة'));
+                const ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
+
+                const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
+                    getCountFromServer(depositsQuery),
+                    getCountFromServer(withdrawalsQuery),
+                    getCountFromServer(campaignsQuery),
+                    getCountFromServer(ticketsQuery),
+                ]);
+
+                setCounts({
+                    deposits: depositsSnap.data().count,
+                    withdrawals: withdrawalsSnap.data().count,
+                    campaigns: campaignsSnap.data().count,
+                    tickets: ticketsSnap.data().count,
+                });
+            } catch (error) {
+                console.error("Failed to fetch admin notification counts:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCounts();
+        const interval = setInterval(fetchCounts, 60000); // Refresh every minute
+
+        return () => clearInterval(interval);
+
+    }, [firestore]);
+    
+    const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    const notificationItems = [
+        { count: counts.deposits, label: 'طلبات إيداع معلقة', href: '/admin/deposits' },
+        { count: counts.withdrawals, label: 'طلبات سحب معلقة', href: '/admin/withdrawals' },
+        { count: counts.campaigns, label: 'حملات بانتظار المراجعة', href: '/admin/campaigns?status=بانتظار+المراجعة' },
+        { count: counts.tickets, label: 'تذاكر دعم نشطة', href: '/admin/support' },
+    ].filter(item => item.count > 0);
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5" />
+                    {totalCount > 0 && (
+                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive flex items-center justify-center text-xs text-destructive-foreground">
+                            {totalCount}
+                        </div>
+                    )}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80" align="end">
+                <DropdownMenuLabel>إشعارات المسؤول</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {isLoading ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                    </div>
+                ) : notificationItems.length > 0 ? (
+                    notificationItems.map(item => (
+                        <DropdownMenuItem key={item.href} asChild>
+                            <Link href={item.href} className="flex justify-between items-center">
+                                <span>{item.label}</span>
+                                <span className="font-bold text-primary">{item.count}</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    ))
+                ) : (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                        لا توجد إشعارات جديدة.
+                    </div>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
 
 function AdminHeader({ userData }: { userData: User }) {
   const adminUser = {
@@ -46,7 +143,7 @@ function AdminHeader({ userData }: { userData: User }) {
         <SidebarTrigger className="md:hidden" />
         <div className="ms-auto flex items-center gap-2">
             <ThemeToggle />
-             <Notifications userData={userData} />
+            <AdminNotifications />
             <UserNav user={adminUser} isAdmin={true} />
         </div>
     </header>
@@ -65,7 +162,7 @@ function AdminNavItems() {
                 <SidebarMenuSub key={item.label}>
                     <SidebarMenuSubTrigger>
                         <div className='flex items-center gap-2'>
-                            {Icon && <Icon className="h-4 w-4" />}
+                            {Icon && <Icon className="h-5 w-5" />}
                             <span>{item.label}</span>
                         </div>
                     </SidebarMenuSubTrigger>
@@ -73,7 +170,7 @@ function AdminNavItems() {
                         {item.children.map((child) => (
                            <SidebarMenuItem key={child.href}>
                              <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
-                                {child.icon && <child.icon className="w-4 h-4" />}
+                                {child.icon && <child.icon className="w-5 h-5" />}
                                 <span>{child.label}</span>
                              </SidebarMenuSubButton>
                            </SidebarMenuItem>
@@ -86,7 +183,7 @@ function AdminNavItems() {
         return (
             <Link href={item.href || '#'} passHref>
                 <SidebarMenuButton isActive={pathname === item.href}>
-                    {Icon && <Icon className="h-4 w-4" />}
+                    {Icon && <Icon className="h-5 w-5" />}
                     <span>{item.label}</span>
                 </SidebarMenuButton>
             </Link>
@@ -110,17 +207,14 @@ export default function AdminLayout({
   
   const isLoading = isUserLoading || isUserDataLoading;
   
-  // Security check: This effect handles redirection for unauthorized users.
   useEffect(() => {
     if (!isUserLoading && (!user || (userData && userData.role !== 'admin'))) {
-      redirect('/auth/login'); // Redirect non-admins or logged-out users immediately
+      redirect('/auth/login');
     }
   }, [user, isUserLoading, userData]);
 
 
   if (isLoading || !user || !userData || userData.role !== 'admin') {
-    // This loading state is now primarily for authorized users while their data loads.
-    // Unauthorized users will be redirected by the useEffect hook before this renders.
     return (
         <div className="flex min-h-screen w-full items-center justify-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -147,9 +241,9 @@ export default function AdminLayout({
             </SidebarContent>
         </Sidebar>
         
-        <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
+        <div className="flex flex-1 flex-col md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem] transition-all duration-300 ease-in-out">
             <AdminHeader userData={userData} />
-            <main className="flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+            <main className="flex-1 p-4 sm:px-6 sm:py-6">
               {children}
             </main>
         </div>

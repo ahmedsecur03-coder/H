@@ -83,15 +83,15 @@ export const dashboardNavItems: NestedNavItem[] = [
 
 export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
+    { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
     { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
     { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
-    { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
     { href: '/admin/orders', label: 'الطلبات', icon: ShoppingCart },
-    { href: '/admin/services', label: 'الخدمات', icon: Package },
     { href: '/admin/campaigns', label: 'الحملات', icon: Megaphone },
+    { href: '/admin/services', label: 'الخدمات', icon: Package },
     { href: '/admin/support', label: 'الدعم', icon: MessageSquare },
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
     { href: '/admin/system-log', label: 'سجل النظام', icon: Terminal },
-    { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
+    { href: '/dashboard', label: 'عرض كـ مستخدم', icon: Shield },
 ];

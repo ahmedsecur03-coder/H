@@ -203,10 +203,6 @@ function AdminUsersPageComponent() {
 
        <Card>
         <CardHeader>
-          <CardTitle>بحث وتعديل المستخدمين</CardTitle>
-          <CardDescription>
-            ابحث بالبريد الإلكتروني لتعديل بيانات المستخدم.
-          </CardDescription>
           <div className="relative pt-4">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -217,11 +213,9 @@ function AdminUsersPageComponent() {
               />
             </div>
         </CardHeader>
-        <CardContent className="p-0 md:p-6">
+        <CardContent className="p-0">
             {isLoading ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                     {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-60" />)}
-                 </div>
+                 <div className="p-4"><Skeleton className="h-64 w-full" /></div>
             ) : users.length > 0 ? (
                 <>
                     {/* Mobile View */}
@@ -314,5 +308,3 @@ export default function AdminUsersPage() {
         </Suspense>
     )
 }
-
-    
