@@ -40,7 +40,7 @@ export const publicNavItems: NestedNavItem[] = [
         { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
         { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية (ايجنسي)', description: 'شراء وشحن حسابات إعلانية احترافية.', icon: Briefcase },
-        { href: '/#', label: 'تصميم المواقع', description: 'تصميم وتطوير مواقع احترافية لعملك.', icon: AppWindow },
+        
       ]
     },
     { href: '/about', label: 'من نحن', icon: Info },

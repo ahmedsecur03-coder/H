@@ -317,8 +317,8 @@ export default function PublicLayout({
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
             <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
             <nav className="flex gap-4 sm:gap-6">
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
-                <Link href="#" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
+                <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
+                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
             </nav>
         </div>
       </footer>
