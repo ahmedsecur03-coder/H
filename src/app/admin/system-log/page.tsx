@@ -157,19 +157,21 @@ export default function SystemLogPage() {
            <CardDescription>يتم عرض الأحداث من الأحدث إلى الأقدم. مرر الفأرة فوق الحدث لعرض التفاصيل.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">المستوى</TableHead>
-                <TableHead>الرسالة</TableHead>
-                <TableHead>الحدث</TableHead>
-                <TableHead>الوقت</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {renderContent()}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead className="w-[120px]">المستوى</TableHead>
+                    <TableHead>الرسالة</TableHead>
+                    <TableHead>الحدث</TableHead>
+                    <TableHead>الوقت</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {renderContent()}
+                </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

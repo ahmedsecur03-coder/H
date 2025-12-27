@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service, ServicePrice } from '@/lib/types';
@@ -55,24 +56,26 @@ function ServicesSkeleton() {
           <Skeleton className="h-10 w-full" />
         </CardContent>
       </Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-            <TableRow key={i}>
-              {Array.from({ length: 6 }).map((_, j) => (
-                <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
-              ))}
+      <div className="overflow-x-auto">
+        <Table>
+            <TableHeader>
+            <TableRow>
+                {Array.from({ length: 6 }).map((_, i) => (
+                <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>
+                ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                <TableRow key={i}>
+                {Array.from({ length: 6 }).map((_, j) => (
+                    <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
+                ))}
+                </TableRow>
+            ))}
+            </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
