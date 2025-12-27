@@ -1,16 +1,16 @@
 import React from 'react';
 import { Package, Facebook, Youtube, Send, Twitter, Users, Clapperboard, Gamepad2, MapPin, Search, AppWindow, Waypoints, Star, MessageSquare, Hand, Radio, Wifi, Rss, Tv, Bot, Club, Instagram as InstagramIcon } from 'lucide-react';
-import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/icons';
+import { GooglePartnerIcon, MetaPartnerIcon, TikTokPartnerIcon, SnapchatPartnerIcon } from '@/components/ui/icons';
 
 export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   Instagram: InstagramIcon,
-  TikTok: TikTokIcon,
+  TikTok: TikTokPartnerIcon,
   Facebook: Facebook,
   YouTube: Youtube,
   Telegram: Send,
   'X (Twitter)': Twitter,
-  Google: GoogleIcon,
-  Snapchat: SnapchatIcon,
+  Google: GooglePartnerIcon,
+  Snapchat: SnapchatPartnerIcon,
   'خدمات الألعاب': Gamepad2,
   'خرائط جوجل': MapPin,
   'زيارات مواقع': Search,
@@ -23,6 +23,6 @@ export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   'Threads': Rss,
   'Kick': Radio,
   'Clubhouse': Club,
-  Meta: MetaIcon,
+  Meta: MetaPartnerIcon,
   Default: Package,
 };

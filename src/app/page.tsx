@@ -32,7 +32,7 @@ import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { GoogleIcon, MetaIcon, TikTokIcon, SnapchatIcon } from '@/components/ui/icons';
+import { GooglePartnerIcon, MetaPartnerIcon, TikTokPartnerIcon, SnapchatPartnerIcon } from '@/components/ui/icons';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
@@ -100,7 +100,7 @@ function FeaturedServices() {
 function Testimonials() {
     const testimonials = [
         { name: "أحمد المصري", role: "مسوق رقمي", text: "منصة حاجاتي غيرت طريقة عملي بالكامل. السرعة والدعم الفني لا يعلى عليهما. أنصح بها بشدة!", avatar: PlaceHolderImages.find(p => p.id === 'avatar1')?.imageUrl },
-        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: PlaceHolderImages.find(p => p.id === 'avatar2')?.imageUrl },
+        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
         { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: PlaceHolderImages.find(p => p.id === 'avatar3')?.imageUrl },
         { name: "سارة العبدالله", role: "مؤثرة على انستغرام", text: "أفضل ما في حاجاتي هو تنوع الخدمات وجودتها. كل ما أحتاجه لنمو حسابي أجده في مكان واحد وبأسعار ممتازة.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
         { name: "يوسف المغربي", role: "صانع محتوى يوتيوب", text: "خدمة ساعات المشاهدة ساعدتني في تحقيق شروط يوتيوب بسرعة لم أكن أتوقعها. فريق الدعم كان متعاونًا جدًا.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
@@ -157,16 +157,16 @@ function Testimonials() {
 
 function Partners() {
     const partners = [
-        { name: "Meta", icon: MetaIcon },
-        { name: "Google", icon: GoogleIcon },
-        { name: "TikTok", icon: TikTokIcon },
-        { name: "Snapchat", icon: SnapchatIcon },
+        { name: "Meta", icon: MetaPartnerIcon },
+        { name: "Google", icon: GooglePartnerIcon },
+        { name: "TikTok", icon: TikTokPartnerIcon },
+        { name: "Snapchat", icon: SnapchatPartnerIcon },
     ];
 
     return (
         <div className="bg-muted/50 rounded-xl border border-border/50 py-8 px-4">
-            <h3 className="text-center text-lg font-semibold text-muted-foreground mb-6">شريك معتمد لدى أكبر المنصات العالمية</h3>
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+            <h3 className="text-center text-lg font-semibold text-muted-foreground mb-8">شريك معتمد لدى أكبر المنصات العالمية</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
                 {partners.map((partner, i) => (
                      <motion.div
                         key={partner.name}
@@ -174,10 +174,9 @@ function Partners() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: i * 0.1 }}
                         viewport={{ once: true }}
-                        className="flex items-center gap-2"
+                        className="flex items-center justify-center"
                      >
-                        <partner.icon className="h-8" />
-                        <CheckCircle className="h-5 w-5 text-blue-500" />
+                        <partner.icon className="h-28 w-28 text-foreground" />
                     </motion.div>
                 ))}
             </div>
