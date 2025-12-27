@@ -26,6 +26,7 @@ import {
   AppWindow,
   UserCircle,
   Info,
+  Terminal,
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -52,8 +53,8 @@ export const dashboardNavItems: NestedNavItem[] = [
     label: 'الحملات الإعلانية',
     icon: Megaphone,
      children: [
-        { href: '/dashboard/campaigns', label: 'بدء واداره الحملات اعلانيه', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'فتح حسابات إعلانية (ايجنسي)', icon: Briefcase },
+        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
     ]
   },
   { 
@@ -91,6 +92,6 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/support', label: 'الدعم', icon: MessageSquare },
     { href: '/admin/blog', label: 'المدونة', icon: PenSquare },
     { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
-    { href: '/admin/system-log', label: 'سجل النظام', icon: History },
+    { href: '/admin/system-log', label: 'سجل النظام', icon: Terminal },
     { href: '/dashboard', label: 'لوحة المستخدم', icon: Shield },
 ];

@@ -59,4 +59,3 @@ export function ServiceDialog({ service, onSave, children, onOpenChange, open }:
         </Dialog>
     );
 }
-
