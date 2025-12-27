@@ -1,22 +1,30 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, Query, DocumentSnapshot,getCountFromServer, and, or } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, limit, startAfter, Query as FirestoreQuery, where, getCountFromServer } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Shield } from 'lucide-react';
+import { Search, Shield, ListFilter } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { EditUserDialog } from './_components/edit-user-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -67,54 +75,48 @@ function AdminUsersPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
   
-  const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
   
   const fetchUsers = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-        let baseQuery: Query = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
-        
-        if (currentSearch) {
-             baseQuery = query(collection(firestore, 'users'), where('email', '>=', currentSearch), where('email', '<=', currentSearch + '\uf8ff'));
-        }
-        
-        const countQuery = baseQuery;
-        const totalUsersSnapshot = await getCountFromServer(countQuery);
-        const totalUsers = totalUsersSnapshot.data().count;
-        const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
-        setPageCount(totalPages);
-
-        let finalQuery = baseQuery;
-        if (currentPage > 1) {
-            const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-            const prevPagesSnapshot = await getDocs(query(baseQuery, limit(offset)));
-            const lastDoc = prevPagesSnapshot.docs[prevPagesSnapshot.docs.length - 1];
-            finalQuery = query(baseQuery, startAfter(lastDoc), limit(ITEMS_PER_PAGE));
-        } else {
-             finalQuery = query(baseQuery, limit(ITEMS_PER_PAGE));
-        }
-
-        const snapshot = await getDocs(finalQuery);
+        const usersQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(usersQuery);
         const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        
-        setUsers(usersData);
-
+        setAllUsers(usersData);
     } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch users.' });
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, currentSearch, currentPage]);
+  }, [firestore, toast]);
 
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+  
+  const { paginatedUsers, pageCount } = useMemo(() => {
+    if (!allUsers) return { paginatedUsers: [], pageCount: 0 };
+    
+    const filtered = allUsers.filter(user => 
+        currentSearch
+        ? user.email?.toLowerCase().includes(currentSearch.toLowerCase()) || 
+          user.name?.toLowerCase().includes(currentSearch.toLowerCase()) ||
+          user.id.toLowerCase().includes(currentSearch.toLowerCase())
+        : true
+    );
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    return { paginatedUsers: paginated, pageCount: totalPages };
+  }, [allUsers, currentSearch, currentPage]);
 
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
@@ -154,7 +156,7 @@ function AdminUsersPageComponent() {
   };
 
 
-  if (isLoading && users.length === 0) {
+  if (isLoading && allUsers.length === 0) {
     return <UsersPageSkeleton />;
   }
 
@@ -206,82 +208,84 @@ function AdminUsersPageComponent() {
           <div className="relative pt-4">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالبريد الإلكتروني..."
+                placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."
                 className="pe-10 rtl:ps-10"
                 value={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
               />
             </div>
         </CardHeader>
-        <CardContent className="p-0">
-            {isLoading ? (
-                 <div className="p-4"><Skeleton className="h-64 w-full" /></div>
-            ) : users.length > 0 ? (
-                <>
-                    {/* Mobile View */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4 p-4">
-                         {users.map((user) => <UserCard key={user.id} user={user} />)}
-                    </div>
-                    {/* Desktop View */}
-                    <div className="hidden md:block overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead>المستخدم</TableHead>
-                                <TableHead>الدور</TableHead>
-                                <TableHead>الرتبة</TableHead>
-                                <TableHead>الرصيد</TableHead>
-                                <TableHead>رصيد الإعلانات</TableHead>
-                                <TableHead>إجمالي الإنفاق</TableHead>
-                                <TableHead>تاريخ الانضمام</TableHead>
-                                <TableHead className="text-right">إجراءات</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-9 w-9">
-                                            <AvatarImage src={user.avatarUrl} alt={user.name} />
-                                            <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <div className="font-medium">{user.name}</div>
-                                            <div className="text-sm text-muted-foreground">{user.email}</div>
-                                        </div>
-                                    </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
-                                        {user.role === 'admin' ? <Shield className="w-3 h-3 me-1" /> : null}
-                                        {user.role || 'user'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">{user.rank}</Badge>
-                                    </TableCell>
-                                    <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
-                                    <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
-                                    <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
-                                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
-                                    <TableCell className="text-right">
-                                        <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
-                                            <Button variant="outline" size="sm">تعديل</Button>
-                                        </EditUserDialog>
-                                    </TableCell>
-                                </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                 </>
-            ) : (
-                <div className="h-24 text-center flex items-center justify-center text-muted-foreground">لم يتم العثور على مستخدمين يطابقون هذا البحث.</div>
-            )}
-        </CardContent>
-       {pageCount > 1 && (
-            <CardFooter className="flex items-center justify-center border-t pt-4">
+       </Card>
+
+       {isLoading && paginatedUsers.length === 0 ? (
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+           {Array.from({length: 8}).map((_, i) => <Skeleton key={i} className="h-64" />)}
+         </div>
+       ) : paginatedUsers.length > 0 ? (
+         <>
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
+                {paginatedUsers.map((user) => <UserCard key={user.id} user={user} />)}
+            </div>
+
+            {/* Desktop View */}
+            <Card className="hidden md:block">
+              <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                      <Table>
+                          <TableHeader>
+                          <TableRow>
+                              <TableHead>المستخدم</TableHead>
+                              <TableHead>الدور</TableHead>
+                              <TableHead>الرتبة</TableHead>
+                              <TableHead>الرصيد</TableHead>
+                              <TableHead>رصيد الإعلانات</TableHead>
+                              <TableHead>إجمالي الإنفاق</TableHead>
+                              <TableHead>تاريخ الانضمام</TableHead>
+                              <TableHead className="text-right">إجراءات</TableHead>
+                          </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                              {paginatedUsers.map((user) => (
+                              <TableRow key={user.id}>
+                                  <TableCell>
+                                  <div className="flex items-center gap-3">
+                                      <Avatar className="h-9 w-9">
+                                          <AvatarImage src={user.avatarUrl} alt={user.name} />
+                                          <AvatarFallback>{user.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                          <div className="font-medium">{user.name}</div>
+                                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                                      </div>
+                                  </div>
+                                  </TableCell>
+                                  <TableCell>
+                                      <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
+                                      {user.role === 'admin' ? <Shield className="w-3 h-3 me-1" /> : null}
+                                      {user.role || 'user'}
+                                      </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                      <Badge variant="secondary">{user.rank}</Badge>
+                                  </TableCell>
+                                  <TableCell>${(user.balance ?? 0).toFixed(2)}</TableCell>
+                                  <TableCell>${(user.adBalance ?? 0).toFixed(2)}</TableCell>
+                                  <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
+                                  <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
+                                  <TableCell className="text-right">
+                                      <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+                                          <Button variant="outline" size="sm">تعديل</Button>
+                                      </EditUserDialog>
+                                  </TableCell>
+                              </TableRow>
+                              ))}
+                          </TableBody>
+                      </Table>
+                  </div>
+              </CardContent>
+            </Card>
+            {pageCount > 1 && (
                 <Pagination>
                     <PaginationContent>
                         <PaginationItem>
@@ -293,9 +297,26 @@ function AdminUsersPageComponent() {
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>
-            </CardFooter>
-        )}
-      </Card>
+            )}
+        </>
+       ) : (
+          <Card className="flex flex-col items-center justify-center py-20 text-center">
+            <CardHeader>
+                <div className="mx-auto bg-muted p-4 rounded-full">
+                    <ListFilter className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <CardTitle className="mt-4 font-headline text-2xl">لا يوجد مستخدمون يطابقون بحثك</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">
+                    حاول تغيير كلمات البحث.
+                </p>
+                <Button variant="outline" onClick={() => router.replace(pathname)} className="mt-4">
+                  إعادة تعيين الفلاتر
+                </Button>
+            </CardContent>
+          </Card>
+       )}
     </div>
   );
 }
@@ -308,3 +329,5 @@ export default function AdminUsersPage() {
         </Suspense>
     )
 }
+
+    
