@@ -174,9 +174,9 @@ function Partners() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: i * 0.1 }}
                         viewport={{ once: true }}
-                        className="flex items-center justify-center"
+                        className="flex flex-col items-center justify-center gap-2"
                      >
-                        <partner.icon className="h-28 w-28 text-foreground" />
+                        <partner.icon className="h-20 w-auto" />
                     </motion.div>
                 ))}
             </div>
