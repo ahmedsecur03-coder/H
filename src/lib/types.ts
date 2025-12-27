@@ -182,5 +182,3 @@ export type DailyStat = {
     totalOrders: number;
     newUsers: number;
 };
-
-    

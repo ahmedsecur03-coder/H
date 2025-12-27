@@ -58,6 +58,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
 
+        // Log the API action
+        const logData = {
+            event: 'api_request',
+            level: 'info' as const,
+            message: `API action '${action}' called by user ${user.id}`,
+            timestamp: new Date().toISOString(),
+            metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
+        };
+        // We do this in the background, no need to await it
+        firestore.collection('systemLogs').add(logData);
+
+
         switch (action) {
             case 'services': {
                 // Fetch dynamic prices from Firestore
