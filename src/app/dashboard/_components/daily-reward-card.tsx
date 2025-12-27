@@ -25,7 +25,10 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
     }, [user.lastRewardClaimedAt]);
 
     useEffect(() => {
-        if (canClaim || !user.lastRewardClaimedAt) return;
+        if (canClaim || !user.lastRewardClaimedAt) {
+            setTimeLeft('');
+            return;
+        }
 
         const intervalId = setInterval(() => {
             const lastClaimedTime = new Date(user.lastRewardClaimedAt!).getTime();
@@ -37,7 +40,8 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
             if (remaining <= 0) {
                 setTimeLeft('');
                 clearInterval(intervalId);
-                // We might need to force a re-render here if the parent doesn't automatically do it
+                // Force a re-render by calling the onClaim which triggers forceDocUpdate
+                onClaim();
             } else {
                 const hours = Math.floor(remaining / (1000 * 60 * 60));
                 const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -47,7 +51,7 @@ export function DailyRewardCard({ user, onClaim }: { user: UserType, onClaim: ()
         }, 1000);
 
         return () => clearInterval(intervalId);
-    }, [canClaim, user.lastRewardClaimedAt]);
+    }, [canClaim, user.lastRewardClaimedAt, onClaim]);
 
     const handleClaim = async () => {
         if (!firestore || !authUser) {
