@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -48,7 +47,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
   return (
     <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <SidebarTrigger />
-        <div className="ms-auto flex items-center gap-2 font-body">
+        <div className="ms-auto flex items-center gap-2 font-sans">
              <ThemeToggle />
              <Notifications userData={userData} />
             <UserNav user={appUser} isAdmin={isAdmin} />
@@ -178,7 +177,7 @@ export default function DashboardLayout({
                     )}
                 </Sidebar>
                 
-                <div className="flex flex-1 flex-col transition-all duration-300 ease-in-out md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
+                <div className="flex flex-1 flex-col md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
                     <MobileHeader isAdmin={isAdmin} userData={userData} />
                     <DesktopHeader isAdmin={isAdmin} userData={userData} />
                     
