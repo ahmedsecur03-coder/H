@@ -15,6 +15,7 @@ import {
   SidebarMenuSubContent,
   SidebarMenuSubButton,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
