@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -64,3 +65,5 @@ export function CampaignDetailsDialog({ campaign, children }: { campaign: Campai
         </Dialog>
     );
 }
+
+    

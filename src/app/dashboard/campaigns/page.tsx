@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
@@ -193,3 +194,5 @@ export default function CampaignsPage() {
     </div>
   );
 }
+
+    
