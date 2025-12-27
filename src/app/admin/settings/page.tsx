@@ -292,5 +292,4 @@ export default function AdminSettingsPage() {
         </CardFooter>
     </div>
   );
-
-    
+}
