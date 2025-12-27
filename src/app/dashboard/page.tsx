@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Card,
@@ -17,6 +16,7 @@ import {
   Crown,
   ShoppingBag,
   ListOrdered,
+  Wallet,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit } from 'firebase/firestore';
@@ -49,22 +49,13 @@ function DashboardSkeleton() {
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <Skeleton className="h-28" />
-                        <Skeleton className="h-28" />
-                        <Skeleton className="h-28" />
-                    </div>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Skeleton className="h-20" />
-                        <Skeleton className="h-20" />
-                     </div>
+                <div className="lg:col-span-2 space-y-6">
                     <Skeleton className="h-[500px]" />
                     <Skeleton className="h-64" />
                 </div>
-                <div className="lg:col-span-1 space-y-4">
+                <div className="lg:col-span-1 space-y-6">
                      <Skeleton className="h-40" />
-                    <Skeleton className="h-44 w-full" />
+                     <Skeleton className="h-44 w-full" />
                      <Skeleton className="h-44 w-full" />
                 </div>
             </div>
@@ -105,54 +96,6 @@ export default function DashboardPage() {
 
                 {/* Main Content Column */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                       <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">${userData.totalSpent.toFixed(2)}</div>
-                            <p className="text-xs text-muted-foreground">على جميع الطلبات والخدمات</p>
-                          </CardContent>
-                        </Card>
-                         <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">رتبتك الحالية</CardTitle>
-                            <Crown className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-primary">{rank.name}</div>
-                            <p className="text-xs text-muted-foreground">خصم {rank.discount}% على كل الطلبات</p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">إجمالي الطلبات</CardTitle>
-                            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">{recentOrders?.length || 0}</div>
-                            <p className="text-xs text-muted-foreground">إجمالي عدد الطلبات المنفذة</p>
-                          </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Button className="w-full text-lg py-7" variant="outline" asChild>
-                           <Link href="/dashboard/campaigns/new">
-                                <PlusCircle className="ml-2 h-5 w-5" />
-                                إنشاء حملة جديدة
-                            </Link>
-                        </Button>
-                        <Button variant="outline" className="w-full text-lg py-7" asChild>
-                            <Link href="/dashboard/agency-accounts">
-                                <Briefcase className="ml-2 h-5 w-5" />
-                                إدارة حسابات الوكالة
-                            </Link>
-                        </Button>
-                    </div>
-
                     <QuickOrderForm user={authUser} userData={userData} />
 
                     <Card>
@@ -205,26 +148,36 @@ export default function DashboardPage() {
                 {/* Sidebar Column */}
                 <div className="lg:col-span-1 space-y-6">
                     <Card>
-                        <CardHeader className="pb-2 flex-row items-center justify-between">
-                            <CardDescription>الرصيد الأساسي</CardDescription>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        <CardHeader className="pb-4">
+                            <CardTitle>أرصدتك</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                             <div className="text-3xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</div>
-                        </CardContent>
-                         <CardContent>
-                            <Button asChild className="w-full">
-                                <Link href="/dashboard/add-funds">
-                                    <PlusCircle className="ml-2 h-4 w-4" />
-                                    شحن الرصيد
-                                </Link>
-                            </Button>
+                        <CardContent className="space-y-4">
+                             <div className="flex justify-between items-baseline border-b pb-3">
+                                 <div>
+                                    <p className="text-sm text-muted-foreground">الرصيد الأساسي</p>
+                                    <p className="text-3xl font-bold">${(userData?.balance ?? 0).toFixed(2)}</p>
+                                 </div>
+                                 <Button asChild size="sm">
+                                    <Link href="/dashboard/add-funds"><PlusCircle className="h-4 w-4" /></Link>
+                                 </Button>
+                            </div>
+                             <div className="flex justify-between items-baseline pt-2">
+                                 <div>
+                                    <p className="text-sm text-muted-foreground">رصيد الإعلانات</p>
+                                    <p className="text-2xl font-bold">${(userData?.adBalance ?? 0).toFixed(2)}</p>
+                                 </div>
+                                  <Button asChild size="sm" variant="outline">
+                                    <Link href="/dashboard/agency-accounts"><Briefcase className="h-4 w-4" /></Link>
+                                 </Button>
+                            </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
                             <CardDescription>الترقية التالية</CardDescription>
-                            <CardTitle className="text-xl text-primary">{nextRank ? nextRank.name : 'لقد وصلت للقمة!'}</CardTitle>
+                            <CardTitle className="text-xl text-primary flex items-center gap-2">
+                                {nextRank ? <>{nextRank.icon && <nextRank.icon/>} {nextRank.name}</> : <><Crown/> لقد وصلت للقمة!</>}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             {nextRank ? (

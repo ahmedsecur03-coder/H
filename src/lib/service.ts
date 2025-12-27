@@ -2,13 +2,14 @@
 
 import type { User, Order, BlogPost, Notification } from '@/lib/types';
 import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc, arrayUnion, increment } from 'firebase/firestore';
+import { Crown, Rocket, Star, Users } from 'lucide-react';
 
 
-export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number }[] = [
-  { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0 },
-  { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 5 },
-  { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 20 },
-  { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50 },
+export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number, icon: React.ElementType }[] = [
+  { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0, icon: Star },
+  { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 5, icon: Rocket },
+  { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 20, icon: Users },
+  { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50, icon: Crown },
 ];
 
 export const AFFILIATE_LEVELS: { [key in Exclude<User['affiliateLevel'], undefined>]: { commission: number, nextLevel: User['affiliateLevel'] | null, requirement: number } } = {
