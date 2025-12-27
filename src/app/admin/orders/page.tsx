@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect, useCallback, Suspense } from 'react';
@@ -397,5 +396,3 @@ export default function AdminOrdersPage() {
         </Suspense>
     )
 }
-
-    

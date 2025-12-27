@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service, ServicePrice } from '@/lib/types';
