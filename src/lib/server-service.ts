@@ -34,15 +34,22 @@ export async function serverProcessOrderInTransaction(
     }
 
     const userData = userDoc.data() as User;
-    const cost = orderData.charge;
+    
+    // Recalculate cost with discount on the server to prevent manipulation
+    const rank = getRankForSpend(userData.totalSpent || 0);
+    const discount = rank.discount / 100;
+    const finalCost = orderData.charge * (1 - discount);
 
-    if (userData.balance < cost) {
+    if (userData.balance < finalCost) {
         throw new Error("Not enough funds on balance.");
     }
 
+    // Use the server-calculated cost
+    orderData.charge = finalCost;
+    
     // 1. Update user's balance, total spent, and check for rank promotion
-    const newBalance = userData.balance - cost;
-    const newTotalSpent = (userData.totalSpent || 0) + cost;
+    const newBalance = userData.balance - finalCost;
+    const newTotalSpent = (userData.totalSpent || 0) + finalCost;
     const oldRank = getRankForSpend(userData.totalSpent || 0);
     const newRank = getRankForSpend(newTotalSpent);
 
@@ -73,7 +80,7 @@ export async function serverProcessOrderInTransaction(
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const dailyStatRef = firestore.collection('dailyStats').doc(today);
     transaction.set(dailyStatRef, {
-        totalRevenue: FieldValue.increment(cost),
+        totalRevenue: FieldValue.increment(finalCost),
         totalOrders: FieldValue.increment(1)
     }, { merge: true });
 
