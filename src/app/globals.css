@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 226 25% 97%; /* #F1F3F9 */
+    --background: 226 25% 97%; /* #F1F3F9 - Winter Dawn */
     --foreground: 226 25% 10%;
 
     --card: 226 25% 100%;
@@ -13,10 +13,10 @@
     --popover: 226 25% 100%;
     --popover-foreground: 226 25% 10%;
 
-    --primary: 206 90% 52%;
+    --primary: 206 90% 52%; /* Icy Blue */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 262 84% 60%;
+    --secondary: 262 84% 60%; /* Cosmic Purple */
     --secondary-foreground: 210 40% 98%;
 
     --muted: 226 25% 94%;
@@ -32,11 +32,11 @@
     --input: 226 15% 88%;
     --ring: 206 90% 52%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Increased for a softer, more premium feel */
     
     --chart-1: 206 90% 52%;
     --chart-2: 262 84% 60%;
-    --chart-3: 217.2 32.6% 17.5%;
+    --chart-3: 340 82% 56%;
     --chart-4: 280 65% 60%;
     --chart-5: 50 90% 55%;
 
@@ -51,7 +51,7 @@
   }
 
   .dark {
-    --background: 226 80% 6%; /* #0A0A2A */
+    --background: 226 80% 6%; /* #0A0A2A - Deep Space */
     --foreground: 210 40% 98%;
 
     --card: 226 80% 10%;
@@ -60,10 +60,10 @@
     --popover: 226 80% 6%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 206 90% 52%;
+    --primary: 206 90% 52%; /* Vibrant Blue */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 262 84% 60%;
+    --secondary: 262 84% 60%; /* Vibrant Purple */
     --secondary-foreground: 210 40% 98%;
 
     --muted: 226 80% 12%;
@@ -75,8 +75,8 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 206 90% 52% / 0.2;
-    --input: 206 90% 52% / 0.1;
+    --border: 206 90% 52% / 0.1;
+    --input: 206 90% 52% / 0.2;
     --ring: 206 90% 52%;
 
     --sidebar-background: 226 80% 4%;
@@ -85,12 +85,12 @@
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 226 80% 12%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 206 90% 52% / 0.2;
+    --sidebar-border: 206 90% 52% / 0.1;
     --sidebar-ring: 206 90% 52%;
 
     --chart-1: 206 90% 52%;
     --chart-2: 262 84% 60%;
-    --chart-3: 217.2 32.6% 17.5%;
+    --chart-3: 340 82% 56%;
     --chart-4: 280 65% 60%;
     --chart-5: 50 90% 55%;
   }
@@ -110,15 +110,15 @@
     @apply fixed inset-0 -z-10 h-full w-full;
     background-color: hsl(var(--background));
     background-image: 
+      radial-gradient(ellipse at center, hsla(var(--primary), 0.1), transparent 70%);
+  }
+  
+  .dark .cosmic-background {
+      background-image: 
       radial-gradient(ellipse at center, hsla(var(--primary), 0.1), transparent 70%),
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="0.5" fill="hsl(var(--foreground))" opacity="0.1"/><circle cx="50" cy="30" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/><circle cx="80" cy="70" r="0.4" fill="hsl(var(--foreground))" opacity="0.09"/><circle cx="30" cy="60" r="0.2" fill="hsl(var(--foreground))" opacity="0.07"/><circle cx="90" cy="10" r="0.5" fill="hsl(var(--foreground))" opacity="0.11"/><circle cx="20" cy="90" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/></svg>'),
       url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="15" cy="80" r="0.5" fill="hsl(var(--foreground))" opacity="0.1"/><circle cx="55" cy="50" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/><circle cx="85" cy="20" r="0.4" fill="hsl(var(--foreground))" opacity="0.09"/><circle cx="35" cy="10" r="0.2" fill="hsl(var(--foreground))" opacity="0.07"/><circle cx="95" cy="90" r="0.5" fill="hsl(var(--foreground))" opacity="0.11"/><circle cx="25" cy="40" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/></svg>');
     animation: move-stars 200s linear infinite;
-  }
-
-  .light .cosmic-background {
-     background-image: 
-      radial-gradient(ellipse at center, hsla(var(--primary), 0.05), transparent 70%);
   }
 
   .glassmorphism-card {
