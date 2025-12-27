@@ -31,18 +31,32 @@ export function ImportDialog({ children, onImportComplete }: ImportDialogProps) 
         setIsImporting(true);
         toast({ title: 'جاري الاستيراد...', description: `جاري مزامنة أسعار ${SMM_SERVICES.length} خدمة. قد يستغرق الأمر بعض الوقت.` });
 
-        const batch = writeBatch(firestore);
         const pricesColRef = collection(firestore, 'servicePrices');
         let errorOccurred = false;
 
-        SMM_SERVICES.forEach(service => {
+        // Firestore allows a maximum of 500 operations in a single batch.
+        const batchArray = [];
+        let currentBatch = writeBatch(firestore);
+        let operationCount = 0;
+
+        SMM_SERVICES.forEach((service, index) => {
             const priceDocRef = doc(pricesColRef, service.id.toString());
             // Only write the price to Firestore
-            batch.set(priceDocRef, { price: service.price });
+            currentBatch.set(priceDocRef, { price: service.price });
+            operationCount++;
+            
+            // If we've hit the limit, push the batch and start a new one.
+            if (operationCount === 499) {
+                batchArray.push(currentBatch);
+                currentBatch = writeBatch(firestore);
+                operationCount = 0;
+            }
         });
+        batchArray.push(currentBatch); // Add the last batch
 
         try {
-            await batch.commit();
+            await Promise.all(batchArray.map(batch => batch.commit()));
+
             toast({ title: 'نجاح!', description: `تم مزامنة أسعار ${SMM_SERVICES.length} خدمة بنجاح.` });
             onImportComplete();
             setOpen(false);
@@ -57,7 +71,7 @@ export function ImportDialog({ children, onImportComplete }: ImportDialogProps) 
         } finally {
             setIsImporting(false);
             if (errorOccurred) {
-                toast({ variant: 'destructive', title: 'فشل المزامنة', description: 'لم تتم مزامنة الأسعار بسبب خطأ في الصلاحيات. تحقق من console.' });
+                toast({ variant: 'destructive', title: 'فشل المزامنة', description: 'لم تتم مزامنة الأسعار بسبب خطأ في الصلاحيات.' });
             }
         }
     };
@@ -75,7 +89,7 @@ export function ImportDialog({ children, onImportComplete }: ImportDialogProps) 
                 <DialogFooter>
                     <Button variant="secondary" onClick={() => setOpen(false)}>إلغاء</Button>
                     <Button onClick={handleImport} disabled={isImporting} variant="destructive">
-                        {isImporting ? <Loader2 className="animate-spin" /> : <Upload className="ml-2"/>}
+                        {isImporting ? <Loader2 className="animate-spin me-2" /> : <Upload className="me-2"/>}
                         نعم، قم بالمزامنة
                     </Button>
                 </DialogFooter>

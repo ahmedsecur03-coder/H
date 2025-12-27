@@ -66,7 +66,7 @@ function FeaturedServices() {
                         transition={{ duration: 0.5, delay: i * 0.05 }}
                         viewport={{ once: true }}
                     >
-                        <Card className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:border-primary/50">
+                        <Card className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card">
                             <CardHeader className="flex-row items-center gap-4">
                                 <div className="p-3 bg-muted rounded-full">
                                     <Icon className="w-6 h-6 text-foreground" />
@@ -83,7 +83,7 @@ function FeaturedServices() {
                                 </div>
                                 <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                     <Link href="/services">
-                                        <ChevronLeft className="h-4 w-4 ml-2" />
+                                        <ChevronLeft className="h-4 w-4 me-2" />
                                         اطلب الآن
                                     </Link>
                                 </Button>
@@ -129,7 +129,7 @@ function Testimonials() {
                 animate="animate"
             >
                 {duplicatedTestimonials.map((t, i) => (
-                    <Card key={i} className="flex-shrink-0 w-[350px] bg-card/70">
+                    <Card key={i} className="flex-shrink-0 w-[350px] glassmorphism-card">
                         <CardHeader>
                             <div className="flex items-center gap-4">
                                 <Avatar>
@@ -228,7 +228,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: -30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
-                className="text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400"
+                className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400"
             >
                 شريكك المعتمد للنمو الرقمي
             </motion.h1>
@@ -236,7 +236,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-                className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto"
+                className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
             >
                 منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
             </motion.p>
@@ -244,17 +244,17 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
-                className="mt-10 flex justify-center gap-4"
+                className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4"
             >
-                <Button size="lg" asChild className="text-lg py-7" disabled={isUserLoading}>
+                <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
                     <Link href={primaryAction.href}>
-                         <primaryAction.icon className={`ml-2 ${isUserLoading ? 'animate-spin' : ''}`} />
+                         <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
                         {primaryAction.label}
                     </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="text-lg py-7">
+                <Button size="lg" variant="outline" asChild className="text-lg py-7 w-full sm:w-auto">
                     <Link href={secondaryAction.href}>
-                        <ShoppingCart className="ml-2" />
+                        <ShoppingCart className="me-2" />
                         {secondaryAction.label}
                     </Link>
                 </Button>
@@ -289,7 +289,7 @@ export default function HomePage() {
                           transition={{ duration: 0.5, delay: i * 0.1 }}
                           viewport={{ once: true }}
                         >
-                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 hover:border-primary/50">
+                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card">
                                 <CardHeader className="items-center">
                                     <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
                                         <Icon className="h-8 w-8 text-primary" />
@@ -337,7 +337,7 @@ export default function HomePage() {
                      viewport={{ once: true }}
                     className="text-muted-foreground mt-2">أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.</motion.p>
             </div>
-            <Card>
+            <Card className="glassmorphism-card">
                  <CardContent className="p-10 flex flex-col lg:flex-row items-center gap-8">
                     <div className="flex-1">
                         <Megaphone className="h-16 w-16 text-primary mb-4" />
@@ -380,7 +380,7 @@ export default function HomePage() {
                      viewport={{ once: true }}
                     className="text-muted-foreground mt-2">تجاوز قيود الحسابات الجديدة واحصل على حسابات وكالة إعلانية قوية.</motion.p>
             </div>
-            <Card>
+            <Card className="glassmorphism-card">
                  <CardContent className="p-10 flex flex-col lg:flex-row-reverse items-center gap-8">
                     <div className="flex-1">
                         <Briefcase className="h-16 w-16 text-primary mb-4" />

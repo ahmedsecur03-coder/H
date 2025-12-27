@@ -127,7 +127,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 </DialogHeader>
                 <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto px-2">
                     <p><strong>المستخدم:</strong> <span className="font-mono text-xs">{campaign.userId}</span></p>
-                    <p className="flex items-center gap-2"><strong>رابط الإعلان:</strong> <Link href={campaign.adLink || '#'} target="_blank" className="text-primary hover:underline truncate max-w-xs"><LinkIcon className="inline-block w-4 h-4" /> {campaign.adLink || "غير محدد"}</Link></p>
+                    <p className="flex items-center gap-2"><strong>رابط الإعلان:</strong> <Link href={campaign.adLink || '#'} target="_blank" className="text-primary hover:underline truncate max-w-xs"><LinkIcon className="inline-block w-4 h-4 me-1" /> {campaign.adLink || "غير محدد"}</Link></p>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex items-center gap-2 text-sm"><DollarSign className="w-4 h-4 text-muted-foreground" /> <strong>الميزانية:</strong> ${campaign.budget.toFixed(2)}</div>
                         <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-muted-foreground" /> <strong>المدة:</strong> {campaign.durationDays} أيام</div>
@@ -178,9 +178,7 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 </div>
                 
                  <DialogFooter className="gap-2 sm:justify-end">
-                     {loading ? <Loader2 className="animate-spin" /> : (
-                         <Button variant="secondary" onClick={() => setOpen(false)}>إغلاق</Button>
-                     )}
+                     <Button variant="secondary" onClick={() => setOpen(false)}>إغلاق</Button>
                  </DialogFooter>
             </DialogContent>
         </Dialog>

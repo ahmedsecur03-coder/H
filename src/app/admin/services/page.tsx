@@ -75,12 +75,11 @@ function AdminServicesPageComponent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
   
-  const { services: allServices, isLoading } = useServices();
+  const { services: allServices, isLoading, forceCollectionUpdate: forceServicesUpdate } = useServices();
 
   const fetchServiceData = useCallback(() => {
-    // This function is now a placeholder as useServices handles fetching.
-    // It can be used to trigger a re-fetch if useServices is updated to support it.
-  }, []);
+    forceServicesUpdate();
+  }, [forceServicesUpdate]);
 
   useEffect(() => {
     // Data is fetched by the hook, no need for manual fetch here.
@@ -186,7 +185,7 @@ function AdminServicesPageComponent() {
                  {!currentSearch && (
                     <div className="flex gap-2 mt-4">
                         <ImportDialog onImportComplete={fetchServiceData}>
-                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />مزامنة الأسعار</Button>
+                            <Button variant="outline"><Upload className="me-2 h-4 w-4" />مزامنة الأسعار</Button>
                         </ImportDialog>
                     </div>
                 )}
@@ -203,10 +202,10 @@ function AdminServicesPageComponent() {
           <TableCell>${(service.price * PROFIT_MARGIN).toFixed(4)}</TableCell>
           <TableCell>{service.min} / {service.max}</TableCell>
           <TableCell className="text-center">
-             {service.guarantee ? <Badge variant="default" className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 ml-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 ml-1" />لا</Badge>}
+             {service.guarantee ? <Badge variant="default" className="bg-green-500 hover:bg-green-600"><CheckCircle className="w-3 h-3 me-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 me-1" />لا</Badge>}
           </TableCell>
            <TableCell className="text-center">
-            {service.refill ? <Badge variant="default"><CheckCircle className="w-3 h-3 ml-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 ml-1" />لا</Badge>}
+            {service.refill ? <Badge variant="default"><CheckCircle className="w-3 h-3 me-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 me-1" />لا</Badge>}
           </TableCell>
           <TableCell className="text-right">
                 <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
@@ -225,7 +224,7 @@ function AdminServicesPageComponent() {
         </div>
         <div className="flex gap-2 self-end sm:self-center">
            <ImportDialog onImportComplete={fetchServiceData}>
-             <Button variant="outline"><Upload className="ml-2 h-4 w-4" />مزامنة الأسعار</Button>
+             <Button variant="outline"><Upload className="me-2 h-4 w-4" />مزامنة الأسعار</Button>
            </ImportDialog>
         </div>
       </div>

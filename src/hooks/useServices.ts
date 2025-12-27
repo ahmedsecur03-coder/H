@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { Service, ServicePrice } from '@/lib/types';
@@ -24,7 +24,7 @@ export function useServices() {
         () => (firestore ? query(collection(firestore, 'servicePrices')) : null),
         [firestore]
     );
-    const { data: pricesData, isLoading: pricesLoading } = useCollection<ServicePrice>(pricesQuery);
+    const { data: pricesData, isLoading: pricesLoading, forceCollectionUpdate } = useCollection<ServicePrice>(pricesQuery);
 
     useEffect(() => {
         // Start loading only when we actually start processing
@@ -55,7 +55,5 @@ export function useServices() {
 
     }, [pricesData, pricesLoading]);
     
-    return { services, isLoading };
+    return { services, isLoading, forceCollectionUpdate };
 }
-
-    

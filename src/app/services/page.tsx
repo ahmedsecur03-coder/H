@@ -1,6 +1,6 @@
 
 'use client';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service, ServicePrice } from '@/lib/types';
 import {
   Card,
@@ -32,6 +32,7 @@ import { Search, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useServices } from '@/hooks/useServices';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
   PaginationContent,
@@ -45,7 +46,7 @@ import {
 const PROFIT_MARGIN = 1.50; // 50% profit margin
 const ITEMS_PER_PAGE = 20;
 
-function ServicesSkeleton() {
+function ServicesPageSkeleton() {
   return (
     <div className="space-y-6">
       <Card>
@@ -77,16 +78,33 @@ function ServicesSkeleton() {
   );
 }
 
-export default function ServicesPage() {
-  const { services: allServices, isLoading } = useServices();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [platformFilter, setPlatformFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
+function ServicesPageComponent() {
+    const { services: allServices, isLoading } = useServices();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
-  const { platforms, categories, filteredServices, pageCount } = useMemo(() => {
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const searchTerm = searchParams.get('search') || '';
+    const platformFilter = searchParams.get('platform') || 'all';
+    const categoryFilter = searchParams.get('category') || 'all';
+
+    const handleFilterChange = (key: 'search' | 'platform' | 'category' | 'page', value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value && value !== 'all') {
+            params.set(key, value);
+        } else {
+            params.delete(key);
+        }
+        if (key !== 'page') {
+            params.set('page', '1');
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
+  const { platforms, categories, paginatedServices, pageCount } = useMemo(() => {
     if (!allServices) {
-      return { platforms: [], categories: [], filteredServices: [], pageCount: 0 };
+      return { platforms: [], categories: [], paginatedServices: [], pageCount: 0 };
     }
 
     const platforms = [...new Set(allServices.map(s => s.platform))];
@@ -107,19 +125,10 @@ export default function ServicesPage() {
     const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
     const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-    return { platforms, categories: availableCategories, filteredServices: paginated, pageCount: totalPages };
+    return { platforms, categories: availableCategories, paginatedServices: paginated, pageCount: totalPages };
   }, [allServices, searchTerm, platformFilter, categoryFilter, currentPage]);
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, platformFilter, categoryFilter]);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0);
-  }
 
   const renderPaginationItems = () => {
     if (pageCount <= 1) return null;
@@ -138,7 +147,7 @@ export default function ServicesPage() {
     return pageNumbers.map((page, index) => (
         <PaginationItem key={`${page}-${index}`}>
             {page === 'ellipsis' ? <PaginationEllipsis /> : (
-                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handlePageChange(page as number); }}>{page}</PaginationLink>
+                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
             )}
         </PaginationItem>
     ));
@@ -166,10 +175,10 @@ export default function ServicesPage() {
               placeholder="ابحث بالرقم أو اسم الخدمة..."
               className="pe-10 rtl:ps-10"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
             />
           </div>
-          <Select value={platformFilter} onValueChange={(value) => { setPlatformFilter(value); setCategoryFilter('all'); }}>
+          <Select value={platformFilter} onValueChange={(value) => { handleFilterChange('platform', value); handleFilterChange('category', 'all'); }}>
             <SelectTrigger>
               <SelectValue placeholder="فلترة حسب المنصة" />
             </SelectTrigger>
@@ -178,7 +187,7 @@ export default function ServicesPage() {
               {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select value={categoryFilter} onValueChange={(value) => handleFilterChange('category', value)}>
             <SelectTrigger>
               <SelectValue placeholder="فلترة حسب الفئة" />
             </SelectTrigger>
@@ -244,7 +253,7 @@ export default function ServicesPage() {
               </TableRow>
               </TableHeader>
               <TableBody>
-              {filteredServices.length > 0 ? filteredServices.map(service => (
+              {paginatedServices.length > 0 ? paginatedServices.map(service => (
                   <TableRow key={service.id} className={selectedService?.id === service.id ? 'bg-muted/50' : ''}>
                   <TableCell className="font-mono text-xs">{service.id}</TableCell>
                   <TableCell className="font-medium">{service.category}</TableCell>
@@ -273,11 +282,11 @@ export default function ServicesPage() {
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} disabled={currentPage === 1} />
+                    <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1} />
                   </PaginationItem>
                   {renderPaginationItems()}
                   <PaginationItem>
-                    <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} disabled={currentPage === pageCount} />
+                    <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
@@ -288,4 +297,11 @@ export default function ServicesPage() {
   );
 }
 
-    
+
+export default function ServicesPageWrapper() {
+    return (
+        <Suspense fallback={<ServicesSkeleton />}>
+            <ServicesPageComponent />
+        </Suspense>
+    )
+}

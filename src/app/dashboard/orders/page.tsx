@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -211,6 +212,37 @@ function OrdersPageComponent() {
       </PaginationItem>
     ));
   };
+
+  const OrderCard = ({ order }: { order: Order }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-sm font-medium truncate">{order.serviceName}</CardTitle>
+            <CardDescription className="font-mono text-xs">{order.id}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+            <div className="flex justify-between">
+                <span className="text-muted-foreground">الحالة</span>
+                <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+            </div>
+            <div className="flex justify-between">
+                <span className="text-muted-foreground">التكلفة</span>
+                <span className="font-semibold">${order.charge.toFixed(2)}</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="text-muted-foreground">التاريخ</span>
+                <span>{new Date(order.orderDate).toLocaleDateString('ar-EG')}</span>
+            </div>
+        </CardContent>
+        <CardFooter className="flex-col items-stretch gap-2">
+            <Button variant="secondary" size="sm" asChild>
+                <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
+                    <RefreshCw className="me-2 h-4 w-4" />
+                    اطلب مرة أخرى
+                </Link>
+            </Button>
+        </CardFooter>
+    </Card>
+  );
   
   if (isLoading) {
     return <OrdersPageSkeleton />;
@@ -253,65 +285,72 @@ function OrdersPageComponent() {
       </Card>
 
       {paginatedOrders.length > 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">المعرف</TableHead>
-                    <TableHead>الخدمة</TableHead>
-                    <TableHead>الرابط</TableHead>
-                    <TableHead className="text-center">الكمية</TableHead>
-                    <TableHead className="text-center">الحالة</TableHead>
-                    <TableHead className="text-center">التاريخ</TableHead>
-                    <TableHead className="text-right">التكلفة</TableHead>
-                    <TableHead className="text-right">إجراء</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
-                      <TableCell className="font-medium">{order.serviceName}</TableCell>
-                      <TableCell><a href={order.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block max-w-xs">{order.link}</a></TableCell>
-                      <TableCell className="text-center">{order.quantity.toLocaleString()}</TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
-                      <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="icon" asChild>
-                          <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
-                              <RefreshCw className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+        <>
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
+                {paginatedOrders.map(order => <OrderCard key={order.id} order={order} />)}
             </div>
-          </CardContent>
-           {pageCount > 1 && (
-             <CardFooter className="justify-center border-t pt-4">
+
+            {/* Desktop View */}
+            <Card className="hidden md:block">
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[100px]">المعرف</TableHead>
+                            <TableHead>الخدمة</TableHead>
+                            <TableHead>الرابط</TableHead>
+                            <TableHead className="text-center">الكمية</TableHead>
+                            <TableHead className="text-center">الحالة</TableHead>
+                            <TableHead className="text-center">التاريخ</TableHead>
+                            <TableHead className="text-right">التكلفة</TableHead>
+                            <TableHead className="text-right">إجراء</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {paginatedOrders.map((order) => (
+                            <TableRow key={order.id}>
+                            <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
+                            <TableCell className="font-medium">{order.serviceName}</TableCell>
+                            <TableCell><a href={order.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block max-w-xs">{order.link}</a></TableCell>
+                            <TableCell className="text-center">{order.quantity.toLocaleString()}</TableCell>
+                            <TableCell className="text-center">
+                                <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                            </TableCell>
+                            <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
+                            <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                                <Button variant="outline" size="icon" asChild>
+                                <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
+                                    <RefreshCw className="h-4 w-4" />
+                                </Link>
+                                </Button>
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {pageCount > 1 && (
                 <Pagination>
-                  <PaginationContent>
+                    <PaginationContent>
                     <PaginationItem>
-                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
+                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
                     </PaginationItem>
                     
                     {renderPaginationItems()}
 
                     <PaginationItem>
-                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
+                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
                     </PaginationItem>
-                  </PaginationContent>
+                    </PaginationContent>
                 </Pagination>
-            </CardFooter>
-           )}
-        </Card>
+            )}
+        </>
       ) : (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
             <CardHeader>
