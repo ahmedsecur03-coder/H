@@ -44,11 +44,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const adminRoutes = [
+      '/admin/dashboard',
+      '/admin/users',
+      '/admin/deposits',
+      '/admin/withdrawals',
+      '/admin/orders',
+      '/admin/campaigns',
+      '/admin/services',
+      '/admin/support',
+      '/admin/blog',
+      '/admin/settings',
+      '/admin/system-log',
+  ];
+  
+  const adminUrls = adminRoutes.map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.5,
+  }));
+
 
   // يمكنك إضافة صفحات ديناميكية هنا في المستقبل (مثل صفحات المدونة والخدمات)
 
   return [
     ...publicUrls,
     ...dashboardUrls,
+    ...adminUrls,
   ];
 }

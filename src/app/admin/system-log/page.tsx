@@ -62,7 +62,10 @@ export default function SystemLogPage() {
             setLogs(fetchedLogs);
         } catch (error) {
             console.error("Error fetching system logs:", error);
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب سجلات النظام. قد يكون السبب مشكلة في الصلاحيات.' });
+            // If the collection doesn't exist, it might throw a permission error or another error.
+            // We'll catch it and show an empty state, which is better than crashing.
+            setLogs([]); 
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب سجلات النظام. قد تكون المجموعة غير موجودة أو هناك مشكلة في الصلاحيات.' });
         } finally {
             setIsLoading(false);
         }

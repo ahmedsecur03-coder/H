@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -54,34 +55,24 @@ function DepositTable({ status }: { status: Status }) {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const fetchDeposits = async () => {
-    if (!firestore) {
-        setIsLoading(false);
-        return;
-    };
-    setIsLoading(true);
-
-    try {
-      const depositsQuery = query(
-            collectionGroup(firestore, 'deposits'), 
-            where('status', '==', status), 
-            orderBy('depositDate', 'desc'),
-            limit(100)
-        );
-      const snapshot = await getDocs(depositsQuery);
-      const fetchedDeposits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Deposit));
-      setDeposits(fetchedDeposits);
-    } catch(err) {
-        console.error("Error fetching deposits: ", err);
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب طلبات الإيداع.' });
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDeposits();
+  const depositsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(
+        collectionGroup(firestore, 'deposits'), 
+        where('status', '==', status), 
+        orderBy('depositDate', 'desc'),
+        limit(100)
+    );
   }, [firestore, status]);
+
+  const { data: fetchedDeposits, isLoading: depositsLoading, forceCollectionUpdate } = useCollection<Deposit>(depositsQuery);
+  
+  useEffect(() => {
+      setIsLoading(depositsLoading);
+      if(fetchedDeposits){
+          setDeposits(fetchedDeposits);
+      }
+  }, [fetchedDeposits, depositsLoading])
 
 
   const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
@@ -191,7 +182,7 @@ function DepositTable({ status }: { status: Status }) {
             }
         });
       
-      setDeposits(prev => prev.filter(d => d.id !== deposit.id));
+      forceCollectionUpdate();
 
       toast({
         title: 'نجاح',
