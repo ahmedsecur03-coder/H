@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -6,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,105 +17,126 @@ import {
   Sparkles,
   ShoppingCart,
   ChevronLeft,
-  Star,
   Zap,
   LayoutDashboard,
   Loader2,
   Megaphone,
+  UserPlus,
+  LogIn,
   Briefcase,
-  CheckCircle,
+  Target,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, limit } from 'firebase/firestore';
-import type { Service } from '@/lib/types';
+import { useUser } from '@/firebase';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
-function FeaturedServices() {
-    const firestore = useFirestore();
-    // We can just take the first 8 services from the static list for the homepage.
-    const featuredServices = SMM_SERVICES.slice(0, 8);
+const serviceCategories = [
+    { platform: "Instagram", icon: PLATFORM_ICONS.Instagram },
+    { platform: "TikTok", icon: PLATFORM_ICONS.TikTok },
+    { platform: "Facebook", icon: PLATFORM_ICONS.Facebook },
+    { platform: "YouTube", icon: PLATFORM_ICONS.YouTube },
+]
 
-    if (featuredServices.length === 0) {
-        // This case is unlikely with static data but good for robustness
-        return (
-             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <Skeleton key={i} className="h-64" />
-                ))}
-            </div>
-        );
+function FeaturedServicesTabs() {
+    const getFeaturedServices = (platform: string) => {
+        return SMM_SERVICES.filter(s => s.platform === platform).slice(0, 4);
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featuredServices.map((service, i) => {
-                const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
-                return (
+        <Tabs defaultValue="Instagram" className="w-full">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+            >
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+                    {serviceCategories.map(category => {
+                         const Icon = category.icon;
+                         return (
+                            <TabsTrigger key={category.platform} value={category.platform} className="py-3 text-base gap-2">
+                                <Icon className="h-5 w-5" />
+                                {category.platform}
+                            </TabsTrigger>
+                         )
+                    })}
+                </TabsList>
+            </motion.div>
+
+            {serviceCategories.map((category, i) => (
+                 <TabsContent key={category.platform} value={category.platform}>
                      <motion.div
-                        key={service.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: i * 0.05 }}
-                        viewport={{ once: true }}
+                         initial={{ opacity: 0, y: 20 }}
+                         whileInView={{ opacity: 1, y: 0 }}
+                         transition={{ duration: 0.5, delay: i * 0.1 }}
+                         viewport={{ once: true }}
+                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6"
                     >
-                        <Card className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card">
-                            <CardHeader className="flex-row items-center gap-4">
-                                <div className="p-3 bg-muted rounded-full">
-                                    <Icon className="w-6 h-6 text-foreground" />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-lg leading-tight">{service.category}</CardTitle>
-                                    <CardDescription>{service.platform}</CardDescription>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex-grow flex flex-col justify-end">
-                                <div className="text-center">
-                                    <p className="text-3xl font-bold text-primary">${(service.price * 1.50).toFixed(3)}</p>
-                                    <p className="text-xs text-muted-foreground">/ لكل 1000</p>
-                                </div>
-                                <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                    <Link href="/services">
-                                        <ChevronLeft className="h-4 w-4 me-2" />
-                                        اطلب الآن
-                                    </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
+                        {getFeaturedServices(category.platform).map(service => {
+                             const Icon = PLATFORM_ICONS[service.platform as keyof typeof PLATFORM_ICONS] || PLATFORM_ICONS.Default;
+                             return (
+                                <Card key={service.id} className="flex flex-col h-full group transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card">
+                                    <CardHeader>
+                                         <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-muted rounded-full">
+                                                <Icon className="w-6 h-6 text-foreground" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-base leading-tight">{service.category}</CardTitle>
+                                                <CardDescription>{service.platform}</CardDescription>
+                                            </div>
+                                         </div>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow flex flex-col justify-end">
+                                        <div className="text-center">
+                                            <p className="text-3xl font-bold text-primary">${(service.price * 1.50).toFixed(3)}</p>
+                                            <p className="text-xs text-muted-foreground">/ لكل 1000</p>
+                                        </div>
+                                    </CardContent>
+                                     <CardFooter>
+                                        <Button asChild variant="secondary" className="mt-4 w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                            <Link href={`/services?platform=${service.platform}&category=${encodeURIComponent(service.category)}`}>
+                                                <ChevronLeft className="h-4 w-4 me-2" />
+                                                اطلب الآن
+                                            </Link>
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            )
+                        })}
                     </motion.div>
-                )
-            })}
-        </div>
+                 </TabsContent>
+            ))}
+        </Tabs>
     );
 }
 
 function Testimonials() {
     const testimonials = [
-        { name: "أحمد المصري", role: "مسوق رقمي", text: "منصة حاجاتي غيرت طريقة عملي بالكامل. السرعة والدعم الفني لا يعلى عليهما. أنصح بها بشدة!", avatar: PlaceHolderImages.find(p => p.id === 'avatar1')?.imageUrl },
-        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: PlaceHolderImages.find(p => p.id === 'avatar2')?.imageUrl },
-        { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: PlaceHolderImages.find(p => p.id === 'avatar3')?.imageUrl },
-        { name: "سارة العبدالله", role: "مؤثرة على انستغرام", text: "أفضل ما في حاجاتي هو تنوع الخدمات وجودتها. كل ما أحتاجه لنمو حسابي أجده في مكان واحد وبأسعار ممتازة.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-        { name: "يوسف المغربي", role: "صانع محتوى يوتيوب", text: "خدمة ساعات المشاهدة ساعدتني في تحقيق شروط يوتيوب بسرعة لم أكن أتوقعها. فريق الدعم كان متعاونًا جدًا.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+        { name: "أحمد المصري", role: "مسوق رقمي", text: "منصة حاجاتي غيرت طريقة عملي بالكامل. السرعة والدعم الفني لا يعلى عليهما. أنصح بها بشدة!", avatar: "https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=400" },
+        { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400" },
+        { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=400" },
+        { name: "سارة العبدالله", role: "مؤثرة على انستغرام", text: "أفضل ما في حاجاتي هو تنوع الخدمات وجودتها. كل ما أحتاجه لنمو حسابي أجده في مكان واحد وبأسعار ممتازة.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400" },
+        { name: "يوسف المغربي", role: "صانع محتوى يوتيوب", text: "خدمة ساعات المشاهدة ساعدتني في تحقيق شروط يوتيوب بسرعة لم أكن أتوقعها. فريق الدعم كان متعاونًا جدًا.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400" },
     ];
 
     const duplicatedTestimonials = [...testimonials, ...testimonials];
 
     const carouselVariants = {
         animate: {
-            x: [0, -100 * testimonials.length],
+            x: [0, -200 * testimonials.length], // Adjust based on card width + gap
             transition: {
                 x: {
                     repeat: Infinity,
                     repeatType: "loop",
-                    duration: testimonials.length * 5, 
+                    duration: testimonials.length * 7, 
                     ease: "linear",
                 },
             },
@@ -121,7 +144,7 @@ function Testimonials() {
     };
 
     return (
-        <div className="w-full overflow-hidden relative">
+        <div className="w-full overflow-hidden relative py-10 [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
             <motion.div
                 className="flex gap-8"
                 variants={carouselVariants}
@@ -147,44 +170,10 @@ function Testimonials() {
                     </Card>
                 ))}
             </motion.div>
-             <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent"></div>
-             <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent"></div>
         </div>
     );
 }
 
-function Partners() {
-    const partners = [
-        { name: "Meta Partner", icon: PLATFORM_ICONS['Meta'] },
-        { name: "Google Partner", icon: PLATFORM_ICONS['Google'] },
-        { name: "TikTok Partner", icon: PLATFORM_ICONS['TikTok'] },
-        { name: "Snapchat Partner", icon: PLATFORM_ICONS['Snapchat'] },
-    ];
-
-    return (
-        <div className="bg-muted/50 rounded-xl border border-border/50 py-8 px-4">
-            <h3 className="text-center text-lg font-semibold text-muted-foreground mb-8">شريك معتمد لدى أكبر المنصات العالمية</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
-                {partners.map((partner, i) => {
-                    const Icon = partner.icon;
-                    return (
-                        <motion.div
-                            key={partner.name}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: i * 0.1 }}
-                            viewport={{ once: true }}
-                            className="flex flex-col items-center justify-center gap-2"
-                        >
-                            <Icon className="h-10 w-10 text-muted-foreground transition-colors group-hover:text-primary" />
-                            <p className="text-sm font-semibold text-muted-foreground">{partner.name}</p>
-                        </motion.div>
-                    )
-                })}
-            </div>
-        </div>
-    )
-}
 
 export default function HomePage() {
   const { user, isUserLoading } = useUser();
@@ -200,26 +189,20 @@ export default function HomePage() {
       label: "استكشف الخدمات"
   }
 
-  const featureCards = [
-    {
-        icon: DollarSign,
-        title: "أسعار تنافسية",
-        description: "أفضل الأسعار في السوق مع الحفاظ على أعلى جودة للخدمات."
-    },
-    {
-        icon: Shield,
-        title: "دعم فني فوري",
-        description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة تواجهك."
-    },
-    {
-        icon: Sparkles,
-        title: "نظام متكامل",
-        description: "كل ما تحتاجه في مكان واحد، من خدمات SMM إلى إدارة الحملات ونظام الإحالة."
-    }
-  ];
+ const featureCards = [
+    { icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط." },
+    { icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة من دعواتك وأرباحًا من شبكتك حتى 5 مستويات." },
+    { icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية." },
+    { icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة." },
+    { icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة." },
+    { icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح." }
+];
 
-  const campaignsImage = PlaceHolderImages.find(p => p.id === 'campaigns-placeholder');
-  const agencyAccountsImage = PlaceHolderImages.find(p => p.id === 'agency-accounts-placeholder');
+  const howItWorksSteps = [
+    { icon: UserPlus, title: "أنشئ حسابك", description: "انضم إلى منصتنا في أقل من دقيقة وابدأ رحلتك." },
+    { icon: DollarSign, title: "اشحن رصيدك", description: "اختر من بين طرق الدفع المتعددة والآمنة." },
+    { icon: Rocket, title: "أطلق خدماتك", description: "اختر الخدمة التي تناسبك وانطلق نحو النجاح." }
+  ];
 
 
   return (
@@ -265,8 +248,6 @@ export default function HomePage() {
             </motion.div>
         </section>
         
-        <Partners />
-
         <section>
             <div className="text-center mb-12">
                 <motion.h2 
@@ -282,7 +263,7 @@ export default function HomePage() {
                      viewport={{ once: true }}
                     className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</motion.p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {featureCards.map((feature, i) => {
                     const Icon = feature.icon;
                     return (
@@ -293,9 +274,9 @@ export default function HomePage() {
                           transition={{ duration: 0.5, delay: i * 0.1 }}
                           viewport={{ once: true }}
                         >
-                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card">
+                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-2">
                                 <CardHeader className="items-center">
-                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 group-hover:scale-110 group-hover:animate-pulse transition-transform">
+                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
                                         <Icon className="h-8 w-8 text-primary" />
                                     </div>
                                     <CardTitle>{feature.title}</CardTitle>
@@ -323,94 +304,51 @@ export default function HomePage() {
                      viewport={{ once: true }}
                     className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</motion.p>
             </div>
-            <FeaturedServices />
+            <FeaturedServicesTabs />
         </section>
 
-        <section>
+         <section>
             <div className="text-center mb-12">
                  <motion.h2 
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5 }}
                      viewport={{ once: true }}
-                    className="text-4xl font-bold font-headline">أطلق حملاتك الإعلانية نحو النجاح</motion.h2>
-                 <motion.p 
+                    className="text-4xl font-bold font-headline">كيف نعمل؟</motion.h2>
+                 <motion.p
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5, delay: 0.1 }}
                      viewport={{ once: true }}
-                    className="text-muted-foreground mt-2">أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.</motion.p>
+                    className="text-muted-foreground mt-2">ثلاث خطوات بسيطة تفصلك عن الانطلاق.</motion.p>
             </div>
-            <Card className="glassmorphism-card">
-                 <CardContent className="p-10 flex flex-col lg:flex-row items-center gap-8">
-                    <div className="flex-1">
-                        <Megaphone className="h-16 w-16 text-primary mb-4" />
-                        <h3 className="text-2xl font-semibold mb-2">إدارة احترافية لحملاتك</h3>
-                        <p className="text-muted-foreground">
-                           سواء كنت تستهدف زيادة الوعي بعلامتك التجارية، جلب زيارات لموقعك، أو تحقيق مبيعات مباشرة، فإن فريقنا المختص جاهز لإدارة حملاتك على منصات مثل جوجل وميتا وتيك توك لضمان تحقيق أفضل النتائج بأقل تكلفة.
-                        </p>
-                         <Button asChild size="lg" className="mt-6">
-                            <Link href="/dashboard/campaigns">أطلق حملتك الآن</Link>
-                        </Button>
-                    </div>
-                     <div className="flex-1 w-full flex items-center justify-center">
-                         {campaignsImage && (
-                            <Image
-                                src={campaignsImage.imageUrl}
-                                alt={campaignsImage.description}
-                                width={500}
-                                height={333}
-                                className="rounded-lg shadow-lg"
-                                data-ai-hint={campaignsImage.imageHint}
-                            />
-                         )}
-                    </div>
-                 </CardContent>
-            </Card>
-        </section>
-
-        <section>
-            <div className="text-center mb-12">
-                 <motion.h2 
-                     initial={{ opacity: 0, y: 20 }}
-                     whileInView={{ opacity: 1, y: 0 }}
-                     transition={{ duration: 0.5 }}
-                     viewport={{ once: true }}
-                    className="text-4xl font-bold font-headline">حسابات إعلانية جاهزة وموثوقة</motion.h2>
-                 <motion.p 
-                     initial={{ opacity: 0, y: 20 }}
-                     whileInView={{ opacity: 1, y: 0 }}
-                     transition={{ duration: 0.5, delay: 0.1 }}
-                     viewport={{ once: true }}
-                    className="text-muted-foreground mt-2">تجاوز قيود الحسابات الجديدة واحصل على حسابات وكالة إعلانية قوية.</motion.p>
+             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 bg-border-dashed hidden md:block"></div>
+                {howItWorksSteps.map((step, i) => {
+                    const Icon = step.icon;
+                    return (
+                       <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: i * 0.2 }}
+                            viewport={{ once: true }}
+                            className="text-center z-10"
+                        >
+                            <div className="relative inline-block">
+                                <div className="p-6 bg-background border-4 border-primary rounded-full mb-4">
+                                    <Icon className="h-10 w-10 text-primary" />
+                                </div>
+                                <div className="absolute -top-2 -right-2 h-10 w-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold border-4 border-background">{i+1}</div>
+                            </div>
+                            <h3 className="text-xl font-semibold mt-4">{step.title}</h3>
+                            <p className="text-muted-foreground mt-1">{step.description}</p>
+                       </motion.div>
+                    )
+                })}
             </div>
-            <Card className="glassmorphism-card">
-                 <CardContent className="p-10 flex flex-col lg:flex-row-reverse items-center gap-8">
-                    <div className="flex-1">
-                        <Briefcase className="h-16 w-16 text-primary mb-4" />
-                        <h3 className="text-2xl font-semibold mb-2">حسابات ايجنسي (وكالة)</h3>
-                        <p className="text-muted-foreground">
-                          نوفر لك حسابات إعلانية (ايجنسي) على منصات مثل فيسبوك وجوجل، تتميز بحدود إنفاق أعلى وموثوقية أكبر. اشترِ حسابك، اشحن رصيدك، وأطلق حملاتك دون القلق من الإغلاق المفاجئ.
-                        </p>
-                         <Button asChild size="lg" className="mt-6">
-                            <Link href="/dashboard/agency-accounts">تصفح حسابات الوكالة</Link>
-                        </Button>
-                    </div>
-                     <div className="flex-1 w-full flex items-center justify-center">
-                        {agencyAccountsImage && (
-                             <Image
-                                src={agencyAccountsImage.imageUrl}
-                                alt={agencyAccountsImage.description}
-                                width={500}
-                                height={333}
-                                className="rounded-lg shadow-lg"
-                                data-ai-hint={agencyAccountsImage.imageHint}
-                            />
-                        )}
-                    </div>
-                 </CardContent>
-            </Card>
         </section>
+        
 
          <section className="overflow-x-hidden">
             <div className="text-center mb-12">
@@ -428,6 +366,34 @@ export default function HomePage() {
                     className="text-muted-foreground mt-2">آراء عملائنا هي النجوم التي نهتدي بها.</motion.p>
             </div>
             <Testimonials />
+        </section>
+
+         <section>
+            <Card className="bg-gradient-to-tr from-primary/10 via-background to-secondary/10 text-center glassmorphism-card">
+                 <CardContent className="p-10">
+                    <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <h2 className="text-3xl font-bold font-headline mb-4">هل أنت جاهز للانطلاق؟</h2>
+                    <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+                        انضم إلى مئات المستخدمين الذين يثقون في حاجاتي لتنمية أعمالهم وحضورهم الرقمي. حسابك الجديد على بعد نقرة واحدة.
+                    </p>
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                         <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
+                            <Link href={primaryAction.href}>
+                                <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
+                                {primaryAction.label}
+                            </Link>
+                        </Button>
+                        {!user && !isUserLoading && (
+                            <Button size="lg" variant="ghost" asChild className="text-lg py-7 w-full sm:w-auto">
+                                <Link href="/auth/login">
+                                    <LogIn className="me-2" />
+                                    لدي حساب بالفعل
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
         </section>
     </div>
   );
