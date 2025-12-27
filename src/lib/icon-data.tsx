@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Package, Facebook, Youtube, Send, Twitter, Users, Clapperboard, Gamepad2, MapPin, Search, AppWindow, Waypoints, Star, MessageSquare, Hand, Radio, Wifi, Rss, Tv, Bot, Club, Instagram as InstagramIcon } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/ui/icons';
@@ -26,3 +27,5 @@ export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   Meta: Facebook, // Using facebook as a representative icon for Meta
   Default: Package,
 };
+
+    
