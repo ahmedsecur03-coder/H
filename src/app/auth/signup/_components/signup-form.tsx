@@ -34,92 +34,62 @@ export default function SignupForm() {
     setLoading(true);
     
     try {
-      // Create user in Auth first to get the UID
+      // Step 1: Create user in Auth to get the UID
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
       const avatarUrl = `https://i.pravatar.cc/150?u=${newUser.uid}`;
 
-      let referrerId: string | null = null;
-        
-      // 1. Find the referrer if a referral code is present and update their count
-      if (referralCode) {
-          const usersRef = collection(firestore, 'users');
-          const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-              const referrerDoc = querySnapshot.docs[0];
-              referrerId = referrerDoc.id;
-              // Directly update the referrer's document
-              await updateDoc(referrerDoc.ref, { referralsCount: increment(1) });
-          }
-      }
-
-      // 2. Create the new user's document
-      const newUserProfile: Omit<User, 'id'> = {
-          name: name,
-          email: newUser.email || 'N/A',
-          avatarUrl: avatarUrl,
-          rank: 'مستكشف نجمي',
-          role: 'user', // Set default role for new users
-          balance: 0,
-          adBalance: 0,
-          totalSpent: 0,
-          apiKey: `hy_${crypto.randomUUID()}`,
-          referralCode: newUser.uid.substring(0, 8).toUpperCase(),
-          referrerId: referrerId,
-          createdAt: new Date().toISOString(),
-          lastRewardClaimedAt: undefined,
-          affiliateEarnings: 0,
-          referralsCount: 0,
-          affiliateLevel: 'برونزي',
-          notificationPreferences: {
-              newsletter: false,
-              orderUpdates: true
-          }
-      };
-
-      const newUserDocRef = doc(firestore, 'users', newUser.uid);
-      await setDoc(newUserDocRef, newUserProfile);
-
-      // 3. Update the user's auth profile (displayName, photoURL)
+      // Step 2: Update the user's auth profile (displayName, photoURL)
+      // This is important for the UserInitializer to pick up the correct name.
       await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
       
+      // Step 3 (Server-side handled by Cloud Function or a separate API call if needed for referral)
+      // For now, the client-side UserInitializer will handle creating the user doc.
+      // We can trigger a cloud function here if we need immediate server-side logic like updating referrer counts.
+      // For simplicity in this context, we rely on the client provider.
+      
+      // If a referral code exists, we can still try a "best-effort" client-side update.
+      if (referralCode) {
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
+        getDocs(q).then(querySnapshot => {
+          if (!querySnapshot.empty) {
+            const referrerDoc = querySnapshot.docs[0];
+            updateDoc(referrerDoc.ref, { referralsCount: increment(1) }).catch(err => {
+              // Silently fail if this update fails, as it's not critical for the signup flow.
+              console.warn("Could not update referrer count:", err);
+            });
+          }
+        });
+      }
+
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
 
     } catch (error: any) {
+        let description = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
         if (error.code === 'auth/email-already-in-use') {
-            toast({
-                variant: 'destructive',
-                title: 'فشل إنشاء الحساب',
-                description: 'هذا البريد الإلكتروني مستخدم بالفعل.',
-            });
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: `auth`,
-                operation: 'create',
-                requestResourceData: { email: email, error: 'email-already-in-use' }
-            }));
+            description = 'هذا البريد الإلكتروني مستخدم بالفعل.';
         } else if (error.code === 'auth/weak-password') {
-            toast({
-                variant: 'destructive',
-                title: 'فشل إنشاء الحساب',
-                description: 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.',
-            });
+            description = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
         } else if (error.code === 'auth/invalid-email') {
-            toast({
-                variant: 'destructive',
-                title: 'فشل إنشاء الحساب',
-                description: 'البريد الإلكتروني الذي أدخلته غير صالح.',
-            });
-        } else {
-             // For other errors, including potential permission errors from setDoc/updateDoc
-             console.error("Signup Error:", error);
-             const permissionError = new FirestorePermissionError({
-                path: `users/${auth.currentUser?.uid || 'unknown'}`,
-                operation: 'create',
-            });
-            errorEmitter.emit('permission-error', permissionError);
+            description = 'البريد الإلكتروني الذي أدخلته غير صالح.';
         }
+        
+        toast({
+            variant: 'destructive',
+            title: 'فشل إنشاء الحساب',
+            description: description,
+        });
+
+        console.error("Signup Error:", error);
+        // We still emit the error for logging purposes
+        const permissionError = new FirestorePermissionError({
+            path: `users/${auth.currentUser?.uid || 'unknown_on_error'}`,
+            operation: 'create',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+
     } finally {
         setLoading(false);
     }
