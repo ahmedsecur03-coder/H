@@ -380,5 +380,3 @@ export default function OrdersPage() {
     </Suspense>
   )
 }
-
-    
