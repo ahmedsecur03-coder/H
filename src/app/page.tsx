@@ -210,7 +210,8 @@ export default function HomePage() {
     <div className="space-y-24 pb-8">
         <section className="relative text-center py-20 overflow-hidden">
             <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
-            <div className="absolute inset-0 -z-20 bg-gradient-to-b from-background to-primary/5"></div>
+            <div className="absolute left-1/4 top-1/3 h-32 w-32 bg-primary/10 rounded-full filter blur-3xl animate-blob" />
+            <div className="absolute right-1/4 bottom-1/3 h-32 w-32 bg-secondary/10 rounded-full filter blur-3xl animate-blob animation-delay-4000" />
             
              <motion.h1 
                 initial={{ opacity: 0, y: -30 }}
