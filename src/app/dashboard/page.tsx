@@ -35,6 +35,7 @@ import { Progress } from '@/components/ui/progress';
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -110,18 +111,28 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button className="w-full text-lg py-7 h-auto" asChild>
-                    <Link href="/dashboard/campaigns/new">
-                        <PlusCircle className="ml-2 h-5 w-5" />
-                        إنشاء حملة جديدة
-                    </Link>
-                </Button>
-                <Button variant="outline" className="w-full text-lg py-7 h-auto" asChild>
-                    <Link href="/dashboard/agency-accounts">
-                        <Briefcase className="ml-2 h-5 w-5" />
-                        إدارة حسابات الوكالة
-                    </Link>
-                </Button>
+                <Link href="/dashboard/campaigns/new" className="block">
+                    <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                        <Card className="flex items-center p-4 text-white bg-gradient-to-br from-primary to-primary/70 h-full">
+                            <PlusCircle className="h-10 w-10 me-4" />
+                            <div>
+                                <h3 className="text-lg font-bold">إنشاء حملة جديدة</h3>
+                                <p className="text-sm opacity-90">أطلق حملتك الإعلانية التالية.</p>
+                            </div>
+                        </Card>
+                    </motion.div>
+                </Link>
+                 <Link href="/dashboard/agency-accounts" className="block">
+                    <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                        <Card className="flex items-center p-4 bg-card hover:bg-muted/50 transition-colors h-full">
+                            <Briefcase className="h-10 w-10 me-4 text-primary" />
+                             <div>
+                                <h3 className="text-lg font-bold">إدارة حسابات الوكالة</h3>
+                                <p className="text-sm text-muted-foreground">شراء وشحن حساباتك الإعلانية.</p>
+                            </div>
+                        </Card>
+                    </motion.div>
+                </Link>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
@@ -144,34 +155,36 @@ export default function DashboardPage() {
                             </Button>
                         </CardHeader>
                         <CardContent>
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                    <TableHead>الخدمة</TableHead>
-                                    <TableHead>الحالة</TableHead>
-                                    <TableHead className="text-right">التكلفة</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentOrders && recentOrders.length > 0 ? (
-                                        recentOrders.map(order => (
-                                            <TableRow key={order.id}>
-                                                <TableCell className="font-medium">{order.serviceName}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono">${order.charge.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
+                            <div className="overflow-x-auto">
+                                 <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={3} className="h-24 text-center">
-                                                لا توجد طلبات حديثة.
-                                            </TableCell>
+                                        <TableHead>الخدمة</TableHead>
+                                        <TableHead>الحالة</TableHead>
+                                        <TableHead className="text-right">التكلفة</TableHead>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {recentOrders && recentOrders.length > 0 ? (
+                                            recentOrders.map(order => (
+                                                <TableRow key={order.id}>
+                                                    <TableCell className="font-medium">{order.serviceName}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-mono">${order.charge.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="h-24 text-center">
+                                                    لا توجد طلبات حديثة.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                     </Card>
 
