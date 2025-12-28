@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -132,9 +133,13 @@ function Testimonials() {
 
     const duplicatedTestimonials = [...testimonials, ...testimonials];
 
+    const cardWidth = 350; // The width of each card
+    const gap = 32; // The gap between cards (gap-8 = 2rem = 32px)
+    const totalWidth = cardWidth + gap;
+
     const carouselVariants = {
         animate: {
-            x: [0, -200 * testimonials.length], // Adjust based on card width + gap
+            x: [0, -totalWidth * testimonials.length],
             transition: {
                 x: {
                     repeat: Infinity,
