@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData: UserType }) {
     const pathname = usePathname();
@@ -109,6 +110,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
             </SheetContent>
           </Sheet>
           <div className="ms-auto flex items-center gap-2">
+             <ThemeToggle />
              <Notifications userData={userData} />
              <UserNav user={appUser} isAdmin={isAdmin} />
           </div>
