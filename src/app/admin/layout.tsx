@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import Link from 'next/link';
 import { Bell, Shield, ChevronDown, Loader2 } from 'lucide-react';
@@ -35,7 +35,7 @@ import { useRouter, usePathname, redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, collectionGroup, query, where, getDocs, getCountFromServer } from 'firebase/firestore';
-import type { User, NestedNavItem } from '@/lib/types';
+import type { User, NestedNavItem, Deposit, Withdrawal, Campaign, Ticket } from '@/lib/types';
 import { Notifications } from '@/components/notifications';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
@@ -52,11 +52,11 @@ function AdminNotifications() {
         const fetchCounts = async () => {
             setIsLoading(true);
             try {
-                // Fetch all pending documents and count them on the client
-                const depositsQuery = query(collectionGroup(firestore, 'deposits'), where('status', '==', 'معلق'));
-                const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), where('status', '==', 'معلق'));
-                const campaignsQuery = query(collectionGroup(firestore, 'campaigns'), where('status', '==', 'بانتظار المراجعة'));
-                const ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
+                // Fetch all documents and count them on the client to avoid index issues
+                const depositsQuery = query(collectionGroup(firestore, 'deposits'));
+                const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'));
+                const campaignsQuery = query(collectionGroup(firestore, 'campaigns'));
+                const ticketsQuery = query(collectionGroup(firestore, 'tickets'));
                 
                 const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
                     getDocs(depositsQuery),
@@ -65,11 +65,16 @@ function AdminNotifications() {
                     getDocs(ticketsQuery),
                 ]);
 
+                const pendingDeposits = depositsSnap.docs.filter(doc => (doc.data() as Deposit).status === 'معلق').length;
+                const pendingWithdrawals = withdrawalsSnap.docs.filter(doc => (doc.data() as Withdrawal).status === 'معلق').length;
+                const pendingCampaigns = campaignsSnap.docs.filter(doc => (doc.data() as Campaign).status === 'بانتظار المراجعة').length;
+                const activeTickets = ticketsSnap.docs.filter(doc => (doc.data() as Ticket).status !== 'مغلقة').length;
+
                 setCounts({
-                    deposits: depositsSnap.size,
-                    withdrawals: withdrawalsSnap.size,
-                    campaigns: campaignsSnap.size,
-                    tickets: ticketsSnap.size,
+                    deposits: pendingDeposits,
+                    withdrawals: pendingWithdrawals,
+                    campaigns: pendingCampaigns,
+                    tickets: activeTickets,
                 });
             } catch (error) {
                 console.error("Failed to fetch admin notification counts:", error);
@@ -270,5 +275,3 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
-
-    
