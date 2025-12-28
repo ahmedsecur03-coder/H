@@ -162,7 +162,19 @@ export default function AdminDepositsPage() {
             setAllDeposits(fetchedData);
         } catch (error) {
             console.error("Error fetching all deposits:", error);
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
+            // This might be an index error. We will fall back to fetching all and filtering client-side.
+            try {
+                const allDocsSnapshot = await getDocs(collectionGroup(firestore, 'deposits'));
+                const allFetchedData = allDocsSnapshot.docs.map(doc => {
+                    const pathSegments = doc.ref.path.split('/');
+                    const userId = pathSegments[1];
+                    return { id: doc.id, userId, ...doc.data()} as Deposit;
+                }).sort((a, b) => new Date(b.depositDate).getTime() - new Date(a.depositDate).getTime());
+                setAllDeposits(allFetchedData);
+            } catch (finalError) {
+                 console.error("Fallback fetching also failed:", finalError);
+                 toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
+            }
         } finally {
             setIsLoading(false);
         }
@@ -316,3 +328,5 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
+
+    

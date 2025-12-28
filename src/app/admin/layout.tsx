@@ -52,23 +52,24 @@ function AdminNotifications() {
         const fetchCounts = async () => {
             setIsLoading(true);
             try {
+                // Fetch all pending documents and count them on the client
                 const depositsQuery = query(collectionGroup(firestore, 'deposits'), where('status', '==', 'معلق'));
                 const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), where('status', '==', 'معلق'));
                 const campaignsQuery = query(collectionGroup(firestore, 'campaigns'), where('status', '==', 'بانتظار المراجعة'));
                 const ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
                 
-                // Firestore does not support parallel getCountFromServer on collection groups with different conditions in this context
-                // We will fetch them sequentially to avoid indexing issues in this environment.
-                const depositsSnap = await getCountFromServer(depositsQuery);
-                const withdrawalsSnap = await getCountFromServer(withdrawalsQuery);
-                const campaignsSnap = await getCountFromServer(campaignsQuery);
-                const ticketsSnap = await getCountFromServer(ticketsQuery);
+                const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
+                    getDocs(depositsQuery),
+                    getDocs(withdrawalsQuery),
+                    getDocs(campaignsQuery),
+                    getDocs(ticketsQuery),
+                ]);
 
                 setCounts({
-                    deposits: depositsSnap.data().count,
-                    withdrawals: withdrawalsSnap.data().count,
-                    campaigns: campaignsSnap.data().count,
-                    tickets: ticketsSnap.data().count,
+                    deposits: depositsSnap.size,
+                    withdrawals: withdrawalsSnap.size,
+                    campaigns: campaignsSnap.size,
+                    tickets: ticketsSnap.size,
                 });
             } catch (error) {
                 console.error("Failed to fetch admin notification counts:", error);
@@ -87,10 +88,10 @@ function AdminNotifications() {
     const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
 
     const notificationItems = [
-        { count: counts.deposits, label: 'طلبات إيداع معلقة', href: '/admin/deposits' },
-        { count: counts.withdrawals, label: 'طلبات سحب معلقة', href: '/admin/withdrawals' },
-        { count: counts.campaigns, label: 'حملات بانتظار المراجعة', href: '/admin/campaigns?status=بانتظار+المراجعة' },
-        { count: counts.tickets, label: 'تذاكر دعم نشطة', href: '/admin/support' },
+        { key: 'deposits', count: counts.deposits, label: 'طلبات إيداع معلقة', href: '/admin/deposits' },
+        { key: 'withdrawals', count: counts.withdrawals, label: 'طلبات سحب معلقة', href: '/admin/withdrawals' },
+        { key: 'campaigns', count: counts.campaigns, label: 'حملات بانتظار المراجعة', href: '/admin/campaigns?status=بانتظار+المراجعة' },
+        { key: 'tickets', count: counts.tickets, label: 'تذاكر دعم نشطة', href: '/admin/support' },
     ].filter(item => item.count > 0);
 
     return (
@@ -114,7 +115,7 @@ function AdminNotifications() {
                     </div>
                 ) : notificationItems.length > 0 ? (
                     notificationItems.map(item => (
-                        <DropdownMenuItem key={item.href} asChild>
+                        <DropdownMenuItem key={item.key} asChild>
                             <Link href={item.href} className="flex justify-between items-center">
                                 <span>{item.label}</span>
                                 <span className="font-bold text-primary">{item.count}</span>
@@ -184,7 +185,7 @@ function AdminNavItems() {
         }
 
         return (
-            <Link href={item.href || '#'} passHref>
+            <Link href={item.href || '#'} passHref key={item.href}>
                 <SidebarMenuButton isActive={pathname === item.href}>
                     {Icon && <Icon className="h-5 w-5" />}
                     <span>{item.label}</span>
@@ -269,3 +270,5 @@ export default function AdminLayout({
     </SidebarProvider>
   );
 }
+
+    

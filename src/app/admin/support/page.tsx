@@ -129,7 +129,18 @@ export default function AdminSupportPage() {
         setAllTickets(fetchedTickets);
     }).catch(error => {
         console.error("Error fetching tickets:", error);
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
+         // Fallback for missing index
+        getDocs(collectionGroup(firestore, 'tickets')).then(snapshot => {
+            const fetchedTickets: Ticket[] = [];
+            snapshot.forEach(doc => {
+                const pathSegments = doc.ref.path.split('/');
+                const userId = pathSegments[1];
+                fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
+            });
+            setAllTickets(fetchedTickets.sort((a,b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()));
+        }).catch(finalError => {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
+        })
     }).finally(() => {
         setIsLoading(false);
     });
@@ -165,3 +176,5 @@ export default function AdminSupportPage() {
     </div>
   );
 }
+
+    

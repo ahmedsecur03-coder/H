@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-[350px] w-full">
-                   <ResponsiveContainer width="100%" height="100%">
+                   <ResponsiveContainer>
                         <ComposedChart
                             data={performanceData}
                             margin={{
@@ -251,3 +251,5 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+    

@@ -81,7 +81,9 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>تعديل المستخدم: {user.name}</DialogTitle>
-                    <DialogDescription>{user.email}</DialogDescription>
+                    <DialogDescription>
+                        {user.email}
+                    </DialogDescription>
                 </DialogHeader>
                  <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -121,3 +123,5 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
         </Dialog>
     );
 }
+
+    

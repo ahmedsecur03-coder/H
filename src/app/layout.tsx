@@ -56,7 +56,6 @@ export default function RootLayout({
       <head>
         <title>Hajaty Hub - رحلتك الكونية للخدمات الرقمية</title>
         <meta name="description" content="انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ." />
-        <meta name="theme-color" content="#1c1917" />
       </head>
       <body className={cn('font-sans antialiased bg-background', fontSans.variable, fontHeadline.variable)}>
          <ThemeProvider
@@ -77,3 +76,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
