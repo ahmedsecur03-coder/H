@@ -21,6 +21,9 @@ import {
   Wallet,
   Megaphone,
   TrendingUp,
+  Activity,
+  Archive,
+  Hourglass,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, query, orderBy, limit, where } from 'firebase/firestore';
@@ -36,13 +39,21 @@ import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-
-const statusVariant = {
-  'مكتمل': 'default',
-  'قيد التنفيذ': 'secondary',
-  'ملغي': 'destructive',
-  'جزئي': 'outline',
-} as const;
+import {
+  ComposedChart,
+  PieChart,
+  Pie,
+  Cell,
+  Line,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Sector,
+} from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 
 function DashboardSkeleton() {
@@ -52,13 +63,12 @@ function DashboardSkeleton() {
                 <Skeleton className="h-9 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Skeleton className="h-20" />
-                <Skeleton className="h-20" />
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-28" />)}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
                 <div className="lg:col-span-2 space-y-6">
-                    <Skeleton className="h-[500px]" />
+                    <Skeleton className="h-[400px]" />
                     <Skeleton className="h-64" />
                 </div>
                 <div className="lg:col-span-1 space-y-6">
@@ -70,6 +80,23 @@ function DashboardSkeleton() {
     );
 }
 
+const chartConfig = {
+  orders: { label: 'إنفاق الطلبات', color: 'hsl(var(--chart-1))' },
+  campaigns: { label: 'إنفاق الحملات', color: 'hsl(var(--chart-2))' },
+  completed: { label: 'مكتمل', color: 'hsl(var(--chart-1))' },
+  pending: { label: 'قيد التنفيذ', color: 'hsl(var(--chart-2))' },
+  cancelled: { label: 'ملغي', color: 'hsl(var(--chart-3))' },
+  partial: { label: 'جزئي', color: 'hsl(var(--chart-4))' },
+};
+
+const statusTranslation: Record<Order['status'], keyof typeof chartConfig> = {
+    'مكتمل': 'completed',
+    'قيد التنفيذ': 'pending',
+    'ملغي': 'cancelled',
+    'جزئي': 'partial'
+};
+
+
 export default function DashboardPage() {
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
@@ -77,19 +104,73 @@ export default function DashboardPage() {
     const userDocRef = useMemoFirebase(() => authUser ? doc(firestore, 'users', authUser.uid) : null, [authUser, firestore]);
     const { data: userData, isLoading: isUserDataLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
-    const ordersQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/orders`), orderBy('orderDate', 'desc'), limit(5)) : null, [authUser, firestore]);
-    const { data: recentOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+    const ordersQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/orders`), orderBy('orderDate', 'desc')) : null, [authUser, firestore]);
+    const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+
+    const campaignsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null, [authUser, firestore]);
+    const { data: allCampaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsQuery);
+
+
+    const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areCampaignsLoading;
     
-    const accountsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/agencyAccounts`)) : null, [authUser, firestore]);
-    const { data: agencyAccounts, isLoading: areAccountsLoading } = useCollection<AgencyAccount>(accountsQuery);
+    const { recentOrders, orderStatusData, performanceData, stats } = useMemo(() => {
+        const last7Days = Array.from({ length: 7 }).map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d.toISOString().split('T')[0];
+        }).reverse();
 
-    const campaignsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), where('status', '==', 'نشط')) : null, [authUser, firestore]);
-    const { data: activeCampaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsQuery);
+        const performanceDataMap = new Map(last7Days.map(date => [date, { date, orders: 0, campaigns: 0 }]));
 
+        let pendingOrdersCount = 0;
+        const statusCounts: Record<Order['status'], number> = { 'مكتمل': 0, 'قيد التنفيذ': 0, 'ملغي': 0, 'جزئي': 0 };
 
-    const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areAccountsLoading || areCampaignsLoading;
-    
-    const totalAgencyBalance = useMemo(() => agencyAccounts?.reduce((sum, acc) => sum + acc.balance, 0) || 0, [agencyAccounts]);
+        if (allOrders) {
+            allOrders.forEach(order => {
+                const orderDate = order.orderDate.split('T')[0];
+                if (performanceDataMap.has(orderDate)) {
+                    performanceDataMap.get(orderDate)!.orders += order.charge;
+                }
+                statusCounts[order.status]++;
+                if (order.status === 'قيد التنفيذ') {
+                    pendingOrdersCount++;
+                }
+            });
+        }
+        
+        let activeCampaignsCount = 0;
+        if (allCampaigns) {
+            allCampaigns.forEach(campaign => {
+                 const campaignDate = campaign.startDate.split('T')[0];
+                 if (performanceDataMap.has(campaignDate)) {
+                     performanceDataMap.get(campaignDate)!.campaigns += campaign.spend;
+                 }
+                 if (campaign.status === 'نشط') {
+                     activeCampaignsCount++;
+                 }
+            });
+        }
+
+        const orderStatusData = Object.entries(statusCounts)
+            .map(([status, value]) => ({
+                status: status,
+                value: value,
+                fill: `var(--color-${statusTranslation[status as Order['status']]})`,
+            }))
+            .filter(item => item.value > 0);
+
+        return {
+            recentOrders: allOrders?.slice(0, 5) || [],
+            orderStatusData,
+            performanceData: Array.from(performanceDataMap.values()),
+            stats: {
+                pendingOrders: pendingOrdersCount,
+                activeCampaigns: activeCampaignsCount,
+                totalSpent: userData?.totalSpent || 0
+            }
+        };
+
+    }, [allOrders, allCampaigns, userData]);
 
 
     if (isLoading || !userData || !authUser) {
@@ -107,45 +188,66 @@ export default function DashboardPage() {
         <div className="space-y-6 pb-4">
             <div className='mb-4'>
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
-                <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. كل شيء تحت السيطرة.</p>
+                <p className='text-muted-foreground'>هذه هي لوحة التحكم التحليلية الخاصة بك.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Link href="/dashboard/campaigns/new" className="block">
-                    <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-                        <Card className="flex items-center p-4 text-white bg-gradient-to-br from-primary to-primary/70 h-full">
-                            <PlusCircle className="h-10 w-10 me-4" />
-                            <div>
-                                <h3 className="text-lg font-bold">إنشاء حملة جديدة</h3>
-                                <p className="text-sm opacity-90">أطلق حملتك الإعلانية التالية.</p>
-                            </div>
-                        </Card>
-                    </motion.div>
-                </Link>
-                 <Link href="/dashboard/agency-accounts" className="block">
-                    <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-                        <Card className="flex items-center p-4 bg-card hover:bg-muted/50 transition-colors h-full">
-                            <Briefcase className="h-10 w-10 me-4 text-primary" />
-                             <div>
-                                <h3 className="text-lg font-bold">إدارة حسابات الوكالة</h3>
-                                <p className="text-sm text-muted-foreground">شراء وشحن حساباتك الإعلانية.</p>
-                            </div>
-                        </Card>
-                    </motion.div>
-                </Link>
+             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent><div className="text-2xl font-bold">${stats.totalSpent.toFixed(2)}</div></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">الطلبات قيد التنفيذ</CardTitle>
+                        <Hourglass className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.pendingOrders}</div></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">الحملات النشطة</CardTitle>
+                        <Activity className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.activeCampaigns}</div></CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">رتبتك الحالية</CardTitle>
+                        <Crown className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent><div className="text-2xl font-bold text-primary">{rank.name}</div></CardContent>
+                </Card>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
 
-                {/* Main Content Column */}
                 <div className="lg:col-span-2 space-y-6">
-                    <QuickOrderForm user={authUser} userData={userData} />
+                    <Card>
+                         <CardHeader>
+                            <CardTitle className="font-headline text-xl">تحليل الأداء (آخر 7 أيام)</CardTitle>
+                            <CardDescription>مقارنة بين إنفاق الطلبات والحملات.</CardDescription>
+                         </CardHeader>
+                         <CardContent>
+                             <ChartContainer config={chartConfig} className="h-64 w-full">
+                                <ComposedChart data={performanceData}>
+                                    <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })} />
+                                    <YAxis tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
+                                    <Tooltip content={<ChartTooltipContent indicator="dot" />} />
+                                    <Legend />
+                                    <Bar dataKey="orders" fill="var(--color-orders)" radius={4} name="الطلبات" />
+                                    <Line type="monotone" dataKey="campaigns" stroke="var(--color-campaigns)" strokeWidth={2} name="الحملات" />
+                                </ComposedChart>
+                            </ChartContainer>
+                         </CardContent>
+                    </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle className="font-headline text-xl">آخر الطلبات</CardTitle>
-                                <CardDescription>نظرة سريعة على آخر 5 طلبات قمت بها.</CardDescription>
                             </div>
                             <Button asChild variant="outline" size="sm">
                                 <Link href="/dashboard/orders">
@@ -170,7 +272,7 @@ export default function DashboardPage() {
                                                 <TableRow key={order.id}>
                                                     <TableCell className="font-medium">{order.serviceName}</TableCell>
                                                     <TableCell>
-                                                        <Badge variant={statusVariant[order.status] || 'default'}>{order.status}</Badge>
+                                                        <Badge variant={statusTranslation[order.status] ? chartConfig[statusTranslation[order.status]].label === 'مكتمل' ? 'default' : 'secondary' : 'default'}>{order.status}</Badge>
                                                     </TableCell>
                                                     <TableCell className="text-right font-mono">${order.charge.toFixed(2)}</TableCell>
                                                 </TableRow>
@@ -190,8 +292,25 @@ export default function DashboardPage() {
 
                 </div>
 
-                {/* Sidebar Column */}
                 <div className="lg:col-span-1 space-y-6">
+                     <Card>
+                        <CardHeader>
+                           <CardTitle className="font-headline text-xl">توزيع حالات الطلبات</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <ChartContainer config={chartConfig} className="h-56 w-full">
+                                <PieChart>
+                                    <Tooltip content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} strokeWidth={5}>
+                                        {orderStatusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Legend />
+                                </PieChart>
+                             </ChartContainer>
+                        </CardContent>
+                     </Card>
                      <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                      <Card>
                         <CardHeader className="pb-2">
@@ -203,7 +322,7 @@ export default function DashboardPage() {
                         <CardContent>
                             {nextRank ? (
                                 <>
-                                    <Progress value={progressToNextRank} className="h-2 my-2" />
+                                    <Progress value={progressToNextRank} className="h-1 my-2" />
                                     <p className="text-xs text-muted-foreground text-center">
                                     أنفق ${amountToNextRank.toFixed(2)} للوصول لرتبة {nextRank.name} والحصول على خصم {nextRank.discount}%.
                                     </p>
@@ -213,9 +332,10 @@ export default function DashboardPage() {
                             )}
                         </CardContent>
                     </Card>
-
                 </div>
             </div>
         </div>
     );
 }
+
+    
