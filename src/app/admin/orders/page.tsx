@@ -130,8 +130,6 @@ function AdminOrdersPageComponent() {
     try {
         let q: FirestoreQuery = collectionGroup(firestore, 'orders');
         
-        q = query(q, orderBy('orderDate', 'desc'));
-
         const snapshot = await getDocs(q);
         let ordersData = snapshot.docs.map(doc => {
              const pathSegments = doc.ref.path.split('/');
@@ -139,6 +137,8 @@ function AdminOrdersPageComponent() {
              return { id: doc.id, userId, ...doc.data() } as Order
         });
         
+        ordersData.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+
         setAllOrders(ordersData);
 
     } catch(error) {
@@ -398,5 +398,3 @@ export default function AdminOrdersPage() {
         </Suspense>
     )
 }
-
-    

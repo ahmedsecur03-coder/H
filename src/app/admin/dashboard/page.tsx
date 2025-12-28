@@ -90,7 +90,11 @@ export default function AdminDashboardPage() {
                 // Get counts from server
                 const totalUsersSnapshot = await getCountFromServer(usersCol);
                 const totalOrdersSnapshot = await getCountFromServer(ordersColGroup);
-                const openTicketsSnapshot = await getCountFromServer(query(ticketsColGroup, where('status', '!=', 'مغلقة')));
+                
+                // Fetch and filter tickets client-side to avoid index requirement
+                const ticketsSnapshot = await getDocs(ticketsColGroup);
+                const openTicketsCount = ticketsSnapshot.docs.filter(doc => doc.data().status !== 'مغلقة').length;
+
                 
                 // Fetch last 7 days of aggregated stats for the chart and totals
                 const sevenDaysAgo = new Date();
@@ -110,7 +114,7 @@ export default function AdminDashboardPage() {
                     totalRevenue: totalRevenue,
                     totalUsers: totalUsersSnapshot.data().count,
                     totalOrders: totalOrdersSnapshot.data().count,
-                    openTickets: openTicketsSnapshot.data().count,
+                    openTickets: openTicketsCount,
                     newUsersLast7Days: newUsersLast7Days,
                 });
 

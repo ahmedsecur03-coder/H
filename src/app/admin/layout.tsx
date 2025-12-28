@@ -163,12 +163,12 @@ function AdminHeader({ userData }: { userData: User }) {
 function AdminNavItems() {
     const pathname = usePathname();
 
-    const renderNavItem = (item: NestedNavItem) => {
+    const renderNavItem = (item: NestedNavItem, index: number) => {
         const Icon = item.icon;
 
         if (item.children) {
             return (
-                <SidebarMenuSub key={item.label}>
+                 <SidebarMenuSub key={`${item.label}-${index}`}>
                     <SidebarMenuSubTrigger>
                         <div className='flex items-center gap-2'>
                             {Icon && <Icon className="h-5 w-5" />}
@@ -190,16 +190,18 @@ function AdminNavItems() {
         }
 
         return (
-            <Link href={item.href || '#'} passHref key={item.href}>
-                <SidebarMenuButton isActive={pathname === item.href}>
-                    {Icon && <Icon className="h-5 w-5" />}
-                    <span>{item.label}</span>
-                </SidebarMenuButton>
-            </Link>
+            <SidebarMenuItem key={item.href}>
+                <Link href={item.href || '#'} passHref>
+                    <SidebarMenuButton isActive={pathname === item.href}>
+                        {Icon && <Icon className="h-5 w-5" />}
+                        <span>{item.label}</span>
+                    </SidebarMenuButton>
+                </Link>
+            </SidebarMenuItem>
         );
     };
 
-    return <>{adminNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}</>;
+    return <>{adminNavItems.map((item, index) => renderNavItem(item, index))}</>;
 }
 
 

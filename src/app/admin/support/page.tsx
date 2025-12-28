@@ -118,7 +118,7 @@ export default function AdminSupportPage() {
   useEffect(() => {
     if (!firestore) return;
     setIsLoading(true);
-    const ticketsQuery = query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc'));
+    const ticketsQuery = query(collectionGroup(firestore, 'tickets'));
     getDocs(ticketsQuery).then(snapshot => {
         const fetchedTickets: Ticket[] = [];
         snapshot.forEach(doc => {
@@ -126,21 +126,11 @@ export default function AdminSupportPage() {
             const userId = pathSegments[1];
             fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
         });
-        setAllTickets(fetchedTickets);
-    }).catch(error => {
-        console.error("Error fetching tickets:", error);
-         // Fallback for missing index
-        getDocs(collectionGroup(firestore, 'tickets')).then(snapshot => {
-            const fetchedTickets: Ticket[] = [];
-            snapshot.forEach(doc => {
-                const pathSegments = doc.ref.path.split('/');
-                const userId = pathSegments[1];
-                fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
-            });
-            setAllTickets(fetchedTickets.sort((a,b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()));
-        }).catch(finalError => {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
-        })
+        // Sort client-side
+        setAllTickets(fetchedTickets.sort((a,b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()));
+    }).catch(finalError => {
+        console.error("Error fetching tickets:", finalError);
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
     }).finally(() => {
         setIsLoading(false);
     });
@@ -176,5 +166,3 @@ export default function AdminSupportPage() {
     </div>
   );
 }
-
-    

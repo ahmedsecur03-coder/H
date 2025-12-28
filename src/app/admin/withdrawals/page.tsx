@@ -134,29 +134,19 @@ export default function AdminWithdrawalsPage() {
         if (!firestore) return;
         setIsLoading(true);
         try {
-            const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), orderBy('requestDate', 'desc'));
+            const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'));
             const snapshot = await getDocs(withdrawalsQuery);
             const fetchedData = snapshot.docs.map(doc => {
                 const pathSegments = doc.ref.path.split('/');
                 const userId = pathSegments[1];
                 return { id: doc.id, userId, ...doc.data() } as Withdrawal;
             });
+            // Sort client-side
+            fetchedData.sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime());
             setAllWithdrawals(fetchedData);
         } catch (err) {
             console.error("Error fetching all withdrawals: ", err);
-            // Fallback for missing index
-             try {
-                const allDocsSnapshot = await getDocs(collectionGroup(firestore, 'withdrawals'));
-                const allFetchedData = allDocsSnapshot.docs.map(doc => {
-                    const pathSegments = doc.ref.path.split('/');
-                    const userId = pathSegments[1];
-                    return { id: doc.id, userId, ...doc.data() } as Withdrawal;
-                }).sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime());
-                setAllWithdrawals(allFetchedData);
-            } catch (finalError) {
-                console.error("Fallback fetching also failed:", finalError);
-                toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات طلبات السحب.' });
-            }
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات طلبات السحب.' });
         } finally {
             setIsLoading(false);
         }
@@ -253,5 +243,3 @@ export default function AdminWithdrawalsPage() {
     </div>
   );
 }
-
-    

@@ -84,9 +84,11 @@ function AdminUsersPageComponent() {
     setIsLoading(true);
 
     try {
-        const usersQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
+        const usersQuery = query(collection(firestore, 'users'));
         const snapshot = await getDocs(usersQuery);
         const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+        // Sort client-side
+        usersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setAllUsers(usersData);
     } catch (error) {
         console.error(error);

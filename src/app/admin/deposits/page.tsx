@@ -152,29 +152,19 @@ export default function AdminDepositsPage() {
         if(!firestore) return;
         setIsLoading(true);
         try {
-            const depositsQuery = query(collectionGroup(firestore, 'deposits'), orderBy('depositDate', 'desc'));
+            const depositsQuery = query(collectionGroup(firestore, 'deposits'));
             const snapshot = await getDocs(depositsQuery);
             const fetchedData = snapshot.docs.map(doc => {
                  const pathSegments = doc.ref.path.split('/');
                  const userId = pathSegments[1];
                  return { id: doc.id, userId, ...doc.data()} as Deposit
             });
+            // Sort client-side
+            fetchedData.sort((a, b) => new Date(b.depositDate).getTime() - new Date(a.depositDate).getTime());
             setAllDeposits(fetchedData);
         } catch (error) {
-            console.error("Error fetching all deposits:", error);
-            // This might be an index error. We will fall back to fetching all and filtering client-side.
-            try {
-                const allDocsSnapshot = await getDocs(collectionGroup(firestore, 'deposits'));
-                const allFetchedData = allDocsSnapshot.docs.map(doc => {
-                    const pathSegments = doc.ref.path.split('/');
-                    const userId = pathSegments[1];
-                    return { id: doc.id, userId, ...doc.data()} as Deposit;
-                }).sort((a, b) => new Date(b.depositDate).getTime() - new Date(a.depositDate).getTime());
-                setAllDeposits(allFetchedData);
-            } catch (finalError) {
-                 console.error("Fallback fetching also failed:", finalError);
-                 toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
-            }
+             console.error("Error fetching all deposits:", error);
+             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
         } finally {
             setIsLoading(false);
         }
@@ -328,5 +318,3 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
-
-    
