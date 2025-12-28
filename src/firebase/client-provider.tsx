@@ -6,8 +6,8 @@ import { FirebaseProvider, useUser } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
 import { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
-import type { User as UserType, SystemLog } from '@/lib/types';
-import { getRankForSpend } from '@/lib/service';
+import type { User as UserType, Notification, SystemLog } from '@/lib/types';
+import { getRankForSpend, RANKS } from '@/lib/service';
 
 
 // This component now handles creating the user document if it doesn't exist
