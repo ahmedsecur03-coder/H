@@ -1,7 +1,7 @@
 
 import 'server-only';
 
-import type { User, Order } from '@/lib/types';
+import type { User, Order, Notification } from '@/lib/types';
 import { Firestore, Transaction, FieldValue } from 'firebase-admin/firestore';
 import { getRankForSpend, RANKS, AFFILIATE_LEVELS } from '@/lib/service';
 
@@ -67,6 +67,15 @@ export async function serverProcessOrderInTransaction(
                 title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
                 description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
             };
+             const rankUpNotification: Notification = {
+                id: `rank-${newRank.name}-${Date.now()}`,
+                message: `تهانينا! لقد تمت ترقيتك إلى رتبة ${newRank.name} وحصلت على ${newRank.reward}$ مكافأة.`,
+                type: 'success',
+                read: false,
+                createdAt: new Date().toISOString(),
+                href: '/dashboard/profile'
+            };
+            userUpdates.notifications = FieldValue.arrayUnion(rankUpNotification);
         }
     }
 

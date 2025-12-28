@@ -85,9 +85,49 @@ function UserInitializer() {
               const updates: Partial<UserType> = {};
               if (userData.role === undefined) updates.role = 'user';
               if (userData.favoriteServices === undefined) updates.favoriteServices = [];
-              if (Object.keys(updates).length > 0) {
+              
+               if (Object.keys(updates).length > 0) {
                 transaction.update(userDocRef, updates);
               }
+               // --- Proactive Notifications Logic ---
+               const notifications = userData.notifications || [];
+               const newNotifications: Notification[] = [];
+                // Rank-up notification
+                const rank = getRankForSpend(userData.totalSpent);
+                const currentRankIndex = RANKS.findIndex(r => r.name === rank.name);
+                const nextRank = currentRankIndex < RANKS.length - 1 ? RANKS[currentRankIndex + 1] : null;
+                const almostRankUpId = `almost-rank-up-${nextRank?.name}`;
+                if (nextRank && !notifications.some(n => n.id === almostRankUpId)) {
+                    const spendToNext = nextRank.spend - userData.totalSpent;
+                    if (spendToNext > 0 && spendToNext < 100) { // Threshold: less than $100 to next rank
+                        newNotifications.push({
+                            id: almostRankUpId,
+                            message: `أنت على وشك الترقية! أنفق ${spendToNext.toFixed(2)}$ فقط للوصول لرتبة ${nextRank.name} والحصول على خصم ${nextRank.discount}%.`,
+                            type: 'info',
+                            read: false,
+                            createdAt: new Date().toISOString(),
+                            href: '/dashboard/add-funds'
+                        });
+                    }
+                }
+                
+                // Low balance notification
+                const lowBalanceId = `low-balance-alert-${Math.floor(Date.now() / (1000 * 60 * 60 * 24))}`; // One alert per day
+                if (userData.balance < 5 && !notifications.some(n => n.id === lowBalanceId)) { // Threshold: less than $5
+                      newNotifications.push({
+                        id: lowBalanceId,
+                        message: `تنبيه: رصيدك منخفض. قم بإعادة الشحن الآن لضمان عدم توقف خدماتك.`,
+                        type: 'warning',
+                        read: false,
+                        createdAt: new Date().toISOString(),
+                        href: '/dashboard/add-funds'
+                      });
+                }
+                 if (newNotifications.length > 0) {
+                     transaction.update(userDocRef, {
+                         notifications: arrayUnion(...newNotifications)
+                     });
+                 }
             }
           });
         } catch (error) {
@@ -98,65 +138,6 @@ function UserInitializer() {
       checkAndCreateUserDoc();
     }
   }, [user, isUserLoading, firestore]);
-
-  // Effect to handle proactive notifications
-  useEffect(() => {
-      if (user && firestore) {
-          const userDocRef = doc(firestore, 'users', user.uid);
-          const checkUserStatus = async () => {
-              const userDoc = await getDoc(userDocRef);
-              if (userDoc.exists()) {
-                  const userData = userDoc.data() as UserType;
-                  const notifications = userData.notifications || [];
-                  const newNotifications: Notification[] = [];
-
-                  // Rank-up notification
-                  const rank = getRankForSpend(userData.totalSpent);
-                  const currentRankIndex = RANKS.findIndex(r => r.name === rank.name);
-                  const nextRank = currentRankIndex < RANKS.length - 1 ? RANKS[currentRankIndex + 1] : null;
-                  const almostRankUpId = `almost-rank-up-${nextRank?.name}`;
-                  if (nextRank && !notifications.some(n => n.id === almostRankUpId)) {
-                      const spendToNext = nextRank.spend - userData.totalSpent;
-                      if (spendToNext > 0 && spendToNext < 100) { // Threshold: less than $100 to next rank
-                          newNotifications.push({
-                              id: almostRankUpId,
-                              message: `أنت على وشك الترقية! أنفق ${spendToNext.toFixed(2)}$ فقط للوصول لرتبة ${nextRank.name} والحصول على خصم ${nextRank.discount}%.`,
-                              type: 'info',
-                              read: false,
-                              createdAt: new Date().toISOString(),
-                              href: '/dashboard/add-funds'
-                          });
-                      }
-                  }
-                  
-                  // Low balance notification
-                  const lowBalanceId = `low-balance-alert-${Math.floor(Date.now() / (1000 * 60 * 60 * 24))}`; // One alert per day
-                  if (userData.balance < 5 && !notifications.some(n => n.id === lowBalanceId)) { // Threshold: less than $5
-                       newNotifications.push({
-                          id: lowBalanceId,
-                          message: `تنبيه: رصيدك منخفض. قم بإعادة الشحن الآن لضمان عدم توقف خدماتك.`,
-                          type: 'warning',
-                          read: false,
-                          createdAt: new Date().toISOString(),
-                          href: '/dashboard/add-funds'
-                       });
-                  }
-
-                  if (newNotifications.length > 0) {
-                      await runTransaction(firestore, async (transaction) => {
-                          transaction.update(userDocRef, {
-                              notifications: arrayUnion(...newNotifications)
-                          });
-                      });
-                  }
-              }
-          };
-
-          const interval = setInterval(checkUserStatus, 1000 * 60 * 60); // Check every hour
-          checkUserStatus(); // Initial check
-          return () => clearInterval(interval);
-      }
-  }, [user, firestore]);
 
   return null; // This component does not render anything.
 }
