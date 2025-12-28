@@ -1,21 +1,11 @@
+
 {
   "name": "Hajaty Hub",
   "short_name": "Hajaty",
-  "description": "منصة حاجتي هي مركزك المتكامل للخدمات الرقمية.",
+  "description": "Hajaty Hub - Your cosmic journey for digital services.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0c1222",
-  "theme_color": "#0c1222",
-  "icons": [
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#060918",
+  "theme_color": "#060918",
+  "icons": []
 }

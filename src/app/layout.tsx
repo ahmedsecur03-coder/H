@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
 import { doc } from 'firebase/firestore';
 import { useEffect } from 'react';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const fontSans = Exo_2({
   subsets: ['latin'],
@@ -55,17 +56,17 @@ export default function RootLayout({
       <head>
         <title>Hajaty Hub - رحلتك الكونية للخدمات الرقمية</title>
         <meta name="description" content="انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ." />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#1c1917" />
       </head>
       <body className={cn('font-sans antialiased bg-background', fontSans.variable, fontHeadline.variable)}>
          <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
+            <FirebaseErrorListener />
             <div className="cosmic-background"></div>
             {children}
             <WhatsappSupportButton />

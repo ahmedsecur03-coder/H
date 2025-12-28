@@ -34,7 +34,7 @@ import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter, usePathname, redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { doc, collectionGroup, query, where, getCountFromServer } from 'firebase/firestore';
+import { doc, collectionGroup, query, where, getDocs, getCountFromServer } from 'firebase/firestore';
 import type { User, NestedNavItem } from '@/lib/types';
 import { Notifications } from '@/components/notifications';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -56,13 +56,13 @@ function AdminNotifications() {
                 const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), where('status', '==', 'معلق'));
                 const campaignsQuery = query(collectionGroup(firestore, 'campaigns'), where('status', '==', 'بانتظار المراجعة'));
                 const ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
-
-                const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
-                    getCountFromServer(depositsQuery),
-                    getCountFromServer(withdrawalsQuery),
-                    getCountFromServer(campaignsQuery),
-                    getCountFromServer(ticketsQuery),
-                ]);
+                
+                // Firestore does not support parallel getCountFromServer on collection groups with different conditions in this context
+                // We will fetch them sequentially to avoid indexing issues in this environment.
+                const depositsSnap = await getCountFromServer(depositsQuery);
+                const withdrawalsSnap = await getCountFromServer(withdrawalsQuery);
+                const campaignsSnap = await getCountFromServer(campaignsQuery);
+                const ticketsSnap = await getCountFromServer(ticketsQuery);
 
                 setCounts({
                     deposits: depositsSnap.data().count,
@@ -141,7 +141,9 @@ function AdminHeader({ userData }: { userData: User }) {
 
   return (
      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-        <SidebarTrigger className="md:hidden" />
+        <div className="md:hidden">
+            <SidebarTrigger />
+        </div>
         <div className="ms-auto flex items-center gap-2">
             <ThemeToggle />
             <AdminNotifications />
@@ -226,7 +228,7 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
-        <Sidebar side="right" collapsible="icon" className="hidden md:flex">
+        <Sidebar side="right" className="hidden md:flex">
             <SidebarHeader>
               <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                   <Logo className="group-data-[collapsible=icon]:hidden" />

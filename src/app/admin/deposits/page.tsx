@@ -152,9 +152,13 @@ export default function AdminDepositsPage() {
         if(!firestore) return;
         setIsLoading(true);
         try {
-            const depositsQuery = query(collectionGroup(firestore, 'deposits'), orderBy('depositDate', 'desc'), limit(300));
+            const depositsQuery = query(collectionGroup(firestore, 'deposits'), orderBy('depositDate', 'desc'));
             const snapshot = await getDocs(depositsQuery);
-            const fetchedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()} as Deposit));
+            const fetchedData = snapshot.docs.map(doc => {
+                 const pathSegments = doc.ref.path.split('/');
+                 const userId = pathSegments[1];
+                 return { id: doc.id, userId, ...doc.data()} as Deposit
+            });
             setAllDeposits(fetchedData);
         } catch (error) {
             console.error("Error fetching all deposits:", error);

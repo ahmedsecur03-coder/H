@@ -134,9 +134,13 @@ export default function AdminWithdrawalsPage() {
         if (!firestore) return;
         setIsLoading(true);
         try {
-            const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), orderBy('requestDate', 'desc'), limit(300));
+            const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), orderBy('requestDate', 'desc'));
             const snapshot = await getDocs(withdrawalsQuery);
-            const fetchedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Withdrawal));
+            const fetchedData = snapshot.docs.map(doc => {
+                const pathSegments = doc.ref.path.split('/');
+                const userId = pathSegments[1];
+                return { id: doc.id, userId, ...doc.data() } as Withdrawal;
+            });
             setAllWithdrawals(fetchedData);
         } catch (err) {
             console.error("Error fetching all withdrawals: ", err);

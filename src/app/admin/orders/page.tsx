@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect, useCallback, Suspense } from 'react';
@@ -129,14 +130,14 @@ function AdminOrdersPageComponent() {
     try {
         let q: FirestoreQuery = collectionGroup(firestore, 'orders');
         
-        if (currentStatus !== 'all') {
-            q = query(q, where('status', '==', currentStatus));
-        }
-        
         q = query(q, orderBy('orderDate', 'desc'));
 
         const snapshot = await getDocs(q);
-        let ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        let ordersData = snapshot.docs.map(doc => {
+             const pathSegments = doc.ref.path.split('/');
+             const userId = pathSegments[1];
+             return { id: doc.id, userId, ...doc.data() } as Order
+        });
         
         setAllOrders(ordersData);
 
@@ -146,7 +147,7 @@ function AdminOrdersPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, currentStatus]);
+  }, [firestore, toast]);
 
   useEffect(() => {
     fetchOrders();
@@ -156,12 +157,13 @@ function AdminOrdersPageComponent() {
     if (!allOrders) return { paginatedOrders: [], totalPages: 0 };
     
     const filtered = allOrders.filter(order => 
-        currentSearch
+        (currentStatus === 'all' || order.status === currentStatus) &&
+        (currentSearch
         ? order.id.toLowerCase().includes(currentSearch.toLowerCase()) ||
           order.userId.toLowerCase().includes(currentSearch.toLowerCase()) ||
           order.serviceName.toLowerCase().includes(currentSearch.toLowerCase()) ||
           (order.link && order.link.toLowerCase().includes(currentSearch.toLowerCase()))
-        : true
+        : true)
     );
 
     const total = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -170,7 +172,7 @@ function AdminOrdersPageComponent() {
 
     return { paginatedOrders: paginated, totalPages: total };
 
-  }, [allOrders, currentSearch, currentPage]);
+  }, [allOrders, currentSearch, currentPage, currentStatus]);
 
   useEffect(() => {
     setPageCount(totalPages);
