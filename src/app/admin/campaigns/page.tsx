@@ -212,6 +212,7 @@ export default function AdminCampaignsPage() {
                 </div>
             </CardHeader>
             <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <Table>
                 <TableHeader>
                 <TableRow>
@@ -228,6 +229,7 @@ export default function AdminCampaignsPage() {
                 {renderContent()}
                 </TableBody>
             </Table>
+            </div>
             </CardContent>
         </Card>
         <Card className="lg:col-span-2">
@@ -253,5 +255,3 @@ export default function AdminCampaignsPage() {
     </div>
   );
 }
-
-    

@@ -40,6 +40,7 @@ function WithdrawalTable({ withdrawals, isLoading, onAction, loadingActionId }: 
   
   if (isLoading) {
     return (
+        <div className="overflow-x-auto">
        <Table>
           <TableHeader>
             <TableRow>
@@ -61,6 +62,7 @@ function WithdrawalTable({ withdrawals, isLoading, onAction, loadingActionId }: 
             ))}
           </TableBody>
        </Table>
+       </div>
     );
   }
 
@@ -73,6 +75,7 @@ function WithdrawalTable({ withdrawals, isLoading, onAction, loadingActionId }: 
   }
 
   return (
+    <div className="overflow-x-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -116,6 +119,7 @@ function WithdrawalTable({ withdrawals, isLoading, onAction, loadingActionId }: 
         ))}
       </TableBody>
     </Table>
+    </div>
   )
 }
 

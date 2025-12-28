@@ -40,6 +40,7 @@ function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: bo
    
     if (isLoading) {
         return (
+            <div className="overflow-x-auto">
              <Table>
                 <TableHeader>
                     <TableRow>
@@ -58,6 +59,7 @@ function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: bo
                     ))}
                 </TableBody>
             </Table>
+            </div>
         );
     }
 
@@ -70,6 +72,7 @@ function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: bo
     }
     
     return (
+        <div className="overflow-x-auto">
         <Table>
             <TableHeader>
                 <TableRow>
@@ -102,6 +105,7 @@ function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: bo
                 ))}
             </TableBody>
         </Table>
+        </div>
     );
 };
 

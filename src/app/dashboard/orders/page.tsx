@@ -78,6 +78,7 @@ function OrdersPageSkeleton() {
             </Card>
             <Card>
                 <CardContent className="p-0">
+                    <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -92,6 +93,7 @@ function OrdersPageSkeleton() {
                             ))}
                         </TableBody>
                     </Table>
+                    </div>
                 </CardContent>
                  <CardFooter className="justify-center border-t pt-4">
                     <Skeleton className="h-9 w-64" />
@@ -321,7 +323,7 @@ function OrdersPageComponent() {
                             <TableCell className="text-center">{new Date(order.orderDate).toLocaleDateString('ar-EG')}</TableCell>
                             <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                             <TableCell className="text-right">
-                                <Button variant="outline" size="icon" asChild>
+                                <Button variant="ghost" size="icon" asChild>
                                 <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${order.serviceId}|${order.link}|${order.quantity}`)}`}>
                                     <RefreshCw className="h-4 w-4" />
                                 </Link>

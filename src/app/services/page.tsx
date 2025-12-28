@@ -56,26 +56,30 @@ function ServicesSkeleton() {
           <Skeleton className="h-10 w-full" />
         </CardContent>
       </Card>
-      <div className="overflow-x-auto">
-        <Table>
-            <TableHeader>
-            <TableRow>
-                {Array.from({ length: 6 }).map((_, i) => (
-                <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>
-                ))}
-            </TableRow>
-            </TableHeader>
-            <TableBody>
-            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                <TableRow key={i}>
-                {Array.from({ length: 6 }).map((_, j) => (
-                    <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
-                ))}
-                </TableRow>
-            ))}
-            </TableBody>
-        </Table>
-      </div>
+       <Card>
+            <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            {Array.from({ length: 6 }).map((_, i) => (
+                            <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>
+                            ))}
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                            <TableRow key={i}>
+                            {Array.from({ length: 6 }).map((_, j) => (
+                                <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
+                            ))}
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
     </div>
   );
 }

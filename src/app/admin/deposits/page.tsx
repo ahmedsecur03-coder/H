@@ -58,6 +58,7 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
   
   if (isLoading) {
     return (
+      <div className="overflow-x-auto">
        <Table>
           <TableHeader>
             <TableRow>
@@ -79,6 +80,7 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
             ))}
           </TableBody>
        </Table>
+       </div>
     );
   }
 
@@ -91,6 +93,7 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
   }
 
   return (
+    <div className="overflow-x-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -134,6 +137,7 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
         ))}
       </TableBody>
     </Table>
+    </div>
   )
 }
 
