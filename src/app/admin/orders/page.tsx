@@ -137,6 +137,7 @@ function AdminOrdersPageComponent() {
              return { id: doc.id, userId, ...doc.data() } as Order
         });
         
+        // Sort client-side
         ordersData.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
 
         setAllOrders(ordersData);
