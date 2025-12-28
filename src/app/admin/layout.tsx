@@ -38,6 +38,7 @@ import { doc, collectionGroup, query, where, getCountFromServer } from 'firebase
 import type { User, NestedNavItem } from '@/lib/types';
 import { Notifications } from '@/components/notifications';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
 
 
 function AdminNotifications() {
@@ -241,6 +242,21 @@ export default function AdminLayout({
             </SidebarContent>
         </Sidebar>
         
+        {/* Mobile Sidebar in a Sheet */}
+        <Sidebar side="right" className="md:hidden">
+           <SidebarHeader>
+              <div className="flex h-16 items-center justify-between px-4">
+                  <Logo />
+              </div>
+            </SidebarHeader>
+           <SidebarContent>
+            <SidebarMenu>
+                <AdminNavItems />
+            </SidebarMenu>
+            </SidebarContent>
+        </Sidebar>
+
+
         <div className="flex flex-1 flex-col">
             <AdminHeader userData={userData} />
             <main className="flex-1 p-4 sm:px-6 sm:py-6 overflow-auto">

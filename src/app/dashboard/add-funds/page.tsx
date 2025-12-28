@@ -14,36 +14,25 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, Check, Clock } from 'lucide-react';
 import type { Deposit, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CopyButton } from '@/app/dashboard/affiliate/_components/copy-button';
 
-
-function CopyButton({ textToCopy }: { textToCopy: string }) {
-    const { toast } = useToast();
-    const [copied, setCopied] = useState(false);
-  
-    const handleCopy = () => {
-        navigator.clipboard.writeText(textToCopy);
-        setCopied(true);
-        toast({ title: "تم نسخ النص بنجاح!" });
-        setTimeout(() => setCopied(false), 2000);
-    };
-  
-    return (
-        <Button size="icon" variant="outline" onClick={handleCopy}>
-            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-        </Button>
-    );
-}
 
 function AddFundsSkeleton() {
     return (
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-2">
-                <Card><CardContent className="p-4"><Skeleton className="h-96" /></CardContent></Card>
+         <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-            <div className="space-y-6">
-                <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
-                <Card><CardContent className="p-4"><Skeleton className="h-40" /></CardContent></Card>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div className="lg:col-span-2">
+                    <Card><CardContent className="p-4"><Skeleton className="h-96" /></CardContent></Card>
+                </div>
+                <div className="space-y-6">
+                    <Card><CardContent className="p-4"><Skeleton className="h-24" /></CardContent></Card>
+                    <Card><CardContent className="p-4"><Skeleton className="h-40" /></CardContent></Card>
+                </div>
+           </div>
        </div>
     )
 }

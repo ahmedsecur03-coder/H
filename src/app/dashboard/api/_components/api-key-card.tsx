@@ -5,27 +5,10 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, RefreshCw, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { CopyButton } from '@/app/dashboard/affiliate/_components/copy-button';
 
-function CopyButton({ textToCopy }: { textToCopy: string }) {
-    const { toast } = useToast();
-    const [copied, setCopied] = useState(false);
-  
-    const handleCopy = () => {
-        navigator.clipboard.writeText(textToCopy);
-        setCopied(true);
-        toast({ title: "تم نسخ مفتاح API!" });
-        setTimeout(() => setCopied(false), 2000);
-    };
-  
-    return (
-        <Button size="icon" variant="outline" onClick={handleCopy}>
-            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-        </Button>
-    );
-}
 
 export const ApiKeyCard = ({ apiKey, onRegenerate, isRegenerating }: { apiKey: string; onRegenerate: () => void; isRegenerating: boolean; }) => {
 

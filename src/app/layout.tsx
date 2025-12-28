@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 
 const fontSans = Exo_2({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '700'],
+  weight: ['300', '400', '500', '700', '800'],
   variable: '--font-sans',
 });
 

@@ -4,7 +4,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, DollarSign, Users, Crown, Loader2, Target, Check, Share2 } from "lucide-react";
+import { DollarSign, Users, Crown, Loader2, Target, Share2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import type { User as UserType, AffiliateTransaction, Withdrawal } from "@/lib/types";
@@ -29,25 +29,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Twitter, Facebook } from "lucide-react";
-
-// Inlined CopyButton component
-function CopyButton({ textToCopy }: { textToCopy: string }) {
-  const { toast } = useToast();
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-      navigator.clipboard.writeText(textToCopy);
-      setCopied(true);
-      toast({ title: "تم نسخ الرابط بنجاح!" });
-      setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-      <Button size="icon" variant="outline" onClick={handleCopy}>
-          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-      </Button>
-  );
-}
+import { CopyButton } from './_components/copy-button';
 
 // Inlined WithdrawalDialog component
 function WithdrawalDialog({ user, children }: { user: UserType, children: React.ReactNode }) {
