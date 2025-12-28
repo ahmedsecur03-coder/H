@@ -46,8 +46,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
   };
 
   return (
-    <header className="sticky top-0 z-10 hidden h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
-        <SidebarTrigger />
+    <header className="sticky top-0 z-10 hidden h-14 items-center justify-end gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 md:flex">
         <div className="ms-auto flex items-center gap-4 font-sans">
              <div className="flex items-center gap-4 border-s ps-4">
                 <div className="flex items-center gap-2">
@@ -198,7 +197,7 @@ export default function DashboardLayout({
                     )}
                 </Sidebar>
                 
-                <div className="flex flex-1 flex-col md:peer-data-[state=expanded]:me-[16rem] md:peer-data-[state=collapsed]:me-[3.5rem]">
+                <div className="flex flex-1 flex-col">
                     <MobileHeader isAdmin={isAdmin} userData={userData} />
                     <DesktopHeader isAdmin={isAdmin} userData={userData} />
                     
