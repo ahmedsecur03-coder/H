@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -23,6 +22,7 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { useServices } from '@/hooks/useServices';
+import { cn } from '@/lib/utils';
 
 const PROFIT_MARGIN = 1.50; // 50% profit margin
 
@@ -33,7 +33,7 @@ function ServiceDescription({ service }: { service: Service }) {
         { label: "وقت البدء", value: service.startTime, icon: Timer },
         { label: "السرعة", value: service.speed, icon: Gauge },
         { label: "معدل النقصان", value: service.dropRate, icon: TrendingDown },
-        { label: "الضمان", value: service.guarantee ? 'متوفر' : 'غير متوفر', icon: ShieldCheck },
+        { label: "الضمان", value: "متوفر", icon: ShieldCheck },
         { label: "متوسط الوقت", value: service.avgTime, icon: ChevronsRight },
     ];
 
@@ -220,7 +220,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                                 <SelectTrigger><SelectValue placeholder="3. اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
                                     {services.map(s => 
-                                        <SelectItem key={s.id} value={s.id}>
+                                        <SelectItem key={s.id} value={s.id} className="whitespace-normal text-right">
                                             {`#${s.id} - ${s.description} - $${(s.price).toFixed(4)}`}
                                         </SelectItem>
                                     )}
