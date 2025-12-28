@@ -181,6 +181,11 @@ function Testimonials() {
 export default function HomePage() {
   const { user, isUserLoading } = useUser();
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const primaryAction = {
     href: isUserLoading ? "#" : user ? "/dashboard" : "/auth/signup",
@@ -211,9 +216,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-24 pb-8">
-        <section className={cn("relative text-center py-20 overflow-hidden", theme === 'light' && 'snow-background')}>
+        <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' && 'snow-background')}>
             <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
-             {theme === 'dark' && (
+             {mounted && theme === 'dark' && (
                 <>
                     <div className="absolute left-1/4 top-1/3 h-32 w-32 bg-primary/10 rounded-full filter blur-3xl animate-blob" />
                     <div className="absolute right-1/4 bottom-1/3 h-32 w-32 bg-secondary/10 rounded-full filter blur-3xl animate-blob animation-delay-4000" />
