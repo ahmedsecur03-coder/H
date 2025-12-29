@@ -16,7 +16,7 @@ import Link from 'next/link';
 
 function CampaignsSkeleton() {
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6">
             <div>
                 <Skeleton className="h-8 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
@@ -141,7 +141,7 @@ export default function CampaignsPage() {
 
 
   return (
-     <div className="space-y-6 pb-8">
+     <div className="space-y-6">
         <div>
             <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الحملات الإعلانية</h1>
             <p className="text-muted-foreground">

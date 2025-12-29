@@ -59,7 +59,7 @@ import { DailyRewardCard } from './_components/daily-reward-card';
 
 function DashboardSkeleton() {
     return (
-        <div className="space-y-6 pb-4">
+        <div className="space-y-6">
              <div className='mb-4'>
                 <Skeleton className="h-9 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
@@ -187,7 +187,7 @@ export default function DashboardPage() {
     const amountToNextRank = nextRank ? nextRank.spend - userData.totalSpent : 0;
 
     return (
-        <div className="space-y-6 pb-4">
+        <div className="space-y-6">
             <div className='mb-4'>
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
                 <p className='text-muted-foreground'>هذه هي قمرة قيادتك. ابدأ طلبًا جديدًا أو تفقد أداء حملاتك.</p>

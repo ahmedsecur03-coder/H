@@ -27,7 +27,7 @@ const statusVariant = {
 
 function SupportPageSkeleton() {
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6">
             <div className="flex justify-between items-center">
                  <div>
                     <Skeleton className="h-8 w-48" />
@@ -71,7 +71,7 @@ export default function SupportPage() {
 
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">الدعم الفني</h1>

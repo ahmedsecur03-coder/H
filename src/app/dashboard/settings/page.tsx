@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User } from '@/lib/types';
@@ -10,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 
 function SettingsSkeleton() {
     return (
-         <div className="space-y-6 pb-8">
+         <div className="space-y-6">
             <div>
                 <Skeleton className="h-9 w-1/4" />
                 <Skeleton className="h-5 w-1/2 mt-2" />
@@ -63,7 +62,7 @@ export default function SettingsPage() {
     const preferences = userData?.notificationPreferences || { newsletter: false, orderUpdates: true };
   
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight font-headline">الإعدادات</h1>
                 <p className="text-muted-foreground">

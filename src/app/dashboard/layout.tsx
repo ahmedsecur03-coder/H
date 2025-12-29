@@ -200,8 +200,8 @@ export default function DashboardLayout({
                     <MobileHeader isAdmin={isAdmin} userData={userData} />
                     <DesktopHeader isAdmin={isAdmin} userData={userData} />
                     
-                    <main className="mb-20 flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:mb-0 md:gap-8">
-                    {children}
+                    <main className="flex-1 overflow-auto p-4 sm:px-6 sm:py-6 md:mb-0 mb-20">
+                      {children}
                     </main>
                     
                     <BottomNavBar />

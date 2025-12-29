@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -63,7 +62,7 @@ const ITEMS_PER_PAGE = 10;
 
 function OrdersPageSkeleton() {
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6">
             <div>
                 <Skeleton className="h-8 w-1/4 mb-2" />
                 <Skeleton className="h-5 w-1/2" />
@@ -251,7 +250,7 @@ function OrdersPageComponent() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">سجل الطلبات</h1>
         <p className="text-muted-foreground">

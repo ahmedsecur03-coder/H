@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
@@ -273,7 +272,7 @@ function MassOrderPageComponent() {
     }
 
     return (
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight font-headline">طلب جماعي متطور</h1>
                 <p className="text-muted-foreground">أضف طلبات متعددة دفعة واحدة بسهولة وسرعة.</p>
