@@ -6,6 +6,7 @@ import type { User as UserType } from '@/lib/types';
 import { QuickOrderForm } from '../_components/quick-order-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { redirect } from 'next/navigation';
+import { ServicesTable } from './_components/services-table';
 
 
 function ServicesPageSkeleton() {
@@ -40,11 +41,9 @@ export default function ServicesPage() {
         <div className="space-y-6 pb-8">
             <div>
                 <h1 className='text-3xl font-bold font-headline'>كل الخدمات</h1>
-                <p className='text-muted-foreground'>أضف طلبًا جديدًا بسرعة وسهولة من هنا.</p>
+                <p className='text-muted-foreground'>تصفح جميع خدماتنا المتاحة وأسعارها.</p>
             </div>
-            <div className="max-w-2xl mx-auto">
-                 <QuickOrderForm user={authUser} userData={userData} />
-            </div>
+            <ServicesTable />
         </div>
     );
 }

@@ -72,7 +72,7 @@ function DashboardSkeleton() {
                     <Skeleton className="h-64" />
                 </div>
                 <div className="lg:col-span-1 space-y-6">
-                     <Skeleton className="h-40" />
+                     <Skeleton className="h-[500px]" />
                      <Skeleton className="h-44 w-full" />
                 </div>
             </div>
@@ -109,9 +109,12 @@ export default function DashboardPage() {
 
     const campaignsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null, [authUser, firestore]);
     const { data: allCampaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsQuery);
+    
+    const agencyAccountsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/agencyAccounts`)) : null, [authUser, firestore]);
+    const { data: agencyAccounts, isLoading: areAgencyAccountsLoading } = useCollection<AgencyAccount>(agencyAccountsQuery);
 
 
-    const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areCampaignsLoading;
+    const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areCampaignsLoading || areAgencyAccountsLoading;
     
     const { recentOrders, orderStatusData, performanceData, stats } = useMemo(() => {
         const last7Days = Array.from({ length: 7 }).map((_, i) => {
@@ -166,11 +169,12 @@ export default function DashboardPage() {
             stats: {
                 pendingOrders: pendingOrdersCount,
                 activeCampaigns: activeCampaignsCount,
-                totalSpent: userData?.totalSpent || 0
+                totalSpent: userData?.totalSpent || 0,
+                agencyAccountsCount: agencyAccounts?.length || 0,
             }
         };
 
-    }, [allOrders, allCampaigns, userData]);
+    }, [allOrders, allCampaigns, userData, agencyAccounts]);
 
 
     if (isLoading || !userData || !authUser) {
@@ -188,38 +192,7 @@ export default function DashboardPage() {
         <div className="space-y-6 pb-4">
             <div className='mb-4'>
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
-                <p className='text-muted-foreground'>هذه هي لوحة التحكم التحليلية الخاصة بك.</p>
-            </div>
-
-             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent><div className="text-2xl font-bold">${stats.totalSpent.toFixed(2)}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">الطلبات قيد التنفيذ</CardTitle>
-                        <Hourglass className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.pendingOrders}</div></CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">الحملات النشطة</CardTitle>
-                        <Activity className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.activeCampaigns}</div></CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">رتبتك الحالية</CardTitle>
-                        <Crown className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent><div className="text-2xl font-bold text-primary">{rank.name}</div></CardContent>
-                </Card>
+                <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. ابدأ طلبًا جديدًا أو تفقد أداء حملاتك.</p>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
@@ -231,7 +204,7 @@ export default function DashboardPage() {
                             <CardDescription>مقارنة بين إنفاق الطلبات والحملات.</CardDescription>
                          </CardHeader>
                          <CardContent>
-                             <ChartContainer config={chartConfig} className="aspect-video">
+                             <ChartContainer config={chartConfig} className="h-64">
                                 <ComposedChart data={performanceData}>
                                     <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })} />
                                     <YAxis tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
@@ -289,49 +262,36 @@ export default function DashboardPage() {
                             </div>
                         </CardContent>
                     </Card>
-
                 </div>
 
                 <div className="lg:col-span-1 space-y-6">
+                     <QuickOrderForm user={authUser} userData={userData} />
+
                      <Card>
-                        <CardHeader>
-                           <CardTitle className="font-headline text-xl">توزيع حالات الطلبات</CardTitle>
+                        <CardHeader className="flex-row items-center gap-4 space-y-0">
+                            <div className="p-3 bg-primary/10 rounded-full"><Megaphone className="h-6 w-6 text-primary" /></div>
+                            <div>
+                                <CardTitle>الحملات الإعلانية</CardTitle>
+                                <CardDescription>{stats.activeCampaigns} حملة نشطة</CardDescription>
+                            </div>
                         </CardHeader>
-                        <CardContent>
-                             <ChartContainer config={chartConfig} className="aspect-square">
-                                <PieChart>
-                                    <Tooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} strokeWidth={5}>
-                                        {orderStatusData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                                        ))}
-                                    </Pie>
-                                    <Legend />
-                                </PieChart>
-                             </ChartContainer>
-                        </CardContent>
-                     </Card>
-                     <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
-                     <Card>
-                        <CardHeader className="pb-2">
-                            <CardDescription>الترقية التالية</CardDescription>
-                            <CardTitle className="text-xl text-primary flex items-center gap-2">
-                                {nextRank ? <>{nextRank.icon && <nextRank.icon/>} {nextRank.name}</> : <><Crown/> لقد وصلت للقمة!</>}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {nextRank ? (
-                                <>
-                                    <Progress value={progressToNextRank} className="h-1 my-2" />
-                                    <p className="text-xs text-muted-foreground text-center">
-                                    أنفق ${amountToNextRank.toFixed(2)} للوصول لرتبة {nextRank.name} والحصول على خصم {nextRank.discount}%.
-                                    </p>
-                                </>
-                            ) : (
-                                <p className="text-sm font-semibold text-center text-primary">🎉 أنت في أعلى رتبة!</p>
-                            )}
-                        </CardContent>
+                        <CardFooter>
+                            <Button asChild className="w-full" variant="outline"><Link href="/dashboard/campaigns">إدارة الحملات</Link></Button>
+                        </CardFooter>
                     </Card>
+                     <Card>
+                        <CardHeader className="flex-row items-center gap-4 space-y-0">
+                            <div className="p-3 bg-secondary/10 rounded-full"><Briefcase className="h-6 w-6 text-secondary" /></div>
+                            <div>
+                                <CardTitle>حسابات الوكالة</CardTitle>
+                                <CardDescription>لديك {stats.agencyAccountsCount} حساب</CardDescription>
+                            </div>
+                        </CardHeader>
+                         <CardFooter>
+                            <Button asChild className="w-full" variant="outline"><Link href="/dashboard/agency-accounts">إدارة الحسابات</Link></Button>
+                        </CardFooter>
+                    </Card>
+
                 </div>
             </div>
         </div>
