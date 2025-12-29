@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -285,7 +286,7 @@ export default function HomePage() {
                     const Icon = feature.icon;
                     return (
                         <motion.div
-                          key={i}
+                          key={feature.title}
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: i * 0.1 }}
@@ -348,7 +349,7 @@ export default function HomePage() {
                     const Icon = step.icon;
                     return (
                        <motion.div
-                            key={i}
+                            key={step.title}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: i * 0.2 }}

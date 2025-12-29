@@ -11,22 +11,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
     }
 
-    // Validate the URL to prevent potential SSRF attacks
-    const url = new URL(imageUrl);
-    // Added 'i.pravatar.cc' for the default avatars
-    const validHosts = ['i.pravatar.cc', 'images.unsplash.com', 'lh3.googleusercontent.com', 'placehold.co', 'picsum.photos', 'oaidalleapiprodscus.blob.core.windows.net'];
-    if (!validHosts.includes(url.hostname)) {
-        // Allow data URIs to pass through
-        if (!url.protocol.startsWith('data:')) {
-            return NextResponse.json({ error: 'Invalid image host' }, { status: 400 });
-        }
-    }
-    
-    // If it's already a data URI, just return it.
-    if (url.protocol.startsWith('data:')) {
-        return NextResponse.json({ dataUri: imageUrl });
-    }
-
     const response = await fetch(imageUrl);
 
     if (!response.ok) {
@@ -43,4 +27,15 @@ export async function POST(request: Request) {
     console.error('Image Proxy Error:', error);
     return NextResponse.json({ error: error.message || 'An unknown error occurred' }, { status: 500 });
   }
+}
+
+export async function OPTIONS(request: Request) {
+    return new Response(null, {
+        status: 204,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+        },
+    });
 }
