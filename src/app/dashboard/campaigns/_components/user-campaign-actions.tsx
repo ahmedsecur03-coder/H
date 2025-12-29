@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, runTransaction } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
@@ -30,32 +30,35 @@ import { CampaignDetailsDialog } from './campaign-details-dialog';
 
 // --- DYNAMIC SIMULATION ENGINE ---
 export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => {
+    if (campaign.status !== 'نشط' || !campaign.startDate) {
+        return {};
+    }
+
     const { startDate, durationDays, budget, spend: currentSpend } = campaign;
     const now = Date.now();
     const startTime = new Date(startDate).getTime();
     const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
     const endTime = startTime + totalDurationMillis;
 
-    // If the campaign is already finished, do nothing
-    if (now >= endTime || currentSpend >= budget) {
-         if (campaign.status !== 'مكتمل') {
-             return { status: 'مكتمل', spend: budget }; // Ensure it's marked as complete with full spend
-         }
-         return {}; // No changes needed
+    // If campaign has finished
+    if (now >= endTime) {
+        return { 
+            status: 'مكتمل', 
+            spend: budget, // Ensure it's marked as complete with full spend
+            impressions: (campaign.impressions || 0) + Math.floor(Math.random() * 1000), // add some final random impressions
+            clicks: (campaign.clicks || 0) + Math.floor(Math.random() * 50)
+        };
     }
 
     const elapsedMillis = now - startTime;
     const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
-
-    // Calculate the "ideal" spend based on time progress
-    const idealSpend = budget * progress;
     
-    // To make it feel more organic, let's add some randomness and ensure it doesn't exceed budget
+    // Calculate the "ideal" spend based on time progress, with some organic randomness
+    const idealSpend = budget * progress;
     const simulatedSpend = Math.min(idealSpend * (1 + (Math.random() - 0.5) * 0.1), budget);
 
-    // Don't update if the change is negligible to reduce writes
-    if (simulatedSpend - currentSpend < 0.01) {
-        return {};
+    if (simulatedSpend <= currentSpend) {
+        return {}; // No significant change
     }
 
     const impressions = Math.floor(simulatedSpend * (Math.random() * 150 + 50)); // Random impressions per dollar
@@ -71,7 +74,6 @@ export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campai
         ctr,
         cpc,
         results,
-        status: now >= endTime ? 'مكتمل' : 'نشط'
     };
 };
 // --- END SIMULATION ENGINE ---
@@ -82,6 +84,15 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+    // Get the most up-to-date campaign performance data for display
+    const liveCampaignData = useMemo(() => {
+        if (campaign.status === 'نشط') {
+            return { ...campaign, ...calculateCampaignPerformance(campaign) };
+        }
+        return campaign;
+    }, [campaign]);
+
 
     const handleStopCampaign = async () => {
         if (!firestore) return;
@@ -147,7 +158,7 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <CampaignDetailsDialog campaign={campaign}>
+                    <CampaignDetailsDialog campaign={liveCampaignData}>
                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <FileText className="ml-2 h-4 w-4" />
                             عرض التفاصيل

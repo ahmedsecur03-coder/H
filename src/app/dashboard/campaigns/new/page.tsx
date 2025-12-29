@@ -32,6 +32,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -121,6 +122,7 @@ export default function NewCampaignPage() {
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
+    const router = useRouter();
 
     const userDocRef = useMemoFirebase(() => (authUser ? doc(firestore, 'users', authUser.uid) : null), [authUser, firestore]);
     const { data: userData, isLoading: isUserDataLoading } = useDoc<UserType>(userDocRef);
@@ -148,7 +150,7 @@ export default function NewCampaignPage() {
         const durationDays = parseInt(formData.get('durationDays') as string, 10);
         
         if (!userData || userData.adBalance < budget) {
-            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `الميزانية المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance.toFixed(2)}$ فقط.` });
+            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance.toFixed(2)}$ فقط. يرجى شحن رصيد الإعلانات أولاً.` });
             return;
         }
 
@@ -166,16 +168,16 @@ export default function NewCampaignPage() {
             targetAge: formData.get('targetAge') as string,
             targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
             targetInterests: formData.get('targetInterests') as string,
-            startDate: new Date().toISOString(),
+            startDate: '', // Will be set on approval
             spend: 0,
-            status: 'نشط', // Activate immediately
+            status: 'بانتظار المراجعة', // Set to pending review
             impressions: 0, clicks: 0, results: 0, ctr: 0, cpc: 0, targetAudience: ''
         };
         
         try {
             const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
             await addDoc(campaignsColRef, campaignData);
-            toast({ title: "نجاح!", description: "تم تفعيل حملتك بنجاح وبدأت المحاكاة." });
+            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعة حملتك من قبل المسؤولين وتفعيلها قريبًا." });
             setStep(3); // Go to success step
         } catch (error) {
             const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
@@ -238,7 +240,7 @@ export default function NewCampaignPage() {
                                          <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground"><ArrowRight className="h-5 w-5" /></button>
                                         <div>
                                             <CardTitle>الخطوة 2: تفاصيل حملة {currentConfig.title}</CardTitle>
-                                            <CardDescription>املأ بيانات حملتك. سيتم حجز الميزانية من رصيد إعلاناتك (${userData?.adBalance.toFixed(2)}) وتفعيل الحملة فورًا.</CardDescription>
+                                            <CardDescription>املأ بيانات حملتك. سيتم إرسالها للمراجعة. رصيد إعلاناتك الحالي: ${userData?.adBalance.toFixed(2) || '0.00'}</CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -263,13 +265,13 @@ export default function NewCampaignPage() {
 
                                     {/* Budget Fields */}
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label htmlFor="budget">الميزانية ($)</Label><Input id="budget" name="budget" type="number" required min="5" max={userData?.adBalance} /></div>
+                                        <div className="space-y-2"><Label htmlFor="budget">الميزانية ($)</Label><Input id="budget" name="budget" type="number" required min="5" /></div>
                                         <div className="space-y-2"><Label htmlFor="durationDays">مدة الحملة (أيام)</Label><Input id="durationDays" name="durationDays" type="number" required min="1" defaultValue="7" /></div>
                                     </div>
                                 </CardContent>
                                 <CardFooter>
                                     <Button type="submit" disabled={loading} className="w-full">
-                                        {loading ? <Loader2 className="animate-spin" /> : 'تأكيد وتفعيل الحملة'}
+                                        {loading ? <Loader2 className="animate-spin" /> : 'إرسال الحملة للمراجعة'}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -284,9 +286,9 @@ export default function NewCampaignPage() {
                                  <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto">
                                      <Rocket className="h-8 w-8" />
                                  </div>
-                                <h2 className="text-2xl font-bold mt-4">تم تفعيل حملتك بنجاح!</h2>
+                                <h2 className="text-2xl font-bold mt-4">تم إرسال حملتك للمراجعة!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    لقد بدأت حملتك الإعلانية بالفعل. يمكنك الآن متابعة أدائها المتزايد من صفحة إدارة الحملات.
+                                    سيقوم فريقنا بمراجعة حملتك وتفعيلها في أقرب وقت. يمكنك متابعة حالتها من صفحة إدارة الحملات.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>

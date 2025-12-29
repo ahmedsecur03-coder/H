@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collectionGroup, query, where, getDocs, Query, getCountFromServer } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
@@ -35,6 +35,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { DollarSign, ListChecks, Hourglass, BarChart2, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { CampaignActions } from './_components/campaign-actions';
 
 const statusVariant = {
   'نشط': 'default',
@@ -60,7 +61,7 @@ export default function AdminCampaignsPage() {
       statusCounts: ALL_STATUSES.map(s => ({ status: s, count: 0 }))
   });
 
-  const fetchCampaignsAndStats = async () => {
+  const fetchCampaignsAndStats = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
@@ -85,6 +86,9 @@ export default function AdminCampaignsPage() {
         }
       });
       
+      // Sort by date client-side
+      fetchedCampaigns.sort((a,b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
+
       setCampaigns(fetchedCampaigns);
       setStats({
           active: tempStatusCounts['نشط'],
@@ -99,11 +103,11 @@ export default function AdminCampaignsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [firestore, toast]);
 
   useEffect(() => {
     fetchCampaignsAndStats();
-  }, [firestore]);
+  }, [fetchCampaignsAndStats]);
 
   const filteredCampaigns = useMemo(() => {
       if (filter === 'all') return campaigns;
@@ -115,14 +119,14 @@ export default function AdminCampaignsPage() {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
         <TableRow key={i}>
-          {Array.from({ length: 6 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+          {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
         </TableRow>
       ));
     }
     if (!filteredCampaigns || filteredCampaigns.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={6} className="h-24 text-center">
+          <TableCell colSpan={7} className="h-24 text-center">
             لا توجد حملات تطابق هذا الفلتر.
           </TableCell>
         </TableRow>
@@ -138,6 +142,9 @@ export default function AdminCampaignsPage() {
         <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
         <TableCell>${(campaign.spend || 0).toFixed(2)}</TableCell>
         <TableCell>${campaign.budget.toFixed(2)}</TableCell>
+        <TableCell>
+            <CampaignActions campaign={campaign} forceCollectionUpdate={fetchCampaignsAndStats} />
+        </TableCell>
       </TableRow>
     ));
   }
@@ -154,7 +161,7 @@ export default function AdminCampaignsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">مراقبة الحملات</h1>
         <p className="text-muted-foreground">
-          عرض جميع الحملات الإعلانية في النظام.
+          عرض جميع الحملات الإعلانية في النظام ومراجعتها.
         </p>
       </div>
 
@@ -200,7 +207,14 @@ export default function AdminCampaignsPage() {
                         <SelectContent>
                             <SelectItem value="all">كل الحالات</SelectItem>
                             {ALL_STATUSES.map(status => (
-                            <SelectItem key={status} value={status}>{status}</SelectItem>
+                            <SelectItem key={status} value={status}>
+                              <div className="flex items-center gap-2">
+                                <span>{status}</span>
+                                {status === 'بانتظار المراجعة' && stats.statusCounts.find(s => s.status === status)!.count > 0 && 
+                                  <Badge variant="destructive" className="px-1.5">{stats.statusCounts.find(s => s.status === status)!.count}</Badge>
+                                }
+                              </div>
+                            </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -217,6 +231,7 @@ export default function AdminCampaignsPage() {
                     <TableHead>الحالة</TableHead>
                     <TableHead>الإنفاق</TableHead>
                     <TableHead>الميزانية</TableHead>
+                    <TableHead>إجراء</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>

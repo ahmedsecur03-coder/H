@@ -49,7 +49,8 @@ const simulateCampaignPerformance = (campaign: Campaign, firestore: any, forceCo
         let currentClicks = 0;
 
         for (let day = 1; day <= durationDays; day++) {
-            setTimeout(() => {
+            // This timeout simulates a "day" of the campaign
+            const simulationDayTimeout = setTimeout(() => {
                 // Simulate this day's performance
                 currentSpend += dailySpend;
                 const dailyImpressions = Math.floor(Math.random() * (dailySpend * 200)) + 500;
@@ -146,7 +147,8 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
             setOpen(false);
             
             // --- START SIMULATION ---
-            simulateCampaignPerformance(campaign, firestore, forceCollectionUpdate);
+            const approvedCampaign = { ...campaign, status: 'نشط' as const, startDate: new Date().toISOString() };
+            simulateCampaignPerformance(approvedCampaign, firestore, forceCollectionUpdate);
 
         } catch (error: any) {
              toast({
