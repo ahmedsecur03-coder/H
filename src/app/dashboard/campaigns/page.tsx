@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -47,7 +46,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+    const { data: rawCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -57,35 +56,15 @@ export default function CampaignsPage() {
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
 
-    // This effect will run periodically to update the performance of active campaigns.
-    useEffect(() => {
-        if (!campaigns || !firestore || !authUser) return;
-
-        const updateAllCampaigns = async () => {
-             const activeCampaigns = campaigns.filter(c => c.status === 'نشط');
-             if (activeCampaigns.length === 0) return;
-
-            let hasChanges = false;
-            for (const campaign of activeCampaigns) {
-                 const updatedCampaign = calculateCampaignPerformance(campaign);
-                 // Only write to DB if there's a meaningful change
-                 if (updatedCampaign.spend !== campaign.spend || updatedCampaign.status !== campaign.status) {
-                    const campaignDocRef = doc(firestore, `users/${authUser.uid}/campaigns`, campaign.id);
-                    await updateDoc(campaignDocRef, updatedCampaign);
-                    hasChanges = true;
-                 }
+    const campaigns = useMemo(() => {
+        if (!rawCampaigns) return [];
+        return rawCampaigns.map(campaign => {
+            if (campaign.status === 'نشط') {
+                return { ...campaign, ...calculateCampaignPerformance(campaign) };
             }
-            if (hasChanges) {
-                forceCollectionUpdate(); // Re-fetch data if any campaign was updated
-            }
-        };
-        
-        updateAllCampaigns();
-
-        const interval = setInterval(updateAllCampaigns, 30000); // Update every 30 seconds
-        return () => clearInterval(interval);
-
-    }, [campaigns, firestore, authUser, forceCollectionUpdate]);
+            return campaign;
+        });
+    }, [rawCampaigns]);
 
 
     const stats = useMemo(() => {
