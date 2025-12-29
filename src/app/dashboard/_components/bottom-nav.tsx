@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -6,6 +5,7 @@ import {
   ShoppingCart,
   DollarSign,
   Users,
+  Megaphone,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,7 +37,7 @@ export function BottomNavBar() {
                   : 'text-muted-foreground hover:text-primary'
               )}
             >
-              <Icon className="h-5 w-5" />
+              {Icon && <Icon className="h-5 w-5" />}
               <span className="truncate">{item.label}</span>
             </Link>
           );

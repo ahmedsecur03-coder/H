@@ -39,7 +39,7 @@ export const publicNavItems: NestedNavItem[] = [
       icon: Package,
       children: [
         { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
+        { href: '/dashboard/campaigns/new', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
         { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية (ايجنسي)', description: 'شراء وشحن حسابات إعلانية احترافية.', icon: Briefcase },
         
       ]
@@ -49,15 +49,7 @@ export const publicNavItems: NestedNavItem[] = [
 ];
 
 export const dashboardNavItems: NestedNavItem[] = [
-  { href: '/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { 
-    label: 'الحملات الإعلانية',
-    icon: Megaphone,
-     children: [
-        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
-    ]
-  },
+  { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
   { 
     label: 'خدمات SMM',
     icon: ShoppingCart,
@@ -69,6 +61,15 @@ export const dashboardNavItems: NestedNavItem[] = [
   },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
+   { 
+    label: 'الحملات',
+    icon: Megaphone,
+     children: [
+        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
+        { href: '/dashboard/campaigns/new', label: 'حملة جديدة', icon: Rocket },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
+    ]
+  },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { 
       label: 'الحساب',

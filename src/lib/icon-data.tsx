@@ -5,13 +5,13 @@ import { WhatsAppIcon } from '@/components/ui/icons';
 
 export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   Instagram: InstagramIcon,
-  TikTok: Clapperboard, // Changed from Rss
+  TikTok: Clapperboard, 
   Facebook: Facebook,
   YouTube: Youtube,
   Telegram: Send,
   'X (Twitter)': Twitter,
   Google: Search, 
-  Snapchat: Star, // Using a generic icon as placeholder
+  Snapchat: Star, 
   'خدمات الألعاب': Gamepad2,
   'خرائط جوجل': MapPin,
   'زيارات مواقع': Search,
@@ -21,11 +21,9 @@ export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
   'Kwai': Star,
   'WhatsApp': WhatsAppIcon,
   'VK': Users,
-  'Threads': MessageSquare, // Changed from Rss
+  'Threads': MessageSquare, 
   'Kick': Radio,
   'Clubhouse': Club,
-  Meta: Facebook, // Using facebook as a representative icon for Meta
+  Meta: Facebook, 
   Default: Package,
 };
-
-    
