@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Card,
@@ -30,7 +29,6 @@ import { doc, collection, query, orderBy, limit, where } from 'firebase/firestor
 import type { User as UserType, Order, Service, AgencyAccount, Campaign } from '@/lib/types';
 import { getRankForSpend, RANKS } from '@/lib/service';
 import { QuickOrderForm } from './_components/quick-order-form';
-import { DailyRewardCard } from './_components/daily-reward-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -65,13 +63,12 @@ function DashboardSkeleton() {
                 <Skeleton className="h-9 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-                <div className="lg:col-span-2 space-y-6">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
+                <div className="lg:col-span-1 space-y-6">
                     <Skeleton className="h-[500px]" />
-                    <Skeleton className="h-64" />
                 </div>
                 <div className="lg:col-span-1 space-y-6">
-                     <Skeleton className="h-44 w-full" />
+                     <Skeleton className="h-64" />
                      <Skeleton className="h-[400px]" />
                 </div>
             </div>
@@ -195,9 +192,10 @@ export default function DashboardPage() {
                 <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. ابدأ طلبًا جديدًا أو تفقد أداء حملاتك.</p>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-                <div className="lg:col-span-2 space-y-6">
-                    <QuickOrderForm user={authUser} userData={userData} />
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
+                <QuickOrderForm user={authUser} userData={userData} />
+
+                <div className="space-y-6">
                     <Card>
                          <CardHeader>
                             <CardTitle className="font-headline text-xl">تحليل الأداء (آخر 7 أيام)</CardTitle>
@@ -216,82 +214,54 @@ export default function DashboardPage() {
                             </ChartContainer>
                          </CardContent>
                     </Card>
-                </div>
 
-                <div className="lg:col-span-1 space-y-6">
-                     <Card>
-                        <CardHeader className="flex-row items-center gap-4 space-y-0">
-                            <div className="p-3 bg-primary/10 rounded-full"><Megaphone className="h-6 w-6 text-primary" /></div>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <div>
-                                <CardTitle>الحملات الإعلانية</CardTitle>
-                                <CardDescription>{stats.activeCampaigns} حملة نشطة</CardDescription>
+                                <CardTitle className="font-headline text-xl">آخر الطلبات</CardTitle>
                             </div>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href="/dashboard/orders">
+                                    <ListOrdered className="ml-2 h-4 w-4" />
+                                    عرض الكل
+                                </Link>
+                            </Button>
                         </CardHeader>
-                        <CardFooter>
-                            <Button asChild className="w-full" variant="outline"><Link href="/dashboard/campaigns">إدارة الحملات</Link></Button>
-                        </CardFooter>
-                    </Card>
-                     <Card>
-                        <CardHeader className="flex-row items-center gap-4 space-y-0">
-                            <div className="p-3 bg-secondary/10 rounded-full"><Briefcase className="h-6 w-6 text-secondary" /></div>
-                            <div>
-                                <CardTitle>حسابات الوكالة</CardTitle>
-                                <CardDescription>لديك {stats.agencyAccountsCount} حساب</CardDescription>
+                        <CardContent>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                        <TableHead>الخدمة</TableHead>
+                                        <TableHead>الحالة</TableHead>
+                                        <TableHead className="text-right">التكلفة</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {recentOrders && recentOrders.length > 0 ? (
+                                            recentOrders.map(order => (
+                                                <TableRow key={order.id}>
+                                                    <TableCell className="font-medium">{order.serviceName}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={statusTranslation[order.status] ? chartConfig[statusTranslation[order.status]].label === 'مكتمل' ? 'default' : 'secondary' : 'default'}>{order.status}</Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-mono">${order.charge.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="h-24 text-center">
+                                                    لا توجد طلبات حديثة.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
                             </div>
-                        </CardHeader>
-                         <CardFooter>
-                            <Button asChild className="w-full" variant="outline"><Link href="/dashboard/agency-accounts">إدارة الحسابات</Link></Button>
-                        </CardFooter>
+                        </CardContent>
                     </Card>
-
                 </div>
             </div>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                        <CardTitle className="font-headline text-xl">آخر الطلبات</CardTitle>
-                    </div>
-                    <Button asChild variant="outline" size="sm">
-                        <Link href="/dashboard/orders">
-                            <ListOrdered className="ml-2 h-4 w-4" />
-                            عرض الكل
-                        </Link>
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                         <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead>الخدمة</TableHead>
-                                <TableHead>الحالة</TableHead>
-                                <TableHead className="text-right">التكلفة</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {recentOrders && recentOrders.length > 0 ? (
-                                    recentOrders.map(order => (
-                                        <TableRow key={order.id}>
-                                            <TableCell className="font-medium">{order.serviceName}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={statusTranslation[order.status] ? chartConfig[statusTranslation[order.status]].label === 'مكتمل' ? 'default' : 'secondary' : 'default'}>{order.status}</Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right font-mono">${order.charge.toFixed(2)}</TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={3} className="h-24 text-center">
-                                            لا توجد طلبات حديثة.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 }

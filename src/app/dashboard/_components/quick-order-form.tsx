@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle, ChevronsRight, Timer, Gauge, TrendingDown, ShieldCheck } from 'lucide-react';
+import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle, ChevronsRight, Timer, Gauge, TrendingDown, ShieldCheck, Megaphone, Briefcase } from 'lucide-react';
 import type { Service, Order, User as UserType, ServicePrice } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -23,6 +23,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { useServices } from '@/hooks/useServices';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const PROFIT_MARGIN = 1.50; // 50% profit margin
 
@@ -182,17 +183,17 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     };
 
     return (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden flex flex-col">
             <div className="p-6 bg-gradient-to-br from-primary/10 via-background to-background flex items-center justify-between">
                 <div>
-                    <CardTitle className="font-headline text-2xl">طلب سريع</CardTitle>
-                    <CardDescription>أسرع طريقة لإضافة طلب جديد.</CardDescription>
+                    <CardTitle className="font-headline text-2xl">مركز العمليات</CardTitle>
+                    <CardDescription>ابدأ طلبًا جديدًا أو انتقل إلى أقسامك الهامة.</CardDescription>
                 </div>
                 <Rocket className="h-10 w-10 text-primary" />
             </div>
 
-            <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-4 pt-6">
+            <form onSubmit={handleSubmit} className="flex-grow flex flex-col">
+                <CardContent className="space-y-4 pt-6 flex-grow">
                     <Select onValueChange={setPlatform} disabled={servicesLoading} value={platform}>
                         <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
                         <SelectContent>
@@ -264,18 +265,19 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     </AnimatePresence>
                 </CardContent>
 
-                <AnimatePresence>
-                {serviceId && (
-                    <motion.div key="footer-submit" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <CardFooter>
-                            <Button type="submit" className="w-full" disabled={isSubmitting || servicesLoading}>
-                                {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
-                                إرسال الطلب
-                            </Button>
-                        </CardFooter>
-                    </motion.div>
-                )}
-                </AnimatePresence>
+                <CardFooter className="mt-auto flex-col items-stretch gap-4 pt-6">
+                    {serviceId && (
+                        <Button type="submit" className="w-full" disabled={isSubmitting || servicesLoading}>
+                            {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
+                            إرسال الطلب
+                        </Button>
+                    )}
+                     <Separator />
+                    <div className="grid grid-cols-2 gap-2">
+                         <Button asChild variant="outline"><Link href="/dashboard/campaigns"><Megaphone className="ml-2 h-4 w-4" />إدارة الحملات</Link></Button>
+                        <Button asChild variant="outline"><Link href="/dashboard/agency-accounts"><Briefcase className="ml-2 h-4 w-4" />حسابات الوكالة</Link></Button>
+                    </div>
+                </CardFooter>
             </form>
         </Card>
     );
