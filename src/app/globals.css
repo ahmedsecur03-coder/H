@@ -4,53 +4,6 @@
 
 @layer base {
   :root {
-    --background: 220 20% 98%;
-    --foreground: 224 71% 4%;
-
-    --card: 220 20% 100%;
-    --card-foreground: 224 71% 4%;
-
-    --popover: 220 20% 100%;
-    --popover-foreground: 224 71% 4%;
-
-    --primary: 340 82% 56%; /* Aurora Pink */
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 262 84% 60%; /* Cosmic Purple */
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 220 20% 94%;
-    --muted-foreground: 220 10% 45%;
-
-    --accent: 220 20% 90%;
-    --accent-foreground: 224 71% 4%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 340 82% 56%;
-    
-    --radius: 0.75rem;
-    
-    --chart-1: 340 82% 56%;
-    --chart-2: 262 84% 60%;
-    --chart-3: 190 85% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 50 90% 55%;
-
-    --sidebar-background: 220 20% 99%;
-    --sidebar-foreground: 224 71% 4%;
-    --sidebar-primary: 340 82% 56%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 220 15% 92%;
-    --sidebar-accent-foreground: 224 71% 4%;
-    --sidebar-border: 220 15% 90%;
-    --sidebar-ring: 340 82% 56%;
-  }
-
-  .dark {
     --background: 224 71% 4%; /* Deep Space Blue */
     --foreground: 210 40% 98%;
 
@@ -60,8 +13,8 @@
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 190 85% 55%; /* Aurora Cyan */
-    --primary-foreground: 224 71% 4%;
+    --primary: 22 96% 54%; /* Fiery Orange */
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 262 84% 60%; /* Cosmic Purple */
     --secondary-foreground: 210 40% 98%;
@@ -75,20 +28,67 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 190 85% 55% / 0.1; /* Cyan border */
-    --input: 190 85% 55% / 0.2;
-    --ring: 190 85% 55%;
+    --border: 22 96% 54% / 0.1; /* Orange border */
+    --input: 22 96% 54% / 0.2;
+    --ring: 22 96% 54%;
+    
+    --radius: 0.75rem;
+    
+    --chart-1: 22 96% 54%;
+    --chart-2: 262 84% 60%;
+    --chart-3: 340 82% 56%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 50 90% 55%;
 
     --sidebar-background: 224 71% 6%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 190 85% 55%;
-    --sidebar-primary-foreground: 224 71% 4%;
+    --sidebar-primary: 22 96% 54%;
+    --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 224 71% 12%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 190 85% 55% / 0.1;
-    --sidebar-ring: 190 85% 55%;
+    --sidebar-border: 22 96% 54% / 0.1;
+    --sidebar-ring: 22 96% 54%;
+  }
 
-    --chart-1: 190 85% 55%;
+  .dark {
+    --background: 224 71% 4%; /* Deep Space Blue */
+    --foreground: 210 40% 98%;
+
+    --card: 224 71% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 22 96% 54%; /* Fiery Orange */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 262 84% 60%; /* Cosmic Purple */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 224 71% 12%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 224 71% 12%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 22 96% 54% / 0.1; /* Orange border */
+    --input: 22 96% 54% / 0.2;
+    --ring: 22 96% 54%;
+
+    --sidebar-background: 224 71% 6%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 22 96% 54%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 224 71% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 22 96% 54% / 0.1;
+    --sidebar-ring: 22 96% 54%;
+
+    --chart-1: 22 96% 54%;
     --chart-2: 262 84% 60%;
     --chart-3: 340 82% 56%;
     --chart-4: 280 65% 60%;
@@ -98,10 +98,11 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

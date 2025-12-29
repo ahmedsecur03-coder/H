@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service } from '@/lib/types';
@@ -229,7 +228,7 @@ function ServicesTableComponent() {
               </CardContent>
               <CardFooter>
                   <Button asChild className="w-full">
-                      <Link href={`/dashboard?prefill=${encodeURIComponent(`${selectedService.id}| |`)}#quick-order`}>
+                      <Link href={`/dashboard/mass-order?prefill=${encodeURIComponent(`${selectedService.id}| |`)}`}>
                           اطلب هذه الخدمة
                       </Link>
                   </Button>
