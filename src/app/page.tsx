@@ -202,18 +202,18 @@ export default function HomePage() {
   }
 
  const featureCards = [
-    { icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط.", href: "/dashboard/campaigns/new" },
-    { icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية.", href: "/dashboard/agency-accounts" },
-    { icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة وشبكية من دعواتك حتى 5 مستويات.", href: "/dashboard/affiliate" },
-    { icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة.", href: "/dashboard/services" },
-    { icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة.", href: "/dashboard/support" },
-    { icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح.", href: "/services" }
+    { key: "feature-1", icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط.", href: "/dashboard/campaigns/new" },
+    { key: "feature-2", icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية.", href: "/dashboard/agency-accounts" },
+    { key: "feature-3", icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة وشبكية من دعواتك حتى 5 مستويات.", href: "/dashboard/affiliate" },
+    { key: "feature-4", icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة.", href: "/dashboard/services" },
+    { key: "feature-5", icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة.", href: "/dashboard/support" },
+    { key: "feature-6", icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح.", href: "/services" }
 ];
 
   const howItWorksSteps = [
-    { icon: UserPlus, title: "أنشئ حسابك", description: "انضم إلى منصتنا في أقل من دقيقة وابدأ رحلتك." },
-    { icon: DollarSign, title: "اشحن رصيدك", description: "اختر من بين طرق الدفع المتعددة والآمنة." },
-    { icon: Rocket, title: "أطلق خدماتك", description: "اختر الخدمة التي تناسبك وانطلق نحو النجاح." }
+    { key: "step-1", icon: UserPlus, title: "أنشئ حسابك", description: "انضم إلى منصتنا في أقل من دقيقة وابدأ رحلتك." },
+    { key: "step-2", icon: DollarSign, title: "اشحن رصيدك", description: "اختر من بين طرق الدفع المتعددة والآمنة." },
+    { key: "step-3", icon: Rocket, title: "أطلق خدماتك", description: "اختر الخدمة التي تناسبك وانطلق نحو النجاح." }
   ];
 
 
@@ -285,7 +285,7 @@ export default function HomePage() {
                     const Icon = feature.icon;
                     return (
                         <motion.div
-                          key={feature.title}
+                          key={feature.key}
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: i * 0.1 }}
@@ -348,7 +348,7 @@ export default function HomePage() {
                     const Icon = step.icon;
                     return (
                        <motion.div
-                            key={step.title}
+                            key={step.key}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: i * 0.2 }}

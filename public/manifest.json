@@ -4,8 +4,8 @@
   "description": "انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#e11d48",
+  "background_color": "#111827",
+  "theme_color": "#F97316",
   "icons": [
     {
       "src": "/icon-192x192.png",
