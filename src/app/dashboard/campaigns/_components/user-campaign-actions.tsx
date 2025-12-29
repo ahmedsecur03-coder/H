@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, runTransaction, updateDoc } from 'firebase/firestore';
-import type { Campaign, User } from '@/lib/types';
+import { doc, runTransaction, updateDoc, arrayUnion, Firestore } from 'firebase/firestore';
+import type { Campaign, User, Notification } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Loader2, PauseCircle, MoreHorizontal, FileText } from 'lucide-react';
@@ -28,6 +27,82 @@ import {
 
 import { CampaignDetailsDialog } from './campaign-details-dialog';
 
+
+/**
+ * A client-side action to automatically activate a campaign and deduct the balance.
+ * This simulates a backend process after a short "review" period.
+ * @param firestore The Firestore instance.
+ * @param userId The ID of the user who owns the campaign.
+ * @param campaignId The ID of the campaign to activate.
+ */
+export async function activateCampaignAndDeductBalance(firestore: Firestore, userId: string, campaignId: string) {
+    if (!firestore) {
+        throw new Error("Firestore not initialized.");
+    }
+    
+    const userDocRef = doc(firestore, `users/${userId}`);
+    const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, campaignId);
+
+    try {
+        await runTransaction(firestore, async (transaction) => {
+            const userDoc = await transaction.get(userDocRef);
+            const campaignDoc = await transaction.get(campaignDocRef);
+
+            if (!userDoc.exists() || !campaignDoc.exists()) {
+                throw new Error("User or Campaign not found.");
+            }
+            
+            const userData = userDoc.data() as User;
+            const campaignData = campaignDoc.data() as Campaign;
+
+            if (campaignData.status !== 'بانتظار المراجعة') {
+                return;
+            }
+
+            if ((userData.adBalance ?? 0) < campaignData.budget) {
+                const notification: Notification = {
+                    id: `campaign-fail-${campaignId}`,
+                    message: `فشلت مراجعة حملتك "${campaignData.name}" بسبب عدم كفاية رصيد الإعلانات.`,
+                    type: 'error',
+                    read: false,
+                    createdAt: new Date().toISOString(),
+                    href: '/dashboard/add-funds'
+                };
+                transaction.update(userDocRef, {
+                    notifications: arrayUnion(notification)
+                });
+                return;
+            }
+
+            const newAdBalance = (userData.adBalance ?? 0) - campaignData.budget;
+            
+            const campaignUpdates = { 
+                status: 'نشط' as const,
+                startDate: new Date().toISOString(),
+            };
+            
+            const notification: Notification = {
+                id: `campaign-act-${campaignId}`,
+                message: `تم تفعيل حملتك الإعلانية "${campaignData.name}" بنجاح وبدأت في العمل.`,
+                type: 'success',
+                read: false,
+                createdAt: new Date().toISOString(),
+                href: '/dashboard/campaigns'
+            };
+
+            transaction.update(userDocRef, { 
+                adBalance: newAdBalance,
+                notifications: arrayUnion(notification)
+            });
+            transaction.update(campaignDocRef, campaignUpdates);
+        });
+    } catch (error) {
+        console.error(`Failed to activate campaign ${campaignId} for user ${userId}:`, error);
+        throw error;
+    }
+}
+
+
 // --- DYNAMIC SIMULATION ENGINE ---
 export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => {
     if (campaign.status !== 'نشط' || !campaign.startDate) {
@@ -40,14 +115,12 @@ export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campai
     const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
     const endTime = startTime + totalDurationMillis;
 
-    // Calculate progress, ensuring it doesn't exceed 1 (100%)
     const elapsedMillis = Math.max(0, now - startTime);
     const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
     
-    // If campaign is finished based on time
     if (progress >= 1) {
-        const finalSpend = budget; // At the end, spend equals budget
-        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20)); // Add some final random impressions
+        const finalSpend = budget; 
+        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20));
         const finalClicks = (campaign.clicks || 0) + Math.floor(Math.random() * (budget * 2));
         const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
         const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
@@ -63,18 +136,17 @@ export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campai
         };
     }
 
-    // Calculate the "ideal" spend based on time progress, with some organic randomness
     const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
 
     if (simulatedSpend <= (campaign.spend || 0)) {
-        return {}; // No significant change to report
+        return {};
     }
 
-    const impressions = Math.floor(simulatedSpend * (Math.random() * 150 + 50)); // Random impressions per dollar
-    const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01)); // CTR between 1% and 6%
+    const impressions = Math.floor(simulatedSpend * (Math.random() * 150 + 50));
+    const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01));
     const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
     const cpc = clicks > 0 ? simulatedSpend / clicks : 0;
-    const results = Math.floor(clicks * 0.2); // Assume 20% of clicks are "results"
+    const results = Math.floor(clicks * 0.2);
 
     return {
         spend: simulatedSpend,
@@ -94,10 +166,8 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
     const [loading, setLoading] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
 
-    // Get the most up-to-date campaign performance data for display
     const liveCampaignData = useMemo(() => {
         if (campaign.status === 'نشط') {
-             // Calculate performance on-the-fly for display purposes
             return { ...campaign, ...calculateCampaignPerformance(campaign) };
         }
         return campaign;
@@ -111,7 +181,6 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
 
         try {
-            // First, calculate the most up-to-date performance before stopping
             const finalPerformance = calculateCampaignPerformance(campaign);
             
             await runTransaction(firestore, async (transaction) => {
@@ -124,20 +193,16 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                 const currentCampaignData = campaignDoc.data() as Campaign;
                 if(currentCampaignData.status !== 'نشط') throw new Error("لا يمكن إيقاف إلا الحملات النشطة.");
 
-                // Use the most recently calculated spend
                 const finalSpend = finalPerformance.spend ?? currentCampaignData.spend;
 
-                // Calculate remaining budget
                 const remainingBudget = currentCampaignData.budget - (finalSpend || 0);
 
-                // Refund remaining budget to user's adBalance
                 if (remainingBudget > 0) {
                     const currentAdBalance = userDoc.data()?.adBalance ?? 0;
                     const newAdBalance = currentAdBalance + remainingBudget;
                     transaction.update(userDocRef, { adBalance: newAdBalance });
                 }
 
-                // Update campaign status to 'متوقف' and set final numbers
                 transaction.update(campaignDocRef, { 
                     ...finalPerformance,
                     status: 'متوقف',
@@ -146,7 +211,7 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
             });
 
             toast({ title: "نجاح", description: "تم إيقاف الحملة وإعادة الرصيد المتبقي." });
-            forceCollectionUpdate(); // Force re-fetch
+            forceCollectionUpdate();
             setIsAlertOpen(false);
 
         } catch (error: any) {

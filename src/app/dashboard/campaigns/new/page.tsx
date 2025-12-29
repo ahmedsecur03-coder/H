@@ -33,7 +33,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { activateCampaignAndDeductBalance } from '../_actions/campaigns-server-action';
+import { activateCampaignAndDeductBalance } from '../_components/user-campaign-actions';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -181,12 +181,11 @@ export default function NewCampaignPage() {
             
             toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعة حملتك وتفعيلها تلقائيًا خلال لحظات." });
             
-            // --- AUTOMATIC ACTIVATION LOGIC ---
+            // --- AUTOMATIC ACTIVATION LOGIC (Client-Side) ---
             const reviewTime = Math.random() * (15000 - 5000) + 5000; // 5 to 15 seconds
             setTimeout(() => {
-                activateCampaignAndDeductBalance(authUser.uid, docRef.id).catch(error => {
+                activateCampaignAndDeductBalance(firestore, authUser.uid, docRef.id).catch(error => {
                     console.error("Auto-activation failed:", error);
-                    // Optionally notify the user about the failure
                 });
             }, reviewTime);
 

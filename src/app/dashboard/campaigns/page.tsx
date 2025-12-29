@@ -43,7 +43,7 @@ export default function CampaignsPage() {
     const firestore = useFirestore();
 
     const campaignsQuery = useMemoFirebase(
-        () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
+        () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('status', 'asc'), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
     const { data: rawCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
@@ -60,11 +60,16 @@ export default function CampaignsPage() {
         if (!rawCampaigns) return [];
         return rawCampaigns.map(campaign => {
             if (campaign.status === 'نشط') {
-                return { ...campaign, ...calculateCampaignPerformance(campaign) };
+                const liveData = calculateCampaignPerformance(campaign);
+                if (liveData.status === 'مكتمل' && firestore && authUser) {
+                    const campaignDocRef = doc(firestore, `users/${authUser.uid}/campaigns`, campaign.id);
+                    updateDoc(campaignDocRef, liveData).catch(console.error);
+                }
+                return { ...campaign, ...liveData };
             }
             return campaign;
         });
-    }, [rawCampaigns]);
+    }, [rawCampaigns, firestore, authUser]);
 
 
     const stats = useMemo(() => {
