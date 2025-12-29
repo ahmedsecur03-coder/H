@@ -59,7 +59,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#1a202c" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
       </head>
-      <body className={cn('font-sans antialiased bg-background', fontSans.variable, fontHeadline.variable)}>
+      <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
          <ThemeProvider
           attribute="class"
           defaultTheme="dark"
