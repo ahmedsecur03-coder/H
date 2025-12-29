@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -141,7 +142,7 @@ export default function DashboardLayout({
 
     if (isUserLoading || isUserDataLoading || !user || !userData) {
       return (
-           <div className="flex min-h-screen w-full items-center justify-center">
+           <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
       )
