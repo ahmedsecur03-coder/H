@@ -115,6 +115,17 @@ export type AgencyAccount = {
     balance: number;
 };
 
+export type AgencyChargeRequest = {
+    id: string;
+    userId: string;
+    accountId: string;
+    accountName: string;
+    platform: 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
+    amount: number;
+    requestDate: string;
+    status: 'معلق' | 'مقبول' | 'مرفوض';
+};
+
 export type Deposit = {
     id: string;
     userId: string;

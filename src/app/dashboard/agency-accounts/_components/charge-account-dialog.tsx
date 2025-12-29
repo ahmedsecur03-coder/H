@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { AgencyAccount, User as UserType } from '@/lib/types';
+import type { AgencyAccount, User as UserType, AgencyChargeRequest } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import {
@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, runTransaction } from 'firebase/firestore';
+import { addDoc, collection, doc } from 'firebase/firestore';
 
 export function ChargeAccountDialog({
   account,
@@ -53,47 +53,31 @@ export function ChargeAccountDialog({
 
     setLoading(true);
 
-    const userDocRef = doc(firestore, 'users', user.uid);
-    const agencyAccountDocRef = doc(firestore, `users/${user.uid}/agencyAccounts`, account.id);
+    const chargeRequestData: Omit<AgencyChargeRequest, 'id'> = {
+        userId: user.uid,
+        accountId: account.id,
+        accountName: account.accountName,
+        platform: account.platform,
+        amount: chargeAmount,
+        requestDate: new Date().toISOString(),
+        status: 'معلق'
+    };
 
+    const requestsColRef = collection(firestore, `users/${user.uid}/agencyChargeRequests`);
+    
     try {
-        await runTransaction(firestore, async (transaction) => {
-            const userDoc = await transaction.get(userDocRef);
-            const agencyAccDoc = await transaction.get(agencyAccountDocRef);
-
-            if (!userDoc.exists() || !agencyAccDoc.exists()) {
-                throw new Error("User or Agency Account not found.");
-            }
-
-            const currentAdBalance = userDoc.data()?.adBalance ?? 0;
-            if (currentAdBalance < chargeAmount) {
-                 throw new Error("رصيد الإعلانات غير كافٍ.");
-            }
-            const currentAccountBalance = agencyAccDoc.data()?.balance ?? 0;
-
-            // 1. Deduct amount from user's adBalance
-            const newAdBalance = currentAdBalance - chargeAmount;
-            transaction.update(userDocRef, { adBalance: newAdBalance });
-
-            // 2. Add amount to agency account's balance
-            const newAccountBalance = currentAccountBalance + chargeAmount;
-            transaction.update(agencyAccountDocRef, { balance: newAccountBalance });
-        });
-
-        toast({ title: 'نجاح!', description: `تم شحن حساب ${account.accountName} بمبلغ ${chargeAmount}$.` });
+        await addDoc(requestsColRef, chargeRequestData);
+        toast({ title: 'تم إرسال طلب الشحن', description: 'سيقوم المسؤول بمراجعة طلبك وتأكيده قريبًا.' });
         onChargeComplete();
         setOpen(false);
         setAmount('');
-    } catch (error: any) {
-        if (error.message.includes("رصيد")) {
-            toast({ variant: 'destructive', title: 'فشل الشحن', description: error.message });
-        } else {
-            const permissionError = new FirestorePermissionError({ 
-                path: `users/${user.uid}`, 
-                operation: 'update',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        }
+    } catch(error) {
+        const permissionError = new FirestorePermissionError({ 
+            path: requestsColRef.path, 
+            operation: 'create',
+            requestResourceData: chargeRequestData
+        });
+        errorEmitter.emit('permission-error', permissionError);
     } finally {
       setLoading(false);
     }
@@ -106,7 +90,7 @@ export function ChargeAccountDialog({
         <DialogHeader>
           <DialogTitle>شحن رصيد: {account.accountName}</DialogTitle>
           <DialogDescription>
-            أدخل المبلغ المراد تحويله من رصيد إعلاناتك العام إلى هذا الحساب.
+            أدخل المبلغ المراد تحويله من رصيد إعلاناتك العام إلى هذا الحساب. سيتم إرسال الطلب للمراجعة.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -127,7 +111,7 @@ export function ChargeAccountDialog({
           </p>
           <DialogFooter>
             <Button type="submit" disabled={loading || !amount} className="w-full">
-              {loading ? <Loader2 className="animate-spin" /> : 'تأكيد الشحن'}
+              {loading ? <Loader2 className="animate-spin" /> : 'إرسال طلب الشحن'}
             </Button>
           </DialogFooter>
         </form>

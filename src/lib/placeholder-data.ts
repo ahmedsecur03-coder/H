@@ -27,6 +27,7 @@ import {
   UserCircle,
   Info,
   Terminal,
+  WalletCards
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -90,6 +91,7 @@ export const adminNavItems: NestedNavItem[] = [
         children: [
            { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
            { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
+           { href: '/admin/agency-charges', label: 'شحن حسابات الوكالة', icon: WalletCards },
         ]
     },
     { 

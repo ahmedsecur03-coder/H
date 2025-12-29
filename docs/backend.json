@@ -274,6 +274,23 @@
         },
         "required": ["id", "userId", "platform", "accountName", "status", "createdAt", "balance"]
     },
+    "AgencyChargeRequest": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Agency Account Charge Request",
+        "type": "object",
+        "description": "Represents a user's request to charge an agency account.",
+        "properties": {
+            "id": { "type": "string" },
+            "userId": { "type": "string" },
+            "accountId": { "type": "string" },
+            "accountName": { "type": "string" },
+            "platform": { "type": "string", "enum": ["Meta", "Google", "TikTok", "Snapchat"] },
+            "amount": { "type": "number" },
+            "requestDate": { "type": "string", "format": "date-time" },
+            "status": { "type": "string", "enum": ["معلق", "مقبول", "مرفوض"] }
+        },
+        "required": ["id", "userId", "accountId", "accountName", "platform", "amount", "requestDate", "status"]
+    },
     "Deposit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Deposit",
@@ -548,6 +565,12 @@
             "$ref": "#/entities/AgencyAccount"
         },
         "description": "Stores purchased agency accounts for a user."
+    },
+     "/users/{userId}/agencyChargeRequests/{requestId}": {
+      "schema": {
+        "$ref": "#/entities/AgencyChargeRequest"
+      },
+      "description": "Stores requests from users to charge their agency accounts."
     },
     "/users/{userId}/deposits/{depositId}": {
       "schema": {
