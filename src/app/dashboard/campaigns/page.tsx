@@ -38,12 +38,20 @@ function CampaignsSkeleton() {
     );
 }
 
+const statusOrder: Record<Campaign['status'], number> = {
+    'نشط': 1,
+    'بانتظار المراجعة': 2,
+    'متوقف': 3,
+    'مكتمل': 4,
+};
+
+
 export default function CampaignsPage() {
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
 
     const campaignsQuery = useMemoFirebase(
-        () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('status', 'asc'), orderBy('startDate', 'desc')) : null),
+        () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
     const { data: rawCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
@@ -58,7 +66,8 @@ export default function CampaignsPage() {
 
     const campaigns = useMemo(() => {
         if (!rawCampaigns) return [];
-        return rawCampaigns.map(campaign => {
+        
+        const updatedCampaigns = rawCampaigns.map(campaign => {
             if (campaign.status === 'نشط') {
                 const liveData = calculateCampaignPerformance(campaign);
                 if (liveData.status === 'مكتمل' && firestore && authUser) {
@@ -69,6 +78,10 @@ export default function CampaignsPage() {
             }
             return campaign;
         });
+
+        // Sort on the client-side by status priority
+        return updatedCampaigns.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+
     }, [rawCampaigns, firestore, authUser]);
 
 
