@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,7 @@ import type { BlogPost } from '@/lib/types';
 interface PostDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    post?: Partial<BlogPost>; // Changed to Partial<BlogPost>
+    post?: Partial<BlogPost>;
     onSave: (data: { title: string; content: string }) => void;
 }
 
@@ -44,6 +44,9 @@ export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{post?.id ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
+                    <DialogDescription>
+                        قم بملء تفاصيل المنشور هنا. سيتم عرضه في صفحة المدونة.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">

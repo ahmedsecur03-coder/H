@@ -61,7 +61,7 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
         try {
             await updateDoc(userDocRef, updateData);
             toast({ title: 'نجاح', description: 'تم تحديث بيانات المستخدم.' });
-            onUserUpdate(); // This will now trigger fetchUsers in the parent
+            onUserUpdate();
             setOpen(false);
         } catch (error) {
             const permissionError = new FirestorePermissionError({
@@ -123,5 +123,3 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
         </Dialog>
     );
 }
-
-    

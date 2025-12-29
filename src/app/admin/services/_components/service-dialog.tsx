@@ -24,7 +24,7 @@ export function ServiceDialog({ service, onSave, children, onOpenChange, open }:
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        onSave({ price: price });
+        onSave({ price: parseFloat(String(price)) || 0 });
         // The parent component will handle closing the dialog and resetting state
     };
     
