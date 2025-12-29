@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, runTransaction } from 'firebase/firestore';
+import { doc, runTransaction, updateDoc } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -32,6 +32,57 @@ const statusVariant = {
   'مكتمل': 'outline',
   'بانتظار المراجعة': 'destructive',
 } as const;
+
+
+// --- SIMULATION LOGIC ---
+const simulateCampaignPerformance = (campaign: Campaign, firestore: any, forceCollectionUpdate: () => void) => {
+    const { id, userId, budget, durationDays } = campaign;
+    const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, id);
+    const dailySpend = budget / durationDays;
+
+    let currentSpend = 0;
+    let currentImpressions = 0;
+    let currentClicks = 0;
+
+    for (let day = 1; day <= durationDays; day++) {
+        setTimeout(() => {
+            // Simulate this day's performance
+            currentSpend += dailySpend;
+            const dailyImpressions = Math.floor(Math.random() * (dailySpend * 200)) + 500;
+            const dailyClicks = Math.floor(dailyImpressions * (Math.random() * 0.05 + 0.01));
+            
+            currentImpressions += dailyImpressions;
+            currentClicks += dailyClicks;
+
+            const ctr = (currentClicks / currentImpressions) * 100;
+            const cpc = currentSpend / currentClicks;
+
+            const updates: Partial<Campaign> = {
+                spend: Math.min(currentSpend, budget),
+                impressions: currentImpressions,
+                clicks: currentClicks,
+                results: Math.floor(currentClicks * 0.2), // Assume 20% of clicks are "results"
+                ctr: isNaN(ctr) ? 0 : ctr,
+                cpc: isNaN(cpc) ? 0 : cpc,
+            };
+
+            // If it's the last day, mark as complete
+            if (day === durationDays) {
+                updates.status = 'مكتمل';
+                updates.spend = budget; // Ensure spend matches budget exactly at the end
+            }
+
+            updateDoc(campaignDocRef, updates).then(() => {
+                if (day === durationDays) {
+                    forceCollectionUpdate(); // Force a final refresh when completed
+                }
+            }).catch(e => console.error(`Simulation update failed for day ${day}:`, e));
+            
+        }, day * 5000); // Simulate each "day" as 5 seconds
+    }
+};
+// --- END SIMULATION LOGIC ---
+
 
 export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
     const firestore = useFirestore();
@@ -85,9 +136,12 @@ export function CampaignActions({ campaign, forceCollectionUpdate }: { campaign:
                 transaction.update(campaignDocRef, updates);
             });
 
-            toast({ title: 'نجاح', description: 'تم تفعيل الحملة وخصم الميزانية من رصيد إعلانات المستخدم.' });
+            toast({ title: 'نجاح', description: 'تم تفعيل الحملة وبدء المحاكاة.' });
             forceCollectionUpdate();
             setOpen(false);
+            
+            // --- START SIMULATION ---
+            simulateCampaignPerformance(campaign, firestore, forceCollectionUpdate);
 
         } catch (error: any) {
              toast({
