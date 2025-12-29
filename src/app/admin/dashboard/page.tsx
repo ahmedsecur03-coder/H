@@ -205,7 +205,7 @@ export default function AdminDashboardPage() {
                  <CardDescription>الإيرادات والمستخدمون الجدد في آخر 7 أيام.</CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                <ChartContainer config={chartConfig} className="aspect-video">
                    <ResponsiveContainer>
                         <ComposedChart
                             data={performanceData}

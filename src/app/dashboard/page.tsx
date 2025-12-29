@@ -231,7 +231,7 @@ export default function DashboardPage() {
                             <CardDescription>مقارنة بين إنفاق الطلبات والحملات.</CardDescription>
                          </CardHeader>
                          <CardContent>
-                             <ChartContainer config={chartConfig} className="h-64 w-full">
+                             <ChartContainer config={chartConfig} className="aspect-video">
                                 <ComposedChart data={performanceData}>
                                     <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })} />
                                     <YAxis tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
@@ -298,7 +298,7 @@ export default function DashboardPage() {
                            <CardTitle className="font-headline text-xl">توزيع حالات الطلبات</CardTitle>
                         </CardHeader>
                         <CardContent>
-                             <ChartContainer config={chartConfig} className="h-56 w-full">
+                             <ChartContainer config={chartConfig} className="aspect-square">
                                 <PieChart>
                                     <Tooltip content={<ChartTooltipContent hideLabel />} />
                                     <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} strokeWidth={5}>
@@ -337,5 +337,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    
