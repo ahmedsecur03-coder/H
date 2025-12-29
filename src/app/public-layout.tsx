@@ -306,7 +306,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-     <div className="flex min-h-screen flex-col font-sans antialiased">
+     <div className="flex min-h-screen flex-col">
        <Header />
       <main className="flex-1">
         <div className="container mx-auto px-4 md:px-6 py-8">
