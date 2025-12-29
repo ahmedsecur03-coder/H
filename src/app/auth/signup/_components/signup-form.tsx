@@ -44,25 +44,22 @@ export default function SignupForm() {
       // This is important for the UserInitializer to pick up the correct name.
       await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
       
-      // Step 3 (Server-side handled by Cloud Function or a separate API call if needed for referral)
-      // For now, the client-side UserInitializer will handle creating the user doc.
-      // We can trigger a cloud function here if we need immediate server-side logic like updating referrer counts.
-      // For simplicity in this context, we rely on the client provider.
-      
-      // If a referral code exists, we can still try a "best-effort" client-side update.
+      // If a referral code exists, find the referrer to link them.
+      let referrerId: string | null = null;
       if (referralCode) {
-        const usersRef = collection(firestore, 'users');
-        const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-        getDocs(q).then(querySnapshot => {
+          const usersRef = collection(firestore, 'users');
+          const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
+          const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            const referrerDoc = querySnapshot.docs[0];
-            updateDoc(referrerDoc.ref, { referralsCount: increment(1) }).catch(err => {
-              // Silently fail if this update fails, as it's not critical for the signup flow.
-              console.warn("Could not update referrer count:", err);
-            });
+              const referrerDoc = querySnapshot.docs[0];
+              referrerId = referrerDoc.id;
+              // We'll increment the count in the UserInitializer now
           }
-        });
       }
+      
+      // The UserInitializer will now handle creating the user document on the next load,
+      // which is more robust.
+      // For immediate creation if needed (e.g. for server-side logic), it would be done here.
 
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
@@ -84,12 +81,6 @@ export default function SignupForm() {
         });
 
         console.error("Signup Error:", error);
-        // We still emit the error for logging purposes
-        const permissionError = new FirestorePermissionError({
-            path: `users/${auth.currentUser?.uid || 'unknown_on_error'}`,
-            operation: 'create',
-        });
-        errorEmitter.emit('permission-error', permissionError);
 
     } finally {
         setLoading(false);
