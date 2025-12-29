@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
@@ -88,7 +87,7 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-8 z-10">
             <div className="flex justify-center">
                 <AuthLogo />
@@ -134,7 +133,7 @@ export default function SignupForm() {
                         />
                 </div>
                  <div>
-                    <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/70 text-primary-foreground hover:brightness-110 transition-all duration-300" disabled={loading}>
+                    <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? <Loader2 className="animate-spin" /> : 'إنشاء الحساب'}
                     </Button>
                 </div>

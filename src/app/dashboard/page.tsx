@@ -194,11 +194,27 @@ export default function DashboardPage() {
             </div>
             
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-                 <div className="lg:col-span-2 order-2 lg:order-1">
+                <div className="lg:col-span-2">
                     <QuickOrderForm user={authUser} userData={userData} />
-                 </div>
-                <div className="lg:col-span-1 space-y-6 order-1 lg:order-2">
-                     <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                </div>
+                <div className="lg:col-span-1 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline text-lg">مستوى رتبتك</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-center">
+                             <rank.icon className="h-16 w-16 text-primary mx-auto" />
+                             <h3 className="text-2xl font-bold mt-2">{rank.name}</h3>
+                             <p className="text-sm text-primary">خصم {rank.discount}% على كل الطلبات</p>
+                             {nextRank && (
+                                <div className="mt-4 text-xs">
+                                     <Progress value={progressToNextRank} className="h-1" />
+                                    <p className="mt-2 text-muted-foreground">أنفق <span className="font-bold text-foreground">${amountToNextRank.toFixed(2)}</span> للوصول إلى رتبة {nextRank.name}!</p>
+                                </div>
+                             )}
+                        </CardContent>
+                    </Card>
+                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 </div>
             </div>
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -166,7 +165,7 @@ export default function AgencyAccountsPage() {
                                 ))}
                             </div>
                             {/* Desktop View */}
-                            <div className="hidden md:block">
+                            <div className="overflow-x-auto hidden md:block">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>

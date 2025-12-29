@@ -45,6 +45,40 @@ const statusOrder: Record<Campaign['status'], number> = {
     'مكتمل': 4,
 };
 
+function CampaignCard({ campaign, onUpdate }: { campaign: Campaign, onUpdate: () => void }) {
+    const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
+    const statusVariant = {
+        'نشط': 'default',
+        'متوقف': 'secondary',
+        'مكتمل': 'outline',
+        'بانتظار المراجعة': 'destructive',
+    } as const;
+
+    return (
+        <Card className="flex flex-col">
+            <CardHeader className="flex-row items-start gap-4">
+                <Icon className="w-8 h-8 text-muted-foreground" />
+                <div>
+                    <CardTitle className="text-base">{campaign.name}</CardTitle>
+                    <CardDescription>{new Date(campaign.startDate || campaign.endDate || Date.now()).toLocaleDateString('ar-EG')}</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm flex-grow">
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">الحالة</span>
+                    <Badge variant={statusVariant[campaign.status]}>{campaign.status}</Badge>
+                </div>
+                 <div className="flex justify-between">
+                    <span className="text-muted-foreground">الإنفاق / الميزانية</span>
+                    <span className="font-mono font-bold">${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}</span>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <UserCampaignActions campaign={campaign} forceCollectionUpdate={onUpdate} />
+            </CardFooter>
+        </Card>
+    )
+}
 
 export default function CampaignsPage() {
     const { user: authUser, isUserLoading } = useUser();
@@ -170,38 +204,48 @@ export default function CampaignsPage() {
             </CardHeader>
             <CardContent>
                 {campaigns && campaigns.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>اسم الحملة</TableHead>
-                                <TableHead>الحالة</TableHead>
-                                <TableHead>الإنفاق / الميزانية</TableHead>
-                                <TableHead className="text-right">الإجراءات</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {campaigns.map((campaign) => {
-                                const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
-                                return (
-                                <TableRow key={campaign.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-3">
-                                            <Icon className="w-5 h-5 text-muted-foreground" />
-                                            <span>{campaign.name}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
-                                    <TableCell className="font-mono">
-                                        ${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <UserCampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
-                                    </TableCell>
-                                </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
+                    <>
+                        {/* Mobile View */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
+                            {campaigns.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} onUpdate={forceCollectionUpdate} />)}
+                        </div>
+
+                        {/* Desktop View */}
+                        <div className="overflow-x-auto hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>اسم الحملة</TableHead>
+                                        <TableHead>الحالة</TableHead>
+                                        <TableHead>الإنفاق / الميزانية</TableHead>
+                                        <TableHead className="text-right">الإجراءات</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {campaigns.map((campaign) => {
+                                        const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
+                                        return (
+                                        <TableRow key={campaign.id}>
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-3">
+                                                    <Icon className="w-5 h-5 text-muted-foreground" />
+                                                    <span>{campaign.name}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
+                                            <TableCell className="font-mono">
+                                                ${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <UserCampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
+                                            </TableCell>
+                                        </TableRow>
+                                        )
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </>
                 ) : (
                     <div className="text-center py-10">
                         <Rocket className="mx-auto h-12 w-12 text-muted-foreground" />
