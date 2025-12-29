@@ -37,7 +37,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import PublicLayout from './public-layout';
 
 
 const serviceCategories = [
@@ -200,205 +199,203 @@ export default function HomePage() {
 
 
   return (
-    <PublicLayout>
-        <div className="space-y-24">
-            <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' && 'snow-background')}>
-                <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
-                 {mounted && theme === 'dark' && (
-                    <React.Fragment>
-                        <div className="absolute left-1/4 top-1/3 h-32 w-32 bg-primary/10 rounded-full filter blur-3xl animate-blob" />
-                        <div className="absolute right-1/4 bottom-1/3 h-32 w-32 bg-secondary/10 rounded-full filter blur-3xl animate-blob animation-delay-4000" />
-                    </React.Fragment>
-                 )}
-                
-                 <motion.h1 
-                    initial={{ opacity: 0, y: -30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, ease: "easeOut" }}
-                    className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-secondary to-primary/80"
-                >
-                    شريكك المعتمد للنمو الرقمي
-                </motion.h1>
+    <div className="space-y-24">
+        <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' && 'snow-background')}>
+            <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
+             {mounted && theme === 'dark' && (
+                <React.Fragment>
+                    <div className="absolute left-1/4 top-1/3 h-32 w-32 bg-primary/10 rounded-full filter blur-3xl animate-blob" />
+                    <div className="absolute right-1/4 bottom-1/3 h-32 w-32 bg-secondary/10 rounded-full filter blur-3xl animate-blob animation-delay-4000" />
+                </React.Fragment>
+             )}
+            
+             <motion.h1 
+                initial={{ opacity: 0, y: -30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+                className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-secondary to-primary/80"
+            >
+                شريكك المعتمد للنمو الرقمي
+            </motion.h1>
+             <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+                className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
+            >
+                منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
+            </motion.p>
+             <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
+                className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4"
+            >
+                <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
+                    <Link href={primaryAction.href}>
+                         <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
+                        {primaryAction.label}
+                    </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild className="text-lg py-7 w-full sm:w-auto">
+                    <Link href={secondaryAction.href}>
+                        <ShoppingCart className="me-2" />
+                        {secondaryAction.label}
+                    </Link>
+                </Button>
+            </motion.div>
+        </section>
+        
+        <section>
+            <div className="text-center mb-12">
+                <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">لماذا تختار حاجاتي؟</motion.h2>
+                <motion.p 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</motion.p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featureCards.map((feature, i) => {
+                    const Icon = feature.icon;
+                    return (
+                        <motion.div
+                          key={feature.key}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: i * 0.1 }}
+                          viewport={{ once: true }}
+                           className="h-full"
+                        >
+                             <Link href={feature.href} className="h-full block">
+                                <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-2">
+                                    <CardHeader className="items-center">
+                                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
+                                            <Icon className="h-8 w-8 text-primary" />
+                                        </div>
+                                        <CardTitle>{feature.title}</CardTitle>
+                                        <CardDescription className="pt-2">{feature.description}</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
+                        </motion.div>
+                    )
+                })}
+            </div>
+        </section>
+
+        <section>
+            <div className="text-center mb-12">
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">نظرة على خدماتنا الكونية</motion.h2>
                  <motion.p 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-                    className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
-                >
-                    منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
-                </motion.p>
-                 <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
-                    className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4"
-                >
-                    <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
-                        <Link href={primaryAction.href}>
-                             <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
-                            {primaryAction.label}
-                        </Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild className="text-lg py-7 w-full sm:w-auto">
-                        <Link href={secondaryAction.href}>
-                            <ShoppingCart className="me-2" />
-                            {secondaryAction.label}
-                        </Link>
-                    </Button>
-                </motion.div>
-            </section>
-            
-            <section>
-                <div className="text-center mb-12">
-                    <motion.h2 
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5 }}
-                         viewport={{ once: true }}
-                        className="text-4xl font-bold font-headline">لماذا تختار حاجاتي؟</motion.h2>
-                    <motion.p 
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5, delay: 0.1 }}
-                         viewport={{ once: true }}
-                        className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</motion.p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {featureCards.map((feature, i) => {
-                        const Icon = feature.icon;
-                        return (
-                            <motion.div
-                              key={feature.key}
-                              initial={{ opacity: 0, y: 20 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.5, delay: i * 0.1 }}
-                              viewport={{ once: true }}
-                               className="h-full"
-                            >
-                                 <Link href={feature.href} className="h-full block">
-                                    <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-2">
-                                        <CardHeader className="items-center">
-                                            <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
-                                                <Icon className="h-8 w-8 text-primary" />
-                                            </div>
-                                            <CardTitle>{feature.title}</CardTitle>
-                                            <CardDescription className="pt-2">{feature.description}</CardDescription>
-                                        </CardHeader>
-                                    </Card>
-                                </Link>
-                            </motion.div>
-                        )
-                    })}
-                </div>
-            </section>
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</motion.p>
+            </div>
+            <FeaturedServicesTabs />
+        </section>
 
-            <section>
-                <div className="text-center mb-12">
-                     <motion.h2 
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5 }}
-                         viewport={{ once: true }}
-                        className="text-4xl font-bold font-headline">نظرة على خدماتنا الكونية</motion.h2>
-                     <motion.p 
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5, delay: 0.1 }}
-                         viewport={{ once: true }}
-                        className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</motion.p>
-                </div>
-                <FeaturedServicesTabs />
-            </section>
-
-             <section>
-                <div className="text-center mb-12">
-                     <motion.h2 
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5 }}
-                         viewport={{ once: true }}
-                        className="text-4xl font-bold font-headline">كيف نعمل؟</motion.h2>
-                     <motion.p
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5, delay: 0.1 }}
-                         viewport={{ once: true }}
-                        className="text-muted-foreground mt-2">ثلاث خطوات بسيطة تفصلك عن الانطلاق.</motion.p>
-                </div>
-                 <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
-                     <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 bg-border hidden md:block border-t-2 border-dashed border-primary/20"></div>
-                    {howItWorksSteps.map((step, i) => {
-                        const Icon = step.icon;
-                        return (
-                           <motion.div
-                                key={step.key}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: i * 0.2 }}
-                                viewport={{ once: true }}
-                                className="text-center z-10"
-                            >
-                                <div className="relative inline-block">
-                                    <div className="p-6 bg-background border-4 border-primary rounded-full mb-4">
-                                        <Icon className="h-10 w-10 text-primary" />
-                                    </div>
-                                    <div className="absolute -top-2 -right-2 h-10 w-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold border-4 border-background">{i+1}</div>
+         <section>
+            <div className="text-center mb-12">
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">كيف نعمل؟</motion.h2>
+                 <motion.p
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">ثلاث خطوات بسيطة تفصلك عن الانطلاق.</motion.p>
+            </div>
+             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 bg-border hidden md:block border-t-2 border-dashed border-primary/20"></div>
+                {howItWorksSteps.map((step, i) => {
+                    const Icon = step.icon;
+                    return (
+                       <motion.div
+                            key={step.key}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: i * 0.2 }}
+                            viewport={{ once: true }}
+                            className="text-center z-10"
+                        >
+                            <div className="relative inline-block">
+                                <div className="p-6 bg-background border-4 border-primary rounded-full mb-4">
+                                    <Icon className="h-10 w-10 text-primary" />
                                 </div>
-                                <h3 className="text-xl font-semibold mt-4">{step.title}</h3>
-                                <p className="text-muted-foreground mt-1">{step.description}</p>
-                           </motion.div>
-                        )
-                    })}
-                </div>
-            </section>
-            
+                                <div className="absolute -top-2 -right-2 h-10 w-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-lg font-bold border-4 border-background">{i+1}</div>
+                            </div>
+                            <h3 className="text-xl font-semibold mt-4">{step.title}</h3>
+                            <p className="text-muted-foreground mt-1">{step.description}</p>
+                       </motion.div>
+                    )
+                })}
+            </div>
+        </section>
+        
 
-             <section>
-                <div className="text-center mb-12">
-                     <motion.h2 
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5 }}
-                         viewport={{ once: true }}
-                        className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</motion.h2>
-                     <motion.p
-                         initial={{ opacity: 0, y: 20 }}
-                         whileInView={{ opacity: 1, y: 0 }}
-                         transition={{ duration: 0.5, delay: 0.1 }}
-                         viewport={{ once: true }}
-                        className="text-muted-foreground mt-2">آراء عملائنا هي النجوم التي نهتدي بها.</motion.p>
-                </div>
-                <Testimonials />
-            </section>
+         <section>
+            <div className="text-center mb-12">
+                 <motion.h2 
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5 }}
+                     viewport={{ once: true }}
+                    className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</motion.h2>
+                 <motion.p
+                     initial={{ opacity: 0, y: 20 }}
+                     whileInView={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.1 }}
+                     viewport={{ once: true }}
+                    className="text-muted-foreground mt-2">آراء عملائنا هي النجوم التي نهتدي بها.</motion.p>
+            </div>
+            <Testimonials />
+        </section>
 
-             <section>
-                <Card className="bg-gradient-to-tr from-primary/10 via-background to-secondary/10 text-center glassmorphism-card">
-                     <CardContent className="p-10">
-                        <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
-                        <h2 className="text-3xl font-bold font-headline mb-4">هل أنت جاهز للانطلاق؟</h2>
-                        <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-                            انضم إلى مئات المستخدمين الذين يثقون في حاجاتي لتنمية أعمالهم وحضورهم الرقمي. حسابك الجديد على بعد نقرة واحدة.
-                        </p>
-                        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                             <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
-                                <Link href={primaryAction.href}>
-                                    <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
-                                    {primaryAction.label}
+         <section>
+            <Card className="bg-gradient-to-tr from-primary/10 via-background to-secondary/10 text-center glassmorphism-card">
+                 <CardContent className="p-10">
+                    <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <h2 className="text-3xl font-bold font-headline mb-4">هل أنت جاهز للانطلاق؟</h2>
+                    <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+                        انضم إلى مئات المستخدمين الذين يثقون في حاجاتي لتنمية أعمالهم وحضورهم الرقمي. حسابك الجديد على بعد نقرة واحدة.
+                    </p>
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                         <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
+                            <Link href={primaryAction.href}>
+                                <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
+                                {primaryAction.label}
+                            </Link>
+                        </Button>
+                        {!user && !isUserLoading && (
+                            <Button size="lg" variant="ghost" asChild className="text-lg py-7 w-full sm:w-auto">
+                                <Link href="/auth/login">
+                                    <LogIn className="me-2" />
+                                    لدي حساب بالفعل
                                 </Link>
                             </Button>
-                            {!user && !isUserLoading && (
-                                <Button size="lg" variant="ghost" asChild className="text-lg py-7 w-full sm:w-auto">
-                                    <Link href="/auth/login">
-                                        <LogIn className="me-2" />
-                                        لدي حساب بالفعل
-                                    </Link>
-                                </Button>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </section>
-        </div>
-    </PublicLayout>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+        </section>
+    </div>
   );
 }
