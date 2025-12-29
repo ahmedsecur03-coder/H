@@ -40,46 +40,51 @@ const simulateCampaignPerformance = (campaign: Campaign, firestore: any, forceCo
     const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, id);
     const dailySpend = budget / durationDays;
 
-    let currentSpend = 0;
-    let currentImpressions = 0;
-    let currentClicks = 0;
+    // Add a random delay between 1 and 5 minutes before starting the simulation
+    const initialDelay = Math.random() * (300000 - 60000) + 60000;
 
-    for (let day = 1; day <= durationDays; day++) {
-        setTimeout(() => {
-            // Simulate this day's performance
-            currentSpend += dailySpend;
-            const dailyImpressions = Math.floor(Math.random() * (dailySpend * 200)) + 500;
-            const dailyClicks = Math.floor(dailyImpressions * (Math.random() * 0.05 + 0.01));
-            
-            currentImpressions += dailyImpressions;
-            currentClicks += dailyClicks;
+    setTimeout(() => {
+        let currentSpend = 0;
+        let currentImpressions = 0;
+        let currentClicks = 0;
 
-            const ctr = (currentClicks / currentImpressions) * 100;
-            const cpc = currentSpend / currentClicks;
+        for (let day = 1; day <= durationDays; day++) {
+            setTimeout(() => {
+                // Simulate this day's performance
+                currentSpend += dailySpend;
+                const dailyImpressions = Math.floor(Math.random() * (dailySpend * 200)) + 500;
+                const dailyClicks = Math.floor(dailyImpressions * (Math.random() * 0.05 + 0.01));
+                
+                currentImpressions += dailyImpressions;
+                currentClicks += dailyClicks;
 
-            const updates: Partial<Campaign> = {
-                spend: Math.min(currentSpend, budget),
-                impressions: currentImpressions,
-                clicks: currentClicks,
-                results: Math.floor(currentClicks * 0.2), // Assume 20% of clicks are "results"
-                ctr: isNaN(ctr) ? 0 : ctr,
-                cpc: isNaN(cpc) ? 0 : cpc,
-            };
+                const ctr = (currentClicks / currentImpressions) * 100;
+                const cpc = currentSpend / currentClicks;
 
-            // If it's the last day, mark as complete
-            if (day === durationDays) {
-                updates.status = 'مكتمل';
-                updates.spend = budget; // Ensure spend matches budget exactly at the end
-            }
+                const updates: Partial<Campaign> = {
+                    spend: Math.min(currentSpend, budget),
+                    impressions: currentImpressions,
+                    clicks: currentClicks,
+                    results: Math.floor(currentClicks * 0.2), // Assume 20% of clicks are "results"
+                    ctr: isNaN(ctr) ? 0 : ctr,
+                    cpc: isNaN(cpc) ? 0 : cpc,
+                };
 
-            updateDoc(campaignDocRef, updates).then(() => {
+                // If it's the last day, mark as complete
                 if (day === durationDays) {
-                    forceCollectionUpdate(); // Force a final refresh when completed
+                    updates.status = 'مكتمل';
+                    updates.spend = budget; // Ensure spend matches budget exactly at the end
                 }
-            }).catch(e => console.error(`Simulation update failed for day ${day}:`, e));
-            
-        }, day * 5000); // Simulate each "day" as 5 seconds
-    }
+
+                updateDoc(campaignDocRef, updates).then(() => {
+                    if (day === durationDays) {
+                        forceCollectionUpdate(); // Force a final refresh when completed
+                    }
+                }).catch(e => console.error(`Simulation update failed for day ${day}:`, e));
+                
+            }, day * 5000); // Each "day" is 5 seconds
+        }
+    }, initialDelay); // This is the initial delay before the loop starts
 };
 // --- END SIMULATION LOGIC ---
 
