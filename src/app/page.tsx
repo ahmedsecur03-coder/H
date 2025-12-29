@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -157,7 +158,7 @@ function Testimonials() {
                 animate="animate"
             >
                 {duplicatedTestimonials.map((t, i) => (
-                    <Card key={i} className="flex-shrink-0 w-[350px] glassmorphism-card">
+                    <Card key={`${t.name}-${i}`} className="flex-shrink-0 w-[350px] glassmorphism-card">
                         <CardHeader>
                             <div className="flex items-center gap-4">
                                 <Avatar>
@@ -222,10 +223,10 @@ export default function HomePage() {
         <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' && 'snow-background')}>
             <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
              {mounted && theme === 'dark' && (
-                <>
+                <React.Fragment>
                     <div className="absolute left-1/4 top-1/3 h-32 w-32 bg-primary/10 rounded-full filter blur-3xl animate-blob" />
                     <div className="absolute right-1/4 bottom-1/3 h-32 w-32 bg-secondary/10 rounded-full filter blur-3xl animate-blob animation-delay-4000" />
-                </>
+                </React.Fragment>
              )}
             
              <motion.h1 
