@@ -28,6 +28,54 @@ import {
 
 import { CampaignDetailsDialog } from './campaign-details-dialog';
 
+// --- DYNAMIC SIMULATION ENGINE ---
+export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => {
+    const { startDate, durationDays, budget, spend: currentSpend } = campaign;
+    const now = Date.now();
+    const startTime = new Date(startDate).getTime();
+    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
+    const endTime = startTime + totalDurationMillis;
+
+    // If the campaign is already finished, do nothing
+    if (now >= endTime || currentSpend >= budget) {
+         if (campaign.status !== 'مكتمل') {
+             return { status: 'مكتمل', spend: budget }; // Ensure it's marked as complete with full spend
+         }
+         return {}; // No changes needed
+    }
+
+    const elapsedMillis = now - startTime;
+    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
+
+    // Calculate the "ideal" spend based on time progress
+    const idealSpend = budget * progress;
+    
+    // To make it feel more organic, let's add some randomness and ensure it doesn't exceed budget
+    const simulatedSpend = Math.min(idealSpend * (1 + (Math.random() - 0.5) * 0.1), budget);
+
+    // Don't update if the change is negligible to reduce writes
+    if (simulatedSpend - currentSpend < 0.01) {
+        return {};
+    }
+
+    const impressions = Math.floor(simulatedSpend * (Math.random() * 150 + 50)); // Random impressions per dollar
+    const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01)); // CTR between 1% and 6%
+    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+    const cpc = clicks > 0 ? simulatedSpend / clicks : 0;
+    const results = Math.floor(clicks * 0.2); // Assume 20% of clicks are "results"
+
+    return {
+        spend: simulatedSpend,
+        impressions,
+        clicks,
+        ctr,
+        cpc,
+        results,
+        status: now >= endTime ? 'مكتمل' : 'نشط'
+    };
+};
+// --- END SIMULATION ENGINE ---
+
 
 export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
     const firestore = useFirestore();
@@ -42,6 +90,9 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
 
         try {
+            // First, calculate the most up-to-date performance before stopping
+            const finalPerformance = calculateCampaignPerformance(campaign);
+            
             await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userDocRef);
                 if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
@@ -52,8 +103,11 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                 const currentCampaignData = campaignDoc.data() as Campaign;
                 if(currentCampaignData.status !== 'نشط') throw new Error("لا يمكن إيقاف إلا الحملات النشطة.");
 
+                // Use the most recently calculated spend
+                const finalSpend = finalPerformance.spend ?? currentCampaignData.spend;
+
                 // Calculate remaining budget
-                const remainingBudget = currentCampaignData.budget - (currentCampaignData.spend || 0);
+                const remainingBudget = currentCampaignData.budget - (finalSpend);
 
                 // Refund remaining budget to user's adBalance
                 if (remainingBudget > 0) {
@@ -62,8 +116,12 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                     transaction.update(userDocRef, { adBalance: newAdBalance });
                 }
 
-                // Update campaign status to 'متوقف'
-                transaction.update(campaignDocRef, { status: 'متوقف' });
+                // Update campaign status to 'متوقف' and set final numbers
+                transaction.update(campaignDocRef, { 
+                    ...finalPerformance,
+                    status: 'متوقف',
+                    spend: finalSpend,
+                });
             });
 
             toast({ title: "نجاح", description: "تم إيقاف الحملة وإعادة الرصيد المتبقي." });
@@ -125,5 +183,3 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
         </AlertDialog>
     );
 }
-
-    

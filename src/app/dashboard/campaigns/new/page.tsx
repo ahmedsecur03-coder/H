@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -155,7 +154,7 @@ export default function NewCampaignPage() {
 
         setLoading(true);
 
-        const campaignData: Partial<Campaign> = {
+        const campaignData: Omit<Campaign, 'id'> = {
             userId: authUser.uid,
             name: formData.get('name') as string,
             platform: selectedPlatform,
@@ -169,14 +168,14 @@ export default function NewCampaignPage() {
             targetInterests: formData.get('targetInterests') as string,
             startDate: new Date().toISOString(),
             spend: 0,
-            status: 'بانتظار المراجعة',
+            status: 'نشط', // Activate immediately
             impressions: 0, clicks: 0, results: 0, ctr: 0, cpc: 0, targetAudience: ''
         };
         
         try {
             const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
             await addDoc(campaignsColRef, campaignData);
-            toast({ title: "نجاح!", description: "تم استلام حملتك وستتم مراجعتها من قبل الإدارة." });
+            toast({ title: "نجاح!", description: "تم تفعيل حملتك بنجاح وبدأت المحاكاة." });
             setStep(3); // Go to success step
         } catch (error) {
             const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
@@ -239,7 +238,7 @@ export default function NewCampaignPage() {
                                          <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground"><ArrowRight className="h-5 w-5" /></button>
                                         <div>
                                             <CardTitle>الخطوة 2: تفاصيل حملة {currentConfig.title}</CardTitle>
-                                            <CardDescription>املأ بيانات حملتك. سيتم حجز الميزانية من رصيد إعلاناتك (${userData?.adBalance.toFixed(2)}) عند موافقة الإدارة.</CardDescription>
+                                            <CardDescription>املأ بيانات حملتك. سيتم حجز الميزانية من رصيد إعلاناتك (${userData?.adBalance.toFixed(2)}) وتفعيل الحملة فورًا.</CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -270,7 +269,7 @@ export default function NewCampaignPage() {
                                 </CardContent>
                                 <CardFooter>
                                     <Button type="submit" disabled={loading} className="w-full">
-                                        {loading ? <Loader2 className="animate-spin" /> : 'إرسال الحملة للمراجعة'}
+                                        {loading ? <Loader2 className="animate-spin" /> : 'تأكيد وتفعيل الحملة'}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -285,9 +284,9 @@ export default function NewCampaignPage() {
                                  <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto">
                                      <Rocket className="h-8 w-8" />
                                  </div>
-                                <h2 className="text-2xl font-bold mt-4">تم استلام حملتك بنجاح!</h2>
+                                <h2 className="text-2xl font-bold mt-4">تم تفعيل حملتك بنجاح!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    قام فريقنا باستلام طلب حملتك الإعلانية، وستتم مراجعتها وتفعيلها في أقرب وقت ممكن. يمكنك متابعة حالتها من صفحة إدارة الحملات.
+                                    لقد بدأت حملتك الإعلانية بالفعل. يمكنك الآن متابعة أدائها المتزايد من صفحة إدارة الحملات.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>
@@ -302,5 +301,3 @@ export default function NewCampaignPage() {
         </div>
     );
 }
-
-    

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import { UserCampaignActions } from './_components/user-campaign-actions';
+import { UserCampaignActions, calculateCampaignPerformance } from './_components/user-campaign-actions';
 import Link from 'next/link';
 
 function CampaignsSkeleton() {
@@ -57,6 +57,37 @@ export default function CampaignsPage() {
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
 
+    // This effect will run periodically to update the performance of active campaigns.
+    useEffect(() => {
+        if (!campaigns || !firestore || !authUser) return;
+
+        const updateAllCampaigns = async () => {
+             const activeCampaigns = campaigns.filter(c => c.status === 'نشط');
+             if (activeCampaigns.length === 0) return;
+
+            let hasChanges = false;
+            for (const campaign of activeCampaigns) {
+                 const updatedCampaign = calculateCampaignPerformance(campaign);
+                 // Only write to DB if there's a meaningful change
+                 if (updatedCampaign.spend !== campaign.spend || updatedCampaign.status !== campaign.status) {
+                    const campaignDocRef = doc(firestore, `users/${authUser.uid}/campaigns`, campaign.id);
+                    await updateDoc(campaignDocRef, updatedCampaign);
+                    hasChanges = true;
+                 }
+            }
+            if (hasChanges) {
+                forceCollectionUpdate(); // Re-fetch data if any campaign was updated
+            }
+        };
+        
+        updateAllCampaigns();
+
+        const interval = setInterval(updateAllCampaigns, 30000); // Update every 30 seconds
+        return () => clearInterval(interval);
+
+    }, [campaigns, firestore, authUser, forceCollectionUpdate]);
+
+
     const stats = useMemo(() => {
         if (!campaigns) return { active: 0, totalSpend: 0 };
         return campaigns.reduce((acc, c) => {
@@ -95,7 +126,7 @@ export default function CampaignsPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">${(userData.adBalance || 0).toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground">يُستخدم لشراء وشحن الحسابات الإعلانية.</p>
+                    <p className="text-xs text-muted-foreground">يُستخدم لتمويل الحملات الإعلانية.</p>
                 </CardContent>
             </Card>
              <Card>
@@ -194,5 +225,3 @@ export default function CampaignsPage() {
     </div>
   );
 }
-
-    

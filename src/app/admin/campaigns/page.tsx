@@ -32,9 +32,8 @@ import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CampaignActions } from './_components/campaign-actions';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, ListChecks, Hourglass, BarChart2 } from 'lucide-react';
+import { DollarSign, ListChecks, Hourglass, BarChart2, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 const statusVariant = {
@@ -55,7 +54,7 @@ export default function AdminCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-      pending: 0,
+      active: 0,
       totalBudget: 0,
       totalSpend: 0,
       statusCounts: ALL_STATUSES.map(s => ({ status: s, count: 0 }))
@@ -78,9 +77,8 @@ export default function AdminCampaignsPage() {
         const campaign = { id: doc.id, ...doc.data() } as Campaign;
         fetchedCampaigns.push(campaign);
 
-        if (campaign.status === 'نشط' || campaign.status === 'مكتمل') {
-            tempTotalBudget += campaign.budget;
-        }
+        // Calculate stats
+        tempTotalBudget += campaign.budget;
         tempTotalSpend += campaign.spend || 0;
         if (tempStatusCounts.hasOwnProperty(campaign.status)) {
             tempStatusCounts[campaign.status]++;
@@ -89,7 +87,7 @@ export default function AdminCampaignsPage() {
       
       setCampaigns(fetchedCampaigns);
       setStats({
-          pending: tempStatusCounts['بانتظار المراجعة'],
+          active: tempStatusCounts['نشط'],
           totalBudget: tempTotalBudget,
           totalSpend: tempTotalSpend,
           statusCounts: ALL_STATUSES.map(s => ({ status: s, count: tempStatusCounts[s] }))
@@ -117,14 +115,14 @@ export default function AdminCampaignsPage() {
     if (isLoading) {
       return Array.from({ length: 5 }).map((_, i) => (
         <TableRow key={i}>
-          {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+          {Array.from({ length: 6 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
         </TableRow>
       ));
     }
     if (!filteredCampaigns || filteredCampaigns.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7} className="h-24 text-center">
+          <TableCell colSpan={6} className="h-24 text-center">
             لا توجد حملات تطابق هذا الفلتر.
           </TableCell>
         </TableRow>
@@ -140,9 +138,6 @@ export default function AdminCampaignsPage() {
         <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
         <TableCell>${(campaign.spend || 0).toFixed(2)}</TableCell>
         <TableCell>${campaign.budget.toFixed(2)}</TableCell>
-        <TableCell className="text-right">
-          <CampaignActions campaign={campaign} forceCollectionUpdate={fetchCampaignsAndStats} />
-        </TableCell>
       </TableRow>
     ));
   }
@@ -157,25 +152,25 @@ export default function AdminCampaignsPage() {
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الحملات</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">مراقبة الحملات</h1>
         <p className="text-muted-foreground">
-          مراقبة وإدارة الحملات النشطة للمستخدمين.
+          عرض جميع الحملات الإعلانية في النظام.
         </p>
       </div>
 
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">حملات قيد المراجعة</CardTitle>
-            <Hourglass className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">الحملات النشطة حاليًا</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats.pending}</div>}
+            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats.active}</div>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الميزانيات المعتمدة</CardTitle>
+            <CardTitle className="text-sm font-medium">إجمالي الميزانيات</CardTitle>
             <ListChecks className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -222,7 +217,6 @@ export default function AdminCampaignsPage() {
                     <TableHead>الحالة</TableHead>
                     <TableHead>الإنفاق</TableHead>
                     <TableHead>الميزانية</TableHead>
-                    <TableHead className="text-right">إجراءات</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
