@@ -343,7 +343,7 @@ export default function HomePage() {
                     className="text-muted-foreground mt-2">ثلاث خطوات بسيطة تفصلك عن الانطلاق.</motion.p>
             </div>
              <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
-                 <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 bg-border-dashed hidden md:block"></div>
+                 <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 bg-border hidden md:block border-t-2 border-dashed border-primary/20"></div>
                 {howItWorksSteps.map((step, i) => {
                     const Icon = step.icon;
                     return (
