@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, runTransaction } from 'firebase/firestore';
+import { doc, runTransaction, updateDoc } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -34,31 +34,40 @@ export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campai
         return {};
     }
 
-    const { startDate, durationDays, budget, spend: currentSpend } = campaign;
+    const { startDate, durationDays, budget } = campaign;
     const now = Date.now();
     const startTime = new Date(startDate).getTime();
     const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
     const endTime = startTime + totalDurationMillis;
 
-    // If campaign has finished
-    if (now >= endTime) {
+    // Calculate progress, ensuring it doesn't exceed 1 (100%)
+    const elapsedMillis = Math.max(0, now - startTime);
+    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
+    
+    // If campaign is finished based on time
+    if (progress >= 1) {
+        const finalSpend = budget; // At the end, spend equals budget
+        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20)); // Add some final random impressions
+        const finalClicks = (campaign.clicks || 0) + Math.floor(Math.random() * (budget * 2));
+        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
+        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
+
         return { 
             status: 'مكتمل', 
-            spend: budget, // Ensure it's marked as complete with full spend
-            impressions: (campaign.impressions || 0) + Math.floor(Math.random() * 1000), // add some final random impressions
-            clicks: (campaign.clicks || 0) + Math.floor(Math.random() * 50)
+            spend: finalSpend,
+            impressions: finalImpressions,
+            clicks: finalClicks,
+            ctr: finalCtr,
+            cpc: finalCpc,
+            results: Math.floor(finalClicks * 0.2),
         };
     }
 
-    const elapsedMillis = now - startTime;
-    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
-    
     // Calculate the "ideal" spend based on time progress, with some organic randomness
-    const idealSpend = budget * progress;
-    const simulatedSpend = Math.min(idealSpend * (1 + (Math.random() - 0.5) * 0.1), budget);
+    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
 
-    if (simulatedSpend <= currentSpend) {
-        return {}; // No significant change
+    if (simulatedSpend <= (campaign.spend || 0)) {
+        return {}; // No significant change to report
     }
 
     const impressions = Math.floor(simulatedSpend * (Math.random() * 150 + 50)); // Random impressions per dollar
@@ -88,6 +97,7 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
     // Get the most up-to-date campaign performance data for display
     const liveCampaignData = useMemo(() => {
         if (campaign.status === 'نشط') {
+             // Calculate performance on-the-fly for display purposes
             return { ...campaign, ...calculateCampaignPerformance(campaign) };
         }
         return campaign;
@@ -118,11 +128,11 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                 const finalSpend = finalPerformance.spend ?? currentCampaignData.spend;
 
                 // Calculate remaining budget
-                const remainingBudget = currentCampaignData.budget - (finalSpend);
+                const remainingBudget = currentCampaignData.budget - (finalSpend || 0);
 
                 // Refund remaining budget to user's adBalance
                 if (remainingBudget > 0) {
-                    const currentAdBalance = userDoc.data().adBalance ?? 0;
+                    const currentAdBalance = userDoc.data()?.adBalance ?? 0;
                     const newAdBalance = currentAdBalance + remainingBudget;
                     transaction.update(userDocRef, { adBalance: newAdBalance });
                 }

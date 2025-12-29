@@ -33,6 +33,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { activateCampaignAndDeductBalance } from '../_actions/campaigns-server-action';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -176,8 +177,19 @@ export default function NewCampaignPage() {
         
         try {
             const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
-            await addDoc(campaignsColRef, campaignData);
-            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعة حملتك من قبل المسؤولين وتفعيلها قريبًا." });
+            const docRef = await addDoc(campaignsColRef, campaignData);
+            
+            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعة حملتك وتفعيلها تلقائيًا خلال لحظات." });
+            
+            // --- AUTOMATIC ACTIVATION LOGIC ---
+            const reviewTime = Math.random() * (15000 - 5000) + 5000; // 5 to 15 seconds
+            setTimeout(() => {
+                activateCampaignAndDeductBalance(authUser.uid, docRef.id).catch(error => {
+                    console.error("Auto-activation failed:", error);
+                    // Optionally notify the user about the failure
+                });
+            }, reviewTime);
+
             setStep(3); // Go to success step
         } catch (error) {
             const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
@@ -240,7 +252,7 @@ export default function NewCampaignPage() {
                                          <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground"><ArrowRight className="h-5 w-5" /></button>
                                         <div>
                                             <CardTitle>الخطوة 2: تفاصيل حملة {currentConfig.title}</CardTitle>
-                                            <CardDescription>املأ بيانات حملتك. سيتم إرسالها للمراجعة. رصيد إعلاناتك الحالي: ${userData?.adBalance.toFixed(2) || '0.00'}</CardDescription>
+                                            <CardDescription>املأ بيانات حملتك. سيتم خصم الميزانية عند التفعيل التلقائي. رصيد إعلاناتك: ${userData?.adBalance.toFixed(2) || '0.00'}</CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -286,9 +298,9 @@ export default function NewCampaignPage() {
                                  <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto">
                                      <Rocket className="h-8 w-8" />
                                  </div>
-                                <h2 className="text-2xl font-bold mt-4">تم إرسال حملتك للمراجعة!</h2>
+                                <h2 className="text-2xl font-bold mt-4">تم إرسال حملتك بنجاح!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    سيقوم فريقنا بمراجعة حملتك وتفعيلها في أقرب وقت. يمكنك متابعة حالتها من صفحة إدارة الحملات.
+                                    سيقوم نظامنا بمراجعتها وتفعيلها تلقائيًا خلال لحظات. يمكنك متابعة حالتها من صفحة إدارة الحملات.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>
