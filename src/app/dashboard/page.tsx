@@ -54,6 +54,7 @@ import {
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { calculateCampaignPerformance } from './campaigns/_components/user-campaign-actions';
 import { cn } from '@/lib/utils';
+import { DailyRewardCard } from './_components/daily-reward-card';
 
 
 function DashboardSkeleton() {
@@ -63,8 +64,8 @@ function DashboardSkeleton() {
                 <Skeleton className="h-9 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
-                <div className="lg:col-span-1 space-y-6">
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+                <div className="lg:col-span-2 space-y-6">
                     <Skeleton className="h-[500px]" />
                 </div>
                 <div className="lg:col-span-1 space-y-6">
@@ -189,14 +190,20 @@ export default function DashboardPage() {
         <div className="space-y-6 pb-4">
             <div className='mb-4'>
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
-                <p className='text-muted-foreground'>هذه هي لوحة التحكم الخاصة بك. ابدأ طلبًا جديدًا أو تفقد أداء حملاتك.</p>
+                <p className='text-muted-foreground'>هذه هي قمرة قيادتك. ابدأ طلبًا جديدًا أو تفقد أداء حملاتك.</p>
             </div>
             
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
-                <QuickOrderForm user={authUser} userData={userData} />
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+                 <div className="lg:col-span-2 order-2 lg:order-1">
+                    <QuickOrderForm user={authUser} userData={userData} />
+                 </div>
+                <div className="lg:col-span-1 space-y-6 order-1 lg:order-2">
+                     <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                </div>
+            </div>
 
-                <div className="space-y-6">
-                    <Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                 <Card>
                          <CardHeader>
                             <CardTitle className="font-headline text-xl">تحليل الأداء (آخر 7 أيام)</CardTitle>
                             <CardDescription>مقارنة بين إنفاق الطلبات والحملات.</CardDescription>
@@ -260,7 +267,6 @@ export default function DashboardPage() {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
             </div>
         </div>
     );
