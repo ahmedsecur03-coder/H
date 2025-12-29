@@ -4,19 +4,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper functions
+    // =================================
+    // Helper Functions
+    // =================================
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
     function isAdmin() {
-      // Check for the existence of the user document and the role field.
-      // Use exists() for safe checks.
+      // Use exists() for safe checks against non-existent documents.
       return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
     function isNewUserCreation(userId, data) {
+        // This function enforces the initial state of a new user document.
+        // It's called when a user signs up.
         return request.auth.uid == userId
                 && data.name is string
                 && data.email == request.auth.token.email
@@ -30,71 +33,80 @@ service cloud.firestore {
                 && data.createdAt is string;
     }
 
-    // USERS
+    // =================================
+    // User Profiles (/users/{userId})
+    // =================================
     match /users/{userId} {
       // READ: Users can read their own profile. Admins can read any profile.
       allow read: if isOwner(userId) || isAdmin();
       
-      // LIST: Admins can list all users for management purposes.
+      // LIST: Only Admins can list all users for management purposes.
       allow list: if isAdmin();
       
-      // CREATE: Any authenticated user can create their own user document.
+      // CREATE: Any authenticated user can create THEIR OWN user document under specific conditions.
       allow create: if isNewUserCreation(userId, request.resource.data);
 
-      // UPDATE: Users can only update specific fields. Admins can update more fields.
-      allow update: if (isOwner(userId) 
-                      && request.resource.data.name == request.resource.data.name
-                      && request.resource.data.avatarUrl == request.resource.data.avatarUrl
-                      && request.resource.data.notificationPreferences == request.resource.data.notificationPreferences
-                      && request.resource.data.notifications == request.resource.data.notifications
-                      // Ensure they cannot change other fields
-                      && resource.data.balance == request.resource.data.balance
-                      && resource.data.adBalance == request.resource.data.adBalance
-                      && resource.data.totalSpent == request.resource.data.totalSpent
-                      && resource.data.role == request.resource.data.role
-                      && resource.data.apiKey == request.resource.data.apiKey
-                      && resource.data.rank == request.resource.data.rank
-                      ) || isAdmin();
+      // UPDATE: 
+      // - A user can update their own non-critical fields (name, avatar, preferences).
+      // - An admin can update critical fields (balance, role, rank).
+      allow update: if 
+          (isOwner(userId) && 
+            // List of fields a user is allowed to change themselves
+            request.resource.data.keys().hasAll(['name', 'avatarUrl', 'notificationPreferences']) &&
+            // Ensure they cannot change any other fields
+            resource.data.balance == request.resource.data.balance &&
+            resource.data.adBalance == request.resource.data.adBalance &&
+            resource.data.totalSpent == request.resource.data.totalSpent &&
+            resource.data.role == request.resource.data.role &&
+            resource.data.apiKey == request.resource.data.apiKey &&
+            resource.data.rank == request.resource.data.rank
+          ) || isAdmin();
     }
     
-    // USER SUBCOLLECTIONS
-    match /users/{userId}/{collection}/{docId} {
-        // General rule for user-owned subcollections (orders, campaigns, tickets, etc.)
+    // =================================
+    // User Subcollections (/users/{userId}/{collection}/{docId})
+    // =================================
+    
+    // This single rule covers: orders, campaigns, deposits, tickets, etc.
+    // READ/WRITE: A user can manage all documents within their own subcollections. Admins can access anyone's.
+    match /users/{userId}/{userCollection}/{docId} {
         allow read, write, create, delete: if isOwner(userId) || isAdmin();
     }
+    
+    // =================================
+    // Public & Semi-Public Collections
+    // =================================
 
-
-    // PUBLIC COLLECTIONS
-    // Blog posts are publicly readable. Only admins can write.
+    // Blog posts are publicly readable, but only admins can write.
     match /blogPosts/{blogPostId} {
         allow read: if true;
         allow write: if isAdmin();
     }
 
-    // Service prices are publicly readable. Only admins can write.
+    // Service prices are publicly readable, but only admins can write.
     match /servicePrices/{serviceId} {
         allow read: if true;
         allow write: if isAdmin();
     }
     
-    // SETTINGS (Admin write, authenticated users can read)
+    // Global settings are readable by any authenticated user, but only writable by admins.
     match /settings/global {
         allow read: if request.auth != null;
         allow write: if isAdmin();
     }
     
-    // LOGS & STATS (Admin only)
+    // =================================
+    // Admin-Only Collections (Logs & Stats)
+    // =================================
+
+    // System logs can only be read or written by admins.
     match /systemLogs/{logId} {
         allow read, write: if isAdmin(); 
     }
     
+    // Daily stats can only be read or written by admins (or trusted server functions).
     match /dailyStats/{date} {
-        allow read: if isAdmin();
-        // Writes to dailyStats should ideally be done by a trusted server environment/function.
-        // For client-side admin updates, an admin check is needed.
-        allow write: if isAdmin(); 
+        allow read, write: if isAdmin(); 
     }
   }
 }
-
-    
