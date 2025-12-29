@@ -109,7 +109,14 @@
 
 @layer components {
   .cosmic-background {
-    @apply fixed inset-0 -z-10 h-full w-full;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -10;
+    height: 100%;
+    width: 100%;
     background-color: hsl(var(--background));
   }
 
