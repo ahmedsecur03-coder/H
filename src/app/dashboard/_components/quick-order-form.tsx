@@ -20,7 +20,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SMM_SERVICES } from '@/lib/smm-services';
+import { useServices } from '@/hooks/useServices';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
@@ -76,19 +76,8 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     const [quantity, setQuantity] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const pricesQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'servicePrices')) : null), [firestore]);
-    const { data: pricesData, isLoading: pricesLoading } = useCollection<ServicePrice>(pricesQuery);
+    const { services: mergedServices, isLoading: servicesLoading } = useServices();
 
-    const mergedServices = useMemo(() => {
-        if (!pricesData) return SMM_SERVICES;
-        const pricesMap = new Map<string, number>();
-        pricesData.forEach(p => pricesMap.set(p.id, p.price));
-        return SMM_SERVICES.map(service => ({
-        ...service,
-        price: pricesMap.get(String(service.id)) ?? service.price,
-        }));
-    }, [pricesData]);
-    
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
     const discountPercentage = rank.discount / 100;
     
@@ -204,8 +193,8 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
 
             <form onSubmit={handleSubmit} className="flex-grow flex flex-col">
                 <CardContent className="space-y-4 pt-6 flex-grow">
-                    <Select onValueChange={setPlatform} disabled={pricesLoading} value={platform}>
-                        <SelectTrigger><SelectValue placeholder={pricesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
+                    <Select onValueChange={setPlatform} disabled={servicesLoading} value={platform}>
+                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
                         <SelectContent>
                             {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                         </SelectContent>
@@ -214,7 +203,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     <AnimatePresence>
                     {platform && (
                         <motion.div key="category-select" initial="hidden" animate="visible" exit="exit" variants={cardVariants}>
-                            <Select onValueChange={setCategory} disabled={!platform || pricesLoading} value={category}>
+                            <Select onValueChange={setCategory} disabled={!platform || servicesLoading} value={category}>
                                 <SelectTrigger><SelectValue placeholder="2. اختر الفئة" /></SelectTrigger>
                                 <SelectContent>
                                     {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -227,7 +216,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                      <AnimatePresence>
                     {category && (
                          <motion.div key="service-select" initial="hidden" animate="visible" exit="exit" variants={cardVariants}>
-                            <Select onValueChange={setServiceId} value={serviceId} disabled={!category || pricesLoading}>
+                            <Select onValueChange={setServiceId} value={serviceId} disabled={!category || servicesLoading}>
                                 <SelectTrigger><SelectValue placeholder="3. اختر الخدمة" /></SelectTrigger>
                                 <SelectContent>
                                     {services.map(s => 
@@ -277,7 +266,7 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
 
                 <CardFooter className="mt-auto flex-col items-stretch gap-4 pt-6">
                     {serviceId && (
-                        <Button type="submit" className="w-full" disabled={isSubmitting || pricesLoading}>
+                        <Button type="submit" className="w-full" disabled={isSubmitting || servicesLoading}>
                             {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
                             إرسال الطلب
                         </Button>

@@ -1,8 +1,6 @@
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service, ServicePrice } from '@/lib/types';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, getDocs } from 'firebase/firestore';
 import {
   Card,
   CardContent,
@@ -32,7 +30,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SMM_SERVICES } from '@/lib/smm-services';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
@@ -43,6 +40,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination';
+import { useServices } from '@/hooks/useServices';
 
 const PROFIT_MARGIN = 1.50; // 50% profit margin
 const ITEMS_PER_PAGE = 20;
@@ -86,7 +84,6 @@ function ServicesTableSkeleton() {
 }
 
 function ServicesTableComponent() {
-  const firestore = useFirestore();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -96,18 +93,7 @@ function ServicesTableComponent() {
   const platformFilter = searchParams.get('platform') || 'all';
   const categoryFilter = searchParams.get('category') || 'all';
 
-  const pricesQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'servicePrices')) : null), [firestore]);
-  const { data: pricesData, isLoading: pricesLoading } = useCollection<ServicePrice>(pricesQuery);
-
-  const mergedServices = useMemo(() => {
-    if (!pricesData) return SMM_SERVICES;
-    const pricesMap = new Map<string, number>();
-    pricesData.forEach(p => pricesMap.set(p.id, p.price));
-    return SMM_SERVICES.map(service => ({
-      ...service,
-      price: pricesMap.get(String(service.id)) ?? service.price,
-    }));
-  }, [pricesData]);
+  const { services: mergedServices, isLoading: servicesLoading } = useServices();
 
     const handleFilterChange = (key: 'search' | 'platform' | 'category' | 'page', value: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -174,7 +160,7 @@ function ServicesTableComponent() {
   };
 
 
-  if (pricesLoading) {
+  if (servicesLoading) {
     return <ServicesTableSkeleton />;
   }
 
