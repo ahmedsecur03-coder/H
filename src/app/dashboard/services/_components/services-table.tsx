@@ -1,6 +1,8 @@
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
-import type { Service } from '@/lib/types';
+import type { Service, ServicePrice } from '@/lib/types';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, getDocs } from 'firebase/firestore';
 import {
   Card,
   CardContent,
@@ -30,7 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useServices } from '@/hooks/useServices';
+import { SMM_SERVICES } from '@/lib/smm-services';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
@@ -84,15 +86,28 @@ function ServicesTableSkeleton() {
 }
 
 function ServicesTableComponent() {
-    const { services: allServices, isLoading } = useServices();
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
+  const firestore = useFirestore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-    const currentPage = Number(searchParams.get('page')) || 1;
-    const searchTerm = searchParams.get('search') || '';
-    const platformFilter = searchParams.get('platform') || 'all';
-    const categoryFilter = searchParams.get('category') || 'all';
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const searchTerm = searchParams.get('search') || '';
+  const platformFilter = searchParams.get('platform') || 'all';
+  const categoryFilter = searchParams.get('category') || 'all';
+
+  const pricesQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'servicePrices')) : null), [firestore]);
+  const { data: pricesData, isLoading: pricesLoading } = useCollection<ServicePrice>(pricesQuery);
+
+  const mergedServices = useMemo(() => {
+    if (!pricesData) return SMM_SERVICES;
+    const pricesMap = new Map<string, number>();
+    pricesData.forEach(p => pricesMap.set(p.id, p.price));
+    return SMM_SERVICES.map(service => ({
+      ...service,
+      price: pricesMap.get(String(service.id)) ?? service.price,
+    }));
+  }, [pricesData]);
 
     const handleFilterChange = (key: 'search' | 'platform' | 'category' | 'page', value: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -108,16 +123,16 @@ function ServicesTableComponent() {
     };
 
   const { platforms, categories, paginatedServices, pageCount } = useMemo(() => {
-    if (!allServices) {
+    if (!mergedServices) {
       return { platforms: [], categories: [], paginatedServices: [], pageCount: 0 };
     }
 
-    const platforms = [...new Set(allServices.map(s => s.platform))];
+    const platforms = [...new Set(mergedServices.map(s => s.platform))];
     const availableCategories = platformFilter === 'all' 
-      ? [...new Set(allServices.map(s => s.category))]
-      : [...new Set(allServices.filter(s => s.platform === platformFilter).map(s => s.category))];
+      ? [...new Set(mergedServices.map(s => s.category))]
+      : [...new Set(mergedServices.filter(s => s.platform === platformFilter).map(s => s.category))];
 
-    const filtered = allServices.filter(service => {
+    const filtered = mergedServices.filter(service => {
       const searchMatch =
         searchTerm === '' ||
         service.id.toString().includes(searchTerm) ||
@@ -131,7 +146,7 @@ function ServicesTableComponent() {
     const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     return { platforms, categories: availableCategories, paginatedServices: paginated, pageCount: totalPages };
-  }, [allServices, searchTerm, platformFilter, categoryFilter, currentPage]);
+  }, [mergedServices, searchTerm, platformFilter, categoryFilter, currentPage]);
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
@@ -159,7 +174,7 @@ function ServicesTableComponent() {
   };
 
 
-  if (isLoading) {
+  if (pricesLoading) {
     return <ServicesTableSkeleton />;
   }
 
