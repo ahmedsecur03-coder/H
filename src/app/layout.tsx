@@ -56,7 +56,7 @@ export default function RootLayout({
         <title>Hajaty Hub - رحلتك الكونية للخدمات الرقمية</title>
         <meta name="description" content="انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ." />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#1a202c" />
+        <meta name="theme-color" content="#221b3a" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
       </head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -233,7 +232,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: -30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
-                className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400"
+                className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-secondary to-primary/80"
             >
                 شريكك المعتمد للنمو الرقمي
             </motion.h1>
