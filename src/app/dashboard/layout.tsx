@@ -105,7 +105,7 @@ function NavItems({ isAdmin }: { isAdmin: boolean }) {
     }
 
     return (
-        <Link href={item.href || '#'} passHref>
+        <Link href={item.href || '#'} passHref key={item.href}>
           <SidebarMenuButton isActive={pathname === item.href}>
             {Icon && <Icon className="h-4 w-4" />}
             <span>{item.label}</span>
