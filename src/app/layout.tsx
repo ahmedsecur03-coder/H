@@ -2,7 +2,7 @@
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Exo_2 } from 'next/font/google';
+import { Poppins, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -39,13 +39,13 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import type { NestedNavItem, User } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const fontSans = Exo_2({
+const fontSans = PT_Sans({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '700', '800'],
+  weight: ['400', '700'],
   variable: '--font-sans',
 });
 
-const fontHeadline = Exo_2({
+const fontHeadline = Poppins({
   subsets: ['latin'],
   weight: ['800'],
   variable: '--font-headline',
@@ -374,7 +374,7 @@ export default function RootLayout({
         <title>Hajaty Hub - رحلتك الكونية للخدمات الرقمية</title>
         <meta name="description" content="انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ." />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#221b3a" />
+        <meta name="theme-color" content="#3498DB" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
       </head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
