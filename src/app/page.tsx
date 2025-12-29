@@ -127,38 +127,19 @@ function Testimonials() {
         { name: "فاطمة الزهراء", role: "صاحبة متجر إلكتروني", text: "كنت أعاني من ضعف التفاعل على صفحتي، لكن بعد استخدام خدمات حاجاتي، تضاعفت المبيعات والأرباح. شكراً لكم!", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400" },
         { name: "خالد عبد الرحمن", role: "مدير وكالة إعلانية", text: "نظام الإحالة هنا هو الأقوى. تمكنت من بناء مصدر دخل إضافي ومستمر بفضل الشبكة التي كونتها عبر المنصة.", avatar: "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?q=80&w=400" },
         { name: "سارة العبدالله", role: "مؤثرة على انستغرام", text: "أفضل ما في حاجاتي هو تنوع الخدمات وجودتها. كل ما أحتاجه لنمو حسابي أجده في مكان واحد وبأسعار ممتازة.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400" },
-        { name: "يوسف المغربي", role: "صانع محتوى يوتيوب", text: "خدمة ساعات المشاهدة ساعدتني في تحقيق شروط يوتيوب بسرعة لم أكن أتوقعها. فريق الدعم كان متعاونًا جدًا.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400" },
     ];
 
-    const duplicatedTestimonials = [...testimonials, ...testimonials];
-
-    const cardWidth = 350; // The width of each card
-    const gap = 32; // The gap between cards (gap-8 = 2rem = 32px)
-    const totalWidth = cardWidth + gap;
-
-    const carouselVariants = {
-        animate: {
-            x: [0, -totalWidth * testimonials.length],
-            transition: {
-                x: {
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    duration: testimonials.length * 7, 
-                    ease: "linear",
-                },
-            },
-        },
-    };
-
     return (
-        <div className="w-full overflow-hidden relative py-10 [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
-            <motion.div
-                className="flex gap-8"
-                variants={carouselVariants}
-                animate="animate"
-            >
-                {duplicatedTestimonials.map((t, i) => (
-                    <Card key={`${t.name}-${i}`} className="flex-shrink-0 w-[350px] glassmorphism-card">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {testimonials.map((t, i) => (
+                 <motion.div
+                    key={`${t.name}-${i}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: i * 0.15 }}
+                    viewport={{ once: true }}
+                >
+                    <Card className="h-full glassmorphism-card">
                         <CardHeader>
                             <div className="flex items-center gap-4">
                                 <Avatar>
@@ -175,8 +156,8 @@ function Testimonials() {
                             <p className="text-muted-foreground italic">"{t.text}"</p>
                         </CardContent>
                     </Card>
-                ))}
-            </motion.div>
+                </motion.div>
+            ))}
         </div>
     );
 }
@@ -372,7 +353,7 @@ export default function HomePage() {
             </section>
             
 
-             <section className="overflow-x-hidden">
+             <section>
                 <div className="text-center mb-12">
                      <motion.h2 
                          initial={{ opacity: 0, y: 20 }}
