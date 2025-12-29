@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -82,8 +83,8 @@ const chartConfig = {
   campaigns: { label: 'إنفاق الحملات', color: 'hsl(var(--chart-2))' },
   completed: { label: 'مكتمل', color: 'hsl(var(--chart-1))' },
   pending: { label: 'قيد التنفيذ', color: 'hsl(var(--chart-2))' },
-  cancelled: { label: 'ملغي', color: 'hsl(var(--chart-3))' },
-  partial: { label: 'جزئي', color: 'hsl(var(--chart-4))' },
+  cancelled: { label: 'ملغي', color: 'hsl(var(--chart-4))' },
+  partial: { label: 'جزئي', color: 'hsl(var(--chart-5))' },
 };
 
 const statusTranslation: Record<Order['status'], keyof typeof chartConfig> = {
@@ -186,39 +187,70 @@ export default function DashboardPage() {
     const progressToNextRank = nextRank ? ((userData.totalSpent - rank.spend) / (nextRank.spend - rank.spend)) * 100 : 100;
     const amountToNextRank = nextRank ? nextRank.spend - userData.totalSpent : 0;
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: "spring",
+                stiffness: 100
+            }
+        }
+    };
+
     return (
-        <div className="space-y-6">
-            <div className='mb-4'>
+        <motion.div 
+            className="space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.div className='mb-4' variants={itemVariants}>
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>مرحباً بعودتك، {userData?.name || 'Hagaaty'}!</h1>
                 <p className='text-muted-foreground'>هذه هي قمرة قيادتك. ابدأ طلبًا جديدًا أو تفقد أداء حملاتك.</p>
-            </div>
+            </motion.div>
             
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
-                <div className="lg:col-span-2">
+                <motion.div className="lg:col-span-2" variants={itemVariants}>
                     <QuickOrderForm user={authUser} userData={userData} />
-                </div>
+                </motion.div>
                 <div className="lg:col-span-1 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="font-headline text-lg">مستوى رتبتك</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center">
-                             <rank.icon className="h-16 w-16 text-primary mx-auto" />
-                             <h3 className="text-2xl font-bold mt-2">{rank.name}</h3>
-                             <p className="text-sm text-primary">خصم {rank.discount}% على كل الطلبات</p>
-                             {nextRank && (
-                                <div className="mt-4 text-xs">
-                                     <Progress value={progressToNextRank} className="h-1" />
-                                    <p className="mt-2 text-muted-foreground">أنفق <span className="font-bold text-foreground">${amountToNextRank.toFixed(2)}</span> للوصول إلى رتبة {nextRank.name}!</p>
-                                </div>
-                             )}
-                        </CardContent>
-                    </Card>
-                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                    <motion.div variants={itemVariants}>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="font-headline text-lg">مستوى رتبتك</CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-center">
+                                 <rank.icon className="h-16 w-16 text-primary mx-auto" />
+                                 <h3 className="text-2xl font-bold mt-2">{rank.name}</h3>
+                                 <p className="text-sm text-primary">خصم {rank.discount}% على كل الطلبات</p>
+                                 {nextRank && (
+                                    <div className="mt-4 text-xs">
+                                         <Progress value={progressToNextRank} className="h-1" />
+                                        <p className="mt-2 text-muted-foreground">أنفق <span className="font-bold text-foreground">${amountToNextRank.toFixed(2)}</span> للوصول لرتبة {nextRank.name}!</p>
+                                    </div>
+                                 )}
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                    <motion.div variants={itemVariants}>
+                        <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
+                    </motion.div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8" variants={itemVariants}>
                  <Card>
                          <CardHeader>
                             <CardTitle className="font-headline text-xl">تحليل الأداء (آخر 7 أيام)</CardTitle>
@@ -237,7 +269,36 @@ export default function DashboardPage() {
                             </ChartContainer>
                          </CardContent>
                     </Card>
-
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline text-xl">توزيع حالات الطلبات</CardTitle>
+                         <CardDescription>نظرة سريعة على حالة جميع طلباتك.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-center">
+                       {orderStatusData.length > 0 ? (
+                             <ChartContainer config={chartConfig} className="h-64 w-full">
+                                <ResponsiveContainer>
+                                    <PieChart>
+                                        <Tooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
+                                        <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                            {orderStatusData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                            ))}
+                                        </Pie>
+                                        <Legend content={<ChartTooltipContent nameKey="status" hideLabel hideIndicator />} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                       ) : (
+                           <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                               <Archive className="h-12 w-12" />
+                               <p className="mt-2">لا توجد بيانات طلبات لعرضها.</p>
+                           </div>
+                       )}
+                    </CardContent>
+                 </Card>
+            </motion.div>
+             <motion.div variants={itemVariants}>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
@@ -283,7 +344,7 @@ export default function DashboardPage() {
                             </div>
                         </CardContent>
                     </Card>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }
