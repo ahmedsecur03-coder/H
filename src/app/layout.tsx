@@ -387,7 +387,11 @@ export default function RootLayout({
           <FirebaseClientProvider>
             <FirebaseErrorListener />
             <div className="cosmic-background"></div>
-            {isDashboard ? children : <PublicLayout>{children}</PublicLayout>}
+            {isDashboard ? (
+              <>{children}</>
+            ) : (
+              <PublicLayout>{children}</PublicLayout>
+            )}
             {!isDashboard && <WhatsappSupportButton />}
             <Toaster />
           </FirebaseClientProvider>
