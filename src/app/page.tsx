@@ -200,7 +200,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-24">
-        <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' && 'snow-background')}>
+        <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' ? 'snow-background' : 'cosmic-background')}>
             <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
              {mounted && theme === 'dark' && (
                 <React.Fragment>
