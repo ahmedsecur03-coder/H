@@ -40,6 +40,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import type { NestedNavItem, User } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
+import Script from 'next/script';
 
 
 const fontSans = PT_Sans({
@@ -365,6 +366,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
       </head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
+        <Script id="google-tag-manager" strategy="afterInteractive" async src="https://www.googletagmanager.com/gtag/js?id=G-4030VT05Y1"></Script>
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4030VT05Y1');
+          `}
+        </Script>
          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <FirebaseClientProvider>
             <FirebaseErrorListener />
