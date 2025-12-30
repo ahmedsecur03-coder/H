@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -74,7 +75,9 @@ export default function AdminCampaignsPage() {
       const tempStatusCounts = ALL_STATUSES.reduce((acc, status) => ({...acc, [status]: 0}), {} as Record<Status, number>);
 
       querySnapshot.forEach(doc => {
-        const campaign = { id: doc.id, ...doc.data() } as Campaign;
+        const pathSegments = doc.ref.path.split('/');
+        const userId = pathSegments[1];
+        const campaign = { id: doc.id, userId, ...doc.data() } as Campaign;
         fetchedCampaigns.push(campaign);
 
         // Calculate stats

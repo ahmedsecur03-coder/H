@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -165,7 +166,8 @@ export default function NewCampaignPage() {
             budget,
             durationDays,
             adLink: formData.get('adLink') as string,
-            targetCountry: formData.get('targetCountry') as string,
+            targetCountries: formData.get('targetCountries') as string,
+            targetCities: formData.get('targetCities') as string,
             targetAge: formData.get('targetAge') as string,
             targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
             targetInterests: formData.get('targetInterests') as string,
@@ -263,7 +265,8 @@ export default function NewCampaignPage() {
                                     
                                     <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
                                         <h4 className="font-semibold">إعدادات الاستهداف</h4>
-                                        <div className="space-y-2"><Label htmlFor="targetCountry">الدولة</Label><Input id="targetCountry" name="targetCountry" required placeholder="مثال: مصر, السعودية" /></div>
+                                        <div className="space-y-2"><Label htmlFor="targetCountries">الدول</Label><Input id="targetCountries" name="targetCountries" required placeholder="مثال: مصر, السعودية (مفصولة بفاصلة)" /></div>
+                                        <div className="space-y-2"><Label htmlFor="targetCities">المدن (اختياري)</Label><Input id="targetCities" name="targetCities" placeholder="مثال: القاهرة, الرياض (مفصولة بفاصلة)" /></div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2"><Label htmlFor="targetAge">الفئة العمرية</Label><Select name="targetAge" required><SelectTrigger id="targetAge"><SelectValue placeholder="اختر الأعمار" /></SelectTrigger><SelectContent>{ageRanges.map(age => <SelectItem key={age} value={age}>{age}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-2"><Label htmlFor="targetGender">الجنس</Label><Select name="targetGender" required defaultValue="الكل"><SelectTrigger id="targetGender"><SelectValue /></SelectTrigger><SelectContent>{genders.map(gender => <SelectItem key={gender} value={gender}>{gender}</SelectItem>)}</SelectContent></Select></div>

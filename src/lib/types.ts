@@ -87,7 +87,8 @@ export type Campaign = {
     platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
     goal: string;
     adLink: string;
-    targetCountry: string;
+    targetCountries: string;
+    targetCities?: string;
     targetAge: string;
     targetGender: 'الكل' | 'رجال' | 'نساء';
     targetInterests?: string;

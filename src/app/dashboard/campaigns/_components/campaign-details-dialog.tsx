@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Campaign } from '@/lib/types';
-import { BarChart, Eye, MousePointerClick, Target, Clock, DollarSign } from "lucide-react";
+import { BarChart, Eye, MousePointerClick, Target, Clock, DollarSign, Map, Pin } from "lucide-react";
 
 export function CampaignDetailsDialog({ campaign, children }: { campaign: Campaign, children: React.ReactNode }) {
     const [open, setOpen] = useState(false);
@@ -30,7 +31,7 @@ export function CampaignDetailsDialog({ campaign, children }: { campaign: Campai
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>تفاصيل الحملة: {campaign.name}</DialogTitle>
-                    <DialogDescription>نظرة عامة على أداء حملتك الإعلانية.</DialogDescription>
+                    <DialogDescription>نظرة عامة على أداء وإعدادات حملتك الإعلانية.</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                      <div className="flex items-center justify-between col-span-2 text-lg border-b pb-4">
@@ -58,6 +59,16 @@ export function CampaignDetailsDialog({ campaign, children }: { campaign: Campai
                             <span className="text-muted-foreground flex items-center gap-1.5"><Clock className="w-4 h-4"/> المدة:</span>
                             <span className="font-mono font-bold">{campaign.durationDays} أيام</span>
                         </div>
+                         <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground flex items-center gap-1.5"><Map className="w-4 h-4"/> الدول المستهدفة:</span>
+                            <span className="font-semibold">{campaign.targetCountries}</span>
+                        </div>
+                        {campaign.targetCities && (
+                             <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground flex items-center gap-1.5"><Pin className="w-4 h-4"/> المدن المستهدفة:</span>
+                                <span className="font-semibold">{campaign.targetCities}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </DialogContent>
