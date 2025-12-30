@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { WhatsAppIcon } from '@/components/ui/icons';
 import { doc, getDoc } from 'firebase/firestore';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { LogIn, UserPlus, Menu, X, ArrowUp, Loader2 } from 'lucide-react';
 import Logo from '@/components/logo';
