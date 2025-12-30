@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -100,33 +99,28 @@ export default function AdminSettingsPage() {
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
     const fiveDaysAgoISOString = fiveDaysAgo.toISOString();
 
-    let collectionName = '';
-    let dateField = '';
-    let statusWhereClause: any = null;
-
-    if (type === 'orders') {
-        collectionName = 'orders';
-        dateField = 'orderDate';
-    } else if (type === 'deposits') {
-        collectionName = 'deposits';
-        dateField = 'depositDate';
-        statusWhereClause = where('status', '==', 'مرفوض');
-    }
-
     try {
         let q: any;
-        const collectionGroupRef = collectionGroup(firestore, collectionName);
         
-        const queryConstraints = [
-            where(dateField, '<', fiveDaysAgoISOString),
-            orderBy(dateField, 'desc')
-        ];
+        if (type === 'orders') {
+            const collectionGroupRef = collectionGroup(firestore, 'orders');
+             q = query(
+                collectionGroupRef,
+                where('status', 'in', ['مكتمل', 'ملغي']),
+                where('orderDate', '<', fiveDaysAgoISOString)
+            );
 
-        if (statusWhereClause) {
-            queryConstraints.unshift(statusWhereClause);
+        } else if (type === 'deposits') {
+            const collectionGroupRef = collectionGroup(firestore, 'deposits');
+             q = query(
+                collectionGroupRef,
+                where('status', '==', 'مرفوض'),
+                where('depositDate', '<', fiveDaysAgoISOString)
+            );
+        } else {
+             setIsCleaning(null);
+             return;
         }
-
-        q = query(collectionGroupRef, ...queryConstraints);
 
         const snapshot = await getDocs(q);
         
@@ -136,11 +130,11 @@ export default function AdminSettingsPage() {
             return;
         }
 
-        const batchArray = [];
+        const batchArray: any[] = [];
         let currentBatch = writeBatch(firestore);
         let operationCount = 0;
 
-        snapshot.docs.forEach((doc, index) => {
+        snapshot.docs.forEach((doc) => {
             currentBatch.delete(doc.ref);
             operationCount++;
             if (operationCount === 499) {
@@ -161,7 +155,7 @@ export default function AdminSettingsPage() {
     } catch (error) {
         console.error(`Error cleaning up ${type}:`, error);
         const permissionError = new FirestorePermissionError({
-            path: `collectionGroup(${collectionName})`,
+            path: `collectionGroup(${type})`,
             operation: 'delete'
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -330,7 +324,7 @@ export default function AdminSettingsPage() {
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                                <AlertDialogDescription>سيتم حذف جميع الطلبات (من كل الحالات) الأقدم من 5 أيام بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
+                                <AlertDialogDescription>سيتم حذف جميع الطلبات (المكتملة والملغاة) الأقدم من 5 أيام بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
@@ -372,5 +366,3 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
-
-    
