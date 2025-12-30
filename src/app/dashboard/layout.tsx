@@ -75,7 +75,7 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
   );
 }
 
-function NavItems({ isAdmin }: { isAdmin: boolean }) {
+function NavItems() {
   const pathname = usePathname();
 
   const renderNavItem = (item: NestedNavItem) => {
@@ -116,7 +116,7 @@ function NavItems({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <>
-      {dashboardNavItems.map((item, index) => <SidebarMenuItem key={item.label || index}>{renderNavItem(item)}</SidebarMenuItem>)}
+      {dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}
     </>
   );
 }
@@ -181,7 +181,7 @@ export default function DashboardLayout({
                         )}
                       </div>
                       <SidebarMenu>
-                          <NavItems isAdmin={isAdmin} />
+                          <NavItems />
                       </SidebarMenu>
                     </SidebarContent>
                     {isAdmin && (
@@ -210,3 +210,4 @@ export default function DashboardLayout({
         </SidebarProvider>
     );
 }
+
