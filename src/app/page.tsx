@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -200,14 +201,13 @@ export default function HomePage() {
 
   return (
     <div className="space-y-24">
-        <section className={cn("relative text-center py-20 overflow-hidden", mounted && theme === 'light' ? 'snow-background' : 'cosmic-background')}>
-            <div className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,transparent_10%,black)]"></div>
-             {mounted && theme === 'dark' && (
-                <React.Fragment>
-                    <div className="absolute left-1/4 top-1/3 h-32 w-32 bg-primary/10 rounded-full filter blur-3xl animate-blob" />
-                    <div className="absolute right-1/4 bottom-1/3 h-32 w-32 bg-secondary/10 rounded-full filter blur-3xl animate-blob animation-delay-4000" />
-                </React.Fragment>
-             )}
+        <section className="relative text-center py-20 overflow-hidden">
+            <div
+                className="absolute -top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] md:w-[120%] md:h-[120%] lg:w-[100%] lg:h-[100%]
+                bg-[radial-gradient(ellipse_50%_40%_at_50%_50%,hsl(var(--primary)/0.15),transparent)] 
+                pointer-events-none -z-10"
+            />
+            <div className={cn("absolute inset-0 -z-20", mounted && theme === 'light' ? 'snow-background' : 'cosmic-background')} />
             
              <motion.h1 
                 initial={{ opacity: 0, y: -30 }}
@@ -215,7 +215,7 @@ export default function HomePage() {
                 transition={{ duration: 0.7, ease: "easeOut" }}
                 className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-secondary to-primary/80"
             >
-                شريكك المعتمد للنمو الرقمي
+                بوابتك الكونية للخدمات الرقمية
             </motion.h1>
              <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -223,7 +223,7 @@ export default function HomePage() {
                 transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
                 className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
             >
-                منصة حاجاتي هي مركزك المتكامل للخدمات الرقمية. نقدم خدمات SMM، إدارة حملات إعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
+                مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.
             </motion.p>
              <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -231,13 +231,13 @@ export default function HomePage() {
                 transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
                 className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4"
             >
-                <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
+                <Button size="lg" asChild className="text-lg py-7 px-8 w-full sm:w-auto" disabled={isUserLoading}>
                     <Link href={primaryAction.href}>
                          <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
                         {primaryAction.label}
                     </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="text-lg py-7 w-full sm:w-auto">
+                <Button size="lg" variant="outline" asChild className="text-lg py-7 px-8 w-full sm:w-auto">
                     <Link href={secondaryAction.href}>
                         <ShoppingCart className="me-2" />
                         {secondaryAction.label}
@@ -378,14 +378,14 @@ export default function HomePage() {
                         انضم إلى مئات المستخدمين الذين يثقون في حاجاتي لتنمية أعمالهم وحضورهم الرقمي. حسابك الجديد على بعد نقرة واحدة.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                         <Button size="lg" asChild className="text-lg py-7 w-full sm:w-auto" disabled={isUserLoading}>
+                         <Button size="lg" asChild className="text-lg py-7 px-8 w-full sm:w-auto" disabled={isUserLoading}>
                             <Link href={primaryAction.href}>
                                 <primaryAction.icon className={`me-2 ${isUserLoading ? 'animate-spin' : ''}`} />
                                 {primaryAction.label}
                             </Link>
                         </Button>
                         {!user && !isUserLoading && (
-                            <Button size="lg" variant="ghost" asChild className="text-lg py-7 w-full sm:w-auto">
+                            <Button size="lg" variant="ghost" asChild className="text-lg py-7 px-8 w-full sm:w-auto">
                                 <Link href="/auth/login">
                                     <LogIn className="me-2" />
                                     لدي حساب بالفعل
