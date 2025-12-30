@@ -251,14 +251,12 @@ export default function AdminCampaignsPage() {
             <CardContent>
                 {isLoading ? <Skeleton className="h-64 w-full" /> : 
                 <ChartContainer config={chartConfig} className="h-64 w-full">
-                    <ResponsiveContainer>
-                        <BarChart data={stats.statusCounts} layout="vertical" margin={{left: 10, right:10}}>
-                             <YAxis dataKey="status" type="category" tickLine={false} axisLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}} />
-                             <XAxis type="number" hide />
-                             <Tooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent />} />
-                             <Bar dataKey="count" layout="vertical" radius={5} fill="hsl(var(--primary))" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <BarChart data={stats.statusCounts} layout="vertical" margin={{left: 10, right:10}}>
+                         <YAxis dataKey="status" type="category" tickLine={false} axisLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}} />
+                         <XAxis type="number" hide />
+                         <Tooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent />} />
+                         <Bar dataKey="count" layout="vertical" radius={5} fill="hsl(var(--primary))" />
+                    </BarChart>
                 </ChartContainer>}
             </CardContent>
         </Card>
