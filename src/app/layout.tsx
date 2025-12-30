@@ -42,6 +42,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import Script from 'next/script';
 import GoogleAnalytics from '@/components/google-analytics';
+import { SocialLinks } from '@/components/social-links';
 
 
 const fontSans = PT_Sans({
@@ -311,7 +312,7 @@ function WhatsappSupportButton() {
   const firestore = useFirestore();
   const settingsDocRef = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'global') : null, [firestore]);
   const { data: settingsData } = useDoc<any>(settingsDocRef);
-  const whatsappLink = settingsData?.whatsappSupport || "#";
+  const whatsappLink = settingsData?.whatsappSupport || "https://wa.me/+201008070666";
 
   if(!whatsappLink || whatsappLink === "#") return null;
 
@@ -335,12 +336,13 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </main>
             <footer className="bg-card/30 border-t border-border z-10">
-                <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
-                    <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
+                <div className="container mx-auto flex flex-col items-center justify-center gap-4 py-6 px-4 md:px-6">
+                    <SocialLinks />
                     <nav className="flex gap-4 sm:gap-6">
                         <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
                         <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
                     </nav>
+                     <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
                 </div>
             </footer>
             <BackToTopButton />
