@@ -97,34 +97,34 @@ export default function AdminSettingsPage() {
 
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    const fiveDaysAgoISOString = fiveDaysAgo.toISOString();
 
     try {
-        let q: any;
+        let collectionGroupRef: any;
+        let docsToDelete: any[] = [];
         
         if (type === 'orders') {
-            const collectionGroupRef = collectionGroup(firestore, 'orders');
-             q = query(
+            collectionGroupRef = collectionGroup(firestore, 'orders');
+            const q = query(
                 collectionGroupRef,
-                where('status', 'in', ['مكتمل', 'ملغي']),
-                where('orderDate', '<', fiveDaysAgoISOString)
+                where('status', 'in', ['مكتمل', 'ملغي'])
             );
+            const snapshot = await getDocs(q);
+            docsToDelete = snapshot.docs.filter(doc => new Date(doc.data().orderDate) < fiveDaysAgo);
 
         } else if (type === 'deposits') {
-            const collectionGroupRef = collectionGroup(firestore, 'deposits');
-             q = query(
+            collectionGroupRef = collectionGroup(firestore, 'deposits');
+             const q = query(
                 collectionGroupRef,
-                where('status', '==', 'مرفوض'),
-                where('depositDate', '<', fiveDaysAgoISOString)
+                where('status', '==', 'مرفوض')
             );
+             const snapshot = await getDocs(q);
+             docsToDelete = snapshot.docs.filter(doc => new Date(doc.data().depositDate) < fiveDaysAgo);
         } else {
              setIsCleaning(null);
              return;
         }
-
-        const snapshot = await getDocs(q);
         
-        if (snapshot.empty) {
+        if (docsToDelete.length === 0) {
             toast({ title: 'لا يوجد ما يمكن حذفه', description: `لم يتم العثور على أي ${type === 'orders' ? 'طلبات' : 'إيداعات'} قديمة.` });
             setIsCleaning(null);
             return;
@@ -134,7 +134,7 @@ export default function AdminSettingsPage() {
         let currentBatch = writeBatch(firestore);
         let operationCount = 0;
 
-        snapshot.docs.forEach((doc) => {
+        docsToDelete.forEach((doc) => {
             currentBatch.delete(doc.ref);
             operationCount++;
             if (operationCount === 499) {
@@ -149,7 +149,7 @@ export default function AdminSettingsPage() {
 
         toast({
             title: "نجاح!",
-            description: `تم حذف ${snapshot.size} ${type === 'orders' ? 'طلب' : 'إيداع'} قديم بنجاح.`,
+            description: `تم حذف ${docsToDelete.length} ${type === 'orders' ? 'طلب' : 'إيداع'} قديم بنجاح.`,
         });
 
     } catch (error) {
