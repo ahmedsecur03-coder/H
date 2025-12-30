@@ -16,6 +16,7 @@ import { PostDialog } from './_components/post-dialog';
 import { AiPostDialog } from './_components/ai-post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { ImportPostsButton } from './_components/import-posts-button';
 
 export default function AdminBlogPage() {
     const firestore = useFirestore();
@@ -125,8 +126,9 @@ export default function AdminBlogPage() {
                          <div className="text-center py-10">
                             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 font-headline text-2xl">لا توجد منشورات بعد</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لإعلام المستخدمين بآخر الأخبار.</p>
+                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور أو قم باستيراد مقالات مقترحة لزيادة التفاعل.</p>
                             <div className="mt-6 flex justify-center gap-2">
+                                <ImportPostsButton onImportComplete={fetchPosts} />
                                 <AiPostDialog onArticleGenerated={handleArticleGenerated} />
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                             </div>
@@ -175,6 +177,7 @@ export default function AdminBlogPage() {
                 </div>
                  {showHeaderActions && (
                     <div className="flex gap-2">
+                        <ImportPostsButton onImportComplete={fetchPosts} />
                         <AiPostDialog onArticleGenerated={handleArticleGenerated} />
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                     </div>
