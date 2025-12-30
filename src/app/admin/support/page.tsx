@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collectionGroup, query, orderBy, getDocs, where } from 'firebase/firestore';
 import type { Ticket } from '@/lib/types';
@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from 'next/navigation';
 
 const statusVariant = {
   'مفتوحة': 'secondary',
@@ -109,11 +110,15 @@ function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: bo
     );
 };
 
-export default function AdminSupportPage() {
+function AdminSupportPageComponent() {
   const firestore = useFirestore();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  
   const [allTickets, setAllTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const userIdFilter = searchParams.get('userId');
 
   useEffect(() => {
     if (!firestore) return;
@@ -136,15 +141,25 @@ export default function AdminSupportPage() {
     });
   }, [firestore, toast]);
   
-  const activeTickets = allTickets.filter(t => t.status !== 'مغلقة');
-  const closedTickets = allTickets.filter(t => t.status === 'مغلقة');
+  const filteredTickets = useMemo(() => {
+      if (!userIdFilter) return allTickets;
+      return allTickets.filter(t => t.userId === userIdFilter);
+  }, [allTickets, userIdFilter]);
+
+  const activeTickets = filteredTickets.filter(t => t.status !== 'مغلقة');
+  const closedTickets = filteredTickets.filter(t => t.status === 'مغلقة');
 
 
   return (
     <div className="space-y-6 pb-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الدعم الفني</h1>
-        <p className="text-muted-foreground">عرض والرد على تذاكر الدعم من المستخدمين.</p>
+        <p className="text-muted-foreground">
+            {userIdFilter 
+                ? `عرض تذاكر الدعم للمستخدم: ${userIdFilter}`
+                : "عرض والرد على تذاكر الدعم من المستخدمين."
+            }
+        </p>
       </div>
 
        <Tabs defaultValue="open" className="w-full">
@@ -165,4 +180,13 @@ export default function AdminSupportPage() {
         </Tabs>
     </div>
   );
+}
+
+
+export default function AdminSupportPage() {
+    return (
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <AdminSupportPageComponent />
+        </Suspense>
+    )
 }
