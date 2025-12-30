@@ -14,6 +14,7 @@ import {
   SidebarMenuSubTrigger,
   SidebarMenuSubContent,
   SidebarMenuSubButton,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
@@ -35,6 +36,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Toaster } from '@/components/ui/toaster';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const appUser = {
