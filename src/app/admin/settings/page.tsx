@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -297,56 +298,7 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="space-y-6">
-             <Card>
-                <CardHeader>
-                    <CardTitle>الصيانة</CardTitle>
-                    <CardDescription>أدوات للحفاظ على أداء قاعدة البيانات.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                        تنظيف السجلات القديمة يمكن أن يساعد في تحسين سرعة استجابة المنصة. سيتم حذف السجلات الأقدم من 5 أيام.
-                    </p>
-                    
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                             <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
-                                {isCleaning === 'orders' ? <Loader2 className="me-2 animate-spin" /> : <Trash2 className="me-2 h-4 w-4"/>}
-                                حذف الطلبات القديمة
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                                <AlertDialogDescription>سيتم حذف جميع الطلبات (المكتملة والملغاة) الأقدم من 5 أيام بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleCleanup('orders')} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive" className="w-full" disabled={isCleaning !== null}>
-                                {isCleaning === 'deposits' ? <Loader2 className="me-2 animate-spin" /> : <Trash2 className="me-2 h-4 w-4"/>}
-                                حذف الإيداعات المرفوضة
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                                <AlertDialogDescription>سيتم حذف جميع طلبات الإيداع المرفوضة الأقدم من 5 أيام بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleCleanup('deposits')} className="bg-destructive hover:bg-destructive/90">متابعة الحذف</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-
-                </CardContent>
-            </Card>
+           
         </div>
       </div>
        <Separator className="my-6" />
@@ -359,3 +311,5 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+
+    
