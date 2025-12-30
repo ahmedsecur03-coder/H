@@ -28,14 +28,12 @@ import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend, RANKS } from '@/lib/service';
 import { redirect, usePathname } from 'next/navigation';
-import { useUser, useFirestore, useDoc, useMemoFirebase, FirebaseClientProvider } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ThemeProvider } from '@/components/theme-provider';
 import { Notifications } from '@/components/notifications';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Toaster } from '@/components/ui/toaster';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
@@ -118,13 +116,13 @@ function NavItems({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <>
-      {dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}
+      {dashboardNavItems.map((item, index) => <SidebarMenuItem key={item.label || index}>{renderNavItem(item)}</SidebarMenuItem>)}
     </>
   );
 }
 
 
-function DashboardLayoutContent({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -212,25 +210,3 @@ function DashboardLayoutContent({
         </SidebarProvider>
     );
 }
-
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <FirebaseClientProvider>
-          <DashboardLayoutContent>{children}</DashboardLayoutContent>
-          <Toaster />
-      </FirebaseClientProvider>
-    </ThemeProvider>
-  )
-}
- 

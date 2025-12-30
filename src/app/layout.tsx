@@ -1,3 +1,4 @@
+
 'use client';
 
 import './globals.css';
@@ -174,7 +175,7 @@ function Header() {
                {publicNavItems.map((item) => (
                 <NavigationMenuItem key={item.label}>
                   {item.children ? (
-                    <>
+                    <React.Fragment key={item.label}>
                       <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
@@ -185,7 +186,7 @@ function Header() {
                           ))}
                         </ul>
                       </NavigationMenuContent>
-                    </>
+                    </React.Fragment>
                   ) : (
                     <NavigationMenuLink asChild active={pathname === item.href} className={navigationMenuTriggerStyle()}>
                         <Link href={item.href || '#'}>
@@ -317,28 +318,6 @@ function BackToTopButton() {
   );
 }
 
-function PublicLayout({ children }: { children: React.ReactNode }) {
-  return (
-     <div className="flex min-h-screen flex-col">
-       <Header />
-      <main className="flex-1">
-        <div className="container mx-auto px-4 md:px-6 py-8">
-            {children}
-        </div>
-      </main>
-      <footer className="bg-card/30 border-t border-border z-10">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
-            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
-            <nav className="flex gap-4 sm:gap-6">
-                <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
-                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
-            </nav>
-        </div>
-      </footer>
-       <BackToTopButton />
-    </div>
-  );
-}
 
 function WhatsappSupportButton() {
   const firestore = useFirestore();
@@ -366,7 +345,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+  const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/auth');
+  
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
@@ -386,13 +366,30 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             <FirebaseErrorListener />
-            <div className="cosmic-background"></div>
-            {isDashboard ? (
-              <>{children}</>
-            ) : (
-              <PublicLayout>{children}</PublicLayout>
-            )}
-            {!isDashboard && <WhatsappSupportButton />}
+             <div className="cosmic-background"></div>
+             {isDashboard ? (
+                <>{children}</>
+             ) : (
+                <div className="flex min-h-screen flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    <div className="container mx-auto px-4 md:px-6 py-8">
+                        {children}
+                    </div>
+                  </main>
+                  <footer className="bg-card/30 border-t border-border z-10">
+                    <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 py-6 px-4 md:px-6">
+                        <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} حاجاتي. جميع الحقوق محفوظة.</p>
+                        <nav className="flex gap-4 sm:gap-6">
+                            <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">شروط الخدمة</Link>
+                            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary underline-offset-4">سياسة الخصوصية</Link>
+                        </nav>
+                    </div>
+                  </footer>
+                   <BackToTopButton />
+                   <WhatsappSupportButton />
+                </div>
+             )}
             <Toaster />
           </FirebaseClientProvider>
         </ThemeProvider>
@@ -400,3 +397,4 @@ export default function RootLayout({
     </html>
   );
 }
+
