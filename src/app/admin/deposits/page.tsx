@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -17,6 +16,7 @@ import {
   arrayUnion,
   increment,
   Timestamp,
+  deleteDoc,
 } from 'firebase/firestore';
 import type { Deposit, User } from '@/lib/types';
 
@@ -33,11 +33,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Check, X, Loader2 } from 'lucide-react';
+import { Check, X, Loader2, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from 'next/link';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
 
@@ -52,7 +53,7 @@ const COMMISSION_RATES = [
 ];
 
 
-function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { deposits: Deposit[], isLoading: boolean, onAction: (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => void, loadingActionId: string | null }) {
+function DepositTable({ deposits, isLoading, onAction, loadingActionId, onDelete }: { deposits: Deposit[], isLoading: boolean, onAction: (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => void, loadingActionId: string | null, onDelete: (deposit: Deposit) => void }) {
 
   const status = deposits.length > 0 ? deposits[0].status : 'معلق';
   
@@ -67,13 +68,13 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
               <TableHead>طريقة الدفع</TableHead>
               <TableHead>التفاصيل</TableHead>
               <TableHead>التاريخ</TableHead>
-              {status === 'معلق' && <TableHead className="text-right">إجراءات</TableHead>}
+              <TableHead className="text-right">إجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({length: 5}).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({length: status === 'معلق' ? 6 : 5}).map((_, j) => (
+                  {Array.from({length: 6}).map((_, j) => (
                       <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                   ))}
                 </TableRow>
@@ -102,7 +103,7 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
           <TableHead>طريقة الدفع</TableHead>
           <TableHead>التفاصيل</TableHead>
           <TableHead>التاريخ</TableHead>
-          {status === 'معلق' && <TableHead className="text-right">إجراءات</TableHead>}
+          <TableHead className="text-right">إجراءات</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -119,20 +120,34 @@ function DepositTable({ deposits, isLoading, onAction, loadingActionId }: { depo
             <TableCell>
               {new Date(deposit.depositDate).toLocaleString('ar-EG')}
             </TableCell>
-            {status === 'معلق' && (
-              <TableCell className="text-right">
-                {loadingActionId === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
-                  <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
-                          <Check className="h-4 w-4"/>
-                      </Button>
-                      <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
-                          <X className="h-4 w-4"/>
-                      </Button>
-                  </div>
-                )}
-              </TableCell>
-            )}
+            <TableCell className="text-right">
+              {loadingActionId === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
+                <div className="flex justify-end gap-2">
+                    {status === 'معلق' && (
+                        <>
+                        <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
+                            <Check className="h-4 w-4"/>
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
+                            <X className="h-4 w-4"/>
+                        </Button>
+                        </>
+                    )}
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader><AlertDialogTitle>تأكيد الحذف</AlertDialogTitle><AlertDialogDescription>هل أنت متأكد أنك تريد حذف هذا الإيداع؟ لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription></AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDelete(deposit)}>حذف</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+              )}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -276,6 +291,23 @@ export default function AdminDepositsPage() {
           setLoadingActionId(null);
         }
   };
+  
+  const handleDelete = async (deposit: Deposit) => {
+    if (!firestore) return;
+    const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
+    try {
+        await deleteDoc(depositDocRef);
+        toast({ title: 'نجاح', description: 'تم حذف الإيداع بنجاح.' });
+        fetchAllData(); // Refresh data
+    } catch (error) {
+         const permissionError = new FirestorePermissionError({
+            path: depositDocRef.path,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    }
+  }
+
 
   const filteredDeposits = useMemo(() => {
     return {
@@ -304,13 +336,13 @@ export default function AdminDepositsPage() {
         <Card className="mt-4">
           <CardContent className="p-0">
             <TabsContent value="معلق" className="m-0">
-              <DepositTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
+              <DepositTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
             </TabsContent>
             <TabsContent value="مقبول" className="m-0">
-              <DepositTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
+              <DepositTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
             </TabsContent>
             <TabsContent value="مرفوض" className="m-0">
-              <DepositTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
+              <DepositTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
             </TabsContent>
           </CardContent>
         </Card>

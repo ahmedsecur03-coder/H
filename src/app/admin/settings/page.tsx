@@ -25,7 +25,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Notification } from '@/lib/types';
+import type { Notification, Order, Deposit } from '@/lib/types';
 
 
 export default function AdminSettingsPage() {
@@ -99,29 +99,22 @@ export default function AdminSettingsPage() {
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
     try {
-        let collectionGroupRef: any;
+        const collectionGroupRef = collectionGroup(firestore, type);
+        const snapshot = await getDocs(collectionGroupRef);
+
         let docsToDelete: any[] = [];
         
         if (type === 'orders') {
-            collectionGroupRef = collectionGroup(firestore, 'orders');
-            const q = query(
-                collectionGroupRef,
-                where('status', 'in', ['مكتمل', 'ملغي'])
-            );
-            const snapshot = await getDocs(q);
-            docsToDelete = snapshot.docs.filter(doc => new Date(doc.data().orderDate) < fiveDaysAgo);
+            docsToDelete = snapshot.docs.filter(doc => {
+                const order = doc.data() as Order;
+                return (order.status === 'مكتمل' || order.status === 'ملغي') && new Date(order.orderDate) < fiveDaysAgo;
+            });
 
         } else if (type === 'deposits') {
-            collectionGroupRef = collectionGroup(firestore, 'deposits');
-             const q = query(
-                collectionGroupRef,
-                where('status', '==', 'مرفوض')
-            );
-             const snapshot = await getDocs(q);
-             docsToDelete = snapshot.docs.filter(doc => new Date(doc.data().depositDate) < fiveDaysAgo);
-        } else {
-             setIsCleaning(null);
-             return;
+             docsToDelete = snapshot.docs.filter(doc => {
+                const deposit = doc.data() as Deposit;
+                return deposit.status === 'مرفوض' && new Date(deposit.depositDate) < fiveDaysAgo;
+            });
         }
         
         if (docsToDelete.length === 0) {

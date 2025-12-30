@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useMemo, useState, useEffect, useCallback, Suspense } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collectionGroup, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
+import { collectionGroup, query, orderBy, where, Query as FirestoreQuery, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, deleteDoc, doc } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -31,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ListFilter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ListFilter, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
@@ -46,6 +45,8 @@ import { Button } from '@/components/ui/button';
 import { OrderActions } from './_components/order-actions';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { FirestorePermissionError, errorEmitter } from '@/firebase';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -153,6 +154,23 @@ function AdminOrdersPageComponent() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+  
+  const handleDelete = async (order: Order) => {
+    if (!firestore) return;
+    const orderDocRef = doc(firestore, `users/${order.userId}/orders`, order.id);
+    try {
+        await deleteDoc(orderDocRef);
+        toast({ title: 'نجاح', description: 'تم حذف الطلب بنجاح.' });
+        fetchOrders();
+    } catch (error) {
+         const permissionError = new FirestorePermissionError({
+            path: orderDocRef.path,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    }
+  }
+
 
   const { paginatedOrders, totalPages } = useMemo(() => {
     if (!allOrders) return { paginatedOrders: [], totalPages: 0 };
@@ -262,8 +280,20 @@ function AdminOrdersPageComponent() {
            <a href={order.link} className="text-primary hover:underline truncate block max-w-[150px]" target="_blank">{order.link}</a>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="gap-2">
         <OrderActions order={order} onOrderUpdate={fetchOrders} />
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="flex-1">حذف</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader><AlertDialogTitle>تأكيد الحذف</AlertDialogTitle><AlertDialogDescription>هل أنت متأكد أنك تريد حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleDelete(order)}>حذف</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
       </CardFooter>
     </Card>
   );
@@ -344,8 +374,20 @@ function AdminOrdersPageComponent() {
                                 <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
                             </TableCell>
                             <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right flex items-center justify-end gap-2">
                                 <OrderActions order={order} onOrderUpdate={fetchOrders} />
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader><AlertDialogTitle>تأكيد الحذف</AlertDialogTitle><AlertDialogDescription>هل أنت متأكد أنك تريد حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(order)}>حذف</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </TableCell>
                         </TableRow>
                         ))}
