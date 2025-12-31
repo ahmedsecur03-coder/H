@@ -122,10 +122,15 @@ function OrdersPageComponent() {
     if (!user || !firestore) return;
     setIsLoading(true);
     const ordersQuery = query(collection(firestore, `users/${user.uid}/orders`), orderBy('orderDate', 'desc'));
-    const snapshot = await getDocs(ordersQuery);
-    const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-    setAllOrders(ordersData);
-    setIsLoading(false);
+    try {
+        const snapshot = await getDocs(ordersQuery);
+        const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        setAllOrders(ordersData);
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+    } finally {
+        setIsLoading(false);
+    }
   }, [user, firestore]);
 
   useEffect(() => {

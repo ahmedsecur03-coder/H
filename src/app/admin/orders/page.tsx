@@ -116,11 +116,7 @@ function AdminOrdersPageComponent() {
   const currentStatus = searchParams.get('status') || 'all';
   const currentSearch = searchParams.get('search') || '';
 
-  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
-  const [lastDoc, setLastDoc] = useState<any | null>(null);
-  const [firstDoc, setFirstDoc] = useState<any | null>(null);
   const [allOrders, setAllOrders] = useState<Order[]>([]);
 
 
@@ -172,8 +168,8 @@ function AdminOrdersPageComponent() {
   }
 
 
-  const { paginatedOrders, totalPages } = useMemo(() => {
-    if (!allOrders) return { paginatedOrders: [], totalPages: 0 };
+  const { paginatedOrders, pageCount } = useMemo(() => {
+    if (!allOrders) return { paginatedOrders: [], pageCount: 0 };
     
     const filtered = allOrders.filter(order => 
         (currentStatus === 'all' || order.status === currentStatus) &&
@@ -192,11 +188,6 @@ function AdminOrdersPageComponent() {
     return { paginatedOrders: paginated, totalPages: total };
 
   }, [allOrders, currentSearch, currentPage, currentStatus]);
-
-  useEffect(() => {
-    setPageCount(totalPages);
-  }, [totalPages]);
-
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -253,7 +244,7 @@ function AdminOrdersPageComponent() {
     ));
   };
   
-  if (isLoading && allOrders.length === 0) {
+  if (isLoading) {
     return <OrdersPageSkeleton />;
   }
 
@@ -334,11 +325,7 @@ function AdminOrdersPageComponent() {
         </CardHeader>
       </Card>
 
-      {isLoading && paginatedOrders.length === 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
-        </div>
-      ) : paginatedOrders.length > 0 ? (
+      {paginatedOrders.length > 0 ? (
         <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">

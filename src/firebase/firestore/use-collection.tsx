@@ -41,12 +41,13 @@ export interface UseCollectionResult<T> {
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
+    options: {startManually: boolean} = {startManually: false}
 ): UseCollectionResult<T> {
   type ResultItemType = WithId<T>;
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(!options.startManually);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   const [nonce, setNonce] = useState(0);
 
@@ -55,10 +56,12 @@ export function useCollection<T = any>(
   }, []);
 
   useEffect(() => {
-    if (!memoizedTargetRefOrQuery) {
-      setData(null);
-      setIsLoading(false);
-      setError(null);
+    if (!memoizedTargetRefOrQuery || options.startManually && nonce === 0) {
+      if(!options.startManually) {
+        setData(null);
+        setIsLoading(false);
+        setError(null);
+      }
       return;
     }
 
@@ -84,7 +87,7 @@ export function useCollection<T = any>(
     fetchData();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memoizedTargetRefOrQuery, nonce]); 
+  }, [memoizedTargetRefOrQuery, nonce, options.startManually]); 
 
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
     console.warn('A query or collection reference passed to useCollection was not properly memoized using useMemoFirebase. This can cause performance issues.');

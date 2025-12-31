@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
@@ -159,7 +158,7 @@ function AdminUsersPageComponent() {
   };
 
 
-  if (isLoading && allUsers.length === 0) {
+  if (isLoading) {
     return <UsersPageSkeleton />;
   }
 
@@ -220,11 +219,7 @@ function AdminUsersPageComponent() {
         </CardHeader>
        </Card>
 
-       {isLoading && paginatedUsers.length === 0 ? (
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-           {Array.from({length: 8}).map((_, i) => <Skeleton key={i} className="h-64" />)}
-         </div>
-       ) : paginatedUsers.length > 0 ? (
+       {paginatedUsers.length > 0 ? (
          <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
