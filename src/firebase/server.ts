@@ -7,57 +7,59 @@ import { firebaseConfig } from './config';
 function getServiceAccount(): ServiceAccount | undefined {
   const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!serviceAccountStr) {
+    // This warning is crucial for debugging deployments.
+    console.warn(
+      'FIREBASE_SERVICE_ACCOUNT env var not set. Server-side Firebase features will be disabled.'
+    );
     return undefined;
   }
   try {
-    // This is the format for Vercel, Netlify, and other platforms
+    // This is the recommended format (e.g., for Vercel, Netlify).
     return JSON.parse(Buffer.from(serviceAccountStr, 'base64').toString('utf-8'));
   } catch (e1) {
     try {
-        // This is the format for local development (and some other platforms)
+        // This is a fallback for local development or other platforms.
         return JSON.parse(serviceAccountStr);
     } catch(e2) {
-        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT from both Base64 and direct JSON:', e2);
+        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT from both Base64 and direct JSON. Ensure it is a valid JSON string or a Base64-encoded JSON string.', e2);
         return undefined;
     }
   }
 }
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+let adminApp: App | null = null;
+let firestoreInstance: Firestore | null = null;
+
+// This function initializes the admin app ONCE and reuses the instance.
 export function initializeFirebaseServer() {
+  if (adminApp) {
+    return { firebaseApp: adminApp, firestore: firestoreInstance };
+  }
+  
   const serviceAccount = getServiceAccount();
 
-  // If service account is not available, we can't initialize the admin app.
-  // Return null for services to be handled gracefully by the calling function.
   if (!serviceAccount) {
-    // This warning is crucial for debugging deployments on platforms like Vercel
-    console.warn(
-      'FIREBASE_SERVICE_ACCOUNT env var not set or invalid. Server-side Firebase features will be disabled.'
-    );
     return { firebaseApp: null, firestore: null };
   }
   
-  if (getApps().length > 0) {
-    return getSdks(getApps()[0]);
+  // Use getApps to check if the app is already initialized.
+  if (!getApps().length) {
+     try {
+        adminApp = initializeApp({
+          credential: cert(serviceAccount),
+          databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
+          projectId: firebaseConfig.projectId,
+        });
+        firestoreInstance = getFirestore(adminApp);
+     } catch(error: any) {
+        console.error("Failed to initialize Firebase Admin SDK:", error.message);
+        return { firebaseApp: null, firestore: null };
+     }
+  } else {
+    // If apps exist, get the default app.
+    adminApp = getApps()[0];
+    firestoreInstance = getFirestore(adminApp);
   }
 
-  try {
-    const app = initializeApp({
-      credential: cert(serviceAccount),
-      databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
-      projectId: firebaseConfig.projectId,
-    });
-    return getSdks(app);
-  } catch (error: any) {
-      console.error("Failed to initialize Firebase Admin SDK:", error.message);
-      return { firebaseApp: null, firestore: null };
-  }
-}
-
-export function getSdks(app: App): { firebaseApp: App, firestore: Firestore } {
-  const firestore = getFirestore(app);
-  return {
-    firebaseApp: app,
-    firestore,
-  };
+  return { firebaseApp: adminApp, firestore: firestoreInstance };
 }

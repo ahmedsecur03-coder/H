@@ -4,6 +4,16 @@ import 'server-only';
 import type { User, Order, Notification } from '@/lib/types';
 import { Firestore, Transaction, FieldValue } from 'firebase-admin/firestore';
 import { getRankForSpend, RANKS, AFFILIATE_LEVELS } from '@/lib/service';
+import { initializeFirebaseServer } from '@/firebase/server';
+
+
+async function getAdminFirestore(): Promise<Firestore> {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) {
+        throw new Error("Firestore Admin SDK is not initialized.");
+    }
+    return firestore;
+}
 
 /**
  * Server-side version of processOrderInTransaction.

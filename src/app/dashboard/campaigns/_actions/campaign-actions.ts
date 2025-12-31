@@ -1,3 +1,4 @@
+
 'use server';
 
 import { initializeFirebaseServer } from '@/firebase/server';
@@ -19,24 +20,25 @@ async function getAdminFirestore(): Promise<Firestore> {
  * @param campaignId The ID of the campaign to activate.
  */
 export async function activateCampaignAndDeductBalance(userId: string, campaignId: string) {
-    const firestore = await getAdminFirestore();
-    const userDocRef = firestore.collection('users').doc(userId);
-    const campaignDocRef = firestore.collection(`users/${userId}/campaigns`).doc(campaignId);
-
     try {
+        const firestore = await getAdminFirestore();
+        const userDocRef = firestore.collection('users').doc(userId);
+        const campaignDocRef = firestore.collection(`users/${userId}/campaigns`).doc(campaignId);
+
         await firestore.runTransaction(async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
             const campaignDoc = await transaction.get(campaignDocRef);
 
             if (!userDoc.exists() || !campaignDoc.exists()) {
-                throw new Error("User or Campaign not found.");
+                console.warn(`User ${userId} or Campaign ${campaignId} not found for activation.`);
+                return;
             }
             
             const userData = userDoc.data() as User;
             const campaignData = campaignDoc.data() as Campaign;
 
             if (campaignData.status !== 'بانتظار المراجعة') {
-                return; // Already processed
+                return; // Already processed or not in the right state
             }
 
             if ((userData.adBalance ?? 0) < campaignData.budget) {
@@ -48,9 +50,9 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
                     createdAt: new Date().toISOString(),
                     href: '/dashboard/add-funds'
                 };
+                transaction.update(campaignDocRef, { status: 'متوقف' });
                 transaction.update(userDocRef, {
                     notifications: FieldValue.arrayUnion(notification),
-                    status: 'متوقف', // Also stop the campaign
                 });
                 return;
             }
@@ -77,9 +79,12 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
             });
             transaction.update(campaignDocRef, campaignUpdates);
         });
+
     } catch (error) {
         console.error(`Failed to activate campaign ${campaignId} for user ${userId}:`, error);
-        // In a real app, you'd have more robust error logging here.
+        // In a real app, you'd have more robust error logging here, potentially to a dedicated logging service.
+        // We throw the error so the client can be notified if needed, though in this case it's a fire-and-forget action.
+        throw error;
     }
 }
 
