@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -182,7 +183,7 @@ export default function DashboardPage() {
                     return { ...c, ...performanceUpdate };
                 });
             });
-        }, 5000); // Update every 5 seconds
+        }, 3600000); // Update every hour
 
         return () => clearInterval(interval);
     }, []);
@@ -423,5 +424,3 @@ export default function DashboardPage() {
         </motion.div>
     );
 }
-
-    

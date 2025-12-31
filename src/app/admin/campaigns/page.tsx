@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DollarSign, ListChecks, Hourglass, BarChart2, TrendingUp, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { CampaignDetailsDialog } from '@/app/dashboard/campaigns/_components/campaign-details-dialog';
+import { CampaignActions } from './_components/campaign-actions';
 
 const statusVariant = {
   'نشط': 'default',
@@ -144,10 +145,11 @@ export default function AdminCampaignsPage() {
         <TableCell><Badge variant={statusVariant[campaign.status] || 'secondary'}>{campaign.status}</Badge></TableCell>
         <TableCell>${(campaign.spend || 0).toFixed(2)}</TableCell>
         <TableCell>${campaign.budget.toFixed(2)}</TableCell>
-        <TableCell>
+        <TableCell className="flex justify-end items-center gap-2">
             <CampaignDetailsDialog campaign={campaign}>
                  <Button variant="outline" size="sm"><FileText className="ml-2 h-4 w-4" />تفاصيل</Button>
             </CampaignDetailsDialog>
+            <CampaignActions campaign={campaign} onUpdate={fetchCampaignsAndStats} />
         </TableCell>
       </TableRow>
     ));
@@ -235,7 +237,7 @@ export default function AdminCampaignsPage() {
                     <TableHead>الحالة</TableHead>
                     <TableHead>الإنفاق</TableHead>
                     <TableHead>الميزانية</TableHead>
-                    <TableHead>إجراء</TableHead>
+                    <TableHead className="text-right">إجراءات</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>

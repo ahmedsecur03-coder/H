@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -288,7 +289,7 @@ export default function CampaignsPage() {
                     return { ...c, ...performanceUpdate };
                 });
             });
-        }, 5000); // Update every 5 seconds
+        }, 3600000); // Update every hour
 
         return () => clearInterval(interval);
     }, []);
