@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   collectionGroup,
@@ -130,7 +130,7 @@ export default function AdminWithdrawalsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
 
-    const fetchAllData = async () => {
+    const fetchAllData = useCallback(async () => {
         if (!firestore) return;
         setIsLoading(true);
         try {
@@ -150,11 +150,11 @@ export default function AdminWithdrawalsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [firestore, toast]);
     
     useEffect(() => {
         fetchAllData();
-    }, [firestore]);
+    }, [fetchAllData]);
 
 
     const handleWithdrawalAction = async (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => {

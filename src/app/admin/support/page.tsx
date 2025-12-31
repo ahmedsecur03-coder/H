@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense, useMemo } from 'react';
+import { useState, useEffect, Suspense, useMemo, useCallback } from 'react';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collectionGroup, query, orderBy, getDocs, where } from 'firebase/firestore';
 import type { Ticket } from '@/lib/types';
@@ -120,11 +120,12 @@ function AdminSupportPageComponent() {
 
   const userIdFilter = searchParams.get('userId');
 
-  useEffect(() => {
+  const fetchTickets = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
     const ticketsQuery = query(collectionGroup(firestore, 'tickets'));
-    getDocs(ticketsQuery).then(snapshot => {
+    try {
+        const snapshot = await getDocs(ticketsQuery);
         const fetchedTickets: Ticket[] = [];
         snapshot.forEach(doc => {
             const pathSegments = doc.ref.path.split('/');
@@ -133,21 +134,25 @@ function AdminSupportPageComponent() {
         });
         // Sort client-side
         setAllTickets(fetchedTickets.sort((a,b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()));
-    }).catch(finalError => {
+    } catch(finalError) {
         console.error("Error fetching tickets:", finalError);
         toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
-    }).finally(() => {
+    } finally {
         setIsLoading(false);
-    });
+    }
   }, [firestore, toast]);
-  
-  const filteredTickets = useMemo(() => {
-      if (!userIdFilter) return allTickets;
-      return allTickets.filter(t => t.userId === userIdFilter);
-  }, [allTickets, userIdFilter]);
 
-  const activeTickets = filteredTickets.filter(t => t.status !== 'مغلقة');
-  const closedTickets = filteredTickets.filter(t => t.status === 'مغلقة');
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
+  
+  const { activeTickets, closedTickets } = useMemo(() => {
+      const filtered = userIdFilter ? allTickets.filter(t => t.userId === userIdFilter) : allTickets;
+      return {
+          activeTickets: filtered.filter(t => t.status !== 'مغلقة'),
+          closedTickets: filtered.filter(t => t.status === 'مغلقة'),
+      };
+  }, [allTickets, userIdFilter]);
 
 
   return (

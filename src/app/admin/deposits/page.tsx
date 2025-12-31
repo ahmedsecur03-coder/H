@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   collectionGroup,
@@ -163,7 +164,7 @@ export default function AdminDepositsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
 
-    const fetchAllData = async () => {
+    const fetchAllData = useCallback(async () => {
         if(!firestore) return;
         setIsLoading(true);
         try {
@@ -183,11 +184,11 @@ export default function AdminDepositsPage() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, [firestore, toast]);
 
     useEffect(() => {
         fetchAllData();
-    }, [firestore]);
+    }, [fetchAllData]);
 
 
     const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
@@ -350,3 +351,4 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
+
