@@ -1,6 +1,7 @@
+
 'use server';
 
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebase } from '@/firebase/init';
 import type { Campaign, User, Notification } from '@/lib/types';
 import { doc, runTransaction, arrayUnion, increment } from 'firebase/firestore';
 
