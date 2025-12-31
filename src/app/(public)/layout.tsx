@@ -1,13 +1,7 @@
 
 'use client';
-import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { Poppins, PT_Sans } from 'next/font/google';
-import { cn } from '@/lib/utils';
-import { ThemeProvider } from '@/components/theme-provider';
-import React, { Suspense } from 'react';
-import GoogleAnalytics from '@/components/google-analytics';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider } from "@/firebase";
+import React from 'react';
 import Link from 'next/link';
 import {
   NavigationMenu,
@@ -33,20 +27,8 @@ import type { NestedNavItem } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SocialLinks } from "@/components/social-links";
 import { publicNavItems } from '@/lib/placeholder-data';
+import { cn } from '@/lib/utils';
 import { useUser } from "@/firebase";
-
-
-const fontSans = PT_Sans({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-sans',
-});
-
-const fontHeadline = Poppins({
-  subsets: ['latin'],
-  weight: ['800'],
-  variable: '--font-headline',
-});
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -189,42 +171,18 @@ function PublicFooter() {
     );
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
-  const measurementId = "G-4030VT05Y1";
-  const siteUrl = "https://hajaty.com";
 
+export default function PublicLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <head>
-        <title>منصة حاجاتي | خدمات SMM وزيادة متابعين وإدارة حملات إعلانية</title>
-        <meta name="description" content="منصة حاجاتي هي سيرفرك الأول لخدمات التسويق الرقمي. نقدم زيادة متابعين (انستقرام، تيك توك، فيسبوك)، إدارة حملات إعلانية احترافية، وشراء حسابات وكالة لنمو أعمالك." />
-        <link rel="canonical" href={siteUrl} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={siteUrl} />
-        <meta property="og:title" content="منصة حاجاتي | بوابتك لخدمات التسويق الرقمي" />
-        <meta property="og:description" content="زيادة متابعين، إدارة حملات إعلانية، شراء حسابات وكالة، وكل ما تحتاجه لنمو أعمالك الرقمية في مكان واحد." />
-        <meta property="og:image" content={`${siteUrl}/og-image.png`} />
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={siteUrl} />
-        <meta property="twitter:title" content="منصة حاجاتي | بوابتك لخدمات التسويق الرقمي" />
-        <meta property="twitter:description" content="زيادة متابعين، إدارة حملات إعلانية، شراء حسابات وكالة، وكل ما تحتاجه لنمو أعمالك الرقمية في مكان واحد." />
-        <meta property="twitter:image" content={`${siteUrl}/og-image.png`} />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#3498DB" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
-      </head>
-      <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
-        <Suspense>
-          <GoogleAnalytics gaId={measurementId} />
-        </Suspense>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            <FirebaseClientProvider>
-                {children}
-                <Toaster />
-            </FirebaseClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <>
+        <PublicHeader />
+        <main className="flex-1 container py-8">{children}</main>
+        <PublicFooter />
+    </>
   );
 }
 

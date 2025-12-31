@@ -1,3 +1,4 @@
+
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -74,3 +75,5 @@ export default async function BlogPage() {
         </div>
     );
 }
+
+    
