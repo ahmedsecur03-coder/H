@@ -9,3 +9,4 @@ export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './errors';
 export * from './error-emitter';
+export * from './init'; // Exporting the new init file

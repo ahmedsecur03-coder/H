@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -122,11 +121,7 @@ function NavItems() {
 }
 
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
@@ -210,4 +205,3 @@ export default function DashboardLayout({
         </SidebarProvider>
     );
 }
-

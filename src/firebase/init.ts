@@ -3,7 +3,7 @@
 
 import { getApps, initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, memoryLocalCache } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
 interface FirebaseServices {
@@ -20,6 +20,11 @@ let firebaseServices: FirebaseServices | null = null;
  * @returns An object containing the initialized Firebase services (app, auth, firestore).
  */
 export function initializeFirebase(): FirebaseServices {
+  if (typeof window === 'undefined') {
+    // This is a server environment, we should use the server-init
+    throw new Error("Attempted to call initializeFirebase() from the server. Use initializeFirebaseServer() instead.");
+  }
+  
   if (firebaseServices) {
     return firebaseServices;
   }
@@ -27,7 +32,11 @@ export function initializeFirebase(): FirebaseServices {
   const apps = getApps();
   const firebaseApp = !apps.length ? initializeApp(firebaseConfig) : apps[0];
   const auth = getAuth(firebaseApp);
-  const firestore = getFirestore(firebaseApp);
+  
+  // Use initializeFirestore for more control, especially for cache
+  const firestore = initializeFirestore(firebaseApp, {
+    localCache: memoryLocalCache(),
+  });
 
   firebaseServices = { firebaseApp, auth, firestore };
   return firebaseServices;

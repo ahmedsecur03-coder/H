@@ -1,58 +1,32 @@
 
-'use client';
-
-import { useState, useEffect } from 'react';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import { useFirestore } from '@/firebase';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { initializeFirebaseServer } from '@/firebase/init-server';
 
-function BlogPostSkeleton() {
-    return (
-        <Card>
-            <CardHeader>
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-4 w-1/4 mt-2" />
-            </CardHeader>
-            <CardContent className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-            </CardContent>
-        </Card>
-    );
+async function getBlogPosts(): Promise<BlogPost[]> {
+    const { firestore } = initializeFirebaseServer();
+    try {
+        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+        const querySnapshot = await getDocs(postsQuery);
+        const fetchedPosts: BlogPost[] = [];
+        querySnapshot.forEach(doc => {
+            fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
+        });
+        return fetchedPosts;
+    } catch (e) {
+        console.error("Could not fetch blog posts:", e);
+        return [];
+    }
 }
 
-export default function BlogPage() {
-    const firestore = useFirestore();
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        if (!firestore) return;
-
-        const getBlogPosts = async () => {
-            setIsLoading(true);
-            try {
-                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-                const querySnapshot = await getDocs(postsQuery);
-                const fetchedPosts: BlogPost[] = [];
-                querySnapshot.forEach(doc => {
-                    fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
-                });
-                setPosts(fetchedPosts);
-            } catch (e) {
-                console.error("Could not fetch blog posts:", e);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        getBlogPosts();
-    }, [firestore]);
+export default async function BlogPage() {
+    const posts = await getBlogPosts();
 
     return (
         <div className="space-y-6 pb-8">
@@ -63,26 +37,29 @@ export default function BlogPage() {
                 </p>
             </div>
 
-            {isLoading ? (
-                <div className="space-y-6">
-                    <BlogPostSkeleton />
-                    <BlogPostSkeleton />
-                </div>
-            ) : posts.length > 0 ? (
-                <div className="space-y-6">
+            {posts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map(post => (
-                        <Card key={post.id}>
+                        <Card key={post.id} className="flex flex-col">
                             <CardHeader>
-                                <CardTitle className="font-headline text-2xl">{post.title}</CardTitle>
+                                <CardTitle className="font-headline text-xl leading-tight">{post.title}</CardTitle>
                                 <CardDescription>
-                                    نُشر في: {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <div className="prose prose-invert prose-p:text-muted-foreground max-w-none">
-                                    <ReactMarkdown>{post.content}</ReactMarkdown>
-                                </div>
+                            <CardContent className="flex-grow">
+                                <p className="text-sm text-muted-foreground line-clamp-3">
+                                   {post.content.substring(0, 150).replace(/#/g, '').trim()}...
+                                </p>
                             </CardContent>
+                             <CardFooter>
+                                <Button asChild variant="secondary">
+                                    <Link href={`/blog/${post.id}`}>
+                                        اقرأ المزيد
+                                        <ChevronLeft className="h-4 w-4 ms-2" />
+                                    </Link>
+                                </Button>
+                            </CardFooter>
                         </Card>
                     ))}
                 </div>
