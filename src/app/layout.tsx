@@ -174,8 +174,8 @@ function PublicHeader() {
         <Logo />
          <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
-               {publicNavItems.map((item) => (
-                <NavigationMenuItem key={item.label}>
+               {publicNavItems.map((item, index) => (
+                <NavigationMenuItem key={index}>
                   {item.children ? (
                     <React.Fragment>
                       <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
@@ -244,7 +244,7 @@ function PublicHeader() {
                   <SheetDescription>قائمة التنقل الرئيسية لمنصة حاجاتي.</SheetDescription>
                 </SheetHeader>
                  <div className="flex flex-col space-y-2 py-6">
-                    {publicNavItems.map(item => renderMobileNavItem(item))}
+                    {publicNavItems.map((item, index) => renderMobileNavItem(item))}
                   </div>
                  <div className="mt-auto pt-6 border-t">
                   {isUserLoading ? (
@@ -359,33 +359,40 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   
   const LayoutComponent = isDashboardArea ? ({children}: {children: React.ReactNode}) => <>{children}</> : PublicLayout;
   const measurementId = "G-4030VT05Y1";
+  const siteUrl = "https://hajaty.com";
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <title>منصة حاجاتي | خدمات SMM وزيادة متابعين وإدارة حملات إعلانية</title>
         <meta name="description" content="منصة حاجاتي هي سيرفرك الأول لخدمات التسويق الرقمي. نقدم زيادة متابعين (انستقرام، تيك توك، فيسبوك)، إدارة حملات إعلانية احترافية، وشراء حسابات وكالة لنمو أعمالك." />
+        <link rel="canonical" href={siteUrl} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={siteUrl} />
+        <meta property="og:title" content="منصة حاجاتي | بوابتك لخدمات التسويق الرقمي" />
+        <meta property="og:description" content="زيادة متابعين، إدارة حملات إعلانية، شراء حسابات وكالة، وكل ما تحتاجه لنمو أعمالك الرقمية في مكان واحد." />
+        <meta property="og:image" content={`${siteUrl}/og-image.png`} />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={siteUrl} />
+        <meta property="twitter:title" content="منصة حاجاتي | بوابتك لخدمات التسويق الرقمي" />
+        <meta property="twitter:description" content="زيادة متابعين، إدارة حملات إعلانية، شراء حسابات وكالة، وكل ما تحتاجه لنمو أعمالك الرقمية في مكان واحد." />
+        <meta property="twitter:image" content={`${siteUrl}/og-image.png`} />
+        
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#3498DB" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
       </head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
-        <Script id="google-tag-manager" strategy="afterInteractive" async src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}></Script>
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-          `}
-        </Script>
+        <Suspense>
+          <GoogleAnalytics gaId={measurementId} />
+        </Suspense>
          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <FirebaseClientProvider>
             <FirebaseErrorListener />
-            {process.env.NODE_ENV === "production" && (
-                <Suspense fallback={null}>
-                    <GoogleAnalytics gaId={measurementId} />
-                </Suspense>
-            )}
              <div className="cosmic-background"></div>
              {isAuthPage ? children : <LayoutComponent>{children}</LayoutComponent>}
             <Toaster />
@@ -395,4 +402,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-
