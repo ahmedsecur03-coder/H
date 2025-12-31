@@ -1,10 +1,7 @@
 'use client';
-
 import { FirebaseClientProvider } from "@/firebase";
-import { usePathname } from "next/navigation";
-import { useUser } from "@/firebase";
-import Link from 'next/link';
 import React from 'react';
+import Link from 'next/link';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -22,14 +19,15 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from "@/components/ui/button";
-import { LogIn, UserPlus, Menu, ChevronDown } from 'lucide-react';
+import { LogIn, UserPlus, Menu, ChevronDown, Loader2 } from 'lucide-react';
 import Logo from "@/components/logo";
-import { publicNavItems } from "@/lib/placeholder-data";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { NestedNavItem } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SocialLinks } from "@/components/social-links";
-import { cn } from "@/lib/utils";
+import { publicNavItems } from '@/lib/placeholder-data';
+import { cn } from '@/lib/utils';
+import { useUser } from "@/firebase";
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -57,32 +55,28 @@ const ListItem = React.forwardRef<
 })
 ListItem.displayName = "ListItem"
 
-
 function PublicHeader() {
   const { user, isUserLoading } = useUser();
 
-  const renderNavItem = (item: NestedNavItem, key: number) => {
+  const renderNavItem = (item: NestedNavItem) => {
     if (item.children) {
       return (
-        <NavigationMenuItem key={key}>
+        <NavigationMenuItem key={item.label}>
           <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {item.children.map((component) => {
-                const Icon = component.icon;
-                return (
+              {item.children.map((component) => (
                   <ListItem key={component.label} href={component.href || '#'} title={component.label}>
                     {component.description}
                   </ListItem>
-                )
-              })}
+              ))}
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
       );
     }
     return (
-      <NavigationMenuItem key={key}>
+      <NavigationMenuItem key={item.href}>
         <Link href={item.href || '#'} legacyBehavior passHref>
           <NavigationMenuLink className={navigationMenuTriggerStyle()}>
             {item.label}
@@ -98,7 +92,7 @@ function PublicHeader() {
         <Logo />
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {publicNavItems.map((item, index) => renderNavItem(item, index))}
+            {publicNavItems.map((item) => renderNavItem(item))}
           </NavigationMenuList>
         </NavigationMenu>
 
@@ -106,7 +100,7 @@ function PublicHeader() {
           <ThemeToggle />
           <div className="hidden md:flex items-center gap-2">
             {isUserLoading ? (
-              <Button disabled variant="ghost" size="icon">...</Button>
+              <Loader2 className="animate-spin" />
             ) : user ? (
               <Button asChild><Link href="/dashboard">لوحة التحكم</Link></Button>
             ) : (
@@ -146,22 +140,14 @@ function PublicHeader() {
                     )
                   )}
                   <hr className="my-4" />
-                   {isUserLoading ? (
-                      <div className="flex justify-center">...</div>
-                    ) : user ? (
-                      <SheetClose asChild>
-                         <Button asChild><Link href="/dashboard">لوحة التحكم</Link></Button>
-                      </SheetClose>
-                    ) : (
-                      <div className="flex flex-col space-y-2">
-                        <SheetClose asChild>
-                           <Button asChild><Link href="/auth/signup">إنشاء حساب جديد</Link></Button>
-                        </SheetClose>
-                         <SheetClose asChild>
-                           <Button variant="ghost" asChild><Link href="/auth/login">تسجيل الدخول</Link></Button>
-                        </SheetClose>
-                      </div>
-                    )}
+                   <div className="flex flex-col space-y-2">
+                    <SheetClose asChild>
+                        <Button asChild><Link href="/dashboard">لوحة التحكم</Link></Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                        <Button variant="ghost" asChild><Link href="/auth/login">تسجيل الدخول</Link></Button>
+                    </SheetClose>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
@@ -184,26 +170,17 @@ function PublicFooter() {
     );
 }
 
+
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isDashboard = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/auth');
-
   return (
     <FirebaseClientProvider>
-        <div className="cosmic-background"></div>
-        {isDashboard ? (
-            children
-        ) : (
-             <div className="flex flex-col min-h-screen">
-                <PublicHeader />
-                <main className="flex-1 container py-8">{children}</main>
-                <PublicFooter />
-            </div>
-        )}
+        <PublicHeader />
+        <main className="flex-1 container py-8">{children}</main>
+        <PublicFooter />
     </FirebaseClientProvider>
   );
 }

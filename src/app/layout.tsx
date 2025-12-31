@@ -6,7 +6,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import React, { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 
-
 const fontSans = PT_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
@@ -18,7 +17,6 @@ const fontHeadline = Poppins({
   weight: ['800'],
   variable: '--font-headline',
 });
-
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";

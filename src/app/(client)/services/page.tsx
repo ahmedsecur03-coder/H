@@ -49,9 +49,16 @@ const ITEMS_PER_PAGE = 20;
 
 function ServicesSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold tracking-tight font-headline">قائمة الخدمات</h1>
+        <p className="text-muted-foreground mt-2">
+          استكشف مجموعتنا الواسعة من الخدمات لجميع منصات التواصل الاجتماعي.
+        </p>
+      </div>
+
       <Card>
-        <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />
