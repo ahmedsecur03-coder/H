@@ -363,8 +363,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
-        <title>Hajaty Hub - رحلتك الكونية للخدمات الرقمية</title>
-        <meta name="description" content="انطلق في رحلة كونية مع حاجاتي. مركزك المتكامل لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ." />
+        <title>منصة حاجاتي | خدمات SMM وزيادة متابعين وإدارة حملات إعلانية</title>
+        <meta name="description" content="منصة حاجاتي هي سيرفرك الأول لخدمات التسويق الرقمي. نقدم زيادة متابعين (انستقرام، تيك توك، فيسبوك)، إدارة حملات إعلانية احترافية، وشراء حسابات وكالة لنمو أعمالك." />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#3498DB" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
@@ -395,3 +395,4 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
+
