@@ -1,4 +1,4 @@
-'use client';
+'use server';
 
 import { useState, useMemo } from 'react';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -103,8 +103,8 @@ export async function activateCampaignAndDeductBalance(firestore: Firestore, use
 }
 
 
-// --- DYNAMIC SIMULATION ENGINE ---
-export const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => {
+// --- DYNAMIC SIMULATION ENGINE (SERVER ACTION) ---
+export async function getLiveCampaignPerformance(campaign: Campaign): Promise<Partial<Campaign>> {
     if (campaign.status !== 'نشط' || !campaign.startDate) {
         return {};
     }
@@ -166,14 +166,6 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
     const [loading, setLoading] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
 
-    const liveCampaignData = useMemo(() => {
-        if (campaign.status === 'نشط') {
-            return { ...campaign, ...calculateCampaignPerformance(campaign) };
-        }
-        return campaign;
-    }, [campaign]);
-
-
     const handleStopCampaign = async () => {
         if (!firestore) return;
         setLoading(true);
@@ -181,7 +173,8 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
         const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
 
         try {
-            const finalPerformance = calculateCampaignPerformance(campaign);
+            // Get the final performance state before stopping
+            const finalPerformance = await getLiveCampaignPerformance(campaign);
             
             await runTransaction(firestore, async (transaction) => {
                 const userDoc = await transaction.get(userDocRef);
@@ -233,7 +226,7 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <CampaignDetailsDialog campaign={liveCampaignData}>
+                    <CampaignDetailsDialog campaign={campaign}>
                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <FileText className="ml-2 h-4 w-4" />
                             عرض التفاصيل
@@ -269,3 +262,4 @@ export function UserCampaignActions({ campaign, forceCollectionUpdate }: { campa
         </AlertDialog>
     );
 }
+    

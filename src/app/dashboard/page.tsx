@@ -33,7 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
@@ -52,7 +52,7 @@ import {
   Sector,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { calculateCampaignPerformance } from './campaigns/_components/user-campaign-actions';
+import { getLiveCampaignPerformance } from './campaigns/_components/user-campaign-actions';
 import { cn } from '@/lib/utils';
 import { DailyRewardCard } from './_components/daily-reward-card';
 
@@ -110,6 +110,36 @@ export default function DashboardPage() {
     const agencyAccountsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/agencyAccounts`)) : null, [authUser, firestore]);
     const { data: agencyAccounts, isLoading: areAgencyAccountsLoading } = useCollection<AgencyAccount>(agencyAccountsQuery);
 
+    const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
+
+    useEffect(() => {
+        if (allCampaigns) {
+            setLiveCampaigns(allCampaigns);
+        }
+    }, [allCampaigns]);
+
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            const activeCampaigns = liveCampaigns.filter(c => c.status === 'نشط');
+            if (activeCampaigns.length === 0) return;
+
+            const updates = await Promise.all(activeCampaigns.map(async (campaign) => {
+                const performanceUpdate = await getLiveCampaignPerformance(campaign);
+                return { ...campaign, ...performanceUpdate };
+            }));
+
+            setLiveCampaigns(currentCampaigns => {
+                const campaignsMap = new Map(currentCampaigns.map(c => [c.id, c]));
+                updates.forEach(u => campaignsMap.set(u.id, u));
+                return Array.from(campaignsMap.values());
+            });
+
+        }, 5000); // Update every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [liveCampaigns]);
+
 
     const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areCampaignsLoading || areAgencyAccountsLoading;
     
@@ -139,14 +169,13 @@ export default function DashboardPage() {
         }
         
         let activeCampaignsCount = 0;
-        if (allCampaigns) {
-            allCampaigns.forEach(campaign => {
-                 const updatedCampaign = { ...campaign, ...calculateCampaignPerformance(campaign) };
-                 const campaignDate = updatedCampaign.startDate?.split('T')[0];
+        if (liveCampaigns) {
+            liveCampaigns.forEach(campaign => {
+                 const campaignDate = campaign.startDate?.split('T')[0];
                  if (campaignDate && performanceDataMap.has(campaignDate)) {
-                     performanceDataMap.get(campaignDate)!.campaigns += updatedCampaign.spend;
+                     performanceDataMap.get(campaignDate)!.campaigns += campaign.spend;
                  }
-                 if (updatedCampaign.status === 'نشط') {
+                 if (campaign.status === 'نشط') {
                      activeCampaignsCount++;
                  }
             });
@@ -172,7 +201,7 @@ export default function DashboardPage() {
             }
         };
 
-    }, [allOrders, allCampaigns, userData, agencyAccounts]);
+    }, [allOrders, liveCampaigns, userData, agencyAccounts]);
 
 
     if (isLoading || !userData || !authUser) {
@@ -347,3 +376,5 @@ export default function DashboardPage() {
         </motion.div>
     );
 }
+
+    

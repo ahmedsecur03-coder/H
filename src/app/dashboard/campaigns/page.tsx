@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -12,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import { UserCampaignActions, calculateCampaignPerformance } from './_components/user-campaign-actions';
+import { UserCampaignActions, getLiveCampaignPerformance } from './_components/user-campaign-actions';
 import Link from 'next/link';
 
 function CampaignsSkeleton() {
@@ -97,27 +96,40 @@ export default function CampaignsPage() {
     );
     const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
 
-    const isLoading = isUserLoading || campaignsLoading || userLoading;
+    const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
+
+    useEffect(() => {
+        if (rawCampaigns) {
+            setLiveCampaigns(rawCampaigns);
+        }
+    }, [rawCampaigns]);
+
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            const activeCampaigns = liveCampaigns.filter(c => c.status === 'نشط');
+            if (activeCampaigns.length === 0) return;
+
+            const updates = await Promise.all(activeCampaigns.map(async (campaign) => {
+                const performanceUpdate = await getLiveCampaignPerformance(campaign);
+                return { ...campaign, ...performanceUpdate };
+            }));
+
+            setLiveCampaigns(currentCampaigns => {
+                const campaignsMap = new Map(currentCampaigns.map(c => [c.id, c]));
+                updates.forEach(u => campaignsMap.set(u.id, u));
+                return Array.from(campaignsMap.values());
+            });
+
+        }, 5000); // Update every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [liveCampaigns]);
+
 
     const campaigns = useMemo(() => {
-        if (!rawCampaigns) return [];
-        
-        const updatedCampaigns = rawCampaigns.map(campaign => {
-            if (campaign.status === 'نشط') {
-                const liveData = calculateCampaignPerformance(campaign);
-                if (liveData.status === 'مكتمل' && firestore && authUser) {
-                    const campaignDocRef = doc(firestore, `users/${authUser.uid}/campaigns`, campaign.id);
-                    updateDoc(campaignDocRef, liveData).catch(console.error);
-                }
-                return { ...campaign, ...liveData };
-            }
-            return campaign;
-        });
-
-        // Sort on the client-side by status priority
-        return updatedCampaigns.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
-
-    }, [rawCampaigns, firestore, authUser]);
+        return [...liveCampaigns].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+    }, [liveCampaigns]);
 
 
     const stats = useMemo(() => {
@@ -128,6 +140,8 @@ export default function CampaignsPage() {
             return acc;
         }, { active: 0, totalSpend: 0 });
     }, [campaigns]);
+
+    const isLoading = isUserLoading || campaignsLoading || userLoading;
 
     if (isLoading || !userData || !authUser) {
         return <CampaignsSkeleton />;
@@ -267,3 +281,5 @@ export default function CampaignsPage() {
     </div>
   );
 }
+
+    
