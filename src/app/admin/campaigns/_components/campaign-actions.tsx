@@ -1,8 +1,9 @@
+
 'use client';
 
 import React, { useState } from 'react';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, updateDoc, runTransaction, increment } from 'firebase/firestore';
+import { doc, updateDoc, runTransaction, increment, deleteDoc } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -33,9 +34,9 @@ export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; on
 
         try {
             if (action === 'delete') {
-                // For delete, we just remove the campaign document
-                await updateDoc(campaignDocRef, {status: 'ملغي'}); // Or deleteDoc(campaignDocRef);
-                toast({ title: 'نجاح', description: 'تم حذف الحملة.' });
+                // Permanently delete the campaign document
+                await deleteDoc(campaignDocRef);
+                toast({ title: 'نجاح', description: 'تم حذف الحملة نهائياً.' });
             } else {
                  await runTransaction(firestore, async (transaction) => {
                     const userDoc = await transaction.get(userDocRef);
