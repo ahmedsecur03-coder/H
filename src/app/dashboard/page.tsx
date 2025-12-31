@@ -52,9 +52,64 @@ import {
   Sector,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { getLiveCampaignPerformance } from './campaigns/_actions/campaign-actions';
 import { cn } from '@/lib/utils';
 import { DailyRewardCard } from './_components/daily-reward-card';
+
+
+function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
+    if (campaign.status !== 'نشط' || !campaign.startDate) {
+        return {};
+    }
+
+    const { startDate, durationDays, budget } = campaign;
+    const now = Date.now();
+    const startTime = new Date(startDate).getTime();
+    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
+    const endTime = startTime + totalDurationMillis;
+
+    const elapsedMillis = Math.max(0, now - startTime);
+    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
+    
+    if (progress >= 1) {
+        const finalSpend = budget; 
+        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20));
+        const finalClicks = (campaign.clicks || 0) + Math.floor(Math.random() * (budget * 2));
+        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
+        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
+
+        return { 
+            status: 'مكتمل', 
+            spend: finalSpend,
+            impressions: finalImpressions,
+            clicks: finalClicks,
+            ctr: finalCtr,
+            cpc: finalCpc,
+            results: Math.floor(finalClicks * 0.2),
+        };
+    }
+
+    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
+
+    if (simulatedSpend <= (campaign.spend || 0)) {
+        return {}; // No new spend to report
+    }
+
+    const spendIncrement = simulatedSpend - (campaign.spend || 0);
+    const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
+    const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
+    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+    const cpc = clicks > 0 ? simulatedSpend / clicks : 0;
+    const results = (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2);
+
+    return {
+        spend: simulatedSpend,
+        impressions,
+        clicks,
+        ctr,
+        cpc,
+        results,
+    };
+};
 
 
 function DashboardSkeleton() {
@@ -120,25 +175,17 @@ export default function DashboardPage() {
 
 
     useEffect(() => {
-        const interval = setInterval(async () => {
-            const activeCampaigns = liveCampaigns.filter(c => c.status === 'نشط');
-            if (activeCampaigns.length === 0) return;
-
-            const updates = await Promise.all(activeCampaigns.map(async (campaign) => {
-                const performanceUpdate = await getLiveCampaignPerformance(campaign);
-                return { ...campaign, ...performanceUpdate };
-            }));
-
+        const interval = setInterval(() => {
             setLiveCampaigns(currentCampaigns => {
-                const campaignsMap = new Map(currentCampaigns.map(c => [c.id, c]));
-                updates.forEach(u => campaignsMap.set(u.id, u));
-                return Array.from(campaignsMap.values());
+                 return currentCampaigns.map(c => {
+                    const performanceUpdate = calculateCampaignPerformance(c);
+                    return { ...c, ...performanceUpdate };
+                });
             });
-
         }, 5000); // Update every 5 seconds
 
         return () => clearInterval(interval);
-    }, [liveCampaigns]);
+    }, []);
 
 
     const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areCampaignsLoading || areAgencyAccountsLoading;
@@ -173,7 +220,6 @@ export default function DashboardPage() {
             liveCampaigns.forEach(campaign => {
                  const campaignStartDate = campaign.startDate?.split('T')[0];
                  if (campaign.spend && campaignStartDate && performanceDataMap.has(campaignStartDate)) {
-                     // This is a simplification; real analytics would distribute spend over the campaign duration
                      performanceDataMap.get(campaignStartDate)!.campaigns += campaign.spend;
                  }
                  if (campaign.status === 'نشط') {

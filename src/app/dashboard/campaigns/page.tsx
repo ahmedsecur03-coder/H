@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc, runTransaction } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, runTransaction, increment } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign, PauseCircle, MoreHorizontal, FileText } from "lucide-react";
@@ -12,7 +12,6 @@ import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import Link from 'next/link';
-import { getLiveCampaignPerformance, stopCampaignAndRefund } from './_actions/campaign-actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,23 +34,108 @@ import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 
 
+// Client-side simulation function
+function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
+    if (campaign.status !== 'نشط' || !campaign.startDate) {
+        return {};
+    }
+
+    const { startDate, durationDays, budget } = campaign;
+    const now = Date.now();
+    const startTime = new Date(startDate).getTime();
+    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
+    const endTime = startTime + totalDurationMillis;
+
+    const elapsedMillis = Math.max(0, now - startTime);
+    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
+    
+    if (progress >= 1) {
+        const finalSpend = budget; 
+        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20));
+        const finalClicks = (campaign.clicks || 0) + Math.floor(Math.random() * (budget * 2));
+        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
+        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
+
+        return { 
+            status: 'مكتمل', 
+            spend: finalSpend,
+            impressions: finalImpressions,
+            clicks: finalClicks,
+            ctr: finalCtr,
+            cpc: finalCpc,
+            results: Math.floor(finalClicks * 0.2),
+        };
+    }
+
+    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
+
+    if (simulatedSpend <= (campaign.spend || 0)) {
+        return {}; // No new spend to report
+    }
+
+    const spendIncrement = simulatedSpend - (campaign.spend || 0);
+    const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
+    const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
+    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+    const cpc = clicks > 0 ? simulatedSpend / clicks : 0;
+    const results = (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2);
+
+    return {
+        spend: simulatedSpend,
+        impressions,
+        clicks,
+        ctr,
+        cpc,
+        results,
+    };
+};
+
 function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
+    const firestore = useFirestore();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
 
     const handleStopCampaign = async () => {
+        if (!firestore) return;
         setLoading(true);
       
+        const userDocRef = doc(firestore, 'users', campaign.userId);
+        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+
         try {
-            await stopCampaignAndRefund(campaign.userId, campaign.id);
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userDocRef);
+                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
+
+                const campaignDoc = await transaction.get(campaignDocRef);
+                if (!campaignDoc.exists()) throw new Error("الحملة غير موجودة.");
+                
+                const currentCampaignData = campaignDoc.data() as Campaign;
+                if (currentCampaignData.status !== 'نشط') throw new Error("لا يمكن إيقاف إلا الحملات النشطة.");
+
+                const finalPerformance = calculateCampaignPerformance(currentCampaignData);
+                const finalSpend = (finalPerformance as any).spend ?? currentCampaignData.spend;
+                const remainingBudget = currentCampaignData.budget - (finalSpend || 0);
+
+                if (remainingBudget > 0) {
+                    transaction.update(userDocRef, { adBalance: increment(remainingBudget) });
+                }
+
+                transaction.update(campaignDocRef, { 
+                    ...finalPerformance,
+                    status: 'متوقف',
+                    spend: finalSpend,
+                });
+            });
 
             toast({ title: "نجاح", description: "تم إيقاف الحملة وإعادة الرصيد المتبقي." });
             forceCollectionUpdate();
             setIsAlertOpen(false);
 
         } catch (error: any) {
-             toast({ variant: 'destructive', title: "خطأ", description: error.message });
+             const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
+             errorEmitter.emit('permission-error', permissionError);
         } finally {
             setLoading(false);
         }
@@ -197,25 +281,17 @@ export default function CampaignsPage() {
 
 
     useEffect(() => {
-        const interval = setInterval(async () => {
-            const activeCampaigns = liveCampaigns.filter(c => c.status === 'نشط');
-            if (activeCampaigns.length === 0) return;
-
-            const updates = await Promise.all(activeCampaigns.map(async (campaign) => {
-                const performanceUpdate = await getLiveCampaignPerformance(campaign);
-                return { ...campaign, ...performanceUpdate };
-            }));
-
+        const interval = setInterval(() => {
             setLiveCampaigns(currentCampaigns => {
-                const campaignsMap = new Map(currentCampaigns.map(c => [c.id, c]));
-                updates.forEach(u => campaignsMap.set(u.id, u));
-                return Array.from(campaignsMap.values());
+                return currentCampaigns.map(c => {
+                    const performanceUpdate = calculateCampaignPerformance(c);
+                    return { ...c, ...performanceUpdate };
+                });
             });
-
         }, 5000); // Update every 5 seconds
 
         return () => clearInterval(interval);
-    }, [liveCampaigns]);
+    }, []);
 
 
     const campaigns = useMemo(() => {
