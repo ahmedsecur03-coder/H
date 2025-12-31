@@ -9,6 +9,7 @@ import type { UserRecord } from 'firebase-admin/auth';
 function getFirebaseAuth() {
   const { firebaseApp } = initializeFirebaseServer();
   if (!firebaseApp) {
+    console.warn("Firebase Admin App not initialized, authentication checks will be skipped.");
     return null;
   }
   return getAuth(firebaseApp);
@@ -32,6 +33,8 @@ export async function getAuthenticatedUser(): Promise<{ user: UserRecord | null 
     return { user };
   } catch (error) {
     // Session cookie is invalid, expired, etc.
+    // In a real app, you might want to log this error for debugging.
+    console.warn("Could not verify session cookie:", error);
     return { user: null };
   }
 }
