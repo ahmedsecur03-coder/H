@@ -19,10 +19,10 @@ import React from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { useServices } from '@/hooks/useServices';
+import { PROFIT_MARGIN } from '@/lib/constants';
 
 
 const ITEMS_PER_PAGE = 25;
-const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 function ServicesPageSkeleton() {
     return (

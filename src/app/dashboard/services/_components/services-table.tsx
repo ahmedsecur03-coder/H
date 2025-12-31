@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service, ServicePrice } from '@/lib/types';
@@ -41,8 +42,8 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { useServices } from '@/hooks/useServices';
+import { PROFIT_MARGIN } from '@/lib/constants';
 
-const PROFIT_MARGIN = 1.50; // 50% profit margin
 const ITEMS_PER_PAGE = 20;
 
 function ServicesTableSkeleton() {
