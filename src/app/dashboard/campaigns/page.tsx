@@ -11,8 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import { UserCampaignActions, getLiveCampaignPerformance } from './_components/user-campaign-actions';
+import { UserCampaignActions } from './_components/user-campaign-actions';
 import Link from 'next/link';
+import { getLiveCampaignPerformance } from './_actions/campaign-actions';
+
 
 function CampaignsSkeleton() {
     return (

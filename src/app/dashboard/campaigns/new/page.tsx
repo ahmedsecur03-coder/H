@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -34,7 +33,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { activateCampaignAndDeductBalance } from '../_components/user-campaign-actions';
+import { activateCampaignAndDeductBalance } from '../_actions/campaign-actions';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -183,13 +182,10 @@ export default function NewCampaignPage() {
             
             toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعة حملتك وتفعيلها تلقائيًا خلال لحظات." });
             
-            // --- AUTOMATIC ACTIVATION LOGIC (Client-Side) ---
-            const reviewTime = Math.random() * (15000 - 5000) + 5000; // 5 to 15 seconds
-            setTimeout(() => {
-                activateCampaignAndDeductBalance(firestore, authUser.uid, docRef.id).catch(error => {
-                    console.error("Auto-activation failed:", error);
-                });
-            }, reviewTime);
+            // --- AUTOMATIC ACTIVATION LOGIC ---
+            // We call the server action, but we don't need to wait for it.
+            // The user is navigated away, and the action runs in the background.
+            activateCampaignAndDeductBalance(authUser.uid, docRef.id);
 
             setStep(3); // Go to success step
         } catch (error) {

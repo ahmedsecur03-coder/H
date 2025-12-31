@@ -52,7 +52,7 @@ import {
   Sector,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { getLiveCampaignPerformance } from './campaigns/_components/user-campaign-actions';
+import { getLiveCampaignPerformance } from './campaigns/_actions/campaign-actions';
 import { cn } from '@/lib/utils';
 import { DailyRewardCard } from './_components/daily-reward-card';
 
@@ -171,9 +171,10 @@ export default function DashboardPage() {
         let activeCampaignsCount = 0;
         if (liveCampaigns) {
             liveCampaigns.forEach(campaign => {
-                 const campaignDate = campaign.startDate?.split('T')[0];
-                 if (campaignDate && performanceDataMap.has(campaignDate)) {
-                     performanceDataMap.get(campaignDate)!.campaigns += campaign.spend;
+                 const campaignStartDate = campaign.startDate?.split('T')[0];
+                 if (campaign.spend && campaignStartDate && performanceDataMap.has(campaignStartDate)) {
+                     // This is a simplification; real analytics would distribute spend over the campaign duration
+                     performanceDataMap.get(campaignStartDate)!.campaigns += campaign.spend;
                  }
                  if (campaign.status === 'نشط') {
                      activeCampaignsCount++;
