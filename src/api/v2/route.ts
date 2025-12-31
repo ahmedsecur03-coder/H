@@ -8,7 +8,7 @@ import { processOrderInTransaction } from '@/lib/service';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { PROFIT_MARGIN } from '@/lib/constants';
 import { z } from 'zod';
-import { collection, query, where, getDocs, limit, runTransaction } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, runTransaction, doc, getDoc, addDoc } from 'firebase/firestore';
 
 
 // Helper function to find user by API key
@@ -220,4 +220,3 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message || 'An internal server error occurred.' }, { status: 500 });
     }
 }
-

@@ -43,7 +43,6 @@ function UserInitializer() {
                 affiliateEarnings: 0,
                 referralsCount: 0,
                 affiliateLevel: 'برونزي',
-                favoriteServices: [],
                 notificationPreferences: {
                     newsletter: false,
                     orderUpdates: true,
@@ -83,8 +82,6 @@ function UserInitializer() {
               // Document exists, check for missing fields and update if necessary
               const userData = userDoc.data() as UserType;
               const updates: Partial<UserType> = {};
-              if (userData.role === undefined) updates.role = 'user';
-              if (userData.favoriteServices === undefined) updates.favoriteServices = [];
               
                if (Object.keys(updates).length > 0) {
                 transaction.update(userDocRef, updates);
