@@ -1,10 +1,8 @@
-
 'use server';
 
-import { initializeFirebase } from '@/firebase/client-provider';
-import { getAuth } from 'firebase/auth';
+import { initializeFirebase } from '@/firebase';
 import type { Campaign, User, Notification } from '@/lib/types';
-import { doc, getDoc, runTransaction, arrayUnion, increment } from 'firebase/firestore';
+import { doc, runTransaction, arrayUnion, increment } from 'firebase/firestore';
 
 
 /**
@@ -17,7 +15,7 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
     const { firestore } = initializeFirebase();
     if (!firestore) {
         console.error("Client Firestore not available in Server Action.");
-        return;
+        return { error: "Could not connect to the database." };
     }
 
     try {
@@ -29,8 +27,7 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
             const campaignDoc = await transaction.get(campaignDocRef);
 
             if (!userDoc.exists() || !campaignDoc.exists()) {
-                console.warn(`User ${userId} or Campaign ${campaignId} not found for activation.`);
-                return;
+                throw new Error(`User ${userId} or Campaign ${campaignId} not found for activation.`);
             }
             
             const userData = userDoc.data() as User;
@@ -78,10 +75,10 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
             });
             transaction.update(campaignDocRef, campaignUpdates);
         });
-
-    } catch (error) {
+        return { success: true };
+    } catch (error: any) {
         console.error(`Failed to activate campaign ${campaignId} for user ${userId}:`, error);
-        throw error;
+        return { error: error.message };
     }
 }
 

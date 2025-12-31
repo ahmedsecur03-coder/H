@@ -1,19 +1,108 @@
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { collection, query, orderBy, doc, updateDoc, runTransaction } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign } from "lucide-react";
+import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign, PauseCircle, MoreHorizontal, FileText } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
-import { UserCampaignActions } from './_components/user-campaign-actions';
 import Link from 'next/link';
-import { getLiveCampaignPerformance } from './_actions/campaign-actions';
+import { getLiveCampaignPerformance, stopCampaignAndRefund } from './_actions/campaign-actions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
+
+
+function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
+    const { toast } = useToast();
+    const [loading, setLoading] = useState(false);
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+    const handleStopCampaign = async () => {
+        setLoading(true);
+      
+        try {
+            await stopCampaignAndRefund(campaign.userId, campaign.id);
+
+            toast({ title: "نجاح", description: "تم إيقاف الحملة وإعادة الرصيد المتبقي." });
+            forceCollectionUpdate();
+            setIsAlertOpen(false);
+
+        } catch (error: any) {
+             toast({ variant: 'destructive', title: "خطأ", description: error.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    return (
+        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">فتح الإجراءات</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <CampaignDetailsDialog campaign={campaign}>
+                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <FileText className="ml-2 h-4 w-4" />
+                            عرض التفاصيل
+                        </DropdownMenuItem>
+                    </CampaignDetailsDialog>
+                    
+                    {campaign.status === 'نشط' && (
+                        <AlertDialogTrigger asChild>
+                            <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
+                                <PauseCircle className="ml-2 h-4 w-4" />
+                                إيقاف الحملة
+                            </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>هل أنت متأكد من إيقاف الحملة؟</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        سيتم إيقاف عرض الإعلانات وإعادة الميزانية المتبقية إلى رصيد إعلاناتك. لا يمكن التراجع عن هذا الإجراء.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={loading}>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleStopCampaign} disabled={loading} className="bg-destructive hover:bg-destructive/90">
+                        {loading && <Loader2 className="ml-2 animate-spin" />}
+                        نعم، قم بالإيقاف
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
 
 
 function CampaignsSkeleton() {
@@ -283,5 +372,3 @@ export default function CampaignsPage() {
     </div>
   );
 }
-
-    

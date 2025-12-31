@@ -157,7 +157,7 @@ export default function NewCampaignPage() {
 
         setLoading(true);
 
-        const campaignData: Omit<Campaign, 'id'> = {
+        const campaignData: Omit<Campaign, 'id' | 'targetAudience'> = {
             userId: authUser.uid,
             name: formData.get('name') as string,
             platform: selectedPlatform,
@@ -173,14 +173,14 @@ export default function NewCampaignPage() {
             startDate: '', // Will be set on approval
             spend: 0,
             status: 'بانتظار المراجعة', // Set to pending review
-            impressions: 0, clicks: 0, results: 0, ctr: 0, cpc: 0, targetAudience: ''
+            impressions: 0, clicks: 0, results: 0, ctr: 0, cpc: 0,
         };
         
         try {
             const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
             const docRef = await addDoc(campaignsColRef, campaignData);
             
-            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعة حملتك وتفعيلها تلقائيًا خلال لحظات." });
+            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعتها وتفعيلها تلقائيًا خلال لحظات." });
             
             // --- AUTOMATIC ACTIVATION LOGIC ---
             // We call the server action, but we don't need to wait for it.
