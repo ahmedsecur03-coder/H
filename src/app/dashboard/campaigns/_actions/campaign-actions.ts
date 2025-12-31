@@ -1,17 +1,11 @@
 
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server';
+import { initializeFirebase } from '@/firebase/client-provider';
+import { getAuth } from 'firebase/auth';
 import type { Campaign, User, Notification } from '@/lib/types';
-import { FieldValue, Firestore } from 'firebase-admin/firestore';
+import { doc, getDoc, runTransaction, arrayUnion, increment } from 'firebase/firestore';
 
-async function getAdminFirestore(): Promise<Firestore> {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) {
-        throw new Error("Firestore Admin SDK is not initialized.");
-    }
-    return firestore;
-}
 
 /**
  * A server action to automatically activate a campaign and deduct the balance.
@@ -20,12 +14,17 @@ async function getAdminFirestore(): Promise<Firestore> {
  * @param campaignId The ID of the campaign to activate.
  */
 export async function activateCampaignAndDeductBalance(userId: string, campaignId: string) {
-    try {
-        const firestore = await getAdminFirestore();
-        const userDocRef = firestore.collection('users').doc(userId);
-        const campaignDocRef = firestore.collection(`users/${userId}/campaigns`).doc(campaignId);
+    const { firestore } = initializeFirebase();
+    if (!firestore) {
+        console.error("Client Firestore not available in Server Action.");
+        return;
+    }
 
-        await firestore.runTransaction(async (transaction) => {
+    try {
+        const userDocRef = doc(firestore, 'users', userId);
+        const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, campaignId);
+
+        await runTransaction(firestore, async (transaction) => {
             const userDoc = await transaction.get(userDocRef);
             const campaignDoc = await transaction.get(campaignDocRef);
 
@@ -52,7 +51,7 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
                 };
                 transaction.update(campaignDocRef, { status: 'متوقف' });
                 transaction.update(userDocRef, {
-                    notifications: FieldValue.arrayUnion(notification),
+                    notifications: arrayUnion(notification),
                 });
                 return;
             }
@@ -75,15 +74,13 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
 
             transaction.update(userDocRef, { 
                 adBalance: newAdBalance,
-                notifications: FieldValue.arrayUnion(notification)
+                notifications: arrayUnion(notification)
             });
             transaction.update(campaignDocRef, campaignUpdates);
         });
 
     } catch (error) {
         console.error(`Failed to activate campaign ${campaignId} for user ${userId}:`, error);
-        // In a real app, you'd have more robust error logging here, potentially to a dedicated logging service.
-        // We throw the error so the client can be notified if needed, though in this case it's a fire-and-forget action.
         throw error;
     }
 }
@@ -157,11 +154,14 @@ export async function getLiveCampaignPerformance(campaign: Campaign): Promise<Pa
  * @param campaignId The ID of the campaign to stop.
  */
 export async function stopCampaignAndRefund(userId: string, campaignId: string): Promise<void> {
-    const firestore = await getAdminFirestore();
-    const userDocRef = firestore.collection('users').doc(userId);
-    const campaignDocRef = firestore.collection(`users/${userId}/campaigns`).doc(campaignId);
+    const { firestore } = initializeFirebase();
+     if (!firestore) {
+        throw new Error("Client Firestore not available in Server Action.");
+    }
+    const userDocRef = doc(firestore, 'users', userId);
+    const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, campaignId);
 
-    await firestore.runTransaction(async (transaction) => {
+    await runTransaction(firestore, async (transaction) => {
         const userDoc = await transaction.get(userDocRef);
         if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
 
@@ -177,7 +177,7 @@ export async function stopCampaignAndRefund(userId: string, campaignId: string):
         const remainingBudget = currentCampaignData.budget - (finalSpend || 0);
 
         if (remainingBudget > 0) {
-            transaction.update(userDocRef, { adBalance: FieldValue.increment(remainingBudget) });
+            transaction.update(userDocRef, { adBalance: increment(remainingBudget) });
         }
 
         transaction.update(campaignDocRef, { 

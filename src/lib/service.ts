@@ -49,14 +49,14 @@ const PROFIT_MARGIN = 1.50; // 50% profit margin
  * @param firestore The Firestore instance.
  * @param userId The ID of the user placing the order.
  * @param orderData The data for the new order.
- * @returns A promise that resolves with an object containing an optional promotion message.
+ * @returns A promise that resolves with an object containing the new orderId and an optional promotion message.
  */
 export async function processOrderInTransaction(
     transaction: Transaction,
     firestore: Firestore,
     userId: string,
     orderData: Omit<Order, 'id'>,
-) {
+): Promise<{ orderId: string, promotion: { title: string; description: string } | null }> {
     const userRef = doc(firestore, "users", userId);
     const userDoc = await transaction.get(userRef);
 
@@ -65,16 +65,22 @@ export async function processOrderInTransaction(
     }
 
     const userData = userDoc.data() as User;
-    const cost = orderData.charge;
     
-    // Pre-check for sufficient balance
-    if (userData.balance < cost) {
+    // Recalculate cost with discount on the server to prevent manipulation
+    const rank = getRankForSpend(userData.totalSpent || 0);
+    const discount = rank.discount / 100;
+    const finalCost = orderData.charge * (1 - discount);
+
+    if (userData.balance < finalCost) {
         throw new Error("رصيدك غير كافٍ لإتمام هذا الطلب.");
     }
 
-    const newBalance = userData.balance - cost;
-    const newTotalSpent = userData.totalSpent + cost;
-    const oldRank = getRankForSpend(userData.totalSpent);
+    // Use the server-calculated cost
+    orderData.charge = finalCost;
+    
+    const newBalance = userData.balance - finalCost;
+    const newTotalSpent = userData.totalSpent + finalCost;
+    const oldRank = getRankForSpend(userData.totalSpent || 0);
     const newRank = getRankForSpend(newTotalSpent);
 
     const userUpdates: any = {
@@ -115,9 +121,9 @@ export async function processOrderInTransaction(
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const dailyStatRef = doc(firestore, 'dailyStats', today);
     transaction.set(dailyStatRef, {
-        totalRevenue: increment(cost),
+        totalRevenue: increment(finalCost),
         totalOrders: increment(1)
     }, { merge: true });
 
-    return { promotion };
+    return { orderId: newOrderRef.id, promotion };
 }

@@ -2,23 +2,25 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeFirebaseServer } from '@/firebase/server';
-import { FieldValue } from 'firebase-admin/firestore';
+import { initializeFirebase } from '@/firebase/client-provider';
 import type { Service, Order, User, ServicePrice } from '@/lib/types';
-import { serverProcessOrderInTransaction } from '@/lib/server-service';
+import { processOrderInTransaction } from '@/lib/service';
 import { SMM_SERVICES } from '@/lib/smm-services';
 import { PROFIT_MARGIN } from '@/lib/constants';
 import { z } from 'zod';
+import { collection, query, where, getDocs, limit, runTransaction } from 'firebase/firestore';
+
 
 // Helper function to find user by API key
 async function getUserByApiKey(apiKey: string): Promise<User | null> {
-  const { firestore } = initializeFirebaseServer();
+  const { firestore } = initializeFirebase();
   if (!firestore) {
     throw new Error('Firestore is not initialized on the server.');
   }
 
-  const usersRef = firestore.collection('users');
-  const snapshot = await usersRef.where('apiKey', '==', apiKey).limit(1).get();
+  const usersRef = collection(firestore, 'users');
+  const q = query(usersRef, where('apiKey', '==', apiKey), limit(1));
+  const snapshot = await getDocs(q);
 
   if (snapshot.empty) {
     return null;
@@ -47,7 +49,7 @@ const StatusSchema = z.object({
 
 // Handler for POST requests
 export async function POST(request: NextRequest) {
-    const { firestore } = initializeFirebaseServer();
+    const { firestore } = initializeFirebase();
     if (!firestore) {
         return NextResponse.json({ error: 'Server error: Could not connect to database.' }, { status: 500 });
     }
@@ -72,14 +74,7 @@ export async function POST(request: NextRequest) {
         if (!user) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
-        
-        // --- Admin-only action check ---
-        // Example: If there was an admin-only action, we would check it here
-        // if (action === 'some_admin_action' && user.role !== 'admin') {
-        //     return NextResponse.json({ error: 'Unauthorized action' }, { status: 403 });
-        // }
 
-        // Log the API action
         const logData = {
             event: 'api_request',
             level: 'info' as const,
@@ -87,14 +82,15 @@ export async function POST(request: NextRequest) {
             timestamp: new Date().toISOString(),
             metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
         };
-        // We do this in the background, no need to await it
-        firestore.collection('systemLogs').add(logData);
+        // This is a non-critical log, so we don't need to await it.
+        const logsCollection = collection(firestore, 'systemLogs');
+        addDoc(logsCollection, logData);
 
 
         switch (action) {
             case 'services': {
                 // Fetch dynamic prices from Firestore
-                const pricesSnapshot = await firestore.collection('servicePrices').get();
+                const pricesSnapshot = await getDocs(collection(firestore, 'servicePrices'));
                 const pricesMap = new Map<string, number>();
                 pricesSnapshot.forEach(doc => {
                     const data = doc.data() as ServicePrice;
@@ -142,8 +138,9 @@ export async function POST(request: NextRequest) {
                 }
 
                 // Fetch the dynamic price for this specific service
-                const priceDoc = await firestore.collection('servicePrices').doc(String(serviceId)).get();
-                const price = priceDoc.exists ? (priceDoc.data() as ServicePrice).price : staticService.price;
+                const priceDocRef = doc(firestore, 'servicePrices', String(serviceId));
+                const priceDoc = await getDoc(priceDocRef);
+                const price = priceDoc.exists() ? (priceDoc.data() as ServicePrice).price : staticService.price;
                 const finalPrice = price * PROFIT_MARGIN; // Apply profit margin
 
                 const mergedService = { ...staticService, price: finalPrice };
@@ -165,17 +162,19 @@ export async function POST(request: NextRequest) {
                     serviceName: `${mergedService.platform} - ${mergedService.category}`,
                     link: link,
                     quantity: quantity,
-                    charge: cost, // Will be recalculated inside serverProcessOrderInTransaction with discount
+                    charge: cost,
                     orderDate: new Date().toISOString(),
                     status: 'قيد التنفيذ',
                 };
                 
-                const { orderId } = await firestore.runTransaction(async (transaction) => {
-                     return await serverProcessOrderInTransaction(transaction, firestore, user.id, orderData);
+                 let newOrderId = '';
+                 await runTransaction(firestore, async (transaction) => {
+                     const { orderId } = await processOrderInTransaction(transaction, firestore, user.id, orderData);
+                     newOrderId = orderId;
                 });
 
 
-                return NextResponse.json({ order: orderId });
+                return NextResponse.json({ order: newOrderId });
             }
 
             case 'status': {
@@ -187,10 +186,10 @@ export async function POST(request: NextRequest) {
                 const { order: orderId } = statusParse.data;
 
                 // Query for the order within the user's subcollection
-                const orderDocRef = firestore.collection(`users/${user.id}/orders`).doc(String(orderId));
-                const orderDoc = await orderDocRef.get();
+                const orderDocRef = doc(firestore, `users/${user.id}/orders`, String(orderId));
+                const orderDoc = await getDoc(orderDocRef);
 
-                if (!orderDoc.exists) {
+                if (!orderDoc.exists()) {
                     return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
                 }
                 const order = orderDoc.data() as Order;
@@ -205,13 +204,13 @@ export async function POST(request: NextRequest) {
             }
 
             default:
-                // This case should not be reachable due to the enum in BaseSchema
                 return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
         }
     } catch (error: any) {
         console.error('API Error:', error);
         // Log critical errors to systemLogs
-         firestore.collection('systemLogs').add({
+         const logsCollection = collection(firestore, 'systemLogs');
+         addDoc(logsCollection, {
             event: 'api_error',
             level: 'error' as const,
             message: `API action '${action}' failed for user ${body.key?.substring(0, 6)}...`,
@@ -221,3 +220,4 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message || 'An internal server error occurred.' }, { status: 500 });
     }
 }
+
