@@ -1,3 +1,4 @@
+
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -76,7 +77,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-             <FirebaseErrorListener />
              {renderLayoutContent()}
            </FirebaseClientProvider>
             <Toaster />

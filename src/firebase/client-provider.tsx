@@ -1,12 +1,14 @@
+
 'use client';
 
-import React, { useMemo, type ReactNode, useEffect } from 'react';
+import React, { useMemo, type ReactNode, useEffect, useState } from 'react';
 import { FirebaseProvider, useUser } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase/init';
 import { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
 import type { User as UserType, Notification, SystemLog } from '@/lib/types';
 import { getRankForSpend, RANKS } from '@/lib/service';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 
 // This component now handles creating the user document if it doesn't exist
@@ -144,9 +146,19 @@ interface FirebaseClientProviderProps {
 }
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  const firebaseServices = useMemo(() => {
-    return initializeFirebase();
+  const [firebaseServices, setFirebaseServices] = useState<ReturnType<typeof initializeFirebase> | null>(null);
+
+  useEffect(() => {
+    // initializeFirebase() is now safe to call here, as useEffect only runs on the client.
+    setFirebaseServices(initializeFirebase());
   }, []);
+
+  if (!firebaseServices) {
+    // You can render a loader here if you want,
+    // but the layout already has a loader for the user state,
+    // which effectively covers this.
+    return <>{children}</>;
+  }
 
   return (
     <FirebaseProvider
@@ -155,6 +167,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       firestore={firebaseServices.firestore}
     >
       <UserInitializer />
+      <FirebaseErrorListener />
       {children}
     </FirebaseProvider>
   );

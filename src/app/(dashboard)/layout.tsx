@@ -92,10 +92,12 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child) => (
                <SidebarMenuItem key={child.href}>
-                <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
-                    {child.icon && <child.icon className="w-4 h-4" />}
-                    <span>{child.label}</span>
-                </SidebarMenuSubButton>
+                <Link href={child.href || '#'} passHref>
+                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                      {child.icon && <child.icon className="w-4 h-4" />}
+                      <span>{child.label}</span>
+                  </SidebarMenuSubButton>
+                </Link>
               </SidebarMenuItem>
             ))}
           </SidebarMenuSubContent>
@@ -205,4 +207,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </SidebarProvider>
     );
 }
-

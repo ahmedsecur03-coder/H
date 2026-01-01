@@ -21,7 +21,8 @@ let firebaseServices: FirebaseServices | null = null;
  */
 export function initializeFirebase(): FirebaseServices {
   if (typeof window === 'undefined') {
-    // This is a server environment, we should use the server-init
+    // This function is client-only. Throw an error if it's called on the server.
+    // This helps catch misconfigurations during development.
     throw new Error("Attempted to call initializeFirebase() from the server. Use initializeFirebaseServer() instead.");
   }
   
