@@ -1,4 +1,4 @@
-
+'use client';
 export default function AuthLayout({
   children,
 }: {
@@ -13,5 +13,3 @@ export default function AuthLayout({
     </div>
   );
 }
-
-    

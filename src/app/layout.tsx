@@ -4,12 +4,14 @@ import { Toaster } from '@/components/ui/toaster';
 import { Poppins, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
-import React, 'Suspense';
-import GoogleAnalytics from '@/components/google-analytics';
+import React, from 'react';
 import { FirebaseClientProvider } from '@/firebase';
 import PublicHeader from '@/components/public-header';
 import PublicFooter from '@/components/public-footer';
 import { usePathname } from 'next/navigation';
+import { Suspense } from 'react';
+import GoogleAnalytics from '@/components/google-analytics';
+
 
 const fontSans = PT_Sans({
   subsets: ['latin'],
@@ -28,12 +30,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const siteUrl = "https://hajaty.com";
   const pathname = usePathname();
   
+  const isDashboardOrAdmin = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth');
-  const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <head>
+       <head>
         <title>منصة حاجاتي | خدمات SMM وزيادة متابعين وإدارة حملات إعلانية</title>
         <meta name="description" content="منصة حاجاتي هي سيرفرك الأول لخدمات التسويق الرقمي. نقدم زيادة متابعين (انستقرام، تيك توك، فيسبوك)، إدارة حملات إعلانية احترافية، وشراء حسابات وكالة لنمو أعمالك." />
         <link rel="canonical" href={siteUrl} />
@@ -57,17 +59,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <FirebaseClientProvider>
-            {isDashboardPage || isAuthPage ? (
-              children
-            ) : (
-              <div className="flex flex-col min-h-screen">
-                <PublicHeader />
-                <main className="flex-1 container py-8">
-                  {children}
-                </main>
-                <PublicFooter />
-              </div>
-            )}
+             {isDashboardOrAdmin || isAuthPage ? (
+                children
+             ) : (
+                <div className="flex flex-col min-h-screen">
+                    <PublicHeader />
+                    <main className="flex-1 container py-8">{children}</main>
+                    <PublicFooter />
+                </div>
+             )}
             <Toaster />
           </FirebaseClientProvider>
         </ThemeProvider>
