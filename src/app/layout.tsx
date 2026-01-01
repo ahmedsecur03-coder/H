@@ -27,30 +27,32 @@ const fontHeadline = Poppins({
 });
 
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
-  const measurementId = "G-4030VT05Y1";
-  const siteUrl = "https://hajaty.com";
+function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isDashboardPage = pathname.startsWith('/dashboard');
   const isAdminPage = pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth');
 
-  const renderLayoutContent = () => {
-    if (isDashboardPage || isAdminPage || isAuthPage) {
-      return children;
-    }
-    // Public pages
-    return (
-        <div className="flex flex-col min-h-screen">
-          <PublicHeader />
-          <main className="flex-1 container py-8">{children}</main>
-          <PublicFooter />
-        </div>
-    );
-  };
+  if (isDashboardPage || isAdminPage || isAuthPage) {
+    return <>{children}</>;
+  }
+
+  // Public pages
+  return (
+      <div className="flex flex-col min-h-screen">
+        <PublicHeader />
+        <main className="flex-1 container py-8">{children}</main>
+        <PublicFooter />
+      </div>
+  );
+}
 
 
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
+  const measurementId = "G-4030VT05Y1";
+  const siteUrl = "https://hajaty.com";
+  
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
        <head>
@@ -77,7 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-             {renderLayoutContent()}
+             <AppContent>{children}</AppContent>
            </FirebaseClientProvider>
             <Toaster />
         </ThemeProvider>
@@ -85,3 +87,4 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
+

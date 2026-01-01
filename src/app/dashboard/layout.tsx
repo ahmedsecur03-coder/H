@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -92,10 +93,12 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child) => (
                <SidebarMenuItem key={child.href}>
-                <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
-                    {child.icon && <child.icon className="w-4 h-4" />}
-                    <span>{child.label}</span>
-                </SidebarMenuSubButton>
+                <Link href={child.href || '#'} passHref>
+                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                      {child.icon && <child.icon className="w-4 h-4" />}
+                      <span>{child.label}</span>
+                  </SidebarMenuSubButton>
+                </Link>
               </SidebarMenuItem>
             ))}
           </SidebarMenuSubContent>
@@ -181,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </SidebarContent>
                     {isAdmin && (
                        <SidebarFooter>
-                          <Link href="/admin/dashboard" passHref>
+                          <Link href="/admin/dashboard">
                               <SidebarMenuButton>
                                   <Shield className="h-4 w-4 text-primary" />
                                   <span>لوحة تحكم المسؤول</span>

@@ -18,7 +18,10 @@ function UserInitializer() {
   const { firestore } = initializeFirebase(); // Get firestore instance
 
   useEffect(() => {
-    if (!isUserLoading && user && firestore) {
+    if (isUserLoading || !user || !firestore) {
+      return;
+    }
+    
       const userDocRef = doc(firestore, 'users', user.uid);
       
       const checkAndCreateUserDoc = async () => {
@@ -134,7 +137,7 @@ function UserInitializer() {
       };
 
       checkAndCreateUserDoc();
-    }
+    
   }, [user, isUserLoading, firestore]);
 
   return null; // This component does not render anything.
@@ -152,6 +155,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     // initializeFirebase() is now safe to call here, as useEffect only runs on the client.
     setFirebaseServices(initializeFirebase());
   }, []);
+
 
   if (!firebaseServices) {
     // You can render a loader here if you want,
@@ -172,3 +176,4 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     </FirebaseProvider>
   );
 }
+
