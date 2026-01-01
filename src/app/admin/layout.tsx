@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -219,10 +218,10 @@ export default function AdminLayout({
   const isLoading = isUserLoading || isUserDataLoading;
   
   useEffect(() => {
-    if (!isUserLoading && (!user || (userData && userData.role !== 'admin'))) {
+    if (!isLoading && (!user || (userData && userData.role !== 'admin'))) {
       redirect('/auth/login');
     }
-  }, [user, isUserLoading, userData]);
+  }, [user, isLoading, userData]);
 
 
   if (isLoading || !user || !userData || userData.role !== 'admin') {

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { NextResponse } from 'next/server';
@@ -16,6 +15,14 @@ export async function POST(request: Request) {
     if (!imageUrl) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
     }
+
+    // Basic validation to prevent abuse
+    const url = new URL(imageUrl);
+    const allowedHosts = ['images.unsplash.com', 'i.pravatar.cc', 'lh3.googleusercontent.com'];
+    if (!allowedHosts.includes(url.hostname)) {
+      return NextResponse.json({ error: 'Invalid image host' }, { status: 400 });
+    }
+
 
     const response = await fetch(imageUrl);
 

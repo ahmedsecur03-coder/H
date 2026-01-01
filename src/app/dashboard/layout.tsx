@@ -120,6 +120,7 @@ function NavItems() {
   );
 }
 
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();

@@ -1,40 +1,46 @@
-import { getApps, initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+'use server';
+import { getApps, initializeApp, App, cert, getApp } from 'firebase-admin/app';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getAuth, Auth } from 'firebase-admin/auth';
 import { firebaseConfig } from '@/firebase/config';
 
-// This is a separate initialization for server-side usage (e.g., in API routes or generateMetadata)
-// It avoids including client-side auth dependencies in server-only code.
-
-// Use a symbol to ensure a unique key for the global object.
-const FIREBASE_SERVER_KEY = Symbol.for('firebase.server.services');
+// This is a separate initialization for server-side usage (e.g., in API routes or server actions)
+// It uses the Firebase Admin SDK.
 
 interface FirebaseServerServices {
-  firebaseApp: FirebaseApp;
+  firebaseApp: App;
   firestore: Firestore;
+  auth: Auth;
 }
 
-// Extend the global object to include our custom property.
-declare global {
-  var [FIREBASE_SERVER_KEY]: FirebaseServerServices | undefined;
-}
+// Ensure the service account key is correctly parsed
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+  : undefined;
 
+/**
+ * Initializes Firebase Admin services on the server-side.
+ * This function is safe to call multiple times.
+ * @returns An object containing the initialized Firebase Admin services.
+ */
 export function initializeFirebaseServer(): FirebaseServerServices {
-  const existingServices = global[FIREBASE_SERVER_KEY];
-  if (existingServices) {
-    return existingServices;
-  }
-  
   const apps = getApps();
-  // Ensure we don't re-initialize an app with the same name.
-  const firebaseApp = apps.find(app => app.name === firebaseConfig.projectId) || initializeApp(firebaseConfig, firebaseConfig.projectId);
-  const firestore = getFirestore(firebaseApp);
+  let firebaseApp: App;
 
-  const services: FirebaseServerServices = { firebaseApp, firestore };
-  
-  // In development, don't cache on global, to allow for hot-reloading.
-  if (process.env.NODE_ENV === 'production') {
-    global[FIREBASE_SERVER_KEY] = services;
+  if (apps.length === 0) {
+    if (!serviceAccount) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set or is invalid.');
+    }
+    firebaseApp = initializeApp({
+      credential: cert(serviceAccount),
+      projectId: firebaseConfig.projectId,
+    });
+  } else {
+    firebaseApp = getApp();
   }
-  
-  return services;
+
+  const firestore = getFirestore(firebaseApp);
+  const auth = getAuth(firebaseApp);
+
+  return { firebaseApp, firestore, auth };
 }

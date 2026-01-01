@@ -13,6 +13,7 @@ import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import DashboardLayout from './dashboard/layout';
 import AuthLayout from './auth/layout';
+import AdminLayout from './admin/layout';
 
 const fontSans = PT_Sans({
   subsets: ['latin'],
@@ -37,18 +38,22 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const isAuthPage = pathname.startsWith('/auth');
 
   const renderLayout = () => {
-    if (isDashboardPage || isAdminPage) {
+    if (isDashboardPage) {
       return <DashboardLayout>{children}</DashboardLayout>;
     }
-    if (isAuthPage) {
-      return <AuthLayout>{children}</AuthLayout>;
+    if (isAdminPage) {
+      return <AdminLayout>{children}</AdminLayout>;
     }
+    if (isAuthPage) {
+       return <AuthLayout>{children}</AuthLayout>;
+    }
+    // Public pages
     return (
-      <div className="flex flex-col min-h-screen">
-        <PublicHeader />
-        <main className="flex-1 container py-8">{children}</main>
-        <PublicFooter />
-      </div>
+        <div className="flex flex-col min-h-screen">
+          <PublicHeader />
+          <main className="flex-1 container py-8">{children}</main>
+          <PublicFooter />
+        </div>
     );
   };
 
@@ -78,10 +83,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <GoogleAnalytics gaId={measurementId} />
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <FirebaseClientProvider>
-            {renderLayout()}
+           <FirebaseClientProvider>
+             {renderLayout()}
+           </FirebaseClientProvider>
             <Toaster />
-          </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>

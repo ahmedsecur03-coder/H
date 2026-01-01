@@ -1,8 +1,7 @@
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeFirebase } from '@/firebase/client-provider';
+import { initializeFirebaseServer } from '@/firebase/init-server';
 import type { Service, Order, User, ServicePrice } from '@/lib/types';
 import { processOrderInTransaction } from '@/lib/service';
 import { SMM_SERVICES } from '@/lib/smm-services';
@@ -13,7 +12,7 @@ import { collection, query, where, getDocs, limit, runTransaction, doc, getDoc, 
 
 // Helper function to find user by API key
 async function getUserByApiKey(apiKey: string): Promise<User | null> {
-  const { firestore } = initializeFirebase();
+  const { firestore } = initializeFirebaseServer();
   if (!firestore) {
     throw new Error('Firestore is not initialized on the server.');
   }
@@ -49,7 +48,7 @@ const StatusSchema = z.object({
 
 // Handler for POST requests
 export async function POST(request: NextRequest) {
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseServer();
     if (!firestore) {
         return NextResponse.json({ error: 'Server error: Could not connect to database.' }, { status: 500 });
     }
@@ -75,16 +74,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
 
-        const logData = {
-            event: 'api_request',
-            level: 'info' as const,
-            message: `API action '${action}' called by user ${user.id}`,
-            timestamp: new Date().toISOString(),
-            metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
-        };
-        // This is a non-critical log, so we don't need to await it.
-        const logsCollection = collection(firestore, 'systemLogs');
-        addDoc(logsCollection, logData);
+        // Log the API request
+        if(user.role !== 'admin') { // Don't log admin requests to avoid noise
+            const logData = {
+                event: 'api_request',
+                level: 'info' as const,
+                message: `API action '${action}' called by user ${user.id}`,
+                timestamp: new Date().toISOString(),
+                metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
+            };
+            const logsCollection = collection(firestore, 'systemLogs');
+            await addDoc(logsCollection, logData);
+        }
 
 
         switch (action) {
@@ -210,7 +211,7 @@ export async function POST(request: NextRequest) {
         console.error('API Error:', error);
         // Log critical errors to systemLogs
          const logsCollection = collection(firestore, 'systemLogs');
-         addDoc(logsCollection, {
+         await addDoc(logsCollection, {
             event: 'api_error',
             level: 'error' as const,
             message: `API action '${action}' failed for user ${body.key?.substring(0, 6)}...`,
