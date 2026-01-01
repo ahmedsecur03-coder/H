@@ -14,7 +14,6 @@ import GoogleAnalytics from '@/components/google-analytics';
 import DashboardLayout from './dashboard/layout';
 import AuthLayout from './auth/layout';
 
-
 const fontSans = PT_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
@@ -27,33 +26,31 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-function PublicLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <PublicHeader />
-      <main className="flex-1 container py-8">{children}</main>
-      <PublicFooter />
-    </div>
-  )
-}
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";
   const siteUrl = "https://hajaty.com";
   const pathname = usePathname();
-  
+
   const isDashboardPage = pathname.startsWith('/dashboard');
   const isAdminPage = pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth');
-  
-  let LayoutComponent;
-  if (isDashboardPage || isAdminPage) {
-    LayoutComponent = DashboardLayout;
-  } else if (isAuthPage) {
-    LayoutComponent = AuthLayout;
-  } else {
-    LayoutComponent = PublicLayout;
-  }
+
+  const renderLayout = () => {
+    if (isDashboardPage || isAdminPage) {
+      return <DashboardLayout>{children}</DashboardLayout>;
+    }
+    if (isAuthPage) {
+      return <AuthLayout>{children}</AuthLayout>;
+    }
+    return (
+      <div className="flex flex-col min-h-screen">
+        <PublicHeader />
+        <main className="flex-1 container py-8">{children}</main>
+        <PublicFooter />
+      </div>
+    );
+  };
 
 
   return (
@@ -82,7 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <FirebaseClientProvider>
-            <LayoutComponent>{children}</LayoutComponent>
+            {renderLayout()}
             <Toaster />
           </FirebaseClientProvider>
         </ThemeProvider>

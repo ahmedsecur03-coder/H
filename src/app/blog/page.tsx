@@ -32,7 +32,7 @@ export default function BlogPage() {
         [firestore]
     );
 
-    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
+    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery, { startManually: !firestore });
 
     if (isLoading) {
         return <BlogPageSkeleton />;

@@ -56,18 +56,31 @@ export default function BlogPostPage() {
             setIsAdjacentLoading(true);
             const postsRef = collection(firestore, 'blogPosts');
             
-            const nextQuery = query(postsRef, where('publishDate', '>', post.publishDate), orderBy('publishDate', 'asc'), limit(1));
-            const prevQuery = query(postsRef, where('publishDate', '<', post.publishDate), orderBy('publishDate', 'desc'), limit(1));
-            
-            const [nextSnap, prevSnap] = await Promise.all([getDocs(nextQuery), getDocs(prevQuery)]);
+            try {
+                const nextQuery = query(postsRef, where('publishDate', '>', post.publishDate), orderBy('publishDate', 'asc'), limit(1));
+                const prevQuery = query(postsRef, where('publishDate', '<', post.publishDate), orderBy('publishDate', 'desc'), limit(1));
+                
+                const [nextSnap, prevSnap] = await Promise.all([getDocs(nextQuery), getDocs(prevQuery)]);
 
-            const nextPostData = nextSnap.docs[0]?.data();
-            setNextPost(nextSnap.empty ? null : { id: nextSnap.docs[0].id, title: nextPostData?.title });
-            
-            const prevPostData = prevSnap.docs[0]?.data();
-            setPrevPost(prevSnap.empty ? null : { id: prevSnap.docs[0].id, title: prevPostData?.title });
-            
-            setIsAdjacentLoading(false);
+                if (!nextSnap.empty) {
+                    const nextPostData = nextSnap.docs[0]?.data();
+                    setNextPost({ id: nextSnap.docs[0].id, title: nextPostData?.title });
+                } else {
+                    setNextPost(null);
+                }
+                
+                if (!prevSnap.empty) {
+                    const prevPostData = prevSnap.docs[0]?.data();
+                    setPrevPost({ id: prevSnap.docs[0].id, title: prevPostData?.title });
+                } else {
+                    setPrevPost(null);
+                }
+
+            } catch (error) {
+                console.error("Error fetching adjacent posts:", error);
+            } finally {
+                setIsAdjacentLoading(false);
+            }
         };
 
         fetchAdjacentPosts();
