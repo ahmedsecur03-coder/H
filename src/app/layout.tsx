@@ -4,13 +4,15 @@ import { Toaster } from '@/components/ui/toaster';
 import { Poppins, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
-import React, from 'react';
-import { FirebaseClientProvider } from '@/firebase';
+import React from 'react';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import PublicHeader from '@/components/public-header';
 import PublicFooter from '@/components/public-footer';
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
+import DashboardLayout from './dashboard/layout';
+import AuthLayout from './auth/layout';
 
 
 const fontSans = PT_Sans({
@@ -25,13 +27,34 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
+function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <PublicHeader />
+      <main className="flex-1 container py-8">{children}</main>
+      <PublicFooter />
+    </div>
+  )
+}
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";
   const siteUrl = "https://hajaty.com";
   const pathname = usePathname();
   
-  const isDashboardOrAdmin = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+  const isDashboardPage = pathname.startsWith('/dashboard');
+  const isAdminPage = pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth');
+  
+  let LayoutComponent;
+  if (isDashboardPage || isAdminPage) {
+    LayoutComponent = DashboardLayout;
+  } else if (isAuthPage) {
+    LayoutComponent = AuthLayout;
+  } else {
+    LayoutComponent = PublicLayout;
+  }
+
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
@@ -59,15 +82,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <FirebaseClientProvider>
-             {isDashboardOrAdmin || isAuthPage ? (
-                children
-             ) : (
-                <div className="flex flex-col min-h-screen">
-                    <PublicHeader />
-                    <main className="flex-1 container py-8">{children}</main>
-                    <PublicFooter />
-                </div>
-             )}
+            <LayoutComponent>{children}</LayoutComponent>
             <Toaster />
           </FirebaseClientProvider>
         </ThemeProvider>
