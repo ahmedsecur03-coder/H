@@ -1,6 +1,5 @@
 'use client';
 
-import { FirebaseClientProvider } from "@/firebase";
 import Link from 'next/link';
 import {
   SidebarProvider,
@@ -122,7 +121,7 @@ function NavItems() {
 }
 
 
-function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
@@ -207,10 +206,3 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     );
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <FirebaseClientProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </FirebaseClientProvider>
-  )
-}

@@ -1,13 +1,15 @@
-
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Poppins, PT_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
-import React, { Suspense } from 'react';
+import React, 'Suspense';
 import GoogleAnalytics from '@/components/google-analytics';
 import { FirebaseClientProvider } from '@/firebase';
+import PublicHeader from '@/components/public-header';
+import PublicFooter from '@/components/public-footer';
+import { usePathname } from 'next/navigation';
 
 const fontSans = PT_Sans({
   subsets: ['latin'],
@@ -21,10 +23,13 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";
   const siteUrl = "https://hajaty.com";
+  const pathname = usePathname();
+  
+  const isAuthPage = pathname.startsWith('/auth');
+  const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
@@ -51,10 +56,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <GoogleAnalytics gaId={measurementId} />
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            <FirebaseClientProvider>
-                {children}
-                <Toaster />
-            </FirebaseClientProvider>
+          <FirebaseClientProvider>
+            {isDashboardPage || isAuthPage ? (
+              children
+            ) : (
+              <div className="flex flex-col min-h-screen">
+                <PublicHeader />
+                <main className="flex-1 container py-8">
+                  {children}
+                </main>
+                <PublicFooter />
+              </div>
+            )}
+            <Toaster />
+          </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>
