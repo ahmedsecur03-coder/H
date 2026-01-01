@@ -37,6 +37,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+import { PROFIT_MARGIN } from '@/lib/constants';
 
 
 const serviceCategories = [
@@ -98,7 +99,7 @@ function FeaturedServicesTabs() {
                                     </CardHeader>
                                     <CardContent className="flex-grow flex flex-col justify-end">
                                         <div className="text-center">
-                                            <p className="text-3xl font-bold text-primary">${(service.price * 1.50).toFixed(3)}</p>
+                                            <p className="text-3xl font-bold text-primary">${(service.price * PROFIT_MARGIN).toFixed(3)}</p>
                                             <p className="text-xs text-muted-foreground">/ لكل 1000</p>
                                         </div>
                                     </CardContent>

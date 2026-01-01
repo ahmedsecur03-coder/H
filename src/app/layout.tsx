@@ -11,9 +11,7 @@ import PublicFooter from '@/components/public-footer';
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
-import DashboardLayout from './dashboard/layout';
-import AuthLayout from './auth/layout';
-import AdminLayout from './admin/layout';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const fontSans = PT_Sans({
   subsets: ['latin'],
@@ -37,15 +35,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const isAdminPage = pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth');
 
-  const renderLayout = () => {
-    if (isDashboardPage) {
-      return <DashboardLayout>{children}</DashboardLayout>;
-    }
-    if (isAdminPage) {
-      return <AdminLayout>{children}</AdminLayout>;
-    }
-    if (isAuthPage) {
-       return <AuthLayout>{children}</AuthLayout>;
+  const renderLayoutContent = () => {
+    if (isDashboardPage || isAdminPage || isAuthPage) {
+      return children;
     }
     // Public pages
     return (
@@ -84,7 +76,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-             {renderLayout()}
+             <FirebaseErrorListener />
+             {renderLayoutContent()}
            </FirebaseClientProvider>
             <Toaster />
         </ThemeProvider>
