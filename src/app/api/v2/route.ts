@@ -1,8 +1,7 @@
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeFirebase } from '@/firebase/init';
+import { initializeFirebaseServer } from '@/firebase/init-server';
 import type { Service, Order, User, ServicePrice } from '@/lib/types';
 import { processOrderInTransaction } from '@/lib/service';
 import { SMM_SERVICES } from '@/lib/smm-services';
@@ -13,7 +12,7 @@ import { collection, query, where, getDocs, limit, runTransaction, doc, getDoc, 
 
 // Helper function to find user by API key
 async function getUserByApiKey(apiKey: string): Promise<User | null> {
-  const { firestore } = initializeFirebase();
+  const { firestore } = initializeFirebaseServer();
   if (!firestore) {
     throw new Error('Firestore is not initialized on the server.');
   }
@@ -49,7 +48,7 @@ const StatusSchema = z.object({
 
 // Handler for POST requests
 export async function POST(request: NextRequest) {
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseServer();
     if (!firestore) {
         return NextResponse.json({ error: 'Server error: Could not connect to database.' }, { status: 500 });
     }

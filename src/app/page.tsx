@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -37,6 +38,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+import PublicHeader from '@/components/public-header';
+import PublicFooter from '@/components/public-footer';
 
 
 const serviceCategories = [
@@ -199,7 +202,9 @@ export default function HomePage() {
 
 
   return (
-    <div className="space-y-24">
+    <>
+      <PublicHeader />
+      <main className="container flex-1 py-8 space-y-24">
         <section className="relative text-center py-20 overflow-hidden">
             <div
                 className="absolute -top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] md:w-[120%] md:h-[120%] lg:w-[100%] lg:h-[100%]
@@ -394,6 +399,8 @@ export default function HomePage() {
                 </CardContent>
             </Card>
         </section>
-    </div>
+      </main>
+      <PublicFooter />
+    </>
   );
 }

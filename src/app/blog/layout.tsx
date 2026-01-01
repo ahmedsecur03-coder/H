@@ -1,6 +1,14 @@
+'use client';
 
-// This file can be used to wrap blog pages in a specific layout
-// For now, we will use the main public layout.
+import PublicHeader from "@/components/public-header";
+import PublicFooter from "@/components/public-footer";
+
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <PublicHeader />
+      <main className="container flex-1 py-8">{children}</main>
+      <PublicFooter />
+    </>
+  );
 }
