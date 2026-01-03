@@ -158,11 +158,7 @@ function AdminUsersPageComponent() {
   };
 
 
-  if (isLoading) {
-    return <UsersPageSkeleton />;
-  }
-
-    const UserCard = ({ user }: { user: User }) => (
+  const UserCard = ({ user }: { user: User }) => (
     <Card>
         <CardHeader className="flex flex-row items-center gap-4">
             <Avatar className="h-12 w-12">
@@ -195,6 +191,10 @@ function AdminUsersPageComponent() {
         </CardFooter>
     </Card>
   );
+  
+  if (isLoading) {
+    return <UsersPageSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pb-8">

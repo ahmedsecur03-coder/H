@@ -105,7 +105,6 @@ function OrdersPageSkeleton() {
 }
 
 function AdminOrdersPageComponent() {
-  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
   const pathname = usePathname();
@@ -185,7 +184,7 @@ function AdminOrdersPageComponent() {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    return { paginatedOrders: paginated, totalPages: total };
+    return { paginatedOrders: paginated, pageCount: total };
 
   }, [allOrders, currentSearch, currentPage, currentStatus]);
 
@@ -244,10 +243,6 @@ function AdminOrdersPageComponent() {
     ));
   };
   
-  if (isLoading) {
-    return <OrdersPageSkeleton />;
-  }
-
   const OrderCard = ({ order }: { order: Order }) => (
     <Card>
       <CardHeader>
@@ -288,6 +283,10 @@ function AdminOrdersPageComponent() {
       </CardFooter>
     </Card>
   );
+
+  if (isLoading) {
+    return <OrdersPageSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pb-8">
