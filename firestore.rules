@@ -47,20 +47,13 @@ service cloud.firestore {
       allow create: if isNewUserCreation(userId, request.resource.data);
 
       // UPDATE: 
-      // - A user can update their own non-critical fields (name, avatar, preferences).
-      // - An admin can update critical fields (balance, role, rank).
-      allow update: if 
+      // - Admins can update any field.
+      // - A user can only update their own non-critical fields (name, avatar, preferences).
+      allow update: if isAdmin() || 
           (isOwner(userId) && 
             // List of fields a user is allowed to change themselves
-            request.resource.data.keys().hasAll(['name', 'avatarUrl', 'notificationPreferences']) &&
-            // Ensure they cannot change any other fields
-            resource.data.balance == request.resource.data.balance &&
-            resource.data.adBalance == request.resource.data.adBalance &&
-            resource.data.totalSpent == request.resource.data.totalSpent &&
-            resource.data.role == request.resource.data.role &&
-            resource.data.apiKey == request.resource.data.apiKey &&
-            resource.data.rank == request.resource.data.rank
-          ) || isAdmin();
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatarUrl', 'notificationPreferences']))
+          );
     }
     
     // =================================
