@@ -25,8 +25,8 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-// This new component contains the conditional layout logic
-function AppLayout({ children }: { children: React.ReactNode }) {
+// This component determines which layout to use based on the path.
+function PageLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
 
@@ -41,7 +41,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   // For non-public pages, just render the children.
-  // Their specific layouts will handle the structure.
+  // The specific layouts (dashboard, admin, auth) will be handled by their respective layout.tsx files.
   return <>{children}</>;
 }
 
@@ -49,7 +49,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";
   const siteUrl = "https://hajaty.com";
-  
+
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
        <head>
@@ -76,7 +76,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-              <AppLayout>{children}</AppLayout>
+                <PageLayout>{children}</PageLayout>
            </FirebaseClientProvider>
            <Toaster />
         </ThemeProvider>
