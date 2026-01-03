@@ -118,9 +118,19 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
  */
 export const useFirebase = (): FirebaseContextState => {
   const context = useContext(FirebaseContext);
-
+  
   if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider.');
+    // This can happen during SSR, so we return a safe, empty state
+    // instead of throwing an error. The actual check will happen in the hooks.
+     return {
+      areServicesAvailable: false,
+      firebaseApp: null,
+      firestore: null,
+      auth: null,
+      user: null,
+      isUserLoading: true,
+      userError: null,
+    };
   }
   
   return context;
@@ -129,18 +139,24 @@ export const useFirebase = (): FirebaseContextState => {
 /** Hook to access Firebase Auth instance. */
 export const useAuth = (): Auth | null => {
   const { auth } = useFirebase();
+  if (typeof window === 'undefined') return null; // Safe guard for SSR
+  if (!auth) throw new Error("useAuth must be used within a FirebaseProvider that has an auth instance.");
   return auth;
 };
 
 /** Hook to access Firestore instance. */
 export const useFirestore = (): Firestore | null => {
   const { firestore } = useFirebase();
+  if (typeof window === 'undefined') return null; // Safe guard for SSR
+  if (!firestore) throw new Error("useFirestore must be used within a FirebaseProvider that has a firestore instance.");
   return firestore;
 };
 
 /** Hook to access Firebase App instance. */
 export const useFirebaseApp = (): FirebaseApp | null => {
   const { firebaseApp } = useFirebase();
+  if (typeof window === 'undefined') return null; // Safe guard for SSR
+  if (!firebaseApp) throw new Error("useFirebaseApp must be used within a FirebaseProvider that has a firebaseApp instance.");
   return firebaseApp;
 };
 
@@ -158,9 +174,21 @@ export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | 
 /**
  * Hook specifically for accessing the authenticated user's state.
  * This provides the User object, loading status, and any auth errors.
+ * Returns a loading state during server-side rendering.
  * @returns {UserHookResult} Object with user, isUserLoading, userError.
  */
-export const useUser = (): UserHookResult => { // Renamed from useAuthUser
+export const useUser = (): UserHookResult => {
   const { user, isUserLoading, userError } = useFirebase();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    // Return a default, non-authenticated state for SSR
+    return { user: null, isUserLoading: true, userError: null };
+  }
+  
   return { user, isUserLoading, userError };
 };
