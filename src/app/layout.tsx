@@ -1,3 +1,4 @@
+
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -39,8 +40,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // For non-public pages, just render the children.
+  // Their specific layouts will handle the structure.
   return <>{children}</>;
 }
+
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";
