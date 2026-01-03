@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -132,7 +133,7 @@ function PublicHeader() {
     }
     return (
       <NavigationMenuItem key={item.href}>
-        <Link href={item.href || '#'} passHref>
+        <Link href={item.href || '#'} passHref asChild>
           <NavigationMenuLink className={navigationMenuTriggerStyle()}>
             {item.label}
           </NavigationMenuLink>
