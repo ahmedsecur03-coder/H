@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
@@ -11,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { regenerateApiKey } from "./_actions/api-key-actions";
 
 function ApiPageSkeleton() {
     return (
@@ -28,25 +28,27 @@ function ApiPageSkeleton() {
 
 export default function ApiPage() {
     const { user } = useUser();
-    const firestore = useFirestore();
     const { toast } = useToast();
     const [isRegenerating, setIsRegenerating] = useState(false);
 
-    const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, 'users', user.uid) : null), [firestore, user]);
+    const userDocRef = useMemoFirebase(() => (user ? doc(useFirestore(), 'users', user.uid) : null), [user]);
     const { data: userData, isLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
+
     const handleRegenerateApiKey = async () => {
-        if (!userDocRef) return;
+        if (!user) return;
         setIsRegenerating(true);
-        const newApiKey = `hy_${crypto.randomUUID()}`;
-        
         try {
-            await updateDoc(userDocRef, { apiKey: newApiKey });
-            forceDocUpdate();
-            toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
-        } catch (error) {
+            const result = await regenerateApiKey(user.uid);
+            if(result.success) {
+                forceDocUpdate();
+                toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
+            } else {
+                 throw new Error(result.error || 'فشل إنشاء المفتاح.');
+            }
+        } catch (error: any) {
              const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
+                path: `users/${user.uid}`,
                 operation: 'update',
                 requestResourceData: { apiKey: 'REDACTED' },
             });
@@ -175,31 +177,31 @@ export default function ApiPage() {
                         </TableHeader>
                         <TableBody>
                             <TableRow>
-                                <TableCell><CodeExample code={`{"order": 12345}`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''{"order": 12345}''' language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب إضافة، تحتوي على معرف الطلب الجديد.</TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell><CodeExample code={`{"charge": "0.50", "status": "قيد التنفيذ", ...}`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''{"charge": "0.50", "status": "قيد التنفيذ", ...}''' language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب حالة، تحتوي على تفاصيل الطلب.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code={`[{"service": 1, "name": "...", "rate": "0.50"}, ... ]`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''[{"service": 1, "name": "...", "rate": "0.50"}, ... ]''' language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب قائمة الخدمات.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code={`{"balance": "100.50", "currency": "USD"}`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''{"balance": "100.50", "currency": "USD"}''' language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب الرصيد.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code={`{"error": "Incorrect request"}`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''{"error": "Incorrect request"}''' language="json" /></TableCell>
                                 <TableCell>خطأ في حالة وجود معلمات ناقصة أو غير صحيحة.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code={`{"error": "Not enough funds"}`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''{"error": "Not enough funds"}''' language="json" /></TableCell>
                                 <TableCell>خطأ في حالة عدم وجود رصيد كافٍ.</TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell><CodeExample code={`{"error": "Invalid API key"}`} language="json" /></TableCell>
+                                <TableCell><CodeExample code='''{"error": "Invalid API key"}''' language="json" /></TableCell>
                                 <TableCell>خطأ في حالة أن مفتاح API غير صالح.</TableCell>
                             </TableRow>
                         </TableBody>

@@ -16,11 +16,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
     }
 
-    // Basic validation to prevent abuse
-    const url = new URL(imageUrl);
-    const allowedHosts = ['images.unsplash.com', 'i.pravatar.cc', 'lh3.googleusercontent.com'];
-    if (!allowedHosts.includes(url.hostname)) {
-      return NextResponse.json({ error: 'Invalid image host' }, { status: 400 });
+    // Basic validation to prevent abuse by checking allowed hostnames
+    const allowedHosts = ['images.unsplash.com', 'i.pravatar.cc', 'lh3.googleusercontent.com', 'oaidalleapiprodscus.blob.core.windows.net'];
+    try {
+        const url = new URL(imageUrl);
+        if (!allowedHosts.includes(url.hostname)) {
+          return NextResponse.json({ error: 'Invalid image host' }, { status: 400 });
+        }
+    } catch (e) {
+        return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 });
     }
 
 
@@ -48,7 +52,7 @@ export async function OPTIONS(request: Request) {
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
     });
 }

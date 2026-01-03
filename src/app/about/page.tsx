@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Rocket, Shield, Users, Lightbulb, Target } from 'lucide-react';
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const teamMembers = [
   {
