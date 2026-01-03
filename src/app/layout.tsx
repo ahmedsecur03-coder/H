@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Cairo } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
-import React, { useState } from 'react';
+import React from 'react';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import PublicHeader from '@/components/public-header';
 import PublicFooter from '@/components/public-footer';
@@ -12,10 +12,7 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
-import { FloatingWhatsAppButton } from '@/components/floating-action-buttons';
-import { AiAssistant } from '@/components/ai-assistant';
-import { Button } from '@/components/ui/button';
-import { Bot } from 'lucide-react';
+import { FloatingActionButtons } from '@/components/floating-action-buttons';
 
 
 const fontSans = Cairo({
@@ -33,7 +30,6 @@ const fontHeadline = Cairo({
 // This component now correctly uses the pathname *within* a context that has access to it.
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const isAuthPage = pathname.startsWith('/auth');
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !isAuthPage;
 
@@ -46,22 +42,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         {isPublicPage && <PublicFooter />}
       </div>
-       {!isAuthPage && (
-          <>
-            <FloatingWhatsAppButton />
-            <div className="fixed bottom-6 left-6 z-50">
-                 <Button
-                    size="icon"
-                    className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 text-white shadow-lg"
-                    onClick={() => setIsAssistantOpen(true)}
-                    aria-label="Open AI Assistant"
-                >
-                    <Bot className="h-7 w-7" />
-                </Button>
-            </div>
-            <AiAssistant open={isAssistantOpen} onOpenChange={setIsAssistantOpen} />
-          </>
-       )}
+       {!isAuthPage && <FloatingActionButtons />}
     </>
   );
 }
