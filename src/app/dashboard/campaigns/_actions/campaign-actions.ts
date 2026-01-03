@@ -1,6 +1,7 @@
+
 'use server';
 
-import { initializeFirebase } from '@/firebase/init';
+import { initializeFirebaseServer } from "@/firebase/init-server";
 import type { Campaign, User, Notification } from '@/lib/types';
 import { doc, runTransaction, arrayUnion, increment } from 'firebase/firestore';
 
@@ -12,9 +13,9 @@ import { doc, runTransaction, arrayUnion, increment } from 'firebase/firestore';
  * @param campaignId The ID of the campaign to activate.
  */
 export async function activateCampaignAndDeductBalance(userId: string, campaignId: string) {
-    const { firestore } = initializeFirebase();
+    const { firestore } = initializeFirebaseServer();
     if (!firestore) {
-        console.error("Client Firestore not available in Server Action.");
+        console.error("Firestore not available in Server Action.");
         return { error: "Could not connect to the database." };
     }
 

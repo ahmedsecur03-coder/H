@@ -35,7 +35,8 @@ import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 
 
-// Client-side simulation function
+// This function is no longer needed on the client, the server action handles activation.
+// We keep a simplified version for instant visual feedback on completion.
 function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
     if (campaign.status !== 'نشط' || !campaign.startDate) {
         return {};
@@ -50,45 +51,32 @@ function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
     const elapsedMillis = Math.max(0, now - startTime);
     const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
     
-    if (progress >= 1) {
-        const finalSpend = budget; 
-        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20));
-        const finalClicks = (campaign.clicks || 0) + Math.floor(Math.random() * (budget * 2));
-        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
-        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
-
+    if (progress >= 1 && campaign.status === 'نشط') {
         return { 
             status: 'مكتمل', 
-            spend: finalSpend,
-            impressions: finalImpressions,
-            clicks: finalClicks,
-            ctr: finalCtr,
-            cpc: finalCpc,
-            results: Math.floor(finalClicks * 0.2),
+            spend: budget, // Assume full budget is spent on completion
         };
     }
+    
+    // Only simulate if not yet completed to avoid re-calculating
+    if (campaign.status === 'نشط') {
+        const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
+        const spendIncrement = simulatedSpend - (campaign.spend || 0);
 
-    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
-
-    if (simulatedSpend <= (campaign.spend || 0)) {
-        return {}; // No new spend to report
+        if (spendIncrement > 0) {
+            const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
+            const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
+            return {
+                spend: simulatedSpend,
+                impressions,
+                clicks,
+                ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+                cpc: clicks > 0 ? simulatedSpend / clicks : 0,
+                results: (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2),
+            };
+        }
     }
-
-    const spendIncrement = simulatedSpend - (campaign.spend || 0);
-    const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
-    const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
-    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-    const cpc = clicks > 0 ? simulatedSpend / clicks : 0;
-    const results = (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2);
-
-    return {
-        spend: simulatedSpend,
-        impressions,
-        clicks,
-        ctr,
-        cpc,
-        results,
-    };
+    return {};
 };
 
 function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
@@ -282,14 +270,19 @@ export default function CampaignsPage() {
 
 
     useEffect(() => {
+        // This client-side simulation is now only for visual feedback.
+        // The server-action handles the reliable state changes.
         const interval = setInterval(() => {
             setLiveCampaigns(currentCampaigns => {
                 return currentCampaigns.map(c => {
-                    const performanceUpdate = calculateCampaignPerformance(c);
-                    return { ...c, ...performanceUpdate };
+                    if (c.status === 'نشط') {
+                         const performanceUpdate = calculateCampaignPerformance(c);
+                         return { ...c, ...performanceUpdate };
+                    }
+                    return c;
                 });
             });
-        }, 3600000); // Update every hour
+        }, 5000); // Update visuals every 5 seconds
 
         return () => clearInterval(interval);
     }, []);
