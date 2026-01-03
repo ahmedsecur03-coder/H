@@ -1,4 +1,3 @@
-
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -27,23 +26,21 @@ const fontHeadline = Poppins({
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
 
-  const isDashboardPage = pathname.startsWith('/dashboard');
-  const isAdminPage = pathname.startsWith('/admin');
-  const isAuthPage = pathname.startsWith('/auth');
-
-  // If it's a dashboard, admin, or auth page, the layout is handled by its own layout file.
-  if (isDashboardPage || isAdminPage || isAuthPage) {
-    return <>{children}</>;
-  }
-
-  // Otherwise, wrap the public pages with the public header and footer.
   return (
-    <div className="flex flex-col min-h-screen">
-      <PublicHeader />
-      <main className="flex-1 container py-8">{children}</main>
-      <PublicFooter />
-    </div>
+    <>
+      {isPublicPage ? (
+        <div className="flex flex-col min-h-screen">
+          <PublicHeader />
+          <main className="flex-1 container py-8">{children}</main>
+          <PublicFooter />
+        </div>
+      ) : (
+        // For dashboard, admin, and auth pages, the layout is self-contained.
+        children
+      )}
+    </>
   );
 }
 
@@ -77,7 +74,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-            <AppContent>{children}</AppContent>
+              <AppContent>{children}</AppContent>
            </FirebaseClientProvider>
            <Toaster />
         </ThemeProvider>
