@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -94,15 +93,17 @@ function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Ca
 
         try {
             await runTransaction(firestore, async (transaction) => {
+                // 1. Read all documents first
                 const userDoc = await transaction.get(userDocRef);
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
-
                 const campaignDoc = await transaction.get(campaignDocRef);
+
+                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
                 if (!campaignDoc.exists()) throw new Error("الحملة غير موجودة.");
                 
                 const currentCampaignData = campaignDoc.data() as Campaign;
                 if (currentCampaignData.status !== 'نشط') throw new Error("لا يمكن إيقاف إلا الحملات النشطة.");
 
+                // 2. Perform all writes
                 const finalPerformance = calculateCampaignPerformance(currentCampaignData);
                 const finalSpend = (finalPerformance as any).spend ?? currentCampaignData.spend;
                 const remainingBudget = currentCampaignData.budget - (finalSpend || 0);
@@ -228,7 +229,7 @@ function CampaignCard({ campaign, onUpdate }: { campaign: Campaign, onUpdate: ()
                 </div>
             </CardHeader>
             <CardContent className="space-y-3 text-sm flex-grow">
-                <div className="flex justify-between">
+                 <div className="flex justify-between">
                     <span className="text-muted-foreground">الحالة</span>
                     <Badge variant={statusVariant[campaign.status]}>{campaign.status}</Badge>
                 </div>

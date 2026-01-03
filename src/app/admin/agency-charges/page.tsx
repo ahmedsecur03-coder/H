@@ -155,21 +155,25 @@ export default function AdminAgencyChargesPage() {
     const handleAction = async (req: AgencyChargeRequest, newStatus: 'مقبول' | 'مرفوض') => {
         if (!firestore) return;
         setLoadingActionId(req.id);
-        const { userId, id: requestId, accountId, amount, accountName, platform } = req;
+        const { userId, id: requestId, accountId, amount, accountName } = req;
         const userRef = doc(firestore, 'users', userId);
         const requestDocRef = doc(firestore, `users/${userId}/agencyChargeRequests`, requestId);
         const accountDocRef = doc(firestore, `users/${userId}/agencyAccounts`, accountId);
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                transaction.update(requestDocRef, { status: newStatus });
+                // 1. Read all documents first
                 const userDoc = await transaction.get(userRef);
+                const accountDoc = newStatus === 'مقبول' ? await transaction.get(accountDocRef) : null;
+
                 if (!userDoc.exists()) throw new Error('المستخدم صاحب الطلب غير موجود.');
+                if (newStatus === 'مقبول' && (!accountDoc || !accountDoc.exists())) throw new Error('الحساب الإعلاني المراد شحنه غير موجود.');
+
+                // 2. Perform all writes
+                transaction.update(requestDocRef, { status: newStatus });
 
                 if (newStatus === 'مقبول') {
                     const userData = userDoc.data() as User;
-                    const accountDoc = await transaction.get(accountDocRef);
-                    if (!accountDoc.exists()) throw new Error('الحساب الإعلاني المراد شحنه غير موجود.');
                     if ((userData.adBalance ?? 0) < amount) throw new Error('رصيد إعلانات المستخدم غير كافٍ.');
 
                     transaction.update(userRef, { adBalance: increment(-amount) });
@@ -248,5 +252,3 @@ export default function AdminAgencyChargesPage() {
     </div>
   );
 }
-
-    

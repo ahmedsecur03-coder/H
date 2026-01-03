@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, type ReactNode, useEffect, useState } from 'react';
@@ -26,10 +25,14 @@ function UserInitializer() {
       const checkAndCreateUserDoc = async () => {
         try {
           await runTransaction(firestore, async (transaction) => {
+            // 1. READ all necessary documents
             const userDoc = await transaction.get(userDocRef);
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const dailyStatRef = doc(firestore, 'dailyStats', today);
             
+            // 2. PERFORM LOGIC
             if (!userDoc.exists()) {
-              // User document doesn't exist, create it and update stats
+              // --- Logic for NEW user ---
               const newUser: Omit<UserType, 'id'> = {
                 name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
                 email: user.email || 'N/A',
@@ -61,32 +64,16 @@ function UserInitializer() {
                   }
                 ]
               };
+              // 3. WRITE operations for new user
               transaction.set(userDocRef, newUser);
-
-              // Also increment the new user count for today
-              const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-              const dailyStatRef = doc(firestore, 'dailyStats', today);
-              transaction.set(dailyStatRef, {
-                  newUsers: increment(1)
-              }, { merge: true });
-
-              // Log this event to system logs
-               const logData: Omit<SystemLog, 'id'> = {
-                    event: 'user_created',
-                    level: 'info',
-                    message: `New user signed up: ${user.email}`,
-                    timestamp: new Date().toISOString(),
-                    metadata: { userId: user.uid, email: user.email },
-                };
-                // We add this outside the transaction, as it's a non-critical log
-                addDoc(collection(firestore, 'systemLogs'), logData);
+              transaction.set(dailyStatRef, { newUsers: increment(1) }, { merge: true });
 
             } else {
-              // Document exists, check for missing fields and update if necessary
+              // --- Logic for EXISTING user ---
               const userData = userDoc.data() as UserType;
               const updates: Partial<UserType> = {};
               
-               if (Object.keys(updates).length > 0) {
+              if (Object.keys(updates).length > 0) {
                 transaction.update(userDocRef, updates);
               }
                // --- Proactive Notifications Logic ---
@@ -123,6 +110,7 @@ function UserInitializer() {
                         href: '/dashboard/add-funds'
                       });
                 }
+                // 3. WRITE operations for existing user
                  if (newNotifications.length > 0) {
                      transaction.update(userDocRef, {
                          notifications: arrayUnion(...newNotifications)
@@ -130,6 +118,20 @@ function UserInitializer() {
                  }
             }
           });
+          
+          // Log user creation outside the transaction as it's not critical for the transaction's success
+          const userDoc = await getDoc(userDocRef);
+          if(!userDoc.exists()) {
+               const logData: Omit<SystemLog, 'id'> = {
+                    event: 'user_created',
+                    level: 'info',
+                    message: `New user signed up: ${user.email}`,
+                    timestamp: new Date().toISOString(),
+                    metadata: { userId: user.uid, email: user.email },
+                };
+                await addDoc(collection(firestore, 'systemLogs'), logData);
+          }
+
         } catch (error) {
              console.error("UserInitializer transaction failed: ", error);
         }

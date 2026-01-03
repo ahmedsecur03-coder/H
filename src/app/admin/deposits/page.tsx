@@ -11,6 +11,7 @@ import {
   runTransaction,
   increment,
   arrayUnion,
+  collection
 } from 'firebase/firestore';
 import type { Deposit, User, Notification } from '@/lib/types';
 import {
@@ -183,13 +184,29 @@ export default function AdminDepositsPage() {
 
         try {
             await runTransaction(firestore, async (transaction) => {
+                // 1. Read all necessary documents first.
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) throw new Error('المستخدم صاحب الإيداع غير موجود.');
-                
+
+                let referrerDocs: { ref: any, data: User }[] = [];
+                if (newStatus === 'مقبول') {
+                    let currentReferrerId = userDoc.data()?.referrerId;
+                    for (let i = 0; i < COMMISSION_RATES.length && currentReferrerId; i++) {
+                        const referrerRef = doc(firestore, 'users', currentReferrerId);
+                        const referrerDoc = await transaction.get(referrerRef);
+                        if (referrerDoc.exists()) {
+                            referrerDocs.push({ ref: referrerRef, data: referrerDoc.data() as User });
+                            currentReferrerId = referrerDoc.data()?.referrerId;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                // 2. Now, perform all write operations.
                 transaction.update(depositDocRef, { status: newStatus });
 
                 if (newStatus === 'مقبول') {
-                    const userData = userDoc.data() as User;
                     const notification: Notification = {
                         id: `dep-${depositId}`, message: `تم قبول طلب الإيداع الخاص بك بقيمة ${amount}$ وتمت إضافة الرصيد إلى حسابك.`,
                         type: 'success', read: false, createdAt: new Date().toISOString(), href: '/dashboard/add-funds'
@@ -201,21 +218,18 @@ export default function AdminDepositsPage() {
                     });
 
                     // Handle Affiliate Commissions
-                    let currentReferrerId = userData.referrerId;
-                    for (let level = 0; level < COMMISSION_RATES.length && currentReferrerId; level++) {
+                    for (let level = 0; level < referrerDocs.length; level++) {
                         const commissionRate = COMMISSION_RATES[level];
                         const commissionAmount = amount * commissionRate;
-                        const referrerRef = doc(firestore, 'users', currentReferrerId);
-                        transaction.update(referrerRef, { affiliateEarnings: increment(commissionAmount) });
+                        const referrer = referrerDocs[level];
 
-                        const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                        transaction.update(referrer.ref, { affiliateEarnings: increment(commissionAmount) });
+
+                        const newTransactionRef = doc(collection(firestore, `users/${referrer.data.id}/affiliateTransactions`));
                         transaction.set(newTransactionRef, {
-                            userId: currentReferrerId, referralId: userId, orderId: depositId,
+                            userId: referrer.data.id, referralId: userId, orderId: depositId,
                             amount: commissionAmount, transactionDate: new Date().toISOString(), level: level + 1,
                         });
-                        
-                        const referrerDoc = await transaction.get(referrerRef);
-                        currentReferrerId = referrerDoc.exists() ? (referrerDoc.data() as User).referrerId : null;
                     }
                 } else { // Rejected
                     const notification: Notification = {
@@ -301,5 +315,3 @@ export default function AdminDepositsPage() {
         </div>
     );
 }
-
-    

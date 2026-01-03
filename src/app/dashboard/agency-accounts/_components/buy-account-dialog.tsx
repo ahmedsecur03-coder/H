@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -24,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { addDoc, collection, doc, runTransaction } from 'firebase/firestore';
+import { addDoc, collection, doc, runTransaction, increment } from 'firebase/firestore';
 
 type Platform = 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
 
@@ -81,11 +80,9 @@ export function BuyAccountDialog({
                  throw new Error("رصيد الإعلانات غير كافٍ.");
             }
 
-            // 1. Deduct cost from user's adBalance
-            const newAdBalance = currentAdBalance - ACCOUNT_COST;
-            transaction.update(userDocRef, { adBalance: newAdBalance });
+            // Perform writes after read
+            transaction.update(userDocRef, { adBalance: increment(-ACCOUNT_COST) });
 
-            // 2. Create the new agency account document
             const newAccountData: Omit<AgencyAccount, 'id'> = {
                 userId: user.uid,
                 platform: platform,
@@ -94,7 +91,7 @@ export function BuyAccountDialog({
                 createdAt: new Date().toISOString(),
                 balance: 0,
             };
-            const newAccountDocRef = doc(agencyAccountsColRef); // Auto-generate ID
+            const newAccountDocRef = doc(agencyAccountsColRef);
             transaction.set(newAccountDocRef, newAccountData);
         });
 

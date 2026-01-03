@@ -26,6 +26,7 @@ export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; on
     const [loading, setLoading] = useState(false);
 
     const handleAction = async (action: 'activate' | 'pause' | 'delete') => {
+        if (!firestore) return;
         setLoading(true);
 
         const { userId, id: campaignId } = campaign;
@@ -48,13 +49,16 @@ export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; on
         const userDocRef = doc(firestore, 'users', userId);
         try {
             await runTransaction(firestore, async (transaction) => {
+                // 1. Read all documents first
                 const userDoc = await transaction.get(userDocRef);
                 const campaignDoc = await transaction.get(campaignDocRef);
+
                 if (!userDoc.exists() || !campaignDoc.exists()) throw new Error("المستخدم أو الحملة غير موجود.");
 
                 const userData = userDoc.data() as User;
                 const campaignData = campaignDoc.data() as Campaign;
-
+                
+                // 2. Perform all writes
                 if (action === 'activate') {
                     if (campaignData.status !== 'متوقف' && campaignData.status !== 'بانتظار المراجعة') throw new Error("يمكن فقط تفعيل الحملات المتوقفة أو التي بانتظار المراجعة.");
                     if (userData.adBalance < campaignData.budget) throw new Error("رصيد إعلانات المستخدم غير كافٍ.");
@@ -123,5 +127,3 @@ export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; on
         </div>
     );
 }
-
-    
