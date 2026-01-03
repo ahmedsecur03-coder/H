@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -34,83 +35,6 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { FloatingActionButtons } from '@/components/floating-action-buttons';
-
-// This component now handles creating the user document if it doesn't exist
-// AND increments the daily new user count.
-function UserInitializer() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore(); // Get firestore instance via hook
-
-  useEffect(() => {
-    if (isUserLoading || !user || !firestore) {
-      return;
-    }
-    
-      const userDocRef = doc(firestore, 'users', user.uid);
-      
-      const checkAndCreateUserDoc = async () => {
-        try {
-          const userDoc = await getDoc(userDocRef);
-
-          if (!userDoc.exists()) {
-             await runTransaction(firestore, async (transaction) => {
-                const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-                const dailyStatRef = doc(firestore, 'dailyStats', today);
-                
-                const newUser: Omit<User, 'id'> = {
-                    name: user.displayName || `مستخدم #${user.uid.substring(0,6)}`,
-                    email: user.email || 'N/A',
-                    avatarUrl: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
-                    rank: 'مستكشف نجمي',
-                    role: 'user',
-                    balance: 0,
-                    adBalance: 0,
-                    totalSpent: 0,
-                    apiKey: `hy_${crypto.randomUUID()}`,
-                    referralCode: user.uid.substring(0, 8).toUpperCase(),
-                    referrerId: null,
-                    createdAt: new Date().toISOString(),
-                    affiliateEarnings: 0,
-                    referralsCount: 0,
-                    affiliateLevel: 'برونزي',
-                    notificationPreferences: { newsletter: false, orderUpdates: true },
-                    notifications: [{
-                        id: `welcome-${Date.now()}`,
-                        message: 'مرحباً بك في حاجاتي! نحن سعداء بانضمامك إلى رحلتنا الكونية. انقر هنا للذهاب إلى لوحة التحكم.',
-                        type: 'success',
-                        read: false,
-                        createdAt: new Date().toISOString(),
-                        href: '/dashboard'
-                    }]
-                };
-
-                transaction.set(userDocRef, newUser);
-                transaction.set(dailyStatRef, { newUsers: increment(1) }, { merge: true });
-
-                 const logData: Omit<SystemLog, 'id'> = {
-                    event: 'user_created',
-                    level: 'info',
-                    message: `New user signed up: ${user.email}`,
-                    timestamp: new Date().toISOString(),
-                    metadata: { userId: user.uid, email: user.email },
-                };
-                // This is not transactional but is acceptable for a non-critical log.
-                await addDoc(collection(firestore, 'systemLogs'), logData);
-
-            });
-          }
-        } catch (error) {
-             console.error("UserInitializer transaction failed: ", error);
-        }
-      };
-
-      checkAndCreateUserDoc();
-    
-  }, [user, isUserLoading, firestore]);
-
-  return null; // This component does not render anything.
-}
 
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
@@ -170,12 +94,10 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child, childIdx) => (
                <SidebarMenuItem key={child.href + childIdx}>
-                <Link href={child.href || '#'} passHref>
-                  <SidebarMenuSubButton isActive={pathname === child.href}>
-                      {child.icon && <child.icon className="w-4 h-4" />}
-                      <span>{child.label}</span>
-                  </SidebarMenuSubButton>
-                </Link>
+                <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
+                    {child.icon && <child.icon className="w-4 h-4" />}
+                    <span>{child.label}</span>
+                </SidebarMenuSubButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenuSubContent>
@@ -230,7 +152,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
         <SidebarProvider>
-            <UserInitializer />
             <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
                 <Sidebar side="right" collapsible="icon" className="hidden md:flex">
                     <SidebarHeader>
@@ -282,8 +203,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     
                     <BottomNavBar />
                 </div>
-                 <FloatingActionButtons />
             </div>
         </SidebarProvider>
     );
 }
+
