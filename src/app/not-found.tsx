@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { SatelliteDish } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-
 export default function NotFoundPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center overflow-hidden">

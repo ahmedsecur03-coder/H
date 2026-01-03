@@ -26,7 +26,6 @@ const fontHeadline = Cairo({
   variable: '--font-headline',
 });
 
-// This component now correctly uses the pathname *within* a context that has access to it.
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/auth');
