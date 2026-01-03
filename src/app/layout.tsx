@@ -12,8 +12,6 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
-import { FloatingActionButtons } from '@/components/floating-action-buttons';
-import { useUser } from '@/firebase';
 
 const fontSans = Cairo({
   subsets: ['arabic'],
@@ -29,7 +27,6 @@ const fontHeadline = Cairo({
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user } = useUser();
   const isAuthPage = pathname.startsWith('/auth');
   const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
   const isPublicPage = !isDashboardPage && !isAuthPage;
@@ -43,7 +40,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         {isPublicPage && <PublicFooter />}
       </div>
-       {(isDashboardPage && user) && <FloatingActionButtons />}
     </>
   );
 }

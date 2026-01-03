@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { FloatingActionButtons } from '@/components/floating-action-buttons';
 
 // This component now handles creating the user document if it doesn't exist
 // AND increments the daily new user count.
@@ -281,6 +282,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     
                     <BottomNavBar />
                 </div>
+                 <FloatingActionButtons />
             </div>
         </SidebarProvider>
     );
