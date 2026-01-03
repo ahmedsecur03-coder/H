@@ -15,14 +15,12 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
   useEffect(() => {
     // This check ensures firebase is only initialized on the client-side.
     if (typeof window !== 'undefined') {
-        setFirebaseServices(initializeFirebase());
+        if (!firebaseServices) {
+            setFirebaseServices(initializeFirebase());
+        }
     }
-  }, []);
+  }, [firebaseServices]);
 
-  // If services are not yet initialized (e.g., on the server or during initial client render),
-  // we can render children but without the Firebase context.
-  // The UserInitializer and other Firebase-dependent parts are handled within the layout,
-  // so they will only activate when the context is available.
   if (!firebaseServices) {
     return <>{children}</>;
   }
