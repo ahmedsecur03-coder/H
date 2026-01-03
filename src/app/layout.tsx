@@ -25,17 +25,19 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-function AppLayout({ children }: { children: React.ReactNode }) {
+function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isDashboardPage = pathname.startsWith('/dashboard');
   const isAdminPage = pathname.startsWith('/admin');
   const isAuthPage = pathname.startsWith('/auth');
 
+  // If it's a dashboard, admin, or auth page, the layout is handled by its own layout file.
   if (isDashboardPage || isAdminPage || isAuthPage) {
     return <>{children}</>;
   }
 
+  // Otherwise, wrap the public pages with the public header and footer.
   return (
     <div className="flex flex-col min-h-screen">
       <PublicHeader />
@@ -75,9 +77,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-             <AppLayout>{children}</AppLayout>
-             <Toaster />
+            <AppContent>{children}</AppContent>
            </FirebaseClientProvider>
+           <Toaster />
         </ThemeProvider>
       </body>
     </html>
