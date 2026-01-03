@@ -12,8 +12,18 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { titleToSlug } from '@/lib/firebase/server-data';
 import Head from 'next/head';
+
+// This slug function must be available on the client now.
+function titleToSlug(title: string): string {
+    if (!title) return '';
+    return title.toLowerCase()
+        .replace(/\s+/g, '-')      // Replace spaces with -
+        .replace(/[^\w-]+/g, '')   // Remove all non-word chars except -
+        .replace(/--+/g, '-')      // Replace multiple - with single -
+        .replace(/^-+/, '')        // Trim - from start of text
+        .replace(/-+$/, '');       // Trim - from end of text
+}
 
 
 function BlogPostSkeleton() {
@@ -175,4 +185,3 @@ export default function BlogPostPage() {
         </>
     );
 }
-

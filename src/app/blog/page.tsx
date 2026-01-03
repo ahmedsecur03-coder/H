@@ -9,7 +9,17 @@ import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { titleToSlug } from '@/lib/firebase/server-data';
+
+// This slug function must be available on the client now.
+function titleToSlug(title: string): string {
+    if (!title) return '';
+    return title.toLowerCase()
+        .replace(/\s+/g, '-')      // Replace spaces with -
+        .replace(/[^\w-]+/g, '')   // Remove all non-word chars except -
+        .replace(/--+/g, '-')      // Replace multiple - with single -
+        .replace(/^-+/, '')        // Trim - from start of text
+        .replace(/-+$/, '');       // Trim - from end of text
+}
 
 
 function BlogPageSkeleton() {
@@ -101,3 +111,4 @@ export default function BlogPage() {
         </div>
     );
 }
+
