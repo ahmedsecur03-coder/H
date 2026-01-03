@@ -4,9 +4,6 @@ import React, { useMemo, type ReactNode, useEffect, useState } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase/init';
 import { User } from 'firebase/auth';
-import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
-import type { User as UserType, Notification, SystemLog } from '@/lib/types';
-import { getRankForSpend, RANKS } from '@/lib/service';
 
 interface FirebaseClientProviderProps {
   children: ReactNode;
