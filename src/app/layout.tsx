@@ -35,11 +35,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       {isPublicPage && <PublicHeader />}
-      <main className={cn("flex-1", isPublicPage && "container py-8")}>
-        {children}
-      </main>
-      {isPublicPage && <PublicFooter />}
-      {!isAuthPage && <FloatingActionButtons />}
+      <div className="flex-1 flex flex-col">
+        <main className={cn("flex-1", isPublicPage && "container py-8")}>
+          {children}
+        </main>
+        {isPublicPage && <PublicFooter />}
+      </div>
+       {!isAuthPage && <FloatingActionButtons />}
     </>
   );
 }
