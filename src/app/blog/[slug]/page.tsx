@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Head from 'next/head';
+
 
 function BlogPostPageSkeleton() {
     return (
@@ -33,6 +35,7 @@ function BlogPostPageSkeleton() {
 }
 
 function titleToSlug(title: string) {
+    if (!title) return '';
     return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 }
 
@@ -54,6 +57,7 @@ export default function BlogPostPage() {
         const fetchPost = async () => {
             setIsLoading(true);
             const postsRef = collection(firestore, 'blogPosts');
+            // Fetch all posts and filter client-side by slug
             const q = query(postsRef);
             const querySnapshot = await getDocs(q);
             
@@ -67,21 +71,6 @@ export default function BlogPostPage() {
 
             setPost(foundPost);
             
-            if (foundPost) {
-                // Dynamically update document title
-                document.title = `${foundPost.title} | مدونة حاجاتي`;
-                
-                // Find or create meta description tag
-                let metaDescription = document.querySelector('meta[name="description"]');
-                if (!metaDescription) {
-                    metaDescription = document.createElement('meta');
-                    metaDescription.setAttribute('name', 'description');
-                    document.head.appendChild(metaDescription);
-                }
-                const descriptionContent = foundPost.content.substring(0, 160).replace(/#/g, '').trim() + '...';
-                metaDescription.setAttribute('content', descriptionContent);
-            }
-
             setIsLoading(false);
         };
 
@@ -97,10 +86,9 @@ export default function BlogPostPage() {
             const postsRef = collection(firestore, 'blogPosts');
             
             try {
+                // Query for the next post
                 const nextQuery = query(postsRef, where('publishDate', '>', post.publishDate), orderBy('publishDate', 'asc'), limit(1));
-                const prevQuery = query(postsRef, where('publishDate', '<', post.publishDate), orderBy('publishDate', 'desc'), limit(1));
-                
-                const [nextSnap, prevSnap] = await Promise.all([getDocs(nextQuery), getDocs(prevQuery)]);
+                const nextSnap = await getDocs(nextQuery);
 
                 if (!nextSnap.empty) {
                     const nextPostData = nextSnap.docs[0]?.data() as BlogPost;
@@ -108,6 +96,10 @@ export default function BlogPostPage() {
                 } else {
                     setNextPost(null);
                 }
+                
+                // Query for the previous post
+                const prevQuery = query(postsRef, where('publishDate', '<', post.publishDate), orderBy('publishDate', 'desc'), limit(1));
+                const prevSnap = await getDocs(prevQuery);
                 
                 if (!prevSnap.empty) {
                     const prevPostData = prevSnap.docs[0]?.data() as BlogPost;
@@ -136,57 +128,92 @@ export default function BlogPostPage() {
         notFound();
     }
     
-    return (
-        <div className="max-w-4xl mx-auto py-8">
-            <Button variant="ghost" asChild className="mb-4">
-                <Link href="/blog">
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                    العودة إلى المدونة
-                </Link>
-            </Button>
-            <article>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-3xl md:text-4xl font-headline leading-tight">{post.title}</CardTitle>
-                        <CardDescription>
-                             نُشر في: {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="prose dark:prose-invert max-w-none">
-                        <ReactMarkdown
-                            components={{
-                                h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
-                                h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
-                            }}
-                        >
-                            {post.content}
-                        </ReactMarkdown>
-                    </CardContent>
-                </Card>
-            </article>
+    // Generate JSON-LD structured data for the blog post
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        'headline': post.title,
+        'description': post.content.substring(0, 200).replace(/#/g, '').trim() + '...',
+        'datePublished': post.publishDate,
+        'author': {
+            '@type': 'Organization',
+            'name': 'فريق حاجاتي'
+        },
+        'publisher': {
+            '@type': 'Organization',
+            'name': 'منصة حاجاتي',
+            'logo': {
+                '@type': 'ImageObject',
+                'url': 'https://hajaty.com/logo.png' // Replace with your actual logo URL
+            }
+        },
+        'mainEntityOfPage': {
+            '@type': 'WebPage',
+            '@id': `https://hajaty.com/blog/${slug}`
+        }
+    };
 
-            <nav className="flex justify-between items-center mt-8 gap-4">
-                <div>
-                    {prevPost && (
-                         <Button asChild variant="outline">
-                            <Link href={`/blog/${prevPost.slug}`} title={prevPost.title}>
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                                المقالة السابقة
-                            </Link>
-                        </Button>
-                    )}
-                </div>
-                 <div>
-                    {nextPost && (
-                         <Button asChild>
-                            <Link href={`/blog/${nextPost.slug}`} title={nextPost.title}>
-                                المقالة التالية
-                                <ChevronLeft className="mr-2 h-4 w-4" />
-                            </Link>
-                        </Button>
-                    )}
-                </div>
-            </nav>
-        </div>
+
+    return (
+        <>
+            <Head>
+                 <title>{`${post.title} | مدونة حاجاتي`}</title>
+                 <meta name="description" content={post.content.substring(0, 160).replace(/#/g, '').trim() + '...'} />
+                 <script type="application/ld+json">
+                    {JSON.stringify(jsonLd)}
+                </script>
+            </Head>
+            <div className="max-w-4xl mx-auto py-8">
+                <Button variant="ghost" asChild className="mb-4">
+                    <Link href="/blog">
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                        العودة إلى المدونة
+                    </Link>
+                </Button>
+                <article>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-3xl md:text-4xl font-headline leading-tight">{post.title}</CardTitle>
+                            <CardDescription>
+                                نُشر في: {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="prose dark:prose-invert max-w-none">
+                            <ReactMarkdown
+                                components={{
+                                    h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
+                                    h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
+                                }}
+                            >
+                                {post.content}
+                            </ReactMarkdown>
+                        </CardContent>
+                    </Card>
+                </article>
+
+                <nav className="flex justify-between items-center mt-8 gap-4">
+                    <div>
+                        {prevPost && (
+                            <Button asChild variant="outline">
+                                <Link href={`/blog/${prevPost.slug}`} title={prevPost.title}>
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                    المقالة السابقة
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                    <div>
+                        {nextPost && (
+                            <Button asChild>
+                                <Link href={`/blog/${nextPost.slug}`} title={nextPost.title}>
+                                    المقالة التالية
+                                    <ChevronLeft className="mr-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                </nav>
+            </div>
+        </>
     );
 }

@@ -12,6 +12,7 @@ import PublicFooter from '@/components/public-footer';
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
+import Head from 'next/head';
 
 const fontSans = PT_Sans({
   subsets: ['latin'],
@@ -52,7 +53,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-       <head>
+       <Head>
         <title>منصة حاجاتي | خدمات SMM وزيادة متابعين وإدارة حملات إعلانية</title>
         <meta name="description" content="منصة حاجاتي هي سيرفرك الأول لخدمات التسويق الرقمي. نقدم زيادة متابعين (انستقرام، تيك توك، فيسبوك)، إدارة حملات إعلانية احترافية، وشراء حسابات وكالة لنمو أعمالك." />
         <link rel="canonical" href={siteUrl} />
@@ -69,7 +70,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#3498DB" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
-      </head>
+      </Head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
         <Suspense>
           <GoogleAnalytics gaId={measurementId} />
