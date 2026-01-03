@@ -12,8 +12,10 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
-import { FloatingActionButtons } from '@/components/floating-action-buttons';
+import { FloatingWhatsAppButton } from '@/components/floating-action-buttons';
 import { AiAssistant } from '@/components/ai-assistant';
+import { Button } from '@/components/ui/button';
+import { Bot } from 'lucide-react';
 
 
 const fontSans = Cairo({
@@ -46,7 +48,17 @@ function AppContent({ children }: { children: React.ReactNode }) {
       </div>
        {!isAuthPage && (
           <>
-            <FloatingActionButtons onAssistantToggle={() => setIsAssistantOpen(prev => !prev)} />
+            <FloatingWhatsAppButton />
+            <div className="fixed bottom-6 left-6 z-50">
+                 <Button
+                    size="icon"
+                    className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 text-white shadow-lg"
+                    onClick={() => setIsAssistantOpen(true)}
+                    aria-label="Open AI Assistant"
+                >
+                    <Bot className="h-7 w-7" />
+                </Button>
+            </div>
             <AiAssistant open={isAssistantOpen} onOpenChange={setIsAssistantOpen} />
           </>
        )}
