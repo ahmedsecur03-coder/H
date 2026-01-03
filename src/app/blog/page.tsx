@@ -1,46 +1,14 @@
-'use client';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { getBlogPosts, titleToSlug } from '@/lib/firebase/server-data';
 
 
-function BlogPageSkeleton() {
-    return (
-        <div className="space-y-6 pb-8">
-            <div>
-                <Skeleton className="h-8 w-1/3" />
-                <Skeleton className="h-5 w-2/3 mt-2" />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {Array.from({length: 6}).map((_, i) => (
-                    <Card key={i}><CardContent className="p-4"><Skeleton className="h-48" /></CardContent></Card>
-                 ))}
-            </div>
-        </div>
-    )
-}
-
-function titleToSlug(title: string) {
-    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-}
-
-export default function BlogPage() {
-    const firestore = useFirestore();
-    const postsQuery = useMemoFirebase(
-        () => (firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null),
-        [firestore]
-    );
-
-    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
-
-    if (isLoading) {
-        return <BlogPageSkeleton />;
-    }
+export default async function BlogPage() {
+    const posts = await getBlogPosts();
 
     return (
         <div className="space-y-6 pb-8">

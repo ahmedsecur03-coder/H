@@ -1,134 +1,87 @@
-'use client';
-import { doc, getDoc, collection, getDocs, orderBy, limit, where, query } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { notFound, useParams } from 'next/navigation';
+
+import { notFound } from 'next/navigation';
 import type { BlogPost } from '@/lib/types';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowRight, ChevronLeft } from 'lucide-react';
 import Head from 'next/head';
+import { getBlogPostBySlug, getAdjacentPosts, getBlogPosts, titleToSlug } from '@/lib/firebase/server-data';
+import type { Metadata, ResolvingMetadata } from 'next'
 
-
-function BlogPostPageSkeleton() {
-    return (
-        <div className="max-w-4xl mx-auto py-8">
-            <Skeleton className="h-8 w-36 mb-4" />
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-10 w-3/4" />
-                    <Skeleton className="h-4 w-1/3 mt-2" />
-                </CardHeader>
-                <CardContent className="space-y-4 mt-4">
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-5/6" />
-                     <Skeleton className="h-5 w-full mt-6" />
-                    <Skeleton className="h-5 w-2/3" />
-                </CardContent>
-            </Card>
-        </div>
-    );
+type Props = {
+  params: { slug: string }
 }
 
-function titleToSlug(title: string) {
-    if (!title) return '';
-    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-}
-
-
-export default function BlogPostPage() {
-    const firestore = useFirestore();
-    const params = useParams();
-    const slug = params.slug as string;
-    
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [prevPost, setPrevPost] = useState<{ slug: string, title: string } | null>(null);
-    const [nextPost, setNextPost] = useState<{ slug: string, title: string } | null>(null);
-    const [isAdjacentLoading, setIsAdjacentLoading] = useState(true);
-
-    useEffect(() => {
-        if (!firestore || !slug) return;
-
-        const fetchPost = async () => {
-            setIsLoading(true);
-            const postsRef = collection(firestore, 'blogPosts');
-            // Fetch all posts and filter client-side by slug
-            const q = query(postsRef);
-            const querySnapshot = await getDocs(q);
-            
-            let foundPost: BlogPost | null = null;
-            querySnapshot.forEach((doc) => {
-                const postData = { id: doc.id, ...doc.data() } as BlogPost;
-                if (titleToSlug(postData.title) === slug) {
-                    foundPost = postData;
-                }
-            });
-
-            setPost(foundPost);
-            
-            setIsLoading(false);
-        };
-
-        fetchPost();
-    }, [firestore, slug]);
-
-
-    useEffect(() => {
-        if (!firestore || !post) return;
-
-        const fetchAdjacentPosts = async () => {
-            setIsAdjacentLoading(true);
-            const postsRef = collection(firestore, 'blogPosts');
-            
-            try {
-                // Query for the next post
-                const nextQuery = query(postsRef, where('publishDate', '>', post.publishDate), orderBy('publishDate', 'asc'), limit(1));
-                const nextSnap = await getDocs(nextQuery);
-
-                if (!nextSnap.empty) {
-                    const nextPostData = nextSnap.docs[0]?.data() as BlogPost;
-                    setNextPost({ slug: titleToSlug(nextPostData.title), title: nextPostData.title });
-                } else {
-                    setNextPost(null);
-                }
-                
-                // Query for the previous post
-                const prevQuery = query(postsRef, where('publishDate', '<', post.publishDate), orderBy('publishDate', 'desc'), limit(1));
-                const prevSnap = await getDocs(prevQuery);
-                
-                if (!prevSnap.empty) {
-                    const prevPostData = prevSnap.docs[0]?.data() as BlogPost;
-                    setPrevPost({ slug: titleToSlug(prevPostData.title), title: prevPostData.title });
-                } else {
-                    setPrevPost(null);
-                }
-
-            } catch (error) {
-                console.error("Error fetching adjacent posts:", error);
-            } finally {
-                setIsAdjacentLoading(false);
-            }
-        };
-
-        fetchAdjacentPosts();
-
-    }, [firestore, post]);
-
-
-    if (isLoading) {
-        return <BlogPostPageSkeleton />;
+// Generate metadata for the page
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const post = await getBlogPostBySlug(params.slug);
+ 
+  if (!post) {
+    return {
+      title: 'المقالة غير موجودة',
     }
+  }
+ 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
+  const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
+  const ogImage = `${siteUrl}/og-image.png`;
+
+  return {
+    title: `${post.title} | مدونة حاجاتي`,
+    description: description,
+    alternates: {
+      canonical: `/blog/${params.slug}`,
+    },
+    openGraph: {
+        title: post.title,
+        description: description,
+        url: `${siteUrl}/blog/${params.slug}`,
+        siteName: 'مدونة حاجاتي',
+        images: [
+            {
+                url: ogImage,
+                width: 1200,
+                height: 630,
+            },
+        ],
+        locale: 'ar_EG',
+        type: 'article',
+        publishedTime: post.publishDate,
+        authors: ['فريق حاجاتي'],
+    },
+     twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: description,
+      images: [ogImage],
+    },
+  }
+}
+
+// Generate static pages for all blog posts at build time
+export async function generateStaticParams() {
+  const posts = await getBlogPosts();
+  return posts.map(post => ({
+    slug: titleToSlug(post.title),
+  }));
+}
+
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+    const slug = params.slug;
+    const post = await getBlogPostBySlug(slug);
 
     if (!post) {
         notFound();
     }
     
-    // Generate JSON-LD structured data for the blog post
+    const { prevPost, nextPost } = await getAdjacentPosts(post.publishDate);
+
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
@@ -156,27 +109,11 @@ export default function BlogPostPage() {
 
     return (
         <>
-            <Head>
-                 <title>{`${post.title} | مدونة حاجاتي`}</title>
-                 <meta name="description" content={post.content.substring(0, 160).replace(/#/g, '').trim() + '...'} />
-                 <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
-                 {/* Open Graph / Facebook */}
-                 <meta property="og:type" content="article" />
-                 <meta property="og:url" content={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
-                 <meta property="og:title" content={`${post.title} | مدونة حاجاتي`} />
-                 <meta property="og:description" content={post.content.substring(0, 200).replace(/#/g, '').trim() + '...'} />
-                 <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
-                 {/* Twitter */}
-                 <meta property="twitter:card" content="summary_large_image" />
-                 <meta property="twitter:url" content={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
-                 <meta property="twitter:title" content={`${post.title} | مدونة حاجاتي`} />
-                 <meta property="twitter:description" content={post.content.substring(0, 200).replace(/#/g, '').trim() + '...'} />
-                 <meta property="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
-
-                 <script type="application/ld+json">
-                    {JSON.stringify(jsonLd)}
-                </script>
-            </Head>
+            {/* Inject JSON-LD into the head of the document */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <div className="max-w-4xl mx-auto py-8">
                 <Button variant="ghost" asChild className="mb-4">
                     <Link href="/blog">
@@ -209,7 +146,7 @@ export default function BlogPostPage() {
                     <div>
                         {prevPost && (
                             <Button asChild variant="outline">
-                                <Link href={`/blog/${prevPost.slug}`} title={prevPost.title}>
+                                <Link href={`/blog/${titleToSlug(prevPost.title)}`} title={prevPost.title}>
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                     المقالة السابقة
                                 </Link>
@@ -219,7 +156,7 @@ export default function BlogPostPage() {
                     <div>
                         {nextPost && (
                             <Button asChild>
-                                <Link href={`/blog/${nextPost.slug}`} title={nextPost.title}>
+                                <Link href={`/blog/${titleToSlug(nextPost.title)}`} title={nextPost.title}>
                                     المقالة التالية
                                     <ChevronLeft className="mr-2 h-4 w-4" />
                                 </Link>
