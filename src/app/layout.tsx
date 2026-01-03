@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Cairo } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
-import React from 'react';
+import React, { useState } from 'react';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import PublicHeader from '@/components/public-header';
 import PublicFooter from '@/components/public-footer';
@@ -13,6 +13,8 @@ import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
 import { FloatingActionButtons } from '@/components/floating-action-buttons';
+import { AiAssistant } from '@/components/ai-assistant';
+
 
 const fontSans = Cairo({
   subsets: ['arabic'],
@@ -29,6 +31,7 @@ const fontHeadline = Cairo({
 // This component now correctly uses the pathname *within* a context that has access to it.
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const isAuthPage = pathname.startsWith('/auth');
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !isAuthPage;
 
@@ -41,7 +44,12 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         {isPublicPage && <PublicFooter />}
       </div>
-       {!isAuthPage && <FloatingActionButtons />}
+       {!isAuthPage && (
+          <>
+            <FloatingActionButtons onAssistantToggle={() => setIsAssistantOpen(prev => !prev)} />
+            <AiAssistant open={isAssistantOpen} onOpenChange={setIsAssistantOpen} />
+          </>
+       )}
     </>
   );
 }

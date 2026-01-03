@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { WhatsAppIcon } from './ui/icons';
-import { Bot, MessageCircle } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { AiAssistant } from './ai-assistant';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
-export function FloatingActionButtons() {
-    const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+export function FloatingActionButtons({ onAssistantToggle }: { onAssistantToggle: () => void }) {
     const firestore = useFirestore();
 
     const settingsDocRef = useMemoFirebase(() => (firestore ? doc(firestore, 'settings', 'global') : null), [firestore]);
@@ -20,12 +18,10 @@ export function FloatingActionButtons() {
 
     return (
         <div className="fixed bottom-6 left-6 z-50 flex flex-col gap-3 items-center">
-             <AiAssistant open={isAssistantOpen} onOpenChange={setIsAssistantOpen} />
-
             <Button
                 size="icon"
                 className="rounded-full w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
-                onClick={() => setIsAssistantOpen(true)}
+                onClick={onAssistantToggle}
                 aria-label="Open AI Assistant"
             >
                 <Bot className="h-7 w-7" />
