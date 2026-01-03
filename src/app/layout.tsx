@@ -24,24 +24,23 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
+// This component now correctly uses the hooks *within* the provider's scope.
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
 
-  return (
-    <>
-      {isPublicPage ? (
-        <div className="flex flex-col min-h-screen">
-          <PublicHeader />
-          <main className="flex-1 container py-8">{children}</main>
-          <PublicFooter />
-        </div>
-      ) : (
-        // For dashboard, admin, and auth pages, the layout is self-contained.
-        children
-      )}
-    </>
-  );
+  if (isPublicPage) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <PublicHeader />
+        <main className="flex-1 container py-8">{children}</main>
+        <PublicFooter />
+      </div>
+    );
+  }
+
+  // For non-public pages, the layout is handled by their respective layout files.
+  return <>{children}</>;
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
