@@ -1,5 +1,5 @@
 
-import { initializeFirebaseServer } from './init-server';
+import { initializeFirebaseServer } from '@/firebase/init-server';
 import type { BlogPost } from '@/lib/types';
 import { collection, query, orderBy, getDocs, limit, where } from 'firebase/firestore';
 
