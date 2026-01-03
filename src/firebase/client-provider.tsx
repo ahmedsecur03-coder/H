@@ -22,6 +22,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
   }, [firebaseServices]);
 
   if (!firebaseServices) {
+    // Render children without the provider on the server or before initialization.
     return <>{children}</>;
   }
 

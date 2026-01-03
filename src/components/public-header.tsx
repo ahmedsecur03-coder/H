@@ -58,10 +58,12 @@ function AuthButtons() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        // This hook ensures the component only renders on the client,
+        // and after the initial auth state is determined.
+        setMounted(!isUserLoading);
+    }, [isUserLoading]);
 
-    if (!mounted || isUserLoading) {
+    if (!mounted) {
         return <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />;
     }
 
@@ -79,13 +81,13 @@ function AuthButtons() {
 
 function MobileAuthButtons() {
     const { user, isUserLoading } = useUser();
-    const [mounted, setMounted] = useState(false);
+     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        setMounted(!isUserLoading);
+    }, [isUserLoading]);
     
-    if (!mounted || isUserLoading) {
+    if (!mounted) {
         return <Loader2 className="animate-spin mx-auto text-muted-foreground" />;
     }
 
@@ -111,15 +113,15 @@ function MobileAuthButtons() {
 }
 
 function PublicHeader() {
-  const renderNavItem = (item: NestedNavItem) => {
+  const renderNavItem = (item: NestedNavItem, index: number) => {
     if (item.children) {
       return (
-        <NavigationMenuItem key={item.label}>
+        <NavigationMenuItem key={`${item.label}-${index}`}>
           <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {item.children.map((component) => (
-                  <ListItem key={component.label} href={component.href || '#'} title={component.label}>
+              {item.children.map((component, childIndex) => (
+                  <ListItem key={`${component.label}-${childIndex}`} href={component.href || '#'} title={component.label}>
                     {component.description}
                   </ListItem>
               ))}
@@ -145,7 +147,7 @@ function PublicHeader() {
         <Logo />
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {publicNavItems.map((item, i) => renderNavItem(item))}
+            {publicNavItems.map((item, i) => renderNavItem(item, i))}
           </NavigationMenuList>
         </NavigationMenu>
 

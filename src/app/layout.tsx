@@ -29,6 +29,7 @@ const fontHeadline = Cairo({
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user } = useUser();
   const isAuthPage = pathname.startsWith('/auth');
   const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
   const isPublicPage = !isDashboardPage && !isAuthPage;
@@ -42,7 +43,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         {isPublicPage && <PublicFooter />}
       </div>
-       {isDashboardPage && <FloatingActionButtons />}
+       {(isDashboardPage && user) && <FloatingActionButtons />}
     </>
   );
 }
