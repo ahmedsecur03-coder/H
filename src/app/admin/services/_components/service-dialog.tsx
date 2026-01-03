@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 
-export function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: { price: number }) => void, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
+export function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: { price: number }) => Promise<void>, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
     
     const [price, setPrice] = useState(service?.price || 0);
     const [isSaving, setIsSaving] = useState(false);
@@ -21,11 +21,14 @@ export function ServiceDialog({ service, onSave, children, onOpenChange, open }:
         }
     }, [service, open]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
-        onSave({ price: parseFloat(String(price)) || 0 });
-        // The parent component will handle closing the dialog and resetting state
+        try {
+            await onSave({ price: parseFloat(String(price)) || 0 });
+        } finally {
+            // The parent component is responsible for closing the dialog and resetting isSaving
+        }
     };
     
     return (

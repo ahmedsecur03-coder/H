@@ -16,7 +16,7 @@ import {
   ChevronLeft,
   Star,
   Crown,
-  ShoppingBag,
+  ShoppingCart,
   ListOrdered,
   Wallet,
   Megaphone,
@@ -333,7 +333,7 @@ export default function DashboardPage() {
                             <CardDescription>مقارنة بين إنفاق الطلبات والحملات.</CardDescription>
                          </CardHeader>
                          <CardContent>
-                             <ChartContainer config={chartConfig} className="h-64">
+                            <ChartContainer config={chartConfig} className="h-[250px] w-full">
                                 <ComposedChart data={performanceData}>
                                     <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })} />
                                     <YAxis tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" />
@@ -352,21 +352,19 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent className="flex items-center justify-center">
                        {orderStatusData.length > 0 ? (
-                             <ChartContainer config={chartConfig} className="h-64 w-full">
-                                <ResponsiveContainer>
-                                    <PieChart>
-                                        <Tooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
-                                        <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} outerRadius={80} paddingAngle={5}>
-                                            {orderStatusData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                            ))}
-                                        </Pie>
-                                        <Legend content={<ChartTooltipContent nameKey="status" hideLabel hideIndicator />} />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                             <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                                <PieChart>
+                                    <Tooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
+                                    <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                        {orderStatusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Legend content={<ChartTooltipContent nameKey="status" hideLabel hideIndicator />} />
+                                </PieChart>
                             </ChartContainer>
                        ) : (
-                           <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                           <div className="flex flex-col items-center justify-center h-[250px] text-muted-foreground">
                                <Archive className="h-12 w-12" />
                                <p className="mt-2">لا توجد بيانات طلبات لعرضها.</p>
                            </div>

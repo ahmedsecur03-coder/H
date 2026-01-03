@@ -81,9 +81,6 @@ function AdminServicesPageComponent() {
     forceServicesUpdate();
   }, [forceServicesUpdate]);
 
-  useEffect(() => {
-    // Data is fetched by the hook, no need for manual fetch here.
-  }, []);
 
   const { paginatedServices, pageCount } = useMemo(() => {
     if (!allServices) {
@@ -141,27 +138,25 @@ function AdminServicesPageComponent() {
   };
 
   
-  const handleSaveService = (data: { price: number }) => {
+  const handleSaveService = async (data: { price: number }) => {
     if (!firestore || !selectedService) return;
 
     const priceDocRef = doc(firestore, 'servicePrices', String(selectedService.id));
     
-    toast({ title: 'جاري حفظ السعر...' });
-
     updateDoc(priceDocRef, data)
-    .then(() => {
-        toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
-        fetchServiceData(); 
-        setIsDialogOpen(false);
-        setSelectedService(undefined);
-    }).catch(serverError => {
-        const permissionError = new FirestorePermissionError({
-            path: priceDocRef.path,
-            operation: 'update',
-            requestResourceData: data,
+        .then(() => {
+            toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
+            fetchServiceData(); 
+            setIsDialogOpen(false);
+        })
+        .catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: priceDocRef.path,
+                operation: 'update',
+                requestResourceData: data,
+            });
+            errorEmitter.emit('permission-error', permissionError);
         });
-        errorEmitter.emit('permission-error', permissionError);
-    });
   };
 
   const handleOpenDialog = (service?: Service) => {
