@@ -144,12 +144,12 @@ export default function BlogPostPage() {
             'name': 'منصة حاجاتي',
             'logo': {
                 '@type': 'ImageObject',
-                'url': 'https://hajaty.com/logo.png' // Replace with your actual logo URL
+                'url': `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`
             }
         },
         'mainEntityOfPage': {
             '@type': 'WebPage',
-            '@id': `https://hajaty.com/blog/${slug}`
+            '@id': `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`
         }
     };
 
@@ -159,6 +159,20 @@ export default function BlogPostPage() {
             <Head>
                  <title>{`${post.title} | مدونة حاجاتي`}</title>
                  <meta name="description" content={post.content.substring(0, 160).replace(/#/g, '').trim() + '...'} />
+                 <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
+                 {/* Open Graph / Facebook */}
+                 <meta property="og:type" content="article" />
+                 <meta property="og:url" content={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
+                 <meta property="og:title" content={`${post.title} | مدونة حاجاتي`} />
+                 <meta property="og:description" content={post.content.substring(0, 200).replace(/#/g, '').trim() + '...'} />
+                 <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
+                 {/* Twitter */}
+                 <meta property="twitter:card" content="summary_large_image" />
+                 <meta property="twitter:url" content={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
+                 <meta property="twitter:title" content={`${post.title} | مدونة حاجاتي`} />
+                 <meta property="twitter:description" content={post.content.substring(0, 200).replace(/#/g, '').trim() + '...'} />
+                 <meta property="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
+
                  <script type="application/ld+json">
                     {JSON.stringify(jsonLd)}
                 </script>
