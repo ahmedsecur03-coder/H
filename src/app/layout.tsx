@@ -1,3 +1,4 @@
+
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -12,6 +13,9 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
+import { FloatingActionButtons } from '@/components/floating-action-buttons';
+import { useUser } from '@/firebase';
+
 
 const fontSans = Cairo({
   subsets: ['arabic'],
@@ -40,6 +44,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         {isPublicPage && <PublicFooter />}
       </div>
+      {isDashboardPage && <FloatingActionButtons />}
     </>
   );
 }
