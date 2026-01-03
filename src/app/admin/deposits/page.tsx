@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
 import {
   collectionGroup,
   query,
   getDocs,
   deleteDoc,
-  doc
+  doc,
+  runTransaction,
+  increment,
+  arrayUnion,
 } from 'firebase/firestore';
-import type { Deposit } from '@/lib/types';
-import { handleAdminAction } from '@/app/admin/_actions/admin-actions';
+import type { Deposit, User, Notification } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -170,60 +172,88 @@ export default function AdminDepositsPage() {
         fetchAllData();
     }, [fetchAllData]);
 
-
+    const COMMISSION_RATES = [0.20, 0.10, 0.05, 0.03, 0.02, 0.01];
     const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
+        if (!firestore) return;
         setLoadingActionId(deposit.id);
         
+        const { userId, id: depositId, amount } = deposit;
+        const userRef = doc(firestore, 'users', userId);
+        const depositDocRef = doc(firestore, `users/${userId}/deposits`, depositId);
+
         try {
-            const result = await handleAdminAction({
-                action: 'handle-deposit',
-                payload: {
-                    userId: deposit.userId,
-                    depositId: deposit.id,
-                    amount: deposit.amount,
-                    newStatus: newStatus
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) throw new Error('المستخدم صاحب الإيداع غير موجود.');
+                
+                transaction.update(depositDocRef, { status: newStatus });
+
+                if (newStatus === 'مقبول') {
+                    const userData = userDoc.data() as User;
+                    const notification: Notification = {
+                        id: `dep-${depositId}`, message: `تم قبول طلب الإيداع الخاص بك بقيمة ${amount}$ وتمت إضافة الرصيد إلى حسابك.`,
+                        type: 'success', read: false, createdAt: new Date().toISOString(), href: '/dashboard/add-funds'
+                    };
+                    transaction.update(userRef, {
+                        balance: increment(amount),
+                        totalSpent: increment(amount),
+                        notifications: arrayUnion(notification)
+                    });
+
+                    // Handle Affiliate Commissions
+                    let currentReferrerId = userData.referrerId;
+                    for (let level = 0; level < COMMISSION_RATES.length && currentReferrerId; level++) {
+                        const commissionRate = COMMISSION_RATES[level];
+                        const commissionAmount = amount * commissionRate;
+                        const referrerRef = doc(firestore, 'users', currentReferrerId);
+                        transaction.update(referrerRef, { affiliateEarnings: increment(commissionAmount) });
+
+                        const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
+                        transaction.set(newTransactionRef, {
+                            userId: currentReferrerId, referralId: userId, orderId: depositId,
+                            amount: commissionAmount, transactionDate: new Date().toISOString(), level: level + 1,
+                        });
+                        
+                        const referrerDoc = await transaction.get(referrerRef);
+                        currentReferrerId = referrerDoc.exists() ? (referrerDoc.data() as User).referrerId : null;
+                    }
+                } else { // Rejected
+                    const notification: Notification = {
+                        id: `dep-${depositId}-rej`, message: `تم رفض طلب الإيداع الخاص بك بقيمة ${amount}$. يرجى مراجعة الدعم الفني.`,
+                        type: 'error', read: false, createdAt: new Date().toISOString(), href: '/dashboard/add-funds'
+                    };
+                    transaction.update(userRef, { notifications: arrayUnion(notification) });
                 }
             });
 
-            if (result.success) {
-                 toast({
-                    title: 'نجاح',
-                    description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
-                });
-                await fetchAllData();
-            } else {
-                throw new Error(result.error || 'فشل الإجراء من الخادم.');
-            }
+            toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.` });
+            await fetchAllData();
+
         } catch (error: any) {
-            console.error("Deposit Action Error:", error);
-            toast({
-                variant: 'destructive',
-                title: 'فشل الإجراء',
-                description: error.message || 'حدث خطأ أثناء معالجة الطلب.',
-            });
+            const isPermissionError = error.code === 'permission-denied';
+             if (isPermissionError) {
+                const permissionError = new FirestorePermissionError({ path: userRef.path, operation: 'update' });
+                errorEmitter.emit('permission-error', permissionError);
+            } else {
+                console.error("Deposit Action Error:", error);
+                toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message || 'حدث خطأ أثناء معالجة الطلب.' });
+            }
         } finally {
-          setLoadingActionId(null);
+            setLoadingActionId(null);
         }
     };
   
     const handleDelete = async (deposit: Deposit) => {
         if (!firestore) return;
         setLoadingActionId(deposit.id);
+        const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits/${deposit.id}`);
         try {
-            const result = await handleAdminAction({
-                action: 'delete-document',
-                payload: {
-                    path: `users/${deposit.userId}/deposits/${deposit.id}`
-                }
-            });
-             if (result.success) {
-                toast({ title: 'نجاح', description: 'تم حذف الإيداع بنجاح.' });
-                await fetchAllData();
-            } else {
-                throw new Error(result.error || 'فشل الحذف من الخادم.');
-            }
+            await deleteDoc(depositDocRef);
+            toast({ title: 'نجاح', description: 'تم حذف الإيداع بنجاح.' });
+            await fetchAllData();
         } catch (error: any) {
-             toast({ variant: 'destructive', title: 'فشل الحذف', description: error.message || 'حدث خطأ أثناء محاولة الحذف.'});
+             const permissionError = new FirestorePermissionError({ path: depositDocRef.path, operation: 'delete' });
+             errorEmitter.emit('permission-error', permissionError);
         } finally {
             setLoadingActionId(null);
         }
@@ -271,3 +301,5 @@ export default function AdminDepositsPage() {
         </div>
     );
 }
+
+    

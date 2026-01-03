@@ -6,9 +6,11 @@ import {
   collectionGroup,
   query,
   getDocs,
+  runTransaction,
+  doc,
+  increment,
 } from 'firebase/firestore';
 import type { Withdrawal, User } from '@/lib/types';
-import { handleAdminAction } from '@/app/admin/_actions/admin-actions';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -150,31 +152,41 @@ export default function AdminWithdrawalsPage() {
         fetchAllData();
     }, [fetchAllData]);
 
-
     const handleWithdrawalAction = async (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => {
+        if (!firestore) return;
         setLoadingActionId(withdrawal.id);
+        const { userId, id: withdrawalId, amount } = withdrawal;
+
+        const userRef = doc(firestore, 'users', userId);
+        const withdrawalDocRef = doc(firestore, `users/${userId}/withdrawals`, withdrawalId);
+
         try {
-            const result = await handleAdminAction({
-                action: 'handle-withdrawal',
-                payload: {
-                    userId: withdrawal.userId,
-                    withdrawalId: withdrawal.id,
-                    amount: withdrawal.amount,
-                    newStatus: newStatus
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) throw new Error('المستخدم غير موجود.');
+                
+                transaction.update(withdrawalDocRef, { status: newStatus });
+
+                if (newStatus === 'مقبول') {
+                    const userData = userDoc.data() as User;
+                    if ((userData.affiliateEarnings ?? 0) < amount) {
+                        throw new Error('رصيد أرباح المستخدم غير كافٍ.');
+                    }
+                    transaction.update(userRef, { affiliateEarnings: increment(-amount) });
                 }
+                // No action needed for 'مرفوض' besides updating status
             });
-            
-            if (result.success) {
-                toast({
-                    title: 'نجاح',
-                    description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.`,
-                });
-                await fetchAllData();
-            } else {
-                throw new Error(result.error || 'فشل الإجراء من الخادم.');
-            }
+            toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.` });
+            await fetchAllData();
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message });
+            const isPermissionError = error.code === 'permission-denied';
+            if (isPermissionError) {
+                const permissionError = new FirestorePermissionError({ path: userRef.path, operation: 'update' });
+                errorEmitter.emit('permission-error', permissionError);
+            } else {
+                console.error("Withdrawal Action Error:", error);
+                toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message });
+            }
         } finally {
           setLoadingActionId(null);
         }
@@ -223,3 +235,5 @@ export default function AdminWithdrawalsPage() {
     </div>
   );
 }
+
+    

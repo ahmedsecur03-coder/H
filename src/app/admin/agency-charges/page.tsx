@@ -6,9 +6,12 @@ import {
   collectionGroup,
   query,
   getDocs,
+  doc,
+  runTransaction,
+  increment,
+  arrayUnion,
 } from 'firebase/firestore';
-import type { AgencyChargeRequest } from '@/lib/types';
-import { handleAdminAction } from '@/app/admin/_actions/admin-actions';
+import type { AgencyChargeRequest, User, Notification } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -150,30 +153,57 @@ export default function AdminAgencyChargesPage() {
 
 
     const handleAction = async (req: AgencyChargeRequest, newStatus: 'مقبول' | 'مرفوض') => {
+        if (!firestore) return;
         setLoadingActionId(req.id);
+        const { userId, id: requestId, accountId, amount, accountName, platform } = req;
+        const userRef = doc(firestore, 'users', userId);
+        const requestDocRef = doc(firestore, `users/${userId}/agencyChargeRequests`, requestId);
+        const accountDocRef = doc(firestore, `users/${userId}/agencyAccounts`, accountId);
+
         try {
-            const result = await handleAdminAction({
-                action: 'handle-agency-charge',
-                payload: {
-                    userId: req.userId,
-                    requestId: req.id,
-                    accountId: req.accountId,
-                    amount: req.amount,
-                    accountName: req.accountName,
-                    platform: req.platform,
-                    newStatus: newStatus
+            await runTransaction(firestore, async (transaction) => {
+                transaction.update(requestDocRef, { status: newStatus });
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) throw new Error('المستخدم صاحب الطلب غير موجود.');
+
+                if (newStatus === 'مقبول') {
+                    const userData = userDoc.data() as User;
+                    const accountDoc = await transaction.get(accountDocRef);
+                    if (!accountDoc.exists()) throw new Error('الحساب الإعلاني المراد شحنه غير موجود.');
+                    if ((userData.adBalance ?? 0) < amount) throw new Error('رصيد إعلانات المستخدم غير كافٍ.');
+
+                    transaction.update(userRef, { adBalance: increment(-amount) });
+                    transaction.update(accountDocRef, { balance: increment(amount) });
+                    
+                    const notification: Notification = {
+                        id: `agency-charge-ok-${requestId}`,
+                        message: `تم قبول طلب شحن حسابك "${accountName}" بمبلغ ${amount}$ وتمت إضافة الرصيد.`,
+                        type: 'success', read: false, createdAt: new Date().toISOString(), href: '/dashboard/agency-accounts'
+                    };
+                    transaction.update(userRef, { notifications: arrayUnion(notification) });
+
+                } else { // Rejected
+                    const notification: Notification = {
+                        id: `agency-charge-rej-${requestId}`,
+                        message: `تم رفض طلب شحن حسابك "${accountName}" بمبلغ ${amount}$. يرجى مراجعة الدعم الفني.`,
+                        type: 'error', read: false, createdAt: new Date().toISOString(), href: '/dashboard/agency-accounts'
+                    };
+                    transaction.update(userRef, { notifications: arrayUnion(notification) });
                 }
             });
 
-            if (result.success) {
-                toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح.` });
-                await fetchData();
-            } else {
-                throw new Error(result.error || 'فشل الإجراء من الخادم.');
-            }
+            toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح.` });
+            await fetchData();
+
         } catch (error: any) {
-            console.error("Agency Charge Action Error:", error);
-            toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message || 'حدث خطأ أثناء معالجة الطلب.' });
+             const isPermissionError = error.code === 'permission-denied';
+             if (isPermissionError) {
+                const permissionError = new FirestorePermissionError({ path: userRef.path, operation: 'update' });
+                errorEmitter.emit('permission-error', permissionError);
+            } else {
+                console.error("Agency Charge Action Error:", error);
+                toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message || 'حدث خطأ أثناء معالجة الطلب.' });
+            }
         } finally {
           setLoadingActionId(null);
         }
@@ -218,3 +248,5 @@ export default function AdminAgencyChargesPage() {
     </div>
   );
 }
+
+    
