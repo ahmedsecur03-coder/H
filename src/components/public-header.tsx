@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   NavigationMenu,
@@ -18,7 +18,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from "@/components/ui/button";
-import { LogIn, UserPlus, Menu, ChevronDown, Loader2 } from 'lucide-react';
+import { LogIn, UserPlus, Menu, ChevronDown, Loader2, LayoutDashboard } from 'lucide-react';
 import Logo from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { NestedNavItem } from '@/lib/types';
@@ -53,9 +53,64 @@ const ListItem = React.forwardRef<
 })
 ListItem.displayName = "ListItem"
 
-function PublicHeader() {
-  const { user, isUserLoading } = useUser();
+function AuthButtons() {
+    const { user, isUserLoading } = useUser();
+    const [mounted, setMounted] = useState(false);
 
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted || isUserLoading) {
+        return <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />;
+    }
+
+    if (user) {
+        return <Button asChild><Link href="/dashboard"><LayoutDashboard className="me-2 h-4 w-4" />لوحة التحكم</Link></Button>;
+    }
+
+    return (
+        <>
+            <Button variant="ghost" asChild><Link href="/auth/login"><LogIn className="me-2" />دخول</Link></Button>
+            <Button asChild><Link href="/auth/signup"><UserPlus className="me-2" />حساب جديد</Link></Button>
+        </>
+    );
+}
+
+function MobileAuthButtons() {
+    const { user, isUserLoading } = useUser();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    
+    if (!mounted || isUserLoading) {
+        return <Loader2 className="animate-spin mx-auto text-muted-foreground" />;
+    }
+
+    if (user) {
+        return (
+             <SheetClose asChild>
+                <Button asChild className="w-full"><Link href="/dashboard"><LayoutDashboard className="me-2 h-4 w-4" />لوحة التحكم</Link></Button>
+            </SheetClose>
+        )
+    }
+
+    return (
+        <>
+            <SheetClose asChild>
+                <Button asChild className="w-full"><Link href="/auth/signup"><UserPlus className="me-2" />حساب جديد</Link></Button>
+            </SheetClose>
+            <SheetClose asChild>
+                <Button variant="ghost" asChild className="w-full"><Link href="/auth/login"><LogIn className="me-2" />تسجيل الدخول</Link></Button>
+            </SheetClose>
+        </>
+    )
+
+}
+
+function PublicHeader() {
   const renderNavItem = (item: NestedNavItem) => {
     if (item.children) {
       return (
@@ -90,23 +145,14 @@ function PublicHeader() {
         <Logo />
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {publicNavItems.map((item) => renderNavItem(item))}
+            {publicNavItems.map((item, i) => renderNavItem(item))}
           </NavigationMenuList>
         </NavigationMenu>
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <div className="hidden md:flex items-center gap-2">
-            {isUserLoading ? (
-              <Loader2 className="animate-spin" />
-            ) : user ? (
-              <Button asChild><Link href="/dashboard">لوحة التحكم</Link></Button>
-            ) : (
-              <>
-                <Button variant="ghost" asChild><Link href="/auth/login"><LogIn className="me-2" />دخول</Link></Button>
-                <Button asChild><Link href="/auth/signup"><UserPlus className="me-2" />حساب جديد</Link></Button>
-              </>
-            )}
+             <AuthButtons />
           </div>
           <div className="md:hidden">
             <Sheet>
@@ -139,20 +185,7 @@ function PublicHeader() {
                   )}
                   <hr className="my-4" />
                    <div className="flex flex-col space-y-2">
-                     {isUserLoading ? <Loader2 className="animate-spin mx-auto" /> : user ? (
-                        <SheetClose asChild>
-                            <Button asChild><Link href="/dashboard">لوحة التحكم</Link></Button>
-                        </SheetClose>
-                     ) : (
-                        <>
-                         <SheetClose asChild>
-                            <Button asChild><Link href="/auth/signup">حساب جديد</Link></Button>
-                         </SheetClose>
-                         <SheetClose asChild>
-                            <Button variant="ghost" asChild><Link href="/auth/login">تسجيل الدخول</Link></Button>
-                         </SheetClose>
-                        </>
-                     )}
+                     <MobileAuthButtons />
                   </div>
                 </div>
               </SheetContent>
