@@ -1,26 +1,16 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   collectionGroup,
   query,
-  where,
-  doc,
-  runTransaction,
-  orderBy,
-  Query,
-  collection,
   getDocs,
-  limit,
-  arrayUnion,
-  increment,
-  Timestamp,
   deleteDoc,
+  doc
 } from 'firebase/firestore';
-import type { Deposit, User } from '@/lib/types';
-
+import type { Deposit } from '@/lib/types';
+import { handleAdminAction } from '@/app/admin/_actions/admin-actions';
 import {
   Card,
   CardContent,
@@ -42,16 +32,6 @@ import Link from 'next/link';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 type Status = 'معلق' | 'مقبول' | 'مرفوض';
-
-// Commission rates based on original deposit amount
-const COMMISSION_RATES = [
-    0.20, // Level 1: 20%
-    0.10, // Level 2: 10%
-    0.05, // Level 3: 5%
-    0.03, // Level 4: 3%
-    0.02, // Level 5: 2%
-    0.01, // Level 6: 1%
-];
 
 
 function DepositTable({ deposits, isLoading, onAction, loadingActionId, onDelete }: { deposits: Deposit[], isLoading: boolean, onAction: (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => void, loadingActionId: string | null, onDelete: (deposit: Deposit) => void }) {
@@ -192,161 +172,102 @@ export default function AdminDepositsPage() {
 
 
     const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
-        if (!firestore) return;
         setLoadingActionId(deposit.id);
         
-        const depositorRef = doc(firestore, 'users', deposit.userId);
-        const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
-
         try {
-            await runTransaction(firestore, async (transaction) => {
-                const depositorDoc = await transaction.get(depositorRef);
-                if (!depositorDoc.exists()) {
-                    throw new Error('المستخدم صاحب الإيداع غير موجود.');
-                }
-                const depositorData = depositorDoc.data() as User;
-
-                // Update deposit status first
-                transaction.update(depositDocRef, { status: newStatus });
-                
-                if (newStatus === 'مقبول') {
-                    // 1. Add balance to the depositor's account
-                    const newBalance = (depositorData.balance ?? 0) + deposit.amount;
-                    transaction.update(depositorRef, { 
-                        balance: newBalance,
-                        totalSpent: increment(deposit.amount), // Also increment totalSpent
-                        notifications: arrayUnion({
-                            id: `dep-${deposit.id}`,
-                            message: `تم قبول طلب الإيداع الخاص بك بقيمة ${deposit.amount}$ وتمت إضافة الرصيد إلى حسابك.`,
-                            type: 'success',
-                            read: false,
-                            createdAt: new Date().toISOString(),
-                            href: '/dashboard/add-funds'
-                        })
-                    });
-
-                    // 2. Handle Affiliate Commissions
-                    let currentReferrerId = depositorData.referrerId;
-
-                    for (let level = 0; level < COMMISSION_RATES.length && currentReferrerId; level++) {
-                        const commissionRate = COMMISSION_RATES[level];
-                        const commissionAmount = deposit.amount * commissionRate;
-                        
-                        const referrerRef = doc(firestore, 'users', currentReferrerId);
-                        transaction.update(referrerRef, { affiliateEarnings: increment(commissionAmount) });
-
-                        // Log the transaction
-                        const newTransactionRef = doc(collection(firestore, `users/${currentReferrerId}/affiliateTransactions`));
-                        transaction.set(newTransactionRef, {
-                            userId: currentReferrerId,
-                            referralId: deposit.userId,
-                            orderId: deposit.id,
-                            amount: commissionAmount,
-                            transactionDate: new Date().toISOString(),
-                            level: level + 1,
-                        });
-                        
-                        // Get the next referrer up the chain
-                        const referrerDoc = await transaction.get(referrerRef);
-                        if (referrerDoc.exists()) {
-                            currentReferrerId = (referrerDoc.data() as User).referrerId;
-                        } else {
-                            break; // End of the chain
-                        }
-                    }
-
-                } else { // newStatus is 'مرفوض'
-                     transaction.update(depositorRef, { 
-                        notifications: arrayUnion({
-                            id: `dep-${deposit.id}-rej`,
-                            message: `تم رفض طلب الإيداع الخاص بك بقيمة ${deposit.amount}$. يرجى مراجعة الدعم الفني.`,
-                            type: 'error',
-                            read: false,
-                            createdAt: new Date().toISOString(),
-                            href: '/dashboard/add-funds'
-                        })
-                    });
+            const result = await handleAdminAction({
+                action: 'handle-deposit',
+                payload: {
+                    userId: deposit.userId,
+                    depositId: deposit.id,
+                    amount: deposit.amount,
+                    newStatus: newStatus
                 }
             });
-          
-            await fetchAllData();
 
-            toast({
-                title: 'نجاح',
-                description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
-            });
+            if (result.success) {
+                 toast({
+                    title: 'نجاح',
+                    description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.`,
+                });
+                await fetchAllData();
+            } else {
+                throw new Error(result.error || 'فشل الإجراء من الخادم.');
+            }
         } catch (error: any) {
             console.error("Deposit Action Error:", error);
             toast({
                 variant: 'destructive',
                 title: 'فشل الإجراء',
-                description: error.message || 'حدث خطأ أثناء معالجة الطلب. قد يكون بسبب الصلاحيات.',
+                description: error.message || 'حدث خطأ أثناء معالجة الطلب.',
             });
-            const permissionError = new FirestorePermissionError({
-                path: depositorRef.path,
-                operation: 'update',
-            });
-            errorEmitter.emit('permission-error', permissionError);
         } finally {
           setLoadingActionId(null);
         }
-  };
+    };
   
-  const handleDelete = async (deposit: Deposit) => {
-    if (!firestore) return;
-    const depositDocRef = doc(firestore, `users/${deposit.userId}/deposits`, deposit.id);
-    try {
-        await deleteDoc(depositDocRef);
-        toast({ title: 'نجاح', description: 'تم حذف الإيداع بنجاح.' });
-        await fetchAllData(); // Refresh data
-    } catch (error) {
-         const permissionError = new FirestorePermissionError({
-            path: depositDocRef.path,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
+    const handleDelete = async (deposit: Deposit) => {
+        if (!firestore) return;
+        setLoadingActionId(deposit.id);
+        try {
+            const result = await handleAdminAction({
+                action: 'delete-document',
+                payload: {
+                    path: `users/${deposit.userId}/deposits/${deposit.id}`
+                }
+            });
+             if (result.success) {
+                toast({ title: 'نجاح', description: 'تم حذف الإيداع بنجاح.' });
+                await fetchAllData();
+            } else {
+                throw new Error(result.error || 'فشل الحذف من الخادم.');
+            }
+        } catch (error: any) {
+             toast({ variant: 'destructive', title: 'فشل الحذف', description: error.message || 'حدث خطأ أثناء محاولة الحذف.'});
+        } finally {
+            setLoadingActionId(null);
+        }
     }
-  }
 
 
-  const filteredDeposits = useMemo(() => {
-    return {
-        pending: allDeposits.filter(d => d.status === 'معلق'),
-        approved: allDeposits.filter(d => d.status === 'مقبول'),
-        rejected: allDeposits.filter(d => d.status === 'مرفوض'),
-    }
-  }, [allDeposits]);
+    const filteredDeposits = useMemo(() => {
+        return {
+            pending: allDeposits.filter(d => d.status === 'معلق'),
+            approved: allDeposits.filter(d => d.status === 'مقبول'),
+            rejected: allDeposits.filter(d => d.status === 'مرفوض'),
+        }
+    }, [allDeposits]);
 
 
-  return (
-    <div className="space-y-6 pb-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الإيداعات</h1>
-        <p className="text-muted-foreground">
-          مراجعة طلبات الإيداع والموافقة عليها أو رفضها.
-        </p>
-      </div>
+    return (
+        <div className="space-y-6 pb-8">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الإيداعات</h1>
+            <p className="text-muted-foreground">
+            مراجعة طلبات الإيداع والموافقة عليها أو رفضها.
+            </p>
+        </div>
 
-      <Tabs defaultValue="معلق" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="معلق">طلبات معلقة</TabsTrigger>
-            <TabsTrigger value="مقبول">طلبات مقبولة</TabsTrigger>
-            <TabsTrigger value="مرفوض">طلبات مرفوضة</TabsTrigger>
-        </TabsList>
-        <Card className="mt-4">
-          <CardContent className="p-0">
-            <TabsContent value="معلق" className="m-0">
-              <DepositTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
-            </TabsContent>
-            <TabsContent value="مقبول" className="m-0">
-              <DepositTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
-            </TabsContent>
-            <TabsContent value="مرفوض" className="m-0">
-              <DepositTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
-            </TabsContent>
-          </CardContent>
-        </Card>
-      </Tabs>
-    </div>
-  );
+        <Tabs defaultValue="معلق" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="معلق">طلبات معلقة</TabsTrigger>
+                <TabsTrigger value="مقبول">طلبات مقبولة</TabsTrigger>
+                <TabsTrigger value="مرفوض">طلبات مرفوضة</TabsTrigger>
+            </TabsList>
+            <Card className="mt-4">
+            <CardContent className="p-0">
+                <TabsContent value="معلق" className="m-0">
+                <DepositTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
+                </TabsContent>
+                <TabsContent value="مقبول" className="m-0">
+                <DepositTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
+                </TabsContent>
+                <TabsContent value="مرفوض" className="m-0">
+                <DepositTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} onDelete={handleDelete} />
+                </TabsContent>
+            </CardContent>
+            </Card>
+        </Tabs>
+        </div>
+    );
 }

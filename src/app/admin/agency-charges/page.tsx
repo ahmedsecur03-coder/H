@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -6,14 +5,10 @@ import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase
 import {
   collectionGroup,
   query,
-  doc,
-  runTransaction,
   getDocs,
-  arrayUnion,
-  increment,
 } from 'firebase/firestore';
-import type { AgencyChargeRequest, User, AgencyAccount, Notification } from '@/lib/types';
-
+import type { AgencyChargeRequest } from '@/lib/types';
+import { handleAdminAction } from '@/app/admin/_actions/admin-actions';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -155,67 +150,30 @@ export default function AdminAgencyChargesPage() {
 
 
     const handleAction = async (req: AgencyChargeRequest, newStatus: 'مقبول' | 'مرفوض') => {
-        if (!firestore) return;
         setLoadingActionId(req.id);
-        
-        const userRef = doc(firestore, 'users', req.userId);
-        const requestDocRef = doc(firestore, `users/${req.userId}/agencyChargeRequests`, req.id);
-        const accountDocRef = doc(firestore, `users/${req.userId}/agencyAccounts`, req.accountId);
-
         try {
-            await runTransaction(firestore, async (transaction) => {
-                // Update request status first
-                transaction.update(requestDocRef, { status: newStatus });
-
-                const userDoc = await transaction.get(userRef);
-                if (!userDoc.exists()) throw new Error('المستخدم صاحب الطلب غير موجود.');
-                const userData = userDoc.data() as User;
-                
-                if (newStatus === 'مقبول') {
-                    const accountDoc = await transaction.get(accountDocRef);
-                    if (!accountDoc.exists()) throw new Error('الحساب الإعلاني المراد شحنه غير موجود.');
-                    
-                    const currentAdBalance = userData.adBalance ?? 0;
-                    if (currentAdBalance < req.amount) throw new Error('رصيد إعلانات المستخدم غير كافٍ.');
-
-                    // Deduct from user's ad balance
-                    transaction.update(userRef, { adBalance: increment(-req.amount) });
-                    
-                    // Add to agency account balance
-                    transaction.update(accountDocRef, { balance: increment(req.amount) });
-                    
-                    // Send notification
-                    const notification: Notification = {
-                        id: `agency-charge-ok-${req.id}`,
-                        message: `تم قبول طلب شحن حسابك "${req.accountName}" بمبلغ ${req.amount}$ وتمت إضافة الرصيد.`,
-                        type: 'success',
-                        read: false,
-                        createdAt: new Date().toISOString(),
-                        href: '/dashboard/agency-accounts'
-                    };
-                    transaction.update(userRef, { notifications: arrayUnion(notification) });
-
-                } else { // newStatus is 'مرفوض'
-                     const notification: Notification = {
-                        id: `agency-charge-rej-${req.id}`,
-                        message: `تم رفض طلب شحن حسابك "${req.accountName}" بمبلغ ${req.amount}$. يرجى مراجعة الدعم الفني.`,
-                        type: 'error',
-                        read: false,
-                        createdAt: new Date().toISOString(),
-                        href: '/dashboard/agency-accounts'
-                    };
-                    transaction.update(userRef, { notifications: arrayUnion(notification) });
+            const result = await handleAdminAction({
+                action: 'handle-agency-charge',
+                payload: {
+                    userId: req.userId,
+                    requestId: req.id,
+                    accountId: req.accountId,
+                    amount: req.amount,
+                    accountName: req.accountName,
+                    platform: req.platform,
+                    newStatus: newStatus
                 }
             });
-          
-            await fetchData();
-            toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح.` });
 
+            if (result.success) {
+                toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح.` });
+                await fetchData();
+            } else {
+                throw new Error(result.error || 'فشل الإجراء من الخادم.');
+            }
         } catch (error: any) {
             console.error("Agency Charge Action Error:", error);
             toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message || 'حدث خطأ أثناء معالجة الطلب.' });
-            const permissionError = new FirestorePermissionError({ path: userRef.path, operation: 'update' });
-            errorEmitter.emit('permission-error', permissionError);
         } finally {
           setLoadingActionId(null);
         }
