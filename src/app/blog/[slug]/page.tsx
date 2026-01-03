@@ -66,6 +66,22 @@ export default function BlogPostPage() {
             });
 
             setPost(foundPost);
+            
+            if (foundPost) {
+                // Dynamically update document title
+                document.title = `${foundPost.title} | مدونة حاجاتي`;
+                
+                // Find or create meta description tag
+                let metaDescription = document.querySelector('meta[name="description"]');
+                if (!metaDescription) {
+                    metaDescription = document.createElement('meta');
+                    metaDescription.setAttribute('name', 'description');
+                    document.head.appendChild(metaDescription);
+                }
+                const descriptionContent = foundPost.content.substring(0, 160).replace(/#/g, '').trim() + '...';
+                metaDescription.setAttribute('content', descriptionContent);
+            }
+
             setIsLoading(false);
         };
 

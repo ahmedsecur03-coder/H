@@ -1,17 +1,25 @@
 
 import { MetadataRoute } from 'next';
- 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://hajaty.com'; // سيتم استبداله برابط موقعك الفعلي
+import { initializeFirebaseServer } from '@/firebase/init-server';
+import type { BlogPost } from '@/lib/types';
 
-  // الصفحات العامة
+function titleToSlug(title: string) {
+    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+}
+ 
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://hajaty.com'; 
+
+  // Static public routes
   const publicRoutes = [
     '/',
-    '/services',
     '/about',
+    '/services',
     '/blog',
+    '/terms',
+    '/privacy',
     '/auth/login',
-    '/auth/signup'
+    '/auth/signup',
   ];
 
   const publicUrls = publicRoutes.map((route) => ({
@@ -20,57 +28,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'weekly' as const,
     priority: route === '/' ? 1.0 : 0.8,
   }));
-  
-  // صفحات لوحة التحكم الرئيسية
-  const dashboardRoutes = [
-      '/dashboard',
-      '/dashboard/orders',
-      '/dashboard/mass-order',
-      '/dashboard/add-funds',
-      '/dashboard/affiliate',
-      '/dashboard/campaigns',
-      '/dashboard/agency-accounts',
-      '/dashboard/support',
-      '/dashboard/api',
-      '/dashboard/system-status',
-      '/dashboard/profile',
-      '/dashboard/settings',
-  ];
 
-  const dashboardUrls = dashboardRoutes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
+  // Dynamic blog post routes
+  let blogUrls: MetadataRoute.Sitemap = [];
+  try {
+    const { firestore } = initializeFirebaseServer();
+    const postsCollection = firestore.collection('blogPosts');
+    const snapshot = await postsCollection.get();
+    const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+    
+    blogUrls = posts.map(post => ({
+        url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
+        lastModified: new Date(post.publishDate),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+    }));
 
-  const adminRoutes = [
-      '/admin/dashboard',
-      '/admin/users',
-      '/admin/deposits',
-      '/admin/withdrawals',
-      '/admin/orders',
-      '/admin/campaigns',
-      '/admin/services',
-      '/admin/support',
-      '/admin/blog',
-      '/admin/settings',
-      '/admin/system-log',
-  ];
-  
-  const adminUrls = adminRoutes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.5,
-  }));
+  } catch (error) {
+      console.error("Failed to generate blog post sitemap URLs:", error);
+      // Continue without blog URLs if Firestore fetch fails
+  }
 
-
-  // يمكنك إضافة صفحات ديناميكية هنا في المستقبل (مثل صفحات المدونة والخدمات)
 
   return [
     ...publicUrls,
-    ...dashboardUrls,
-    ...adminUrls,
+    ...blogUrls,
   ];
 }
