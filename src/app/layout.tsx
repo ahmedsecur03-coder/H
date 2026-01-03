@@ -25,8 +25,7 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-
-function AppContent({ children }: { children: React.ReactNode }) {
+function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isDashboardPage = pathname.startsWith('/dashboard');
@@ -38,14 +37,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-      <div className="flex flex-col min-h-screen">
-        <PublicHeader />
-        <main className="flex-1 container py-8">{children}</main>
-        <PublicFooter />
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <PublicHeader />
+      <main className="flex-1 container py-8">{children}</main>
+      <PublicFooter />
+    </div>
   );
 }
-
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   const measurementId = "G-4030VT05Y1";
@@ -77,9 +75,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-             <AppContent>{children}</AppContent>
+             <AppLayout>{children}</AppLayout>
+             <Toaster />
            </FirebaseClientProvider>
-            <Toaster />
         </ThemeProvider>
       </body>
     </html>
