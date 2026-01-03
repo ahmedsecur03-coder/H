@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -78,12 +77,12 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
 function NavItems() {
   const pathname = usePathname();
 
-  const renderNavItem = (item: NestedNavItem) => {
+  const renderNavItem = (item: NestedNavItem, idx: number) => {
     const Icon = item.icon;
 
     if (item.children) {
       return (
-        <SidebarMenuSub key={item.label}>
+        <SidebarMenuSub key={item.label + idx}>
           <SidebarMenuSubTrigger>
             <div className='flex items-center gap-2'>
               {Icon && <Icon className="h-4 w-4" />}
@@ -91,8 +90,8 @@ function NavItems() {
             </div>
           </SidebarMenuSubTrigger>
           <SidebarMenuSubContent>
-            {item.children.map((child) => (
-               <SidebarMenuItem key={child.href}>
+            {item.children.map((child, childIdx) => (
+               <SidebarMenuItem key={child.href + childIdx}>
                 <Link href={child.href || '#'} passHref>
                   <SidebarMenuSubButton isActive={pathname === child.href}>
                       {child.icon && <child.icon className="w-4 h-4" />}
@@ -118,7 +117,7 @@ function NavItems() {
 
   return (
     <>
-      {dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}
+      {dashboardNavItems.map((item, idx) => <SidebarMenuItem key={item.label + idx}>{renderNavItem(item, idx)}</SidebarMenuItem>)}
     </>
   );
 }
@@ -184,7 +183,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </SidebarContent>
                     {isAdmin && (
                        <SidebarFooter>
-                          <Link href="/admin/dashboard">
+                          <Link href="/admin/dashboard" passHref>
                               <SidebarMenuButton>
                                   <Shield className="h-4 w-4 text-primary" />
                                   <span>لوحة تحكم المسؤول</span>

@@ -1,8 +1,7 @@
-
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Poppins, PT_Sans } from 'next/font/google';
+import { Cairo } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import React from 'react';
@@ -14,15 +13,15 @@ import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
 
-const fontSans = PT_Sans({
-  subsets: ['latin'],
-  weight: ['400', '700'],
+const fontSans = Cairo({
+  subsets: ['arabic'],
+  weight: ['400', '700', '900'],
   variable: '--font-sans',
 });
 
-const fontHeadline = Poppins({
-  subsets: ['latin'],
-  weight: ['800'],
+const fontHeadline = Cairo({
+  subsets: ['arabic'],
+  weight: ['900'],
   variable: '--font-headline',
 });
 
@@ -49,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
        <Head>
-        <meta name="theme-color" content="#3498DB" />
+        <meta name="theme-color" content="#F39C12" />
         <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
          <link rel="manifest" href="/manifest.json" />
       </Head>

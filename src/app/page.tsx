@@ -212,9 +212,9 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: -30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
-                className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-primary via-secondary to-primary/80"
+                className="text-4xl md:text-5xl lg:text-7xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-foreground via-primary to-foreground"
             >
-                بوابتك الكونية للخدمات الرقمية
+                بوابتك لنمو أعمالك الرقمية
             </motion.h1>
              <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -296,13 +296,13 @@ export default function HomePage() {
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5 }}
                      viewport={{ once: true }}
-                    className="text-4xl font-bold font-headline">نظرة على خدماتنا الكونية</motion.h2>
+                    className="text-4xl font-bold font-headline">نظرة على خدماتنا</motion.h2>
                  <motion.p 
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5, delay: 0.1 }}
                      viewport={{ once: true }}
-                    className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها لرواد الفضاء الرقمي.</motion.p>
+                    className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها.</motion.p>
             </div>
             <FeaturedServicesTabs />
         </section>
@@ -357,7 +357,7 @@ export default function HomePage() {
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5 }}
                      viewport={{ once: true }}
-                    className="text-4xl font-bold font-headline">ماذا يقول رواد الفضاء عنا؟</motion.h2>
+                    className="text-4xl font-bold font-headline">ماذا يقول عملاؤنا؟</motion.h2>
                  <motion.p
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
