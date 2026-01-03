@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
@@ -11,7 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { regenerateApiKey } from "./_actions/api-key-actions";
+// Removed server action import
+// import { regenerateApiKey } from "./_actions/api-key-actions";
 
 function ApiPageSkeleton() {
     return (
@@ -29,27 +31,27 @@ function ApiPageSkeleton() {
 
 export default function ApiPage() {
     const { user } = useUser();
+    const firestore = useFirestore();
     const { toast } = useToast();
     const [isRegenerating, setIsRegenerating] = useState(false);
 
-    const userDocRef = useMemoFirebase(() => (user ? doc(useFirestore(), 'users', user.uid) : null), [user]);
+    const userDocRef = useMemoFirebase(() => (user && firestore ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
     const { data: userData, isLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
 
     const handleRegenerateApiKey = async () => {
-        if (!user) return;
+        if (!user || !firestore) return;
         setIsRegenerating(true);
+        const newApiKey = `hy_${crypto.randomUUID()}`;
+        const userDocRef = doc(firestore, 'users', user.uid);
+
         try {
-            const result = await regenerateApiKey(user.uid);
-            if(result.success) {
-                forceDocUpdate();
-                toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
-            } else {
-                 throw new Error(result.error || 'فشل إنشاء المفتاح.');
-            }
+            await updateDoc(userDocRef, { apiKey: newApiKey });
+            forceDocUpdate(); // Re-fetch user data to display the new key
+            toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
         } catch (error: any) {
              const permissionError = new FirestorePermissionError({
-                path: `users/${user.uid}`,
+                path: userDocRef.path,
                 operation: 'update',
                 requestResourceData: { apiKey: 'REDACTED' },
             });
@@ -109,7 +111,7 @@ export default function ApiPage() {
                 <CardHeader>
                     <CardTitle>نقاط النهاية (Endpoints)</CardTitle>
                      <CardDescription>
-                        جميع الطلبات يجب أن تكون من نوع POST إلى الرابط التالي.
+                        جميع الطلبات يجب أن تكون من نوع POST إلى الرابط التالي. (ملاحظة: تم تعطيل هذا المسار حاليًا لأن التطبيق يعمل بوضع العميل فقط).
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

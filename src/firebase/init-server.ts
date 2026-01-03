@@ -5,43 +5,49 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { firebaseConfig } from '@/firebase/config';
 
-// This is a separate initialization for server-side usage (e.g., in API routes or server actions)
-// It uses the Firebase Admin SDK.
-
 interface FirebaseServerServices {
-  firebaseApp: App;
-  firestore: Firestore;
-  auth: Auth;
+  firebaseApp: App | null;
+  firestore: Firestore | null;
+  auth: Auth | null;
 }
-
-// Ensure the service account key is correctly parsed
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-  : undefined;
 
 /**
  * Initializes Firebase Admin services on the server-side.
- * This function is safe to call multiple times.
- * @returns An object containing the initialized Firebase Admin services.
+ * This function is now disabled to ensure a client-only architecture.
+ * @returns An object containing null services.
  */
 export function initializeFirebaseServer(): FirebaseServerServices {
-  const apps = getApps();
-  let firebaseApp: App;
+  // This function is intentionally disabled to adhere to a client-only architecture.
+  // Returning null for all services prevents any server-side Firebase logic from running.
+  // This helps avoid build errors in environments where server-side credentials are not available.
+  if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+     return { firebaseApp: null, firestore: null, auth: null };
+  }
+  
+  // The following code will only run in a local development environment
+  // to prevent crashing local server functionalities that might still use it.
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+    : undefined;
 
-  if (apps.length === 0) {
-    if (!serviceAccount) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set or is invalid.');
-    }
-    firebaseApp = initializeApp({
+  if (getApps().length === 0 && serviceAccount) {
+    const firebaseApp = initializeApp({
       credential: cert(serviceAccount),
       projectId: firebaseConfig.projectId,
     });
-  } else {
-    firebaseApp = getApp();
+     return { 
+        firebaseApp: firebaseApp, 
+        firestore: getFirestore(firebaseApp), 
+        auth: getAuth(firebaseApp) 
+    };
+  } else if (getApps().length > 0) {
+      const firebaseApp = getApp();
+       return { 
+        firebaseApp: firebaseApp, 
+        firestore: getFirestore(firebaseApp), 
+        auth: getAuth(firebaseApp) 
+    };
   }
 
-  const firestore = getFirestore(firebaseApp);
-  const auth = getAuth(firebaseApp);
-
-  return { firebaseApp, firestore, auth };
+  return { firebaseApp: null, firestore: null, auth: null };
 }
