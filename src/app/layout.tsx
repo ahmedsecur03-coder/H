@@ -1,4 +1,3 @@
-
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -25,8 +24,7 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-// This component now correctly uses the hooks *within* the provider's scope.
-function AppContent({ children }: { children: React.ReactNode }) {
+function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
 
@@ -74,7 +72,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-              <AppContent>{children}</AppContent>
+              <AppLayout>{children}</AppLayout>
            </FirebaseClientProvider>
            <Toaster />
         </ThemeProvider>
