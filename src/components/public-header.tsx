@@ -1,4 +1,3 @@
-
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -91,7 +90,7 @@ function PublicHeader() {
         <Logo />
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {publicNavItems.map((item, idx) => <React.Fragment key={idx}>{renderNavItem(item)}</React.Fragment>)}
+            {publicNavItems.map((item) => renderNavItem(item))}
           </NavigationMenuList>
         </NavigationMenu>
 
@@ -117,9 +116,9 @@ function PublicHeader() {
               <SheetContent side="right">
                 <SheetHeader className="mb-8"><Logo /></SheetHeader>
                 <div className="flex flex-col space-y-3">
-                  {publicNavItems.map((item, idx) =>
+                  {publicNavItems.map((item) =>
                     item.children ? (
-                      <Collapsible key={item.label + idx}>
+                      <Collapsible key={item.label}>
                         <CollapsibleTrigger className="flex w-full justify-between items-center rounded-md p-2 hover:bg-muted font-medium">
                           {item.label}
                           <ChevronDown />
