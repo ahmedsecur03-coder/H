@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
+import { FloatingActionButtons } from '@/components/floating-action-buttons';
 
 const fontSans = Cairo({
   subsets: ['arabic'],
@@ -28,7 +29,8 @@ const fontHeadline = Cairo({
 // This component now correctly uses the pathname *within* a context that has access to it.
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
+  const isAuthPage = pathname.startsWith('/auth');
+  const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !isAuthPage;
 
   return (
     <>
@@ -37,6 +39,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       {isPublicPage && <PublicFooter />}
+      {!isAuthPage && <FloatingActionButtons />}
     </>
   );
 }
