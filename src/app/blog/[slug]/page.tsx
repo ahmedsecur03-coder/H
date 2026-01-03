@@ -1,92 +1,85 @@
 
-import { notFound } from 'next/navigation';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { titleToSlug } from '@/lib/firebase/server-data';
 import Head from 'next/head';
-import { getBlogPostBySlug, getAdjacentPosts, getBlogPosts, titleToSlug } from '@/lib/firebase/server-data';
-import type { Metadata, ResolvingMetadata } from 'next'
 
-type Props = {
-  params: { slug: string }
+
+function BlogPostSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+            <Skeleton className="h-8 w-32 mb-4" />
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-5 w-1/4 mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-5/6" />
+                    <Skeleton className="h-5 w-full mt-4" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-2/3" />
+                </CardContent>
+            </Card>
+             <div className="flex justify-between items-center mt-8">
+                <Skeleton className="h-10 w-28" />
+                <Skeleton className="h-10 w-28" />
+            </div>
+        </div>
+    );
 }
 
-// Generate metadata for the page
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const post = await getBlogPostBySlug(params.slug);
- 
-  if (!post) {
-    return {
-      title: 'المقالة غير موجودة',
-    }
-  }
- 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
-  const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
-  const ogImage = `${siteUrl}/og-image.png`;
+export default function BlogPostPage() {
+    const params = useParams();
+    const slug = params.slug as string;
+    const firestore = useFirestore();
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [adjacentPosts, setAdjacentPosts] = useState<{ prevPost: BlogPost | null, nextPost: BlogPost | null }>({ prevPost: null, nextPost: null });
 
-  return {
-    title: `${post.title} | مدونة حاجاتي`,
-    description: description,
-    alternates: {
-      canonical: `/blog/${params.slug}`,
-    },
-    openGraph: {
-        title: post.title,
-        description: description,
-        url: `${siteUrl}/blog/${params.slug}`,
-        siteName: 'مدونة حاجاتي',
-        images: [
-            {
-                url: ogImage,
-                width: 1200,
-                height: 630,
-            },
-        ],
-        locale: 'ar_EG',
-        type: 'article',
-        publishedTime: post.publishDate,
-        authors: ['فريق حاجاتي'],
-    },
-     twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: description,
-      images: [ogImage],
-    },
-  }
-}
+    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null, [firestore]);
+    const { data: allPosts, isLoading } = useCollection<BlogPost>(postsQuery);
 
-// Generate static pages for all blog posts at build time
-export async function generateStaticParams() {
-  const posts = await getBlogPosts();
-  return posts.map(post => ({
-    slug: titleToSlug(post.title),
-  }));
-}
+    useEffect(() => {
+        if (allPosts) {
+            const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
+            if (currentPost) {
+                setPost(currentPost);
+                const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
+                const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+                const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+                setAdjacentPosts({ prevPost, nextPost });
+            } else {
+                 // If post not found after loading, trigger notFound
+                 notFound();
+            }
+        }
+    }, [allPosts, slug]);
 
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-    const slug = params.slug;
-    const post = await getBlogPostBySlug(slug);
-
-    if (!post) {
-        notFound();
+    if (isLoading || !post) {
+        return <BlogPostSkeleton />;
     }
     
-    const { prevPost, nextPost } = await getAdjacentPosts(post.publishDate);
-
+    const { prevPost, nextPost } = adjacentPosts;
+    const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
+    
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         'headline': post.title,
-        'description': post.content.substring(0, 200).replace(/#/g, '').trim() + '...',
+        'description': description,
         'datePublished': post.publishDate,
         'author': {
             '@type': 'Organization',
@@ -109,11 +102,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
     return (
         <>
-            {/* Inject JSON-LD into the head of the document */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
+             <Head>
+                <title>{`${post.title} | مدونة حاجاتي`}</title>
+                <meta name="description" content={description} />
+                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
+                <meta property="og:title" content={post.title} />
+                <meta property="og:description" content={description} />
+                <meta property="og:url" content={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
+                <meta property="og:type" content="article" />
+                <meta property="og:published_time" content={post.publishDate} />
+                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={post.title} />
+                <meta name="twitter:description" content={description} />
+                <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+            </Head>
             <div className="max-w-4xl mx-auto py-8">
                 <Button variant="ghost" asChild className="mb-4">
                     <Link href="/blog">
@@ -168,3 +175,4 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         </>
     );
 }
+

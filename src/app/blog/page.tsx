@@ -1,14 +1,55 @@
 
+'use client';
+
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getBlogPosts, titleToSlug } from '@/lib/firebase/server-data';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import { titleToSlug } from '@/lib/firebase/server-data';
 
 
-export default async function BlogPage() {
-    const posts = await getBlogPosts();
+function BlogPageSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-9 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i}>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-3/4" />
+                            <Skeleton className="h-4 w-1/4 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                             <Skeleton className="h-4 w-full" />
+                             <Skeleton className="h-4 w-full mt-2" />
+                             <Skeleton className="h-4 w-2/3 mt-2" />
+                        </CardContent>
+                        <CardFooter>
+                            <Skeleton className="h-10 w-28" />
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+
+export default function BlogPage() {
+    const firestore = useFirestore();
+    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null, [firestore]);
+    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
+
+    if (isLoading) {
+        return <BlogPageSkeleton />;
+    }
 
     return (
         <div className="space-y-6 pb-8">
