@@ -4,11 +4,12 @@ import { initializeFirebaseServer } from '@/firebase/init-server';
 import type { BlogPost } from '@/lib/types';
 
 function titleToSlug(title: string) {
+    if (!title) return '';
     return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 }
  
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://hajaty.com'; 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
 
   // Static public routes
   const publicRoutes = [
@@ -45,8 +46,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   } catch (error) {
-      console.error("Failed to generate blog post sitemap URLs:", error);
-      // Continue without blog URLs if Firestore fetch fails
+      console.error("Failed to generate blog post sitemap URLs (build-time safe):", error);
+      // Continue without blog URLs if Firestore fetch fails during build
   }
 
 
