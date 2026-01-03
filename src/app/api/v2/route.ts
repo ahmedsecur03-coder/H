@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -74,16 +75,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
 
-        const logData = {
-            event: 'api_request',
-            level: 'info' as const,
-            message: `API action '${action}' called by user ${user.id}`,
-            timestamp: new Date().toISOString(),
-            metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
-        };
-        // This is a non-critical log, so we don't need to await it.
-        const logsCollection = collection(firestore, 'systemLogs');
-        addDoc(logsCollection, logData);
+        // Log the API request only for non-admin users
+        if(user.role !== 'admin') {
+            const logData = {
+                event: 'api_request',
+                level: 'info' as const,
+                message: `API action '${action}' called by user ${user.id}`,
+                timestamp: new Date().toISOString(),
+                metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
+            };
+            const logsCollection = collection(firestore, 'systemLogs');
+            await addDoc(logsCollection, logData);
+        }
 
 
         switch (action) {
@@ -209,7 +212,7 @@ export async function POST(request: NextRequest) {
         console.error('API Error:', error);
         // Log critical errors to systemLogs
          const logsCollection = collection(firestore, 'systemLogs');
-         addDoc(logsCollection, {
+         await addDoc(logsCollection, {
             event: 'api_error',
             level: 'error' as const,
             message: `API action '${action}' failed for user ${body.key?.substring(0, 6)}...`,

@@ -143,20 +143,19 @@ function AdminServicesPageComponent() {
 
     const priceDocRef = doc(firestore, 'servicePrices', String(selectedService.id));
     
-    updateDoc(priceDocRef, data)
-        .then(() => {
-            toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
-            fetchServiceData(); 
-            setIsDialogOpen(false);
-        })
-        .catch(serverError => {
-            const permissionError = new FirestorePermissionError({
-                path: priceDocRef.path,
-                operation: 'update',
-                requestResourceData: data,
-            });
-            errorEmitter.emit('permission-error', permissionError);
+    try {
+        await updateDoc(priceDocRef, data);
+        toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
+        await fetchServiceData(); 
+        setIsDialogOpen(false);
+    } catch(serverError) {
+        const permissionError = new FirestorePermissionError({
+            path: priceDocRef.path,
+            operation: 'update',
+            requestResourceData: data,
         });
+        errorEmitter.emit('permission-error', permissionError);
+    }
   };
 
   const handleOpenDialog = (service?: Service) => {

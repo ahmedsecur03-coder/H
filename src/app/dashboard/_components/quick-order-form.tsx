@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -23,8 +24,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useServices } from '@/hooks/useServices';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-
-const PROFIT_MARGIN = 1.50; // 50% profit margin
 
 function ServiceDescription({ service }: { service: Service }) {
     if (!service) return null;
