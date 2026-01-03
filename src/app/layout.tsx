@@ -24,6 +24,7 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
+// This new component contains the conditional layout logic
 function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
@@ -38,7 +39,6 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // For non-public pages, the layout is handled by their respective layout files.
   return <>{children}</>;
 }
 
