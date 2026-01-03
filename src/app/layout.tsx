@@ -2,7 +2,7 @@
 'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Cairo } from 'next/font/google';
+import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import React, { useEffect } from 'react';
@@ -17,13 +17,13 @@ import { FloatingActionButtons } from '@/components/floating-action-buttons';
 import { useUser } from '@/firebase';
 
 
-const fontSans = Cairo({
+const fontSans = Tajawal({
   subsets: ['arabic'],
   weight: ['400', '700', '900'],
   variable: '--font-sans',
 });
 
-const fontHeadline = Cairo({
+const fontHeadline = Tajawal({
   subsets: ['arabic'],
   weight: ['900'],
   variable: '--font-headline',
