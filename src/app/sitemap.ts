@@ -1,12 +1,8 @@
 
 import { MetadataRoute } from 'next';
-import { initializeFirebaseServer } from '@/firebase/init-server';
-import type { BlogPost } from '@/lib/types';
 
-function titleToSlug(title: string) {
-    if (!title) return '';
-    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-}
+// This sitemap is now static to avoid build-time errors with database fetching.
+// For a dynamic sitemap with a large number of pages, consider a serverless function approach post-build.
  
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
@@ -30,29 +26,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '/' ? 1.0 : 0.8,
   }));
 
-  // Dynamic blog post routes
-  let blogUrls: MetadataRoute.Sitemap = [];
-  try {
-    const { firestore } = initializeFirebaseServer();
-    const postsCollection = firestore.collection('blogPosts');
-    const snapshot = await postsCollection.get();
-    const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-    
-    blogUrls = posts.map(post => ({
-        url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
-        lastModified: new Date(post.publishDate),
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-    }));
-
-  } catch (error) {
-      console.error("Failed to generate blog post sitemap URLs (build-time safe):", error);
-      // Continue without blog URLs if Firestore fetch fails during build
-  }
-
+  // The dynamic fetching of blog posts is removed to prevent build failures.
+  // When the number of blog posts is large, this should be re-implemented
+  // using a more robust method that doesn't rely on build-time database access.
 
   return [
     ...publicUrls,
-    ...blogUrls,
   ];
 }
