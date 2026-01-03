@@ -25,8 +25,8 @@ const fontHeadline = Poppins({
   variable: '--font-headline',
 });
 
-// This component determines which layout to use based on the path.
-function PageLayout({ children }: { children: React.ReactNode }) {
+// This component now correctly uses the pathname *within* a context that has access to it.
+function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !pathname.startsWith('/auth');
 
@@ -40,8 +40,8 @@ function PageLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // For non-public pages, just render the children.
-  // The specific layouts (dashboard, admin, auth) will be handled by their respective layout.tsx files.
+  // For non-public pages (dashboard, admin, auth), just render the children.
+  // Their specific layouts are handled by their own layout.tsx files.
   return <>{children}</>;
 }
 
@@ -76,7 +76,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-                <PageLayout>{children}</PageLayout>
+                {/* The Suspense wrapper for usePathname is crucial here */}
+                <Suspense fallback={<div>Loading...</div>}>
+                    <AppContent>{children}</AppContent>
+                </Suspense>
            </FirebaseClientProvider>
            <Toaster />
         </ThemeProvider>
