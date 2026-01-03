@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 
-export function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: { price: number }) => void, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
+export function ServiceDialog({ service, onSave, children, onOpenChange, open }: { service?: Service, onSave: (data: { price: number }) => Promise<void>, children: React.ReactNode, open: boolean, onOpenChange: (open: boolean) => void }) {
     
     const [price, setPrice] = useState(service?.price || 0);
     const [isSaving, setIsSaving] = useState(false);

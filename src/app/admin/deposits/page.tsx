@@ -269,8 +269,7 @@ export default function AdminDepositsPage() {
                 }
             });
           
-            // Optimistically update UI
-            setAllDeposits(prev => prev.map(d => d.id === deposit.id ? {...d, status: newStatus} : d));
+            await fetchAllData();
 
             toast({
                 title: 'نجاح',
@@ -299,7 +298,7 @@ export default function AdminDepositsPage() {
     try {
         await deleteDoc(depositDocRef);
         toast({ title: 'نجاح', description: 'تم حذف الإيداع بنجاح.' });
-        fetchAllData(); // Refresh data
+        await fetchAllData(); // Refresh data
     } catch (error) {
          const permissionError = new FirestorePermissionError({
             path: depositDocRef.path,
@@ -351,4 +350,3 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
-

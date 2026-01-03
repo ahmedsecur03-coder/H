@@ -208,8 +208,7 @@ export default function AdminAgencyChargesPage() {
                 }
             });
           
-            // Optimistically update UI
-            setAllRequests(prev => prev.map(d => d.id === req.id ? {...d, status: newStatus} : d));
+            await fetchData();
             toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح.` });
 
         } catch (error: any) {

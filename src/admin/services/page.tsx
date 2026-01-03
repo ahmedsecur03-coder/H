@@ -143,14 +143,11 @@ function AdminServicesPageComponent() {
 
     const priceDocRef = doc(firestore, 'servicePrices', String(selectedService.id));
     
-    toast({ title: 'جاري حفظ السعر...' });
-
     try {
         await updateDoc(priceDocRef, data);
         toast({ title: 'نجاح', description: 'تم تحديث سعر الخدمة بنجاح.' });
-        fetchServiceData(); 
+        await fetchServiceData(); 
         setIsDialogOpen(false);
-        setSelectedService(undefined);
     } catch(serverError) {
         const permissionError = new FirestorePermissionError({
             path: priceDocRef.path,

@@ -183,13 +183,14 @@ export default function AdminWithdrawalsPage() {
             transaction.update(withdrawalDocRef, { status: newStatus });
           });
           
-          setAllWithdrawals(prev => prev.map(w => w.id === withdrawal.id ? {...w, status: newStatus} : w));
+          await fetchAllData();
 
           toast({
             title: 'نجاح',
             description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.`,
           });
         } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message });
             const permissionError = new FirestorePermissionError({
                 path: userDocRef.path,
                 operation: 'update',

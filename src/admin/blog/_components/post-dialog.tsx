@@ -14,7 +14,7 @@ interface PostDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     post?: Partial<BlogPost>;
-    onSave: (data: { title: string; content: string }) => void;
+    onSave: (data: { title: string; content: string }) => Promise<void>;
     isSaving: boolean;
 }
 
@@ -29,9 +29,9 @@ export function PostDialog({ open, onOpenChange, post, onSave, isSaving }: PostD
         }
     }, [open, post]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ title, content });
+        await onSave({ title, content });
     };
 
     return (

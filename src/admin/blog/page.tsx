@@ -80,7 +80,7 @@ export default function AdminBlogPage() {
                 await addDoc(postsColRef, newPostData);
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
             }
-            fetchPosts(); // Refresh data
+            await fetchPosts(); // Refresh data
             setIsPostDialogOpen(false);
         } catch (serverError) {
              const permissionError = new FirestorePermissionError({ 
@@ -95,21 +95,21 @@ export default function AdminBlogPage() {
     };
 
 
-    const handleDeletePost = (id: string) => {
+    const handleDeletePost = async (id: string) => {
         if (!firestore) return;
         const postDocRef = doc(firestore, 'blogPosts', id);
-        deleteDoc(postDocRef)
-            .then(() => {
-                toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
-                fetchPosts(); // Refresh data
-            })
-            .catch(serverError => {
-                 const permissionError = new FirestorePermissionError({
-                    path: postDocRef.path,
-                    operation: 'delete',
-                });
-                errorEmitter.emit('permission-error', permissionError);
+        try {
+            await deleteDoc(postDocRef)
+            toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
+            await fetchPosts(); // Refresh data
+        }
+        catch(serverError) {
+             const permissionError = new FirestorePermissionError({
+                path: postDocRef.path,
+                operation: 'delete',
             });
+            errorEmitter.emit('permission-error', permissionError);
+        };
     };
 
     const renderContent = () => {
