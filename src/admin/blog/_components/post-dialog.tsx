@@ -15,13 +15,13 @@ interface PostDialogProps {
     onOpenChange: (open: boolean) => void;
     post?: Partial<BlogPost>;
     onSave: (data: { title: string; content: string }) => void;
+    isSaving: boolean;
 }
 
-export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps) {
+export function PostDialog({ open, onOpenChange, post, onSave, isSaving }: PostDialogProps) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
+    
     useEffect(() => {
         if (open) {
             setTitle(post?.title || '');
@@ -31,12 +31,7 @@ export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSaving(true);
         onSave({ title, content });
-        // The parent component is responsible for closing the dialog
-        // and handling the async logic.
-        setIsSaving(false);
-        onOpenChange(false);
     };
 
     return (
