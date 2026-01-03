@@ -25,6 +25,10 @@ function BlogPageSkeleton() {
     )
 }
 
+function titleToSlug(title: string) {
+    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+}
+
 export default function BlogPage() {
     const firestore = useFirestore();
     const postsQuery = useMemoFirebase(
@@ -49,29 +53,32 @@ export default function BlogPage() {
 
             {posts && posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.map(post => (
-                        <Card key={post.id} className="flex flex-col">
-                            <CardHeader>
-                                <CardTitle className="font-headline text-xl leading-tight">{post.title}</CardTitle>
-                                <CardDescription>
-                                    {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-grow">
-                                <p className="text-sm text-muted-foreground line-clamp-3">
-                                   {post.content.substring(0, 150).replace(/#/g, '').trim()}...
-                                </p>
-                            </CardContent>
-                             <CardFooter>
-                                <Button asChild variant="secondary">
-                                    <Link href={`/blog/${post.id}`}>
-                                        اقرأ المزيد
-                                        <ChevronLeft className="h-4 w-4 ms-2" />
-                                    </Link>
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
+                    {posts.map(post => {
+                        const slug = titleToSlug(post.title);
+                        return (
+                            <Card key={post.id} className="flex flex-col">
+                                <CardHeader>
+                                    <CardTitle className="font-headline text-xl leading-tight">{post.title}</CardTitle>
+                                    <CardDescription>
+                                        {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className="text-sm text-muted-foreground line-clamp-3">
+                                    {post.content.substring(0, 150).replace(/#/g, '').trim()}...
+                                    </p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button asChild variant="secondary">
+                                        <Link href={`/blog/${slug}`}>
+                                            اقرأ المزيد
+                                            <ChevronLeft className="h-4 w-4 ms-2" />
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        )
+                    })}
                 </div>
             ) : (
                 <div className="text-center py-20 bg-card border rounded-lg">

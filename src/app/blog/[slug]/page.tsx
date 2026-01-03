@@ -1,6 +1,6 @@
 'use client';
 import { doc, getDoc, collection, getDocs, orderBy, limit, where, query } from 'firebase/firestore';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { notFound, useParams } from 'next/navigation';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -32,22 +32,46 @@ function BlogPostPageSkeleton() {
     );
 }
 
+function titleToSlug(title: string) {
+    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+}
+
 
 export default function BlogPostPage() {
     const firestore = useFirestore();
     const params = useParams();
     const slug = params.slug as string;
     
-    const [prevPost, setPrevPost] = useState<{ id: string, title: string } | null>(null);
-    const [nextPost, setNextPost] = useState<{ id: string, title: string } | null>(null);
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [prevPost, setPrevPost] = useState<{ slug: string, title: string } | null>(null);
+    const [nextPost, setNextPost] = useState<{ slug: string, title: string } | null>(null);
     const [isAdjacentLoading, setIsAdjacentLoading] = useState(true);
 
-    const postDocRef = useMemoFirebase(
-        () => (firestore && slug ? doc(firestore, 'blogPosts', slug) : null),
-        [firestore, slug]
-    );
+    useEffect(() => {
+        if (!firestore || !slug) return;
 
-    const { data: post, isLoading } = useDoc<BlogPost>(postDocRef);
+        const fetchPost = async () => {
+            setIsLoading(true);
+            const postsRef = collection(firestore, 'blogPosts');
+            const q = query(postsRef);
+            const querySnapshot = await getDocs(q);
+            
+            let foundPost: BlogPost | null = null;
+            querySnapshot.forEach((doc) => {
+                const postData = { id: doc.id, ...doc.data() } as BlogPost;
+                if (titleToSlug(postData.title) === slug) {
+                    foundPost = postData;
+                }
+            });
+
+            setPost(foundPost);
+            setIsLoading(false);
+        };
+
+        fetchPost();
+    }, [firestore, slug]);
+
 
     useEffect(() => {
         if (!firestore || !post) return;
@@ -63,15 +87,15 @@ export default function BlogPostPage() {
                 const [nextSnap, prevSnap] = await Promise.all([getDocs(nextQuery), getDocs(prevQuery)]);
 
                 if (!nextSnap.empty) {
-                    const nextPostData = nextSnap.docs[0]?.data();
-                    setNextPost({ id: nextSnap.docs[0].id, title: nextPostData?.title });
+                    const nextPostData = nextSnap.docs[0]?.data() as BlogPost;
+                    setNextPost({ slug: titleToSlug(nextPostData.title), title: nextPostData.title });
                 } else {
                     setNextPost(null);
                 }
                 
                 if (!prevSnap.empty) {
-                    const prevPostData = prevSnap.docs[0]?.data();
-                    setPrevPost({ id: prevSnap.docs[0].id, title: prevPostData?.title });
+                    const prevPostData = prevSnap.docs[0]?.data() as BlogPost;
+                    setPrevPost({ slug: titleToSlug(prevPostData.title), title: prevPostData.title });
                 } else {
                     setPrevPost(null);
                 }
@@ -129,7 +153,7 @@ export default function BlogPostPage() {
                 <div>
                     {prevPost && (
                          <Button asChild variant="outline">
-                            <Link href={`/blog/${prevPost.id}`} title={prevPost.title}>
+                            <Link href={`/blog/${prevPost.slug}`} title={prevPost.title}>
                                 <ArrowRight className="ml-2 h-4 w-4" />
                                 المقالة السابقة
                             </Link>
@@ -139,7 +163,7 @@ export default function BlogPostPage() {
                  <div>
                     {nextPost && (
                          <Button asChild>
-                            <Link href={`/blog/${nextPost.id}`} title={nextPost.title}>
+                            <Link href={`/blog/${nextPost.slug}`} title={nextPost.title}>
                                 المقالة التالية
                                 <ChevronLeft className="mr-2 h-4 w-4" />
                             </Link>
