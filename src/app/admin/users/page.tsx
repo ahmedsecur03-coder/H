@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, orderBy, getDocs, limit, startAfter, Query as FirestoreQuery, where, getCountFromServer } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { User } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,6 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination';
-import Link from 'next/link';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -83,11 +82,9 @@ function AdminUsersPageComponent() {
     setIsLoading(true);
 
     try {
-        const usersQuery = query(collection(firestore, 'users'));
+        const usersQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(usersQuery);
         const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        // Sort client-side
-        usersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setAllUsers(usersData);
     } catch (error) {
         console.error(error);
@@ -103,8 +100,6 @@ function AdminUsersPageComponent() {
   }, [fetchUsers]);
   
   const { paginatedUsers, pageCount } = useMemo(() => {
-    if (!allUsers) return { paginatedUsers: [], pageCount: 0 };
-    
     const filtered = allUsers.filter(user => 
         currentSearch
         ? user.email?.toLowerCase().includes(currentSearch.toLowerCase()) || 
@@ -167,7 +162,6 @@ function AdminUsersPageComponent() {
             </Avatar>
             <div>
                 <CardTitle className="text-base">{user.name}</CardTitle>
-                <CardDescription className="text-xs">{user.email}</CardDescription>
             </div>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
