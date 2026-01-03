@@ -12,7 +12,6 @@ import PublicFooter from '@/components/public-footer';
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const fontSans = PT_Sans({
   subsets: ['latin'],
@@ -38,7 +37,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Public pages
   return (
       <div className="flex flex-col min-h-screen">
         <PublicHeader />
@@ -87,4 +85,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-

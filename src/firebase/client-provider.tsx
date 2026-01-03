@@ -8,7 +8,6 @@ import { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
 import type { User as UserType, Notification, SystemLog } from '@/lib/types';
 import { getRankForSpend, RANKS } from '@/lib/service';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 
 // This component now handles creating the user document if it doesn't exist
@@ -171,9 +170,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       firestore={firebaseServices.firestore}
     >
       <UserInitializer />
-      <FirebaseErrorListener />
       {children}
     </FirebaseProvider>
   );
 }
-
