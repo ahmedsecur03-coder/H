@@ -170,7 +170,8 @@ function UserInitializer() {
 function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/auth');
-  const isPublicPage = !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && !isAuthPage;
+  const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+  const isPublicPage = !isDashboardPage && !isAuthPage;
 
   return (
     <>
@@ -182,7 +183,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
         {isPublicPage && <PublicFooter />}
       </div>
-       {!isAuthPage && <FloatingActionButtons />}
+       {isDashboardPage && <FloatingActionButtons />}
     </>
   );
 }

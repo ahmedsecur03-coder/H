@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { SatelliteDish } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-// This component is now fully client-side and does not depend on ANY providers
-// to prevent build errors during static prerendering.
 
 export default function NotFoundPage() {
     return (
