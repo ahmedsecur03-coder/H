@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
@@ -177,31 +178,31 @@ export default function ApiPage() {
                         </TableHeader>
                         <TableBody>
                             <TableRow>
-                                <TableCell><CodeExample code='''{"order": 12345}''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`{"order": 12345}`} language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب إضافة، تحتوي على معرف الطلب الجديد.</TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell><CodeExample code='''{"charge": "0.50", "status": "قيد التنفيذ", ...}''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`{"charge": "0.50", "status": "قيد التنفيذ", ...}`} language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب حالة، تحتوي على تفاصيل الطلب.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code='''[{"service": 1, "name": "...", "rate": "0.50"}, ... ]''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`[{"service": 1, "name": "...", "rate": "0.50"}, ... ]`} language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب قائمة الخدمات.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code='''{"balance": "100.50", "currency": "USD"}''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`{"balance": "100.50", "currency": "USD"}`} language="json" /></TableCell>
                                 <TableCell>استجابة ناجحة لطلب الرصيد.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code='''{"error": "Incorrect request"}''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`{"error": "Incorrect request"}`} language="json" /></TableCell>
                                 <TableCell>خطأ في حالة وجود معلمات ناقصة أو غير صحيحة.</TableCell>
                             </TableRow>
                              <TableRow>
-                                <TableCell><CodeExample code='''{"error": "Not enough funds"}''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`{"error": "Not enough funds"}`} language="json" /></TableCell>
                                 <TableCell>خطأ في حالة عدم وجود رصيد كافٍ.</TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell><CodeExample code='''{"error": "Invalid API key"}''' language="json" /></TableCell>
+                                <TableCell><CodeExample code={`{"error": "Invalid API key"}`} language="json" /></TableCell>
                                 <TableCell>خطأ في حالة أن مفتاح API غير صالح.</TableCell>
                             </TableRow>
                         </TableBody>
