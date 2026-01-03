@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -75,11 +76,11 @@ function PublicHeader() {
     }
     return (
       <NavigationMenuItem key={item.href}>
-        <Link href={item.href || '#'} passHref>
-          <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+          <Link href={item.href || '#'}>
             {item.label}
-          </NavigationMenuLink>
-        </Link>
+          </Link>
+        </NavigationMenuLink>
       </NavigationMenuItem>
     );
   };
