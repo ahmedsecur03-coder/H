@@ -133,11 +133,11 @@ function PublicHeader() {
     }
     return (
       <NavigationMenuItem key={item.href}>
-        <Link href={item.href || '#'} passHref asChild>
-          <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-            {item.label}
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href={item.href || '#'}>
+                {item.label}
+            </Link>
           </NavigationMenuLink>
-        </Link>
       </NavigationMenuItem>
     );
   };
