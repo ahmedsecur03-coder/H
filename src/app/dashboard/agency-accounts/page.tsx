@@ -6,13 +6,14 @@ import { collection, query, orderBy, doc, runTransaction, addDoc } from 'firebas
 import type { AgencyAccount, User as UserType } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Briefcase, Wallet } from "lucide-react";
+import { PlusCircle, Briefcase, Wallet, Zap } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { BuyAccountDialog } from './_components/buy-account-dialog';
 import { ChargeAccountDialog } from './_components/charge-account-dialog';
+import { ChargeAdBalanceDialog } from './_components/charge-ad-balance-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 function AgencyAccountsSkeleton() {
@@ -129,6 +130,11 @@ export default function AgencyAccountsPage() {
                         <div className="text-2xl font-bold">${userData.adBalance.toFixed(2)}</div>
                         <p className="text-xs text-muted-foreground">يستخدم لشراء وشحن الحسابات.</p>
                     </CardContent>
+                    <CardFooter>
+                         <ChargeAdBalanceDialog userData={userData} onActionComplete={forceUpdateAll}>
+                            <Button size="sm" variant="secondary"><Zap className="ml-2 h-4 w-4" />شحن رصيد الإعلانات</Button>
+                         </ChargeAdBalanceDialog>
+                    </CardFooter>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

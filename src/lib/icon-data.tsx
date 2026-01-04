@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Package, Facebook, Youtube, Send, Twitter, Users, Clapperboard, Gamepad2, MapPin, Search, AppWindow, Waypoints, Star, MessageSquare, Hand, Radio, Wifi, Rss, Tv, Bot, Club, Instagram as InstagramIcon, MessageCircle, Ghost, Linkedin, HelpCircle } from 'lucide-react';
+import { Package, Facebook, Youtube, Send, Twitter, Users, Clapperboard, Gamepad2, MapPin, Search, AppWindow, Waypoints, Star, MessageSquare, Hand, Radio, Wifi, Rss, Tv, Bot, Club, Instagram as InstagramIcon, MessageCircle, Ghost, Linkedin, HelpCircle, Zap } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/ui/icons';
 
 export const PLATFORM_ICONS: { [key: string]: React.ElementType } = {
