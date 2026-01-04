@@ -19,8 +19,6 @@ import { Input } from '@/components/ui/input';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, runTransaction, increment } from 'firebase/firestore';
 
-const BONUS_PERCENTAGE = 0.25; // 25% bonus
-
 export function ChargeAdBalanceDialog({
   userData,
   children,
@@ -53,8 +51,6 @@ export function ChargeAdBalanceDialog({
     setLoading(true);
 
     const userDocRef = doc(firestore, 'users', user.uid);
-    const bonusAmount = transferAmount * BONUS_PERCENTAGE;
-    const totalAdCredit = transferAmount + bonusAmount;
 
     try {
       await runTransaction(firestore, async (transaction) => {
@@ -70,13 +66,13 @@ export function ChargeAdBalanceDialog({
         // Perform writes after read
         transaction.update(userDocRef, {
           balance: increment(-transferAmount),
-          adBalance: increment(totalAdCredit),
+          adBalance: increment(transferAmount),
         });
       });
 
       toast({
-        title: '🎉 نجاح!',
-        description: `تم تحويل ${transferAmount.toFixed(2)}$ من رصيدك الأساسي وإضافة ${totalAdCredit.toFixed(2)}$ إلى رصيد إعلاناتك.`,
+        title: 'نجاح!',
+        description: `تم تحويل ${transferAmount.toFixed(2)}$ من رصيدك الأساسي إلى رصيد إعلاناتك.`,
       });
       onActionComplete();
       setOpen(false);
@@ -93,8 +89,6 @@ export function ChargeAdBalanceDialog({
   };
   
   const transferAmountNum = parseFloat(amount) || 0;
-  const bonus = transferAmountNum * BONUS_PERCENTAGE;
-  const totalReceived = transferAmountNum + bonus;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -103,7 +97,7 @@ export function ChargeAdBalanceDialog({
         <DialogHeader>
           <DialogTitle>شحن رصيد الإعلانات</DialogTitle>
           <DialogDescription>
-            حوّل من رصيدك الأساسي إلى رصيد الإعلانات واحصل على مكافأة 25% فورية على المبلغ المحوّل.
+            حوّل من رصيدك الأساسي إلى رصيد الإعلانات.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleTransfer} className="space-y-4 py-4">
@@ -125,10 +119,9 @@ export function ChargeAdBalanceDialog({
             رصيدك الأساسي الحالي: <span className="font-bold">${userData.balance?.toFixed(2) ?? '0.00'}</span>
           </p>
           {transferAmountNum > 0 && (
-             <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg text-center space-y-2">
-                 <p className="text-sm">ستحصل على مكافأة <span className="font-bold text-primary">${bonus.toFixed(2)}</span></p>
+             <div className="p-4 bg-muted/50 rounded-lg text-center space-y-2">
                 <p className="text-lg">إجمالي المبلغ الذي سيضاف لرصيد إعلاناتك:</p>
-                <p className="text-3xl font-bold text-primary">${totalReceived.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-primary">${transferAmountNum.toFixed(2)}</p>
              </div>
           )}
           <DialogFooter>
