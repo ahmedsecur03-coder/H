@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, errorEmi
 import { collection, query, orderBy, doc, updateDoc, runTransaction, increment } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign, PauseCircle, MoreHorizontal, FileText, Wallet } from "lucide-react";
+import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign, PauseCircle, MoreHorizontal, FileText, Wallet, Zap } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
@@ -33,6 +33,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
+import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
 
 
 // This function simulates campaign performance on the client-side for visual feedback.
@@ -273,7 +274,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
-    const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
     const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
 
@@ -337,13 +338,26 @@ export default function CampaignsPage() {
   return (
      <div className="space-y-6">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الحملات الإعلانية</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">الحملات الإعلانية</h1>
             <p className="text-muted-foreground">
              أنشئ وراقب حملاتك الإعلانية على مختلف المنصات من مكان واحد.
             </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">${userData.balance.toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">يستخدم لشحن رصيد الإعلانات أو للطلبات العامة.</p>
+                </CardContent>
+                <CardFooter>
+                     <Button asChild size="sm" variant="secondary"><Link href="/dashboard/add-funds">إضافة رصيد</Link></Button>
+                </CardFooter>
+            </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
@@ -351,18 +365,13 @@ export default function CampaignsPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">${(userData.adBalance || 0).toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground">يُستخدم لتمويل الحملات الإعلانية.</p>
+                    <p className="text-xs text-muted-foreground">يستخدم لتمويل الحملات الإعلانية.</p>
                 </CardContent>
-            </Card>
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">الحملات النشطة</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{stats.active}</div>
-                     <p className="text-xs text-muted-foreground">إجمالي الحملات التي تعمل حاليًا.</p>
-                </CardContent>
+                <CardFooter>
+                     <ChargeAdBalanceDialog userData={userData} onActionComplete={forceDocUpdate}>
+                        <Button size="sm" variant="secondary"><Zap className="ml-2 h-4 w-4" />تحويل رصيد</Button>
+                     </ChargeAdBalanceDialog>
+                </CardFooter>
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -376,20 +385,12 @@ export default function CampaignsPage() {
             </Card>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button className="w-full text-lg py-7" asChild>
-                <Link href="/dashboard/campaigns/new">
-                    <PlusCircle className="ml-2 h-5 w-5" />
-                    إنشاء حملة جديدة
-                </Link>
-            </Button>
-            <Button variant="outline" className="w-full text-lg py-7" asChild>
-                <Link href="/dashboard/agency-accounts">
-                    <Briefcase className="ml-2 h-5 w-5" />
-                    إدارة حسابات الوكالة
-                </Link>
-            </Button>
-        </div>
+        <Button className="w-full text-lg py-7" asChild>
+            <Link href="/dashboard/campaigns/new">
+                <PlusCircle className="ml-2 h-5 w-5" />
+                إنشاء حملة جديدة
+            </Link>
+        </Button>
         
         <Card>
             <CardHeader>
