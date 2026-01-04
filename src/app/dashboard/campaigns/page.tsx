@@ -33,6 +33,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
+import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
 
 
 // This function simulates campaign performance on the client-side for visual feedback.
@@ -273,7 +274,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
-    const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
     const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
 
@@ -321,6 +322,11 @@ export default function CampaignsPage() {
     }, [campaigns]);
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
+    
+    const handleActionComplete = () => {
+        forceDocUpdate();
+        forceCollectionUpdate();
+    }
 
     if (isLoading || !userData || !authUser) {
         return <CampaignsSkeleton />;
@@ -353,6 +359,11 @@ export default function CampaignsPage() {
                     <div className="text-2xl font-bold">${(userData.adBalance || 0).toFixed(2)}</div>
                     <p className="text-xs text-muted-foreground">يستخدم لتمويل الحملات الإعلانية.</p>
                 </CardContent>
+                <CardFooter>
+                     <ChargeAdBalanceDialog userData={userData} onActionComplete={handleActionComplete}>
+                       <Button size="sm" variant="secondary"><Zap className="ml-2 h-4 w-4" />تحويل رصيد</Button>
+                    </ChargeAdBalanceDialog>
+                </CardFooter>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
