@@ -1,5 +1,4 @@
 
-
 import { getApps, initializeApp, App, cert, getApp } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth, Auth } from 'firebase-admin/auth';
@@ -13,24 +12,31 @@ interface FirebaseServerServices {
 
 /**
  * Initializes Firebase Admin services on the server-side.
- * This function is now disabled to ensure a client-only architecture.
- * @returns An object containing null services.
+ * This function is now enabled to work in both development and production.
+ * @returns An object containing the initialized services, or nulls if credentials are not available.
  */
 export function initializeFirebaseServer(): FirebaseServerServices {
-  // This function is intentionally disabled to adhere to a client-only architecture.
-  // Returning null for all services prevents any server-side Firebase logic from running.
-  // This helps avoid build errors in environments where server-side credentials are not available.
-  if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
-     return { firebaseApp: null, firestore: null, auth: null };
+  // Check if running on the server.
+  if (typeof window !== 'undefined') {
+    return { firebaseApp: null, firestore: null, auth: null };
   }
   
-  // The following code will only run in a local development environment
-  // to prevent crashing local server functionalities that might still use it.
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
     ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
     : undefined;
 
-  if (getApps().length === 0 && serviceAccount) {
+  // If already initialized, return the existing instances.
+  if (getApps().length > 0) {
+      const firebaseApp = getApp();
+       return { 
+        firebaseApp: firebaseApp, 
+        firestore: getFirestore(firebaseApp), 
+        auth: getAuth(firebaseApp) 
+    };
+  }
+
+  // If not initialized and service account is available, initialize.
+  if (serviceAccount) {
     const firebaseApp = initializeApp({
       credential: cert(serviceAccount),
       projectId: firebaseConfig.projectId,
@@ -40,14 +46,8 @@ export function initializeFirebaseServer(): FirebaseServerServices {
         firestore: getFirestore(firebaseApp), 
         auth: getAuth(firebaseApp) 
     };
-  } else if (getApps().length > 0) {
-      const firebaseApp = getApp();
-       return { 
-        firebaseApp: firebaseApp, 
-        firestore: getFirestore(firebaseApp), 
-        auth: getAuth(firebaseApp) 
-    };
   }
 
+  // If no credentials and not initialized, return null.
   return { firebaseApp: null, firestore: null, auth: null };
 }
