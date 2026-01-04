@@ -1,20 +1,13 @@
-
-'use client';
-
-import { notFound, useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowRight, ChevronLeft } from 'lucide-react';
 import Head from 'next/head';
 
-// This slug function must be available on the client now.
+// This slug function must be available on the server.
 function titleToSlug(title: string): string {
     if (!title) return '';
     return title.toLowerCase()
@@ -25,112 +18,80 @@ function titleToSlug(title: string): string {
         .replace(/-+$/, '');       // Trim - from end of text
 }
 
-
-function BlogPostSkeleton() {
-    return (
-        <div className="max-w-4xl mx-auto py-8">
-            <Skeleton className="h-8 w-32 mb-4" />
-             <Card>
-                <CardHeader>
-                    <Skeleton className="h-10 w-3/4" />
-                    <Skeleton className="h-5 w-1/4 mt-2" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-5/6" />
-                    <Skeleton className="h-5 w-full mt-4" />
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-2/3" />
-                </CardContent>
-            </Card>
-             <div className="flex justify-between items-center mt-8">
-                <Skeleton className="h-10 w-28" />
-                <Skeleton className="h-10 w-28" />
-            </div>
-        </div>
-    );
+async function getPosts(): Promise<BlogPost[]> {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/blog`, {
+             next: { revalidate: 60 } // Revalidate every 60 seconds
+        });
+        if (!res.ok) {
+            return [];
+        }
+        const posts = await res.json();
+        return posts.map((post: any) => ({ ...post, publishDate: post.date })) as BlogPost[];
+    } catch (error) {
+        console.error("Failed to fetch blog posts:", error);
+        return [];
+    }
 }
 
-export default function BlogPostPage() {
-    const params = useParams();
-    const slug = params.slug as string;
-    const firestore = useFirestore();
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [adjacentPosts, setAdjacentPosts] = useState<{ prevPost: BlogPost | null, nextPost: BlogPost | null }>({ prevPost: null, nextPost: null });
+async function getPostData(slug: string) {
+    const posts = await getPosts();
+    const currentPost = posts.find(p => titleToSlug(p.title) === slug);
 
-    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null, [firestore]);
-    const { data: allPosts, isLoading } = useCollection<BlogPost>(postsQuery);
+    if (!currentPost) {
+        return { post: null, prevPost: null, nextPost: null };
+    }
 
-    useEffect(() => {
-        if (allPosts) {
-            const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
-            if (currentPost) {
-                setPost(currentPost);
-                const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
-                const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
-                const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
-                setAdjacentPosts({ prevPost, nextPost });
-            } else {
-                 // If post not found after loading, trigger notFound
-                 notFound();
-            }
-        }
-    }, [allPosts, slug]);
+    const currentIndex = posts.findIndex(p => p.id === currentPost.id);
+    const prevPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
+    const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
 
-    if (isLoading || !post) {
-        return <BlogPostSkeleton />;
+    return { post: currentPost, prevPost, nextPost };
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+    const { post } = await getPostData(params.slug);
+
+    if (!post) {
+        return {
+            title: 'المنشور غير موجود',
+        };
+    }
+
+    const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
+
+    return {
+        title: `${post.title} | مدونة حاجاتي`,
+        description: description,
+        alternates: {
+            canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${params.slug}`,
+        },
+        openGraph: {
+            title: post.title,
+            description: description,
+            url: `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${params.slug}`,
+            type: 'article',
+            publishedTime: post.publishDate,
+            images: [`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: post.title,
+            description: description,
+            images: [`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`],
+        },
+    };
+}
+
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+    const { post, prevPost, nextPost } = await getPostData(params.slug);
+
+    if (!post) {
+        notFound();
     }
     
-    const { prevPost, nextPost } = adjacentPosts;
-    const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
-    
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'BlogPosting',
-        'headline': post.title,
-        'description': description,
-        'datePublished': post.publishDate,
-        'author': {
-            '@type': 'Organization',
-            'name': 'فريق حاجاتي'
-        },
-        'publisher': {
-            '@type': 'Organization',
-            'name': 'منصة حاجاتي',
-            'logo': {
-                '@type': 'ImageObject',
-                'url': `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`
-            }
-        },
-        'mainEntityOfPage': {
-            '@type': 'WebPage',
-            '@id': `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`
-        }
-    };
-
-
     return (
-        <>
-             <Head>
-                <title>{`${post.title} | مدونة حاجاتي`}</title>
-                <meta name="description" content={description} />
-                <link rel="canonical" href={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
-                <meta property="og:title" content={post.title} />
-                <meta property="og:description" content={description} />
-                <meta property="og:url" content={`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${slug}`} />
-                <meta property="og:type" content="article" />
-                <meta property="og:published_time" content={post.publishDate} />
-                <meta property="og:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={post.title} />
-                <meta name="twitter:description" content={description} />
-                <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`} />
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-                />
-            </Head>
             <div className="max-w-4xl mx-auto py-8">
                 <Button variant="ghost" asChild className="mb-4">
                     <Link href="/blog">
@@ -182,6 +143,5 @@ export default function BlogPostPage() {
                     </div>
                 </nav>
             </div>
-        </>
     );
 }

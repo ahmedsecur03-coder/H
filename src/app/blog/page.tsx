@@ -1,16 +1,10 @@
-
-'use client';
-
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
 
-// This slug function must be available on the client now.
+// This slug function must be available on the server.
 function titleToSlug(title: string): string {
     if (!title) return '';
     return title.toLowerCase()
@@ -21,45 +15,27 @@ function titleToSlug(title: string): string {
         .replace(/-+$/, '');       // Trim - from end of text
 }
 
-
-function BlogPageSkeleton() {
-    return (
-        <div className="space-y-6 pb-8">
-            <div>
-                <Skeleton className="h-9 w-1/3" />
-                <Skeleton className="h-5 w-2/3 mt-2" />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <Card key={i}>
-                        <CardHeader>
-                            <Skeleton className="h-6 w-3/4" />
-                            <Skeleton className="h-4 w-1/4 mt-2" />
-                        </CardHeader>
-                        <CardContent>
-                             <Skeleton className="h-4 w-full" />
-                             <Skeleton className="h-4 w-full mt-2" />
-                             <Skeleton className="h-4 w-2/3 mt-2" />
-                        </CardContent>
-                        <CardFooter>
-                            <Skeleton className="h-10 w-28" />
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
-        </div>
-    )
+async function getPosts(): Promise<BlogPost[]> {
+    try {
+        // In a real app, this would be an absolute URL from an environment variable
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/blog`, {
+            next: { revalidate: 60 } // Revalidate every 60 seconds
+        });
+        if (!res.ok) {
+            return [];
+        }
+        const posts = await res.json();
+        // Ensure date is a string, as the API returns it
+        return posts.map((post: any) => ({ ...post, publishDate: post.date })) as BlogPost[];
+    } catch (error) {
+        console.error("Failed to fetch blog posts:", error);
+        return [];
+    }
 }
 
 
-export default function BlogPage() {
-    const firestore = useFirestore();
-    const postsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null, [firestore]);
-    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
-
-    if (isLoading) {
-        return <BlogPageSkeleton />;
-    }
+export default async function BlogPage() {
+    const posts = await getPosts();
 
     return (
         <div className="space-y-6 pb-8">
@@ -111,4 +87,3 @@ export default function BlogPage() {
         </div>
     );
 }
-
