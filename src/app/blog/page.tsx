@@ -17,11 +17,16 @@ function titleToSlug(title: string): string {
 
 async function getPosts(): Promise<BlogPost[]> {
     try {
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+        if (!baseUrl) {
+            throw new Error("Site URL is not configured.");
+        }
         // In a real app, this would be an absolute URL from an environment variable
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/blog`, {
+        const res = await fetch(`${baseUrl}/api/blog`, {
             next: { revalidate: 60 } // Revalidate every 60 seconds
         });
         if (!res.ok) {
+            console.error("Failed to fetch blog posts, status:", res.status);
             return [];
         }
         const posts = await res.json();

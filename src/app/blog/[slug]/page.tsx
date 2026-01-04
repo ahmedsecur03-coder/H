@@ -20,16 +20,21 @@ function titleToSlug(title: string): string {
 
 async function getPosts(): Promise<BlogPost[]> {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/blog`, {
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+        if (!baseUrl) {
+            throw new Error("Site URL is not configured.");
+        }
+        const res = await fetch(`${baseUrl}/api/blog`, {
              next: { revalidate: 60 } // Revalidate every 60 seconds
         });
         if (!res.ok) {
+             console.error("Failed to fetch blog posts, status:", res.status);
             return [];
         }
         const posts = await res.json();
         return posts.map((post: any) => ({ ...post, publishDate: post.date })) as BlogPost[];
     } catch (error) {
-        console.error("Failed to fetch blog posts:", error);
+        console.error("Failed to fetch blog posts:",error);
         return [];
     }
 }
@@ -51,6 +56,7 @@ async function getPostData(slug: string) {
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
     const { post } = await getPostData(params.slug);
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
 
     if (!post) {
         return {
@@ -64,21 +70,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         title: `${post.title} | مدونة حاجاتي`,
         description: description,
         alternates: {
-            canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${params.slug}`,
+            canonical: `${baseUrl}/blog/${params.slug}`,
         },
         openGraph: {
             title: post.title,
             description: description,
-            url: `${process.env.NEXT_PUBLIC_SITE_URL}/blog/${params.slug}`,
+            url: `${baseUrl}/blog/${params.slug}`,
             type: 'article',
             publishedTime: post.publishDate,
-            images: [`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`],
+            images: [`${baseUrl}/og-image.png`],
         },
         twitter: {
             card: 'summary_large_image',
             title: post.title,
             description: description,
-            images: [`${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png`],
+            images: [`${baseUrl}/og-image.png`],
         },
     };
 }
