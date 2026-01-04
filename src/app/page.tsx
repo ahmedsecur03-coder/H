@@ -184,13 +184,10 @@ export default function HomePage() {
       label: "استكشف الخدمات"
   }
 
- const featureCards = [
-    { key: "feature-1", icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط.", href: "/dashboard/campaigns/new" },
-    { key: "feature-2", icon: Briefcase, title: "حسابات إعلانية وكالة", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية.", href: "/dashboard/agency-accounts" },
-    { key: "feature-3", icon: Users, title: "نظام إحالة هجين", description: "اكسب عمولات مباشرة وشبكية من دعواتك حتى 5 مستويات.", href: "/dashboard/affiliate" },
-    { key: "feature-4", icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات بأسعار تنافسية وسرعة فائقة.", href: "/dashboard/services" },
-    { key: "feature-5", icon: Shield, title: "دعم فني فوري", description: "فريق دعم متخصص جاهز لمساعدتك على مدار الساعة لحل أي مشكلة.", href: "/dashboard/support" },
-    { key: "feature-6", icon: Target, title: "استهداف دقيق", description: "نقدم خدمات مستهدفة جغرافيًا لضمان وصولك للجمهور الصحيح.", href: "/services" }
+ const coreServices = [
+    { key: "service-1", icon: Zap, title: "خدمات SMM فورية", description: "آلاف الخدمات لجميع المنصات لزيادة المتابعين، المشاهدات، والتفاعل بأسعار تنافسية وسرعة فائقة.", href: "/dashboard/services" },
+    { key: "service-2", icon: Megaphone, title: "حملات إعلانية ذكية", description: "أطلق حملاتك على جوجل وميتا وتيك توك بأسعار تبدأ من 5$ فقط، مع استهداف دقيق لجمهورك.", href: "/dashboard/campaigns/new" },
+    { key: "service-3", icon: Briefcase, title: "حسابات إعلانية (وكالة)", description: "تجاوز قيود الحسابات الجديدة بحسابات موثوقة ذات حدود إنفاق عالية وبدون قلق من الإغلاق.", href: "/dashboard/agency-accounts" },
 ];
 
   const howItWorksSteps = [
@@ -253,37 +250,43 @@ export default function HomePage() {
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5 }}
                      viewport={{ once: true }}
-                    className="text-4xl font-bold font-headline">لماذا تختار حاجاتي؟</motion.h2>
+                    className="text-4xl font-bold font-headline">خدماتنا الأساسية</motion.h2>
                 <motion.p 
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5, delay: 0.1 }}
                      viewport={{ once: true }}
-                    className="text-muted-foreground mt-2">نحن نقدم أكثر من مجرد خدمات، نحن شريكك في النجاح.</motion.p>
+                    className="text-muted-foreground mt-2">نقدم حلولاً متكاملة لتلبية كل "حاجة" من حاجاتك الرقمية.</motion.p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featureCards.map((feature, i) => {
-                    const Icon = feature.icon;
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {coreServices.map((service, i) => {
+                    const Icon = service.icon;
                     return (
                         <motion.div
-                          key={feature.key}
+                          key={service.key}
                           initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: i * 0.1 }}
                           viewport={{ once: true }}
                            className="h-full"
                         >
-                             <Link href={feature.href} className="h-full block">
-                                <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-2">
-                                    <CardHeader className="items-center">
-                                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
-                                            <Icon className="h-8 w-8 text-primary" />
-                                        </div>
-                                        <CardTitle>{feature.title}</CardTitle>
-                                        <CardDescription className="pt-2">{feature.description}</CardDescription>
-                                    </CardHeader>
-                                </Card>
-                            </Link>
+                            <Card className="text-center h-full transition-all duration-300 hover:scale-105 hover:shadow-primary/20 glassmorphism-card p-4 flex flex-col">
+                                <CardHeader className="items-center">
+                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-full mb-4 transition-transform group-hover:scale-110">
+                                        <Icon className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <CardTitle>{service.title}</CardTitle>
+                                    <CardDescription className="pt-2 flex-grow">{service.description}</CardDescription>
+                                </CardHeader>
+                                <CardFooter className="mt-auto">
+                                    <Button asChild variant="secondary" className="w-full">
+                                        <Link href={service.href}>
+                                            <ChevronLeft className="h-4 w-4 me-2" />
+                                            اعرف المزيد
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
                         </motion.div>
                     )
                 })}
@@ -297,13 +300,13 @@ export default function HomePage() {
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5 }}
                      viewport={{ once: true }}
-                    className="text-4xl font-bold font-headline">نظرة على خدماتنا</motion.h2>
+                    className="text-4xl font-bold font-headline">نظرة على خدمات SMM</motion.h2>
                  <motion.p 
                      initial={{ opacity: 0, y: 20 }}
                      whileInView={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5, delay: 0.1 }}
                      viewport={{ once: true }}
-                    className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها.</motion.p>
+                    className="text-muted-foreground mt-2">عينة من الخدمات الأكثر طلبًا التي نقدمها في قسم SMM.</motion.p>
             </div>
             <FeaturedServicesTabs />
         </section>
