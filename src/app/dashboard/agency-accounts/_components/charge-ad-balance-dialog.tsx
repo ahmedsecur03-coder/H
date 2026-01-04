@@ -95,9 +95,9 @@ export function ChargeAdBalanceDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>شحن رصيد الإعلانات</DialogTitle>
+          <DialogTitle>تحويل إلى رصيد الإعلانات</DialogTitle>
           <DialogDescription>
-            حوّل من رصيدك الأساسي إلى رصيد الإعلانات.
+            أدخل المبلغ الذي تريد تحويله من رصيدك الأساسي إلى رصيد إعلاناتك. سيتم تحويل المبلغ بنسبة 1:1.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleTransfer} className="space-y-4 py-4">
@@ -120,8 +120,7 @@ export function ChargeAdBalanceDialog({
           </p>
           {transferAmountNum > 0 && (
              <div className="p-4 bg-muted/50 rounded-lg text-center space-y-2">
-                <p className="text-lg">إجمالي المبلغ الذي سيضاف لرصيد إعلاناتك:</p>
-                <p className="text-3xl font-bold text-primary">${transferAmountNum.toFixed(2)}</p>
+                <p className="text-lg">سيتم خصم <span className="font-bold text-destructive">${transferAmountNum.toFixed(2)}</span> من رصيدك الأساسي وإضافة <span className="font-bold text-green-500">${transferAmountNum.toFixed(2)}</span> إلى رصيد الإعلانات.</p>
              </div>
           )}
           <DialogFooter>

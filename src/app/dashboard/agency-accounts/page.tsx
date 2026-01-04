@@ -6,7 +6,7 @@ import { collection, query, orderBy, doc, runTransaction, addDoc } from 'firebas
 import type { AgencyAccount, User as UserType } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Briefcase, Wallet, Zap } from "lucide-react";
+import { PlusCircle, Briefcase, Wallet, Zap, DollarSign } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +15,7 @@ import { BuyAccountDialog } from './_components/buy-account-dialog';
 import { ChargeAccountDialog } from './_components/charge-account-dialog';
 import { ChargeAdBalanceDialog } from './_components/charge-ad-balance-dialog';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 function AgencyAccountsSkeleton() {
     return (
@@ -23,7 +24,8 @@ function AgencyAccountsSkeleton() {
                 <Skeleton className="h-8 w-1/3" />
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
             </div>
@@ -114,13 +116,26 @@ export default function AgencyAccountsPage() {
     return (
         <div className="space-y-6 pb-8">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline">حساباتي الإعلانية (ايجنسي)</h1>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">حساباتي الإعلانية (وكالة)</h1>
                 <p className="text-muted-foreground">
                     شراء وشحن وإدارة حسابات الوكالة الإعلانية الخاصة بك لجميع المنصات.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">${userData.balance.toFixed(2)}</div>
+                        <p className="text-xs text-muted-foreground">يستخدم لشحن رصيد الإعلانات أو للطلبات العامة.</p>
+                    </CardContent>
+                    <CardFooter>
+                         <Button asChild size="sm" variant="secondary"><Link href="/dashboard/add-funds">إضافة رصيد</Link></Button>
+                    </CardFooter>
+                </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">رصيد الإعلانات العام</CardTitle>
@@ -128,11 +143,11 @@ export default function AgencyAccountsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${userData.adBalance.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground">يستخدم لشراء وشحن الحسابات.</p>
+                        <p className="text-xs text-muted-foreground">يستخدم لشراء وشحن حسابات الوكالة.</p>
                     </CardContent>
                     <CardFooter>
                          <ChargeAdBalanceDialog userData={userData} onActionComplete={forceUpdateAll}>
-                            <Button size="sm" variant="secondary"><Zap className="ml-2 h-4 w-4" />شحن رصيد الإعلانات</Button>
+                            <Button size="sm" variant="secondary"><Zap className="ml-2 h-4 w-4" />تحويل إلى رصيد إعلانات</Button>
                          </ChargeAdBalanceDialog>
                     </CardFooter>
                 </Card>
@@ -143,7 +158,7 @@ export default function AgencyAccountsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${totalAccountsBalance.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground">مجموع الأرصدة في كل حساباتك.</p>
+                        <p className="text-xs text-muted-foreground">مجموع الأرصدة في كل حساباتك النشطة.</p>
                     </CardContent>
                 </Card>
             </div>
