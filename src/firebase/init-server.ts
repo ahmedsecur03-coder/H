@@ -12,42 +12,51 @@ interface FirebaseServerServices {
 
 /**
  * Initializes Firebase Admin services on the server-side.
- * This function is now enabled to work in both development and production.
- * @returns An object containing the initialized services, or nulls if credentials are not available.
+ * This function is robust for both development (using client config as fallback)
+ * and production (using service account key).
+ * @returns An object containing the initialized services, or nulls if initialization fails.
  */
 export function initializeFirebaseServer(): FirebaseServerServices {
-  // Check if running on the server.
   if (typeof window !== 'undefined') {
+    // This is a server-only function.
     return { firebaseApp: null, firestore: null, auth: null };
   }
+
+  // If already initialized, return the existing app instance.
+  if (getApps().length > 0) {
+    const app = getApp();
+    return {
+      firebaseApp: app,
+      firestore: getFirestore(app),
+      auth: getAuth(app),
+    };
+  }
   
+  // Try to use the service account key if available (for production).
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
     ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
     : undefined;
 
-  // If already initialized, return the existing instances.
-  if (getApps().length > 0) {
-      const firebaseApp = getApp();
-       return { 
-        firebaseApp: firebaseApp, 
-        firestore: getFirestore(firebaseApp), 
-        auth: getAuth(firebaseApp) 
-    };
-  }
-
-  // If not initialized and service account is available, initialize.
   if (serviceAccount) {
-    const firebaseApp = initializeApp({
+    const app = initializeApp({
       credential: cert(serviceAccount),
       projectId: firebaseConfig.projectId,
     });
-     return { 
-        firebaseApp: firebaseApp, 
-        firestore: getFirestore(firebaseApp), 
-        auth: getAuth(firebaseApp) 
+    return {
+      firebaseApp: app,
+      firestore: getFirestore(app),
+      auth: getAuth(app),
     };
   }
 
-  // If no credentials and not initialized, return null.
-  return { firebaseApp: null, firestore: null, auth: null };
+  // Fallback for development environment where service account might not be set.
+  // This uses the public client-side config, which works for server-side
+  // rendering in development but has limitations (e.g., cannot mint tokens).
+  console.warn("Firebase Admin SDK is being initialized with client-side config. This is intended for development ONLY.");
+  const app = initializeApp(firebaseConfig);
+  return {
+    firebaseApp: app,
+    firestore: getFirestore(app),
+    auth: getAuth(app),
+  };
 }
