@@ -6,35 +6,42 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 import Head from 'next/head';
+import { initializeFirebaseServer } from '@/firebase/init-server';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
-// This slug function must be available on the server.
 function titleToSlug(title: string): string {
     if (!title) return '';
     return title.toLowerCase()
-        .replace(/\s+/g, '-')      // Replace spaces with -
-        .replace(/[^\w-]+/g, '')   // Remove all non-word chars except -
-        .replace(/--+/g, '-')      // Replace multiple - with single -
-        .replace(/^-+/, '')        // Trim - from start of text
-        .replace(/-+$/, '');       // Trim - from end of text
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\u0621-\u064A-]+/g, '') // Allow Arabic characters
+        .replace(/--+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
 }
 
 async function getPosts(): Promise<BlogPost[]> {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) {
+        console.error("Failed to connect to the database on the server.");
+        return [];
+    }
+
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
-        if (!baseUrl) {
-            throw new Error("Site URL is not configured.");
-        }
-        const res = await fetch(`${baseUrl}/api/blog`, {
-             next: { revalidate: 60 } // Revalidate every 60 seconds
-        });
-        if (!res.ok) {
-             console.error("Failed to fetch blog posts, status:", res.status);
-            return [];
-        }
-        const posts = await res.json();
-        return posts.map((post: any) => ({ ...post, publishDate: post.date })) as BlogPost[];
+        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+        const querySnapshot = await getDocs(postsQuery);
+        
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title,
+                content: data.content,
+                authorId: data.authorId,
+                publishDate: data.publishDate,
+            };
+        }) as BlogPost[];
     } catch (error) {
-        console.error("Failed to fetch blog posts:",error);
+        console.error("Error fetching blog posts from Firestore:", error);
         return [];
     }
 }
