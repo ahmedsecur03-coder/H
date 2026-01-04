@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -34,14 +35,15 @@ import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 
 
-// This function is no longer needed on the client, the server action handles activation.
-// We keep a simplified version for instant visual feedback on completion.
+// This function simulates campaign performance on the client-side for visual feedback.
 function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
-    if (campaign.status !== 'نشط' || !campaign.startDate) {
+    const { startDate, durationDays, budget, status } = campaign;
+
+    // Don't simulate for campaigns that aren't active or haven't started.
+    if (status !== 'نشط' || !startDate) {
         return {};
     }
 
-    const { startDate, durationDays, budget } = campaign;
     const now = Date.now();
     const startTime = new Date(startDate).getTime();
     const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
@@ -50,31 +52,43 @@ function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
     const elapsedMillis = Math.max(0, now - startTime);
     const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
     
-    if (progress >= 1 && campaign.status === 'نشط') {
+    // If progress is 100%, the campaign is complete. Generate final stats.
+    if (progress >= 1) {
+        const finalSpend = budget;
+        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 50) + (budget * 10)); // Ensure some base impressions
+        const finalClicks = (campaign.clicks || 0) + Math.floor(finalImpressions * (Math.random() * 0.05 + 0.01));
+        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
+        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
+        const finalResults = Math.floor(finalClicks * (Math.random() * 0.3 + 0.1));
+
         return { 
             status: 'مكتمل', 
-            spend: budget, // Assume full budget is spent on completion
+            spend: finalSpend,
+            impressions: finalImpressions,
+            clicks: finalClicks,
+            ctr: finalCtr,
+            cpc: finalCpc,
+            results: finalResults,
         };
     }
     
-    // Only simulate if not yet completed to avoid re-calculating
-    if (campaign.status === 'نشط') {
-        const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
-        const spendIncrement = simulatedSpend - (campaign.spend || 0);
+    // If still active, simulate incremental performance
+    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
+    const spendIncrement = simulatedSpend - (campaign.spend || 0);
 
-        if (spendIncrement > 0) {
-            const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
-            const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
-            return {
-                spend: simulatedSpend,
-                impressions,
-                clicks,
-                ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
-                cpc: clicks > 0 ? simulatedSpend / clicks : 0,
-                results: (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2),
-            };
-        }
+    if (spendIncrement > 0) {
+        const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
+        const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
+        return {
+            spend: simulatedSpend,
+            impressions,
+            clicks,
+            ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+            cpc: clicks > 0 ? simulatedSpend / clicks : 0,
+            results: (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2),
+        };
     }
+
     return {};
 };
 
@@ -271,17 +285,20 @@ export default function CampaignsPage() {
 
 
     useEffect(() => {
-        // This client-side simulation is now only for visual feedback.
-        // The server-action handles the reliable state changes.
         const interval = setInterval(() => {
             setLiveCampaigns(currentCampaigns => {
-                return currentCampaigns.map(c => {
+                let hasChanged = false;
+                const updatedCampaigns = currentCampaigns.map(c => {
                     if (c.status === 'نشط') {
                          const performanceUpdate = calculateCampaignPerformance(c);
-                         return { ...c, ...performanceUpdate };
+                         if (Object.keys(performanceUpdate).length > 0) {
+                            hasChanged = true;
+                            return { ...c, ...performanceUpdate };
+                         }
                     }
                     return c;
                 });
+                return hasChanged ? updatedCampaigns : currentCampaigns;
             });
         }, 5000); // Update visuals every 5 seconds
 
@@ -330,7 +347,7 @@ export default function CampaignsPage() {
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <Wallet className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">${(userData.adBalance || 0).toFixed(2)}</div>

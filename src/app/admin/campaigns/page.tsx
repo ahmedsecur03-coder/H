@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
@@ -38,6 +39,58 @@ import Link from 'next/link';
 import { CampaignDetailsDialog } from '@/app/dashboard/campaigns/_components/campaign-details-dialog';
 import { CampaignActions } from './_components/campaign-actions';
 
+// This function simulates campaign performance on the client-side for visual feedback.
+function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
+    const { startDate, durationDays, budget, status } = campaign;
+
+    if (status !== 'نشط' || !startDate) {
+        return {};
+    }
+
+    const now = Date.now();
+    const startTime = new Date(startDate).getTime();
+    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
+    const progress = Math.min((now - startTime) / totalDurationMillis, 1);
+    
+    if (progress >= 1) {
+        const finalSpend = budget;
+        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 50) + (budget * 10));
+        const finalClicks = (campaign.clicks || 0) + Math.floor(finalImpressions * (Math.random() * 0.05 + 0.01));
+        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
+        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
+        const finalResults = Math.floor(finalClicks * (Math.random() * 0.3 + 0.1));
+
+        return { 
+            status: 'مكتمل', 
+            spend: finalSpend,
+            impressions: finalImpressions,
+            clicks: finalClicks,
+            ctr: finalCtr,
+            cpc: finalCpc,
+            results: finalResults,
+        };
+    }
+    
+    const simulatedSpend = Math.min(budget * progress * 1.1, budget);
+    const spendIncrement = simulatedSpend - (campaign.spend || 0);
+
+    if (spendIncrement > 0) {
+        const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
+        const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
+        return {
+            spend: simulatedSpend,
+            impressions,
+            clicks,
+            ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+            cpc: clicks > 0 ? simulatedSpend / clicks : 0,
+            results: (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2),
+        };
+    }
+
+    return {};
+};
+
+
 const statusVariant = {
   'نشط': 'default',
   'متوقف': 'secondary',
@@ -55,12 +108,6 @@ export default function AdminCampaignsPage() {
   const [filter, setFilter] = useState<Status | 'all'>('all');
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-      active: 0,
-      totalBudget: 0,
-      totalSpend: 0,
-      statusCounts: ALL_STATUSES.map(s => ({ status: s, count: 0 }))
-  });
 
   const fetchCampaignsAndStats = useCallback(async () => {
     if (!firestore) return;
@@ -70,22 +117,19 @@ export default function AdminCampaignsPage() {
       const campaignsQuery = collectionGroup(firestore, 'campaigns');
       
       const querySnapshot = await getDocs(campaignsQuery);
-      const fetchedCampaigns: Campaign[] = [];
-      let tempTotalBudget = 0;
-      let tempTotalSpend = 0;
-      const tempStatusCounts = ALL_STATUSES.reduce((acc, status) => ({...acc, [status]: 0}), {} as Record<Status, number>);
-
+      let fetchedCampaigns: Campaign[] = [];
+      
       querySnapshot.forEach(doc => {
         const pathSegments = doc.ref.path.split('/');
         const userId = pathSegments[1];
         const campaign = { id: doc.id, userId, ...doc.data() } as Campaign;
-        fetchedCampaigns.push(campaign);
-
-        // Calculate stats
-        tempTotalBudget += campaign.budget;
-        tempTotalSpend += campaign.spend || 0;
-        if (tempStatusCounts.hasOwnProperty(campaign.status)) {
-            tempStatusCounts[campaign.status]++;
+        
+        // Apply final performance calculation if campaign is completed but has no stats
+        if (campaign.status === 'مكتمل' && !campaign.impressions) {
+            const finalPerformance = calculateCampaignPerformance({ ...campaign, status: 'نشط', startDate: campaign.startDate || new Date(Date.now() - (campaign.durationDays * 86400000)).toISOString() });
+             fetchedCampaigns.push({ ...campaign, ...finalPerformance });
+        } else {
+            fetchedCampaigns.push(campaign);
         }
       });
       
@@ -93,13 +137,6 @@ export default function AdminCampaignsPage() {
       fetchedCampaigns.sort((a,b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
 
       setCampaigns(fetchedCampaigns);
-      setStats({
-          active: tempStatusCounts['نشط'],
-          totalBudget: tempTotalBudget,
-          totalSpend: tempTotalSpend,
-          statusCounts: ALL_STATUSES.map(s => ({ status: s, count: tempStatusCounts[s] }))
-      });
-
     } catch (error) {
       console.error("Error fetching campaigns:", error);
       toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات.' });
@@ -107,6 +144,29 @@ export default function AdminCampaignsPage() {
       setIsLoading(false);
     }
   }, [firestore, toast]);
+  
+  // Stats are now derived from the 'campaigns' state
+  const stats = useMemo(() => {
+    const tempStatusCounts = ALL_STATUSES.reduce((acc, status) => ({...acc, [status]: 0}), {} as Record<Status, number>);
+    let tempTotalBudget = 0;
+    let tempTotalSpend = 0;
+
+    campaigns.forEach(campaign => {
+        tempTotalBudget += campaign.budget;
+        tempTotalSpend += campaign.spend || 0;
+        if (tempStatusCounts.hasOwnProperty(campaign.status)) {
+            tempStatusCounts[campaign.status]++;
+        }
+    });
+
+    return {
+        active: tempStatusCounts['نشط'],
+        totalBudget: tempTotalBudget,
+        totalSpend: tempTotalSpend,
+        statusCounts: ALL_STATUSES.map(s => ({ status: s, count: tempStatusCounts[s] }))
+    };
+  }, [campaigns]);
+
 
   useEffect(() => {
     fetchCampaignsAndStats();
