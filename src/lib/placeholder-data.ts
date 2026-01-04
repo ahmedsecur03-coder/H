@@ -56,10 +56,10 @@ export const dashboardNavItems: NestedNavItem[] = [
     icon: ShoppingBag,
     children: [
         { href: '/dashboard/campaigns', label: 'إدارة الحملات الإعلانية', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
         { href: '/dashboard/services', label: 'كل خدمات SMM', icon: Rocket },
         { href: '/dashboard/mass-order', label: 'طلب جماعي SMM', icon: Package },
         { href: '/dashboard/orders', label: 'سجل طلبات SMM', icon: ListOrdered },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
     ]
   },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
