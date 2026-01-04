@@ -27,7 +27,8 @@ import {
   UserCircle,
   Info,
   Terminal,
-  WalletCards
+  WalletCards,
+  ShoppingBag
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -51,25 +52,18 @@ export const publicNavItems: NestedNavItem[] = [
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
   { 
-    label: 'خدمات SMM',
-    icon: ShoppingCart,
+    label: 'خدمات المنصة',
+    icon: ShoppingBag,
     children: [
-        { href: '/dashboard/services', label: 'كل الخدمات', icon: Rocket },
-        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
-        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
+        { href: '/dashboard/services', label: 'كل خدمات SMM', icon: Rocket },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي SMM', icon: Package },
+        { href: '/dashboard/orders', label: 'سجل طلبات SMM', icon: ListOrdered },
+        { href: '/dashboard/campaigns', label: 'إدارة الحملات الإعلانية', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
     ]
   },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
-   { 
-    label: 'الحملات',
-    icon: Megaphone,
-     children: [
-        { href: '/dashboard/campaigns', label: 'إدارة الحملات', icon: Megaphone },
-        { href: '/dashboard/campaigns/new', label: 'حملة جديدة', icon: Rocket },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
-    ]
-  },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
   { 
       label: 'الحساب',
@@ -87,7 +81,7 @@ export const adminNavItems: NestedNavItem[] = [
     { href: '/admin/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
     { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
     { 
-        label: 'المعاملات المالية',
+        label: 'العمليات المالية',
         icon: DollarSign,
         children: [
            { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
