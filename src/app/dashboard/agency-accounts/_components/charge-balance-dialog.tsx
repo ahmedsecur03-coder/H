@@ -38,7 +38,7 @@ export function ChargeBalanceDialog({ account, userData, children, onActionCompl
 
         const newRequest: Omit<AgencyChargeRequest, 'id'> = {
             userId: authUser.uid,
-            accountId: account.id,
+            accountId: account.accountId,
             accountName: account.accountName,
             platform: account.platform,
             amount: chargeAmount,
@@ -73,7 +73,7 @@ export function ChargeBalanceDialog({ account, userData, children, onActionCompl
                 <DialogHeader>
                     <DialogTitle>شحن رصيد حساب: {account.accountName}</DialogTitle>
                     <DialogDescription>
-                        سيتم خصم المبلغ من "رصيد الإعلانات العام" وإرسال طلب للمراجعة.
+                        سيتم خصم المبلغ من "رصيد الإعلانات العام" وإرسال طلب للمراجعة. معرف الحساب: <span className="font-mono">{account.accountId}</span>
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -98,4 +98,3 @@ export function ChargeBalanceDialog({ account, userData, children, onActionCompl
         </Dialog>
     );
 }
-

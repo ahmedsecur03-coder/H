@@ -266,13 +266,14 @@
         "properties": {
             "id": { "type": "string" },
             "userId": { "type": "string" },
+            "accountId": { "type": "string", "description": "The unique identifier for the ad account (e.g., from Meta or Google)." },
+            "accountName": { "type": "string", "description": "A user-friendly name for the account." },
             "platform": { "type": "string", "enum": ["Meta", "Google", "TikTok", "Snapchat"] },
-            "accountName": { "type": "string" },
             "status": { "type": "string", "enum": ["Active", "Suspended"] },
             "createdAt": { "type": "string", "format": "date-time" },
             "balance": { "type": "number" }
         },
-        "required": ["id", "userId", "platform", "accountName", "status", "createdAt", "balance"]
+        "required": ["id", "userId", "accountId", "accountName", "platform", "status", "createdAt", "balance"]
     },
     "AgencyChargeRequest": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -282,8 +283,8 @@
         "properties": {
             "id": { "type": "string" },
             "userId": { "type": "string" },
-            "accountId": { "type": "string" },
-            "accountName": { "type": "string" },
+            "accountId": { "type": "string", "description": "The unique identifier of the agency account being charged." },
+            "accountName": { "type": "string", "description": "Denormalized name of the account for easy display." },
             "platform": { "type": "string", "enum": ["Meta", "Google", "TikTok", "Snapchat"] },
             "amount": { "type": "number" },
             "requestDate": { "type": "string", "format": "date-time" },

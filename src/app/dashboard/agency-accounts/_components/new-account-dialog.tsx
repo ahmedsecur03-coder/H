@@ -25,11 +25,12 @@ export function NewAccountDialog({ children, onAccountCreated }: { children: Rea
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [accountName, setAccountName] = useState('');
+    const [accountId, setAccountId] = useState('');
     const [platform, setPlatform] = useState<Platform | undefined>();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firestore || !authUser || !platform || !accountName.trim()) {
+        if (!firestore || !authUser || !platform || !accountName.trim() || !accountId.trim()) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء ملء جميع الحقول المطلوبة.' });
             return;
         }
@@ -39,6 +40,7 @@ export function NewAccountDialog({ children, onAccountCreated }: { children: Rea
         const newAccount: Omit<AgencyAccount, 'id'> = {
             userId: authUser.uid,
             platform,
+            accountId,
             accountName,
             status: 'Active',
             createdAt: new Date().toISOString(),
@@ -53,6 +55,7 @@ export function NewAccountDialog({ children, onAccountCreated }: { children: Rea
             onAccountCreated();
             setOpen(false);
             setAccountName('');
+            setAccountId('');
             setPlatform(undefined);
         } catch (error) {
             const permissionError = new FirestorePermissionError({
@@ -99,9 +102,13 @@ export function NewAccountDialog({ children, onAccountCreated }: { children: Rea
                             </SelectContent>
                         </Select>
                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="accountId">معرف الحساب (Account ID)</Label>
+                        <Input id="accountId" value={accountId} onChange={e => setAccountId(e.target.value)} required placeholder="مثال: 1234567890" />
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="accountName">اسم الحساب (للتمييز)</Label>
-                        <Input id="accountName" value={accountName} onChange={e => setAccountName(e.target.value)} required placeholder="مثال: حسابي لمتجر الملابس"/>
+                        <Input id="accountName" value={accountName} onChange={e => setAccountName(e.target.value)} required placeholder="مثال: حساب متجر ملابسي"/>
                     </div>
                      <DialogFooter>
                         <Button type="submit" disabled={loading} className="w-full">

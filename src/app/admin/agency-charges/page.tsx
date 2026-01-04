@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -10,8 +11,9 @@ import {
   runTransaction,
   increment,
   arrayUnion,
+  getDoc,
 } from 'firebase/firestore';
-import type { AgencyChargeRequest, User, Notification } from '@/lib/types';
+import type { AgencyChargeRequest, User, Notification, AgencyAccount } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
@@ -42,7 +44,7 @@ function ChargeRequestsTable({ requests, isLoading, onAction, loadingActionId }:
           <TableHeader>
             <TableRow>
               <TableHead>المستخدم</TableHead>
-              <TableHead>الحساب</TableHead>
+              <TableHead>معرف الحساب</TableHead>
               <TableHead>المنصة</TableHead>
               <TableHead>المبلغ</TableHead>
               <TableHead>التاريخ</TableHead>
@@ -77,7 +79,7 @@ function ChargeRequestsTable({ requests, isLoading, onAction, loadingActionId }:
       <TableHeader>
         <TableRow>
           <TableHead>المستخدم</TableHead>
-          <TableHead>الحساب</TableHead>
+          <TableHead>معرف الحساب</TableHead>
           <TableHead>المنصة</TableHead>
           <TableHead>المبلغ</TableHead>
           <TableHead>تاريخ الطلب</TableHead>
@@ -92,7 +94,7 @@ function ChargeRequestsTable({ requests, isLoading, onAction, loadingActionId }:
             <TableCell>
               <Link href={`/admin/users?search=${req.userId}`} className="font-mono text-xs text-primary hover:underline">{req.userId}</Link>
             </TableCell>
-            <TableCell>{req.accountName}</TableCell>
+            <TableCell className="font-mono text-xs">{req.accountId}</TableCell>
             <TableCell><Icon className="h-5 w-5 text-muted-foreground" /></TableCell>
             <TableCell className="font-semibold">${req.amount.toFixed(2)}</TableCell>
             <TableCell>{new Date(req.requestDate).toLocaleString('ar-EG')}</TableCell>
@@ -158,26 +160,28 @@ export default function AdminAgencyChargesPage() {
         const { userId, id: requestId, accountId, amount, accountName } = req;
         const userRef = doc(firestore, 'users', userId);
         const requestDocRef = doc(firestore, `users/${userId}/agencyChargeRequests`, requestId);
-        const accountDocRef = doc(firestore, `users/${userId}/agencyAccounts`, accountId);
+        
+        // Find the agency account document by its custom accountId
+        const agencyAccountsColRef = collection(firestore, `users/${userId}/agencyAccounts`);
+        const q = query(agencyAccountsColRef, where("accountId", "==", accountId));
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                // 1. Read all documents first
                 const userDoc = await transaction.get(userRef);
-                const accountDoc = newStatus === 'مقبول' ? await transaction.get(accountDocRef) : null;
-
                 if (!userDoc.exists()) throw new Error('المستخدم صاحب الطلب غير موجود.');
-                if (newStatus === 'مقبول' && (!accountDoc || !accountDoc.exists())) throw new Error('الحساب الإعلاني المراد شحنه غير موجود.');
-
-                // 2. Perform all writes
+                
                 transaction.update(requestDocRef, { status: newStatus });
 
                 if (newStatus === 'مقبول') {
                     const userData = userDoc.data() as User;
                     if ((userData.adBalance ?? 0) < amount) throw new Error('رصيد إعلانات المستخدم غير كافٍ.');
 
+                    const agencyAccountSnapshot = await getDocs(q);
+                    if (agencyAccountSnapshot.empty) throw new Error(`الحساب الإعلاني بالمعرف ${accountId} غير موجود.`);
+                    const agencyAccountDocRef = agencyAccountSnapshot.docs[0].ref;
+
                     transaction.update(userRef, { adBalance: increment(-amount) });
-                    transaction.update(accountDocRef, { balance: increment(amount) });
+                    transaction.update(agencyAccountDocRef, { balance: increment(amount) });
                     
                     const notification: Notification = {
                         id: `agency-charge-ok-${requestId}`,

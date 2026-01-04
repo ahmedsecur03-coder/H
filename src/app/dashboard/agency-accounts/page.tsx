@@ -132,6 +132,7 @@ export default function AgencyAccountsPage() {
                         </Badge>
                     </div>
                   <CardTitle className="pt-2">{account.accountName}</CardTitle>
+                  <CardDescription className="font-mono text-xs">ID: {account.accountId}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <div className="text-3xl font-bold font-mono">${account.balance.toFixed(2)}</div>

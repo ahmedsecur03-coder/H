@@ -109,8 +109,9 @@ export type Campaign = {
 export type AgencyAccount = {
     id: string;
     userId: string;
-    platform: 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
+    accountId: string;
     accountName: string;
+    platform: 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
     status: 'Active' | 'Suspended';
     createdAt: string;
     balance: number;
