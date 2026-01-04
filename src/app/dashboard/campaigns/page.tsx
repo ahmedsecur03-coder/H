@@ -33,7 +33,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
-import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
 
 
 // This function simulates campaign performance on the client-side for visual feedback.
@@ -274,7 +273,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
         [firestore, authUser]
     );
-    const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: userLoading } = useDoc<UserType>(userDocRef);
 
     const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
 
@@ -345,19 +344,6 @@ export default function CampaignsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">الرصيد الأساسي</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">${userData.balance.toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground">يستخدم لشحن رصيد الإعلانات أو للطلبات العامة.</p>
-                </CardContent>
-                <CardFooter>
-                     <Button asChild size="sm" variant="secondary"><Link href="/dashboard/add-funds">إضافة رصيد</Link></Button>
-                </CardFooter>
-            </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">رصيد الإعلانات</CardTitle>
@@ -367,11 +353,16 @@ export default function CampaignsPage() {
                     <div className="text-2xl font-bold">${(userData.adBalance || 0).toFixed(2)}</div>
                     <p className="text-xs text-muted-foreground">يستخدم لتمويل الحملات الإعلانية.</p>
                 </CardContent>
-                <CardFooter>
-                     <ChargeAdBalanceDialog userData={userData} onActionComplete={forceDocUpdate}>
-                        <Button size="sm" variant="secondary"><Zap className="ml-2 h-4 w-4" />تحويل رصيد</Button>
-                     </ChargeAdBalanceDialog>
-                </CardFooter>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">الحملات النشطة</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.active}</div>
+                    <p className="text-xs text-muted-foreground">إجمالي الحملات التي تعمل حاليًا.</p>
+                </CardContent>
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

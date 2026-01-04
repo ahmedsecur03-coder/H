@@ -41,6 +41,7 @@ export const publicNavItems: NestedNavItem[] = [
       children: [
         { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية وكالة', description: 'تجاوز قيود الحسابات بحسابات موثوقة ذات حدود إنفاق عالية.', icon: Briefcase },
       ]
     },
     { href: '/about', label: 'من نحن', icon: Info },
@@ -54,6 +55,7 @@ export const dashboardNavItems: NestedNavItem[] = [
     icon: ShoppingBag,
     children: [
         { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
+        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
         { href: '/dashboard/services', label: 'كل خدمات SMM', icon: Rocket },
         { href: '/dashboard/mass-order', label: 'طلب جماعي SMM', icon: Package },
         { href: '/dashboard/orders', label: 'سجل طلبات SMM', icon: ListOrdered },
@@ -113,5 +115,3 @@ export const adminNavItems: NestedNavItem[] = [
     },
     { href: '/dashboard', label: 'عرض كـ مستخدم', icon: Shield },
 ];
-
-    
