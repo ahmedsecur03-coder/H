@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -28,7 +28,7 @@ export default function AdminBlogPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         if (!firestore) return;
         setIsLoading(true);
         try {
@@ -45,11 +45,11 @@ export default function AdminBlogPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [firestore, toast]);
 
     useEffect(() => {
         fetchPosts();
-    }, [firestore]);
+    }, [fetchPosts]);
 
     const handleOpenPostDialog = (post?: Partial<BlogPost>) => {
         setSelectedPost(post);
