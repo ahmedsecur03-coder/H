@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, writeBatch, doc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, getDocs } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import type { BlogPost } from '@/lib/types';
 import { recommendedPosts } from './recommended-posts';
@@ -103,3 +103,5 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
         </AlertDialog>
     );
 }
+
+    
