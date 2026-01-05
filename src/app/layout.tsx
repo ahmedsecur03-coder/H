@@ -37,6 +37,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {/* FirebaseErrorListener is moved here to ensure Firebase is initialized */}
+      <FirebaseErrorListener />
       {isPublicPage && <PublicHeader />}
       <div className="flex-1 flex flex-col">
         <main className={cn("flex-1", isPublicPage && "container py-8")}>
@@ -66,7 +68,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
-                <FirebaseErrorListener />
                 <div className="flex flex-col min-h-screen">
                     <Suspense fallback={<div className="flex-1" />}>
                         <AppContent>{children}</AppContent>
