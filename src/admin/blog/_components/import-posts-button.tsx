@@ -27,7 +27,7 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
         try {
             // 1. Fetch all existing post titles
             const postsColRef = collection(firestore, 'blogPosts');
-            const existingPostsSnapshot = await getDocs(query(postsColRef));
+            const existingPostsSnapshot = await getDocs(postsColRef);
             const existingTitles = new Set(existingPostsSnapshot.docs.map(doc => (doc.data() as BlogPost).title));
 
             // 2. Filter out posts that already exist
