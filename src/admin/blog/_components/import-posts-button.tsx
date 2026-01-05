@@ -40,11 +40,13 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
             
             // 1. Delete all existing documents in the collection
             const existingPostsSnapshot = await getDocs(postsColRef);
-            const deleteBatch = writeBatch(firestore);
-            existingPostsSnapshot.forEach(doc => {
-                deleteBatch.delete(doc.ref);
-            });
-            await deleteBatch.commit();
+            if (!existingPostsSnapshot.empty) {
+                const deleteBatch = writeBatch(firestore);
+                existingPostsSnapshot.forEach(doc => {
+                    deleteBatch.delete(doc.ref);
+                });
+                await deleteBatch.commit();
+            }
             
             // 2. Write the new recommended posts
             const importBatch = writeBatch(firestore);
@@ -82,7 +84,7 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
             <AlertDialogTrigger asChild>
                 <Button variant="outline" disabled={isImporting}>
                     {isImporting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <RefreshCw className="ml-2 h-4 w-4" />}
-                    إعادة تعيين واستيراد المقالات
+                    إعادة تعيين واستيراد
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -103,5 +105,3 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
         </AlertDialog>
     );
 }
-
-    
