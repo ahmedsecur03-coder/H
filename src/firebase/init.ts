@@ -1,4 +1,3 @@
-
 'use client';
 
 import { getApps, initializeApp, FirebaseApp } from 'firebase/app';
@@ -20,10 +19,13 @@ let firebaseServices: FirebaseServices | null = null;
  * @returns An object containing the initialized Firebase services (app, auth, firestore).
  */
 export function initializeFirebase(): FirebaseServices {
+  // This function is intended for the client, but throwing an error can cause
+  // issues with Next.js build/server environments that might try to import it.
+  // Instead, we safely return null if called on the server.
   if (typeof window === 'undefined') {
-    // This function is client-only. Throw an error if it's called on the server.
-    // This helps catch misconfigurations during development.
-    throw new Error("Attempted to call initializeFirebase() from the server. Use initializeFirebaseServer() instead.");
+    // Return a structure that won't immediately crash if destructured,
+    // although hooks like useFirestore will throw their own errors if used on the server.
+    return { firebaseApp: null, auth: null, firestore: null } as any;
   }
   
   if (firebaseServices) {
