@@ -96,11 +96,12 @@ export default function AdminBlogPage() {
 
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
+        setIsSaving(true); // Use the same saving state to disable all actions
         const postDocRef = doc(firestore, 'blogPosts', id);
         try {
             await deleteDoc(postDocRef)
             toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
-            await fetchPosts(); // Refresh data
+            await fetchPosts(); // Essential: Re-fetch from Firestore to get the correct state
         }
         catch(serverError) {
              const permissionError = new FirestorePermissionError({
@@ -108,7 +109,9 @@ export default function AdminBlogPage() {
                 operation: 'delete',
             });
             errorEmitter.emit('permission-error', permissionError);
-        };
+        } finally {
+            setIsSaving(false); // Reset saving state
+        }
     };
 
     const renderContent = () => {
@@ -143,12 +146,12 @@ export default function AdminBlogPage() {
                 <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString('ar-EG') : 'غير محدد'}</TableCell>
                 <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
                 <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)} disabled={isSaving}>
                         <Pencil className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
