@@ -64,12 +64,12 @@ export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
+  { href: '/blog', label: 'المدونة', icon: BookOpen },
   { 
       label: 'الحساب',
       icon: UserCircle,
       children: [
         { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
-        { href: '/blog', label: 'المدونة', icon: BookOpen },
         { href: '/dashboard/api', label: 'API', icon: Code2 },
         { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
       ]
