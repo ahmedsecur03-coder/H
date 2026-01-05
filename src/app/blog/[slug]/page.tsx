@@ -1,103 +1,102 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { notFound, useParams } from 'next/navigation';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
-import Head from 'next/head';
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const dynamic = 'force-dynamic';
 
 function titleToSlug(title: string): string {
     if (!title) return '';
-    return title.toLowerCase()
-        .replace(/[\s\W_]+/g, '-') // Replace spaces and non-word characters with a single hyphen
-        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+     return title
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
 }
 
-async function getPostData(slug: string) {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) {
-        console.error("Failed to connect to the database on the server.");
-        return { post: null, prevPost: null, nextPost: null };
-    }
-
-    let posts: BlogPost[] = [];
-    try {
-        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-        const querySnapshot = await getDocs(postsQuery, { cache: 'no-store' });
-        posts = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                title: data.title,
-                content: data.content,
-                authorId: data.authorId,
-                publishDate: data.publishDate,
-            };
-        }) as BlogPost[];
-    } catch (error) {
-        console.error("Error fetching blog posts from Firestore:", error);
-        return { post: null, prevPost: null, nextPost: null };
-    }
-    
-    const currentPost = posts.find(p => titleToSlug(p.title) === slug);
-
-    if (!currentPost) {
-        return { post: null, prevPost: null, nextPost: null };
-    }
-
-    const currentIndex = posts.findIndex(p => p.id === currentPost.id);
-    const prevPost = currentIndex > 0 ? posts[currentIndex - 1] : null;
-    const nextPost = currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null;
-
-    return { post: currentPost, prevPost, nextPost };
+function BlogPostSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+            <Skeleton className="h-8 w-32 mb-4" />
+             <Card>
+                <CardHeader>
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-5 w-1/4 mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <br/>
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+            </Card>
+        </div>
+    )
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const { post } = await getPostData(params.slug);
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
+export default function BlogPostPage() {
+    const firestore = useFirestore();
+    const params = useParams();
+    const slug = params.slug as string;
 
-    if (!post) {
-        return {
-            title: 'المنشور غير موجود',
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [prevPost, setPrevPost] = useState<BlogPost | null>(null);
+    const [nextPost, setNextPost] = useState<BlogPost | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore || !slug) return;
+
+        const fetchPostData = async () => {
+            setIsLoading(true);
+            try {
+                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+                const querySnapshot = await getDocs(postsQuery);
+                const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+
+                const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
+                if (currentPost) {
+                    setPost(currentPost);
+                    const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
+                    setPrevPost(currentIndex > 0 ? allPosts[currentIndex - 1] : null);
+                    setNextPost(currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null);
+                } else {
+                    notFound();
+                }
+            } catch (error) {
+                console.error("Error fetching post data:", error);
+                notFound();
+            } finally {
+                setIsLoading(false);
+            }
         };
+
+        fetchPostData();
+    }, [firestore, slug]);
+    
+
+    if (isLoading) {
+        return <BlogPostSkeleton />;
     }
 
-    const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
-
-    return {
-        title: `${post.title} | مدونة حاجاتي`,
-        description: description,
-        alternates: {
-            canonical: `${baseUrl}/blog/${params.slug}`,
-        },
-        openGraph: {
-            title: post.title,
-            description: description,
-            url: `${baseUrl}/blog/${params.slug}`,
-            type: 'article',
-            publishedTime: post.publishDate,
-            images: [`${baseUrl}/og-image.png`],
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title: post.title,
-            description: description,
-            images: [`${baseUrl}/og-image.png`],
-        },
-    };
-}
-
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-    const { post, prevPost, nextPost } = await getPostData(params.slug);
-
     if (!post) {
-        notFound();
+        return null; // notFound() would have been called in useEffect
     }
     
     return (

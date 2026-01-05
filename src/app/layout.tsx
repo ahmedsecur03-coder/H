@@ -14,7 +14,7 @@ import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
 import { FloatingActionButtons } from '@/components/floating-action-buttons';
-import { useUser } from '@/firebase';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 
 const fontSans = Tajawal({
@@ -66,6 +66,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </Suspense>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
            <FirebaseClientProvider>
+                <FirebaseErrorListener />
                 <div className="flex flex-col min-h-screen">
                     <Suspense fallback={<div className="flex-1" />}>
                         <AppContent>{children}</AppContent>

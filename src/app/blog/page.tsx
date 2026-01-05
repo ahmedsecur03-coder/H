@@ -1,44 +1,86 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-
-export const dynamic = 'force-dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function titleToSlug(title: string): string {
-    if (!title) return '';
-    return title.toLowerCase()
-        .replace(/[\s\W_]+/g, '-') // Replace spaces and non-word characters with a single hyphen
-        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  if (!title) return '';
+  // This version is safer for URLs and handles more edge cases.
+  return title
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
 }
 
-export default async function BlogPage() {
-    const { firestore } = initializeFirebaseServer();
-    let posts: BlogPost[] = [];
 
-    if (firestore) {
-        try {
-            const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-            const querySnapshot = await getDocs(postsQuery, { cache: 'no-store' });
-            posts = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    title: data.title,
-                    content: data.content,
-                    authorId: data.authorId,
-                    publishDate: data.publishDate,
-                };
-            }) as BlogPost[];
-        } catch (error) {
-            console.error("Error fetching blog posts from Firestore:", error);
-            // Handle error gracefully, maybe show an error message
-        }
-    } else {
-        console.error("Failed to connect to the database on the server.");
+function BlogPageSkeleton() {
+    return (
+        <div className="space-y-6 pb-8">
+             <div>
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i} className="flex flex-col">
+                        <CardHeader>
+                            <Skeleton className="h-6 w-full" />
+                             <Skeleton className="h-4 w-1/3 mt-2" />
+                        </CardHeader>
+                        <CardContent className="flex-grow space-y-2">
+                             <Skeleton className="h-4 w-full" />
+                             <Skeleton className="h-4 w-5/6" />
+                        </CardContent>
+                        <CardFooter>
+                            <Skeleton className="h-10 w-28" />
+                        </CardFooter>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+export default function BlogPage() {
+    const firestore = useFirestore();
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore) return;
+
+        const fetchPosts = async () => {
+            setIsLoading(true);
+            try {
+                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+                const querySnapshot = await getDocs(postsQuery);
+                const fetchedPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+                setPosts(fetchedPosts);
+            } catch (error) {
+                console.error("Error fetching blog posts:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, [firestore]);
+
+
+    if (isLoading) {
+        return <BlogPageSkeleton />;
     }
 
     return (
