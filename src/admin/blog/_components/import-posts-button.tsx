@@ -43,13 +43,16 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
             const batch = writeBatch(firestore);
             
             newPostsToImport.forEach(post => {
-                const postDocRef = doc(postsColRef);
-                const newPost: Omit<BlogPost, 'id'> = {
-                    ...post,
+                const postDocRef = doc(collection(firestore, 'blogPosts'));
+                const newPost: Omit<BlogPost, 'id' | 'publishDate' | 'authorId'> = {
+                    title: post.title,
+                    content: post.content,
+                };
+                batch.set(postDocRef, {
+                    ...newPost,
                     authorId: 'ai-generated', 
                     publishDate: new Date().toISOString(),
-                };
-                batch.set(postDocRef, newPost);
+                });
             });
             
             await batch.commit();
