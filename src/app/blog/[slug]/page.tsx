@@ -9,6 +9,8 @@ import Head from 'next/head';
 import { initializeFirebaseServer } from '@/firebase/init-server';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 
+export const dynamic = 'force-dynamic';
+
 function titleToSlug(title: string): string {
     if (!title) return '';
     return title.toLowerCase()
