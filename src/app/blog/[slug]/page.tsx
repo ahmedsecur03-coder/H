@@ -21,19 +21,18 @@ function titleToSlug(title: string): string {
         .replace(/-+$/, '');
 }
 
-async function getPosts(): Promise<BlogPost[]> {
+async function getPostData(slug: string) {
     const { firestore } = initializeFirebaseServer();
     if (!firestore) {
         console.error("Failed to connect to the database on the server.");
-        return [];
+        return { post: null, prevPost: null, nextPost: null };
     }
 
+    let posts: BlogPost[] = [];
     try {
         const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-        // Explicitly disable caching for this fetch request
         const querySnapshot = await getDocs(postsQuery);
-        
-        return querySnapshot.docs.map(doc => {
+        posts = querySnapshot.docs.map(doc => {
             const data = doc.data();
             return {
                 id: doc.id,
@@ -45,12 +44,9 @@ async function getPosts(): Promise<BlogPost[]> {
         }) as BlogPost[];
     } catch (error) {
         console.error("Error fetching blog posts from Firestore:", error);
-        return [];
+        return { post: null, prevPost: null, nextPost: null };
     }
-}
-
-async function getPostData(slug: string) {
-    const posts = await getPosts();
+    
     const currentPost = posts.find(p => titleToSlug(p.title) === slug);
 
     if (!currentPost) {

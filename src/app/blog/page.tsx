@@ -18,36 +18,31 @@ function titleToSlug(title: string): string {
         .replace(/-+$/, '');
 }
 
-async function getPosts(): Promise<BlogPost[]> {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) {
-        console.error("Failed to connect to the database on the server.");
-        return [];
-    }
-
-    try {
-        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-        // Explicitly disable caching for this fetch request.
-        const querySnapshot = await getDocs(postsQuery);
-        
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                title: data.title,
-                content: data.content,
-                authorId: data.authorId,
-                publishDate: data.publishDate,
-            };
-        }) as BlogPost[];
-    } catch (error) {
-        console.error("Error fetching blog posts from Firestore:", error);
-        return [];
-    }
-}
-
 export default async function BlogPage() {
-    const posts = await getPosts();
+    const { firestore } = initializeFirebaseServer();
+    let posts: BlogPost[] = [];
+
+    if (firestore) {
+        try {
+            const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+            const querySnapshot = await getDocs(postsQuery);
+            posts = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    title: data.title,
+                    content: data.content,
+                    authorId: data.authorId,
+                    publishDate: data.publishDate,
+                };
+            }) as BlogPost[];
+        } catch (error) {
+            console.error("Error fetching blog posts from Firestore:", error);
+            // Handle error gracefully, maybe show an error message
+        }
+    } else {
+        console.error("Failed to connect to the database on the server.");
+    }
 
     return (
         <div className="space-y-6 pb-8">
@@ -58,7 +53,7 @@ export default async function BlogPage() {
                 </p>
             </div>
 
-            {posts && posts.length > 0 ? (
+            {posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map(post => {
                         const slug = titleToSlug(post.title);
