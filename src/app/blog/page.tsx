@@ -11,11 +11,8 @@ export const dynamic = 'force-dynamic';
 function titleToSlug(title: string): string {
     if (!title) return '';
     return title.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\u0621-\u064A-]+/g, '') // Allow Arabic characters
-        .replace(/--+/g, '-')
-        .replace(/^-+/, '')
-        .replace(/-+$/, '');
+        .replace(/ /g, '-')
+        .replace(/[^\w\u0621-\u064A-]/g, ''); // Keep Arabic letters, numbers, and hyphens
 }
 
 export default async function BlogPage() {
@@ -25,7 +22,7 @@ export default async function BlogPage() {
     if (firestore) {
         try {
             const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-            const querySnapshot = await getDocs(postsQuery);
+            const querySnapshot = await getDocs(postsQuery, { cache: 'no-store' });
             posts = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
