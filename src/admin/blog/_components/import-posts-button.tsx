@@ -1,107 +1,129 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, writeBatch, doc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, RefreshCw } from 'lucide-react';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { Loader2, Upload, CheckCircle } from 'lucide-react';
 import type { BlogPost } from '@/lib/types';
 import { recommendedPosts } from './recommended-posts';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 export function ImportPostsButton({ onImportComplete }: { onImportComplete: () => void }) {
-    const [isImporting, setIsImporting] = useState(false);
-    const { toast } = useToast();
+    const [open, setOpen] = useState(false);
+    const [existingTitles, setExistingTitles] = useState<Set<string>>(new Set());
+    const [isLoading, setIsLoading] = useState(false);
+    const [importingPostId, setImportingPostId] = useState<string | null>(null);
+
     const firestore = useFirestore();
+    const { toast } = useToast();
 
-    const handleResetAndImport = async () => {
-        if (!firestore) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'Firestore is not available.' });
-            return;
+    const handleOpen = async () => {
+        if (!firestore) return;
+        setIsLoading(true);
+        try {
+            const postsColRef = collection(firestore, 'blogPosts');
+            const q = query(postsColRef);
+            const snapshot = await getDocs(q);
+            const titles = new Set(snapshot.docs.map(doc => (doc.data() as BlogPost).title));
+            setExistingTitles(titles);
+        } catch (error) {
+            console.error("Error fetching existing posts:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب قائمة المقالات الحالية.' });
+        } finally {
+            setIsLoading(false);
         }
+    };
+    
 
-        setIsImporting(true);
-        toast({ title: 'جاري إعادة تعيين واستيراد المقالات...', description: 'سيتم حذف المقالات القديمة أولاً.' });
+    const handleImportPost = async (post: Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>) => {
+        if (!firestore) return;
+
+        setImportingPostId(post.title);
 
         try {
             const postsColRef = collection(firestore, 'blogPosts');
+            const newPost = {
+                ...post,
+                authorId: 'ai-generated',
+                publishDate: new Date().toISOString(),
+            };
+            await addDoc(postsColRef, newPost);
             
-            // 1. Delete all existing documents in the collection
-            const existingPostsSnapshot = await getDocs(postsColRef);
-            if (!existingPostsSnapshot.empty) {
-                const deleteBatch = writeBatch(firestore);
-                existingPostsSnapshot.forEach(doc => {
-                    deleteBatch.delete(doc.ref);
-                });
-                await deleteBatch.commit();
-            }
-            
-            // 2. Write the new recommended posts
-            const importBatch = writeBatch(firestore);
-            recommendedPosts.forEach(post => {
-                const postDocRef = doc(postsColRef); // Create a new doc ref for each post
-                const newPost: Omit<BlogPost, 'id' | 'publishDate' | 'authorId'> = {
-                    title: post.title,
-                    content: post.content,
-                };
-                importBatch.set(postDocRef, {
-                    ...newPost,
-                    authorId: 'ai-generated', 
-                    publishDate: new Date().toISOString(),
-                });
-            });
-            
-            await importBatch.commit();
-
-            toast({ title: 'نجاح!', description: `تم إعادة تعيين واستيراد ${recommendedPosts.length} مقالات بنجاح.` });
+            setExistingTitles(prev => new Set(prev).add(post.title));
+            toast({ title: 'نجاح!', description: `تم استيراد مقال "${post.title}" بنجاح.` });
             onImportComplete();
+
         } catch (error) {
-            console.error("Error resetting and importing posts:", error);
-            const permissionError = new FirestorePermissionError({
+             const permissionError = new FirestorePermissionError({
                 path: 'blogPosts',
-                operation: 'write'
+                operation: 'create'
             });
             errorEmitter.emit('permission-error', permissionError);
         } finally {
-            setIsImporting(false);
+            setImportingPostId(null);
         }
     };
 
     return (
-         <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="outline" disabled={isImporting}>
-                    {isImporting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <RefreshCw className="ml-2 h-4 w-4" />}
-                    إعادة تعيين واستيراد
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" onClick={handleOpen}>
+                    <Upload className="ml-2 h-4 w-4" />
+                    استيراد مقالات مقترحة
                 </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        هذا الإجراء سيقوم بحذف **جميع** المقالات الحالية في مدونتك، ثم سيقوم باستيراد قائمة المقالات المقترحة من جديد. هل تريد المتابعة؟
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleResetAndImport} disabled={isImporting}>
-                         {isImporting ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : null}
-                        نعم، قم بإعادة التعيين
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>استيراد مقالات مقترحة</DialogTitle>
+                    <DialogDescription>
+                        اختر المقالات التي تريد إضافتها إلى مدونتك. سيتم تجاهل المقالات الموجودة بالفعل.
+                    </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] p-1">
+                    <div className="space-y-2 py-4">
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-32">
+                                <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
+                            </div>
+                        ) : recommendedPosts.map((post) => {
+                            const isImported = existingTitles.has(post.title);
+                            const isThisOneImporting = importingPostId === post.title;
+                            return (
+                                <div key={post.title} className="flex items-center justify-between p-3 rounded-md border bg-muted/30">
+                                    <span className="font-medium">{post.title}</span>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleImportPost(post)}
+                                        disabled={isImported || !!importingPostId}
+                                    >
+                                        {isThisOneImporting ? (
+                                             <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : isImported ? (
+                                            <>
+                                                <CheckCircle className="ml-2 h-4 w-4" />
+                                                تم الاستيراد
+                                            </>
+                                        ) : (
+                                             'استيراد'
+                                        )}
+                                    </Button>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </ScrollArea>
+            </DialogContent>
+        </Dialog>
     );
 }

@@ -96,12 +96,12 @@ export default function AdminBlogPage() {
 
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
-        setIsSaving(true); // Use the same saving state to disable all actions
+        setIsSaving(true);
         const postDocRef = doc(firestore, 'blogPosts', id);
         try {
             await deleteDoc(postDocRef)
             toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
-            await fetchPosts(); // Essential: Re-fetch from Firestore to get the correct state
+            await fetchPosts(); 
         }
         catch(serverError) {
              const permissionError = new FirestorePermissionError({
@@ -110,7 +110,7 @@ export default function AdminBlogPage() {
             });
             errorEmitter.emit('permission-error', permissionError);
         } finally {
-            setIsSaving(false); // Reset saving state
+            setIsSaving(false); 
         }
     };
 
