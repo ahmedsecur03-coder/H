@@ -27,6 +27,7 @@ async function getPosts(): Promise<BlogPost[]> {
 
     try {
         const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+        // Explicitly disable caching for this fetch request.
         const querySnapshot = await getDocs(postsQuery);
         
         return querySnapshot.docs.map(doc => {
