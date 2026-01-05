@@ -11,8 +11,8 @@ export const dynamic = 'force-dynamic';
 function titleToSlug(title: string): string {
     if (!title) return '';
     return title.toLowerCase()
-        .replace(/ /g, '-')
-        .replace(/[^\w\u0621-\u064A-]/g, ''); // Keep Arabic letters, numbers, and hyphens
+        .replace(/[\s\W_]+/g, '-') // Replace spaces and non-word characters with a single hyphen
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 }
 
 export default async function BlogPage() {
