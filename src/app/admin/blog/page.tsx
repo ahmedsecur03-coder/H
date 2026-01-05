@@ -1,9 +1,8 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,8 +25,9 @@ export default function AdminBlogPage() {
     const [selectedPost, setSelectedPost] = useState<Partial<BlogPost> | undefined>(undefined);
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         if (!firestore) return;
         setIsLoading(true);
         try {
@@ -44,11 +44,11 @@ export default function AdminBlogPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [firestore, toast]);
 
     useEffect(() => {
         fetchPosts();
-    }, [firestore]);
+    }, [fetchPosts]);
 
     const handleOpenPostDialog = (post?: Partial<BlogPost>) => {
         setSelectedPost(post);
@@ -64,51 +64,55 @@ export default function AdminBlogPage() {
     };
 
 
-    const handleSavePost = (data: { title: string; content: string }) => {
+    const handleSavePost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
+        setIsSaving(true);
         
-        if (selectedPost && selectedPost.id) { // Editing
-            const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-            updateDoc(postDocRef, data)
-                .then(() => {
-                    toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
-                    fetchPosts(); // Refresh data
-                })
-                .catch(serverError => {
-                    const permissionError = new FirestorePermissionError({ path: postDocRef.path, operation: 'update', requestResourceData: data });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
-        } else { // Adding new post
-            const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
-            const postsColRef = collection(firestore, 'blogPosts');
-            addDoc(postsColRef, newPostData)
-                .then(() => {
-                    toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
-                    fetchPosts(); // Refresh data
-                })
-                .catch(serverError => {
-                    const permissionError = new FirestorePermissionError({ path: postsColRef.path, operation: 'create', requestResourceData: newPostData });
-                    errorEmitter.emit('permission-error', permissionError);
-                });
+        try {
+            if (selectedPost && selectedPost.id) { // Editing
+                const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
+                await updateDoc(postDocRef, data);
+                toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
+            } else { // Adding new post
+                const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
+                const postsColRef = collection(firestore, 'blogPosts');
+                await addDoc(postsColRef, newPostData);
+                toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
+            }
+            await fetchPosts(); // Refresh data
+            setIsPostDialogOpen(false);
+        } catch (serverError) {
+             const permissionError = new FirestorePermissionError({ 
+                path: selectedPost?.id ? `blogPosts/${selectedPost.id}` : 'blogPosts',
+                operation: selectedPost?.id ? 'update' : 'create',
+                requestResourceData: data
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setIsSaving(false);
         }
     };
 
 
-    const handleDeletePost = (id: string) => {
+    const handleDeletePost = async (id: string) => {
         if (!firestore) return;
-        const postDocRef = doc(firestore, 'blogPosts', id);
-        deleteDoc(postDocRef)
-            .then(() => {
-                toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
-                fetchPosts(); // Refresh data
-            })
-            .catch(serverError => {
-                 const permissionError = new FirestorePermissionError({
-                    path: postDocRef.path,
-                    operation: 'delete',
-                });
-                errorEmitter.emit('permission-error', permissionError);
+        // Find the specific post in the current state to disable its buttons
+        const postToDelete = posts.find(p => p.id === id);
+        if (!postToDelete) return;
+
+        try {
+            await deleteDoc(doc(firestore, 'blogPosts', id));
+            toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
+            // Instead of fetching all posts again, just remove the post from the local state
+            // This is an optimistic update. For guaranteed consistency, fetchPosts() is better.
+            setPosts(currentPosts => currentPosts.filter(p => p.id !== id));
+        } catch (serverError) {
+             const permissionError = new FirestorePermissionError({
+                path: `blogPosts/${id}`,
+                operation: 'delete',
             });
+            errorEmitter.emit('permission-error', permissionError);
+        }
     };
 
     const renderContent = () => {
@@ -206,6 +210,7 @@ export default function AdminBlogPage() {
                 onOpenChange={setIsPostDialogOpen}
                 post={selectedPost}
                 onSave={handleSavePost}
+                isSaving={isSaving}
             />
         </div>
     );
