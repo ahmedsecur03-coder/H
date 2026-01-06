@@ -1,83 +1,200 @@
-
 'use client';
 
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useEffect, useCallback } from 'react';
+import { useFirestore, useUser } from '@/firebase';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
+import type { BlogPost } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Wand2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
-import { isAiConfigured } from '@/ai/client';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { PostDialog } from './_components/post-dialog';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { errorEmitter } from '@/firebase/error-emitter';
 
-interface AiPostDialogProps {
-    onArticleGenerated: (article: { title: string; content: string }) => void;
-}
 
-export function AiPostDialog({ onArticleGenerated }: AiPostDialogProps) {
-    const [open, setOpen] = useState(false);
-    const [topic, setTopic] = useState('');
-    const [isGenerating, setIsGenerating] = useState(false);
+export default function AdminBlogPage() {
+    const firestore = useFirestore();
+    const { user } = useUser();
     const { toast } = useToast();
+    const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
+    const [selectedPost, setSelectedPost] = useState<Partial<BlogPost> | undefined>(undefined);
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
-    if (!isAiConfigured()) {
-        return null; // Don't render the button if AI is not configured
-    }
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!topic.trim()) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال موضوع للمقالة.' });
-            return;
-        }
-
-        setIsGenerating(true);
-        toast({ title: 'جاري توليد المقالة...', description: 'قد تستغرق العملية بضع لحظات.' });
-
+    const fetchPosts = useCallback(async () => {
+        if (!firestore) return;
+        setIsLoading(true);
         try {
-            const article = await generateBlogPost({ topic });
-            onArticleGenerated(article);
-            setOpen(false); // Close this dialog
-            setTopic(''); // Reset topic
-        } catch (error: any) {
-            console.error("AI Post Generation Error:", error);
-            toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message || 'حدث خطأ أثناء إنشاء المقالة.' });
+            const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+            const querySnapshot = await getDocs(postsQuery);
+            const fetchedPosts: BlogPost[] = [];
+            querySnapshot.forEach(doc => {
+                fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
+            });
+            setPosts(fetchedPosts);
+        } catch (error) {
+            console.error("Error fetching blog posts:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب المنشورات.' });
         } finally {
-            setIsGenerating(false);
+            setIsLoading(false);
+        }
+    }, [firestore, toast]);
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
+
+    const handleOpenPostDialog = (post?: Partial<BlogPost>) => {
+        setSelectedPost(post);
+        setIsPostDialogOpen(true);
+    };
+
+    const handleSavePost = async (data: { title: string; content: string }) => {
+        if (!firestore || !user) return;
+        setIsSaving(true);
+        
+        try {
+            if (selectedPost && selectedPost.id) { // Editing
+                const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
+                await updateDoc(postDocRef, data);
+                toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
+                fetchPosts(); // Re-fetch all posts
+            } else { // Adding new post
+                const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
+                const postsColRef = collection(firestore, 'blogPosts');
+                await addDoc(postsColRef, newPostData);
+                toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
+                fetchPosts(); // Re-fetch all posts
+            }
+            setIsPostDialogOpen(false);
+        } catch (serverError) {
+             const permissionError = new FirestorePermissionError({ 
+                path: selectedPost?.id ? `blogPosts/${selectedPost.id}` : 'blogPosts',
+                operation: selectedPost?.id ? 'update' : 'create',
+                requestResourceData: data
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setIsSaving(false);
         }
     };
 
+
+    const handleDeletePost = async (id: string) => {
+        if (!firestore) return;
+        const postDocRef = doc(firestore, 'blogPosts', id);
+        try {
+            await deleteDoc(postDocRef)
+            toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
+            fetchPosts(); // Re-fetch all posts
+        }
+        catch(serverError) {
+             const permissionError = new FirestorePermissionError({
+                path: postDocRef.path,
+                operation: 'delete',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
+    };
+
+    const renderContent = () => {
+        if (isLoading) {
+            return Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                    {Array.from({ length: 4 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                </TableRow>
+            ));
+        }
+        if (!posts || posts.length === 0) {
+            return (
+                <TableRow>
+                    <TableCell colSpan={4}>
+                         <div className="text-center py-10">
+                            <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 font-headline text-2xl">لا توجد منشورات بعد</h3>
+                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك.</p>
+                            <div className="mt-6 flex justify-center gap-2">
+                                <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                            </div>
+                        </div>
+                    </TableCell>
+                </TableRow>
+            );
+        }
+        return posts.map(post => (
+            <TableRow key={post.id}>
+                <TableCell className="font-medium">{post.title}</TableCell>
+                <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString('ar-EG') : 'غير محدد'}</TableCell>
+                <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
+                <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)}>
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                                <AlertDialogDescription>هذا الإجراء سيحذف المنشور نهائياً.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeletePost(post.id)}>متابعة</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </TableCell>
+            </TableRow>
+        ));
+    };
+
+    const showHeaderActions = !isLoading && posts && posts.length > 0;
+
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>توليد منشور بالذكاء الاصطناعي</DialogTitle>
-                    <DialogDescription>
-                        أدخل موضوعًا أو فكرة، وسيقوم الذكاء الاصطناعي بكتابة مسودة أولية للمقالة.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="topic">موضوع المقالة</Label>
-                        <Input 
-                            id="topic" 
-                            value={topic} 
-                            onChange={(e) => setTopic(e.target.value)} 
-                            placeholder="مثال: أهمية التسويق الرقمي للشركات الناشئة"
-                            required 
-                        />
+        <div className="space-y-6 pb-8">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المدونة</h1>
+                    <p className="text-muted-foreground">إنشاء وتعديل وحذف منشورات الأخبار والإعلانات.</p>
+                </div>
+                 {showHeaderActions && (
+                    <div className="flex gap-2">
+                        <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                     </div>
-                    <DialogFooter>
-                        <Button type="submit" disabled={isGenerating}>
-                            {isGenerating ? <Loader2 className="animate-spin" /> : 'توليد المقالة'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                 )}
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>جميع المنشورات</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>العنوان</TableHead>
+                                <TableHead>تاريخ النشر</TableHead>
+                                <TableHead>الكاتب</TableHead>
+                                <TableHead className="text-right">إجراءات</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>{renderContent()}</TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+            <PostDialog 
+                open={isPostDialogOpen}
+                onOpenChange={setIsPostDialogOpen}
+                post={selectedPost}
+                onSave={handleSavePost}
+                isSaving={isSaving}
+            />
+        </div>
     );
 }

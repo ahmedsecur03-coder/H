@@ -8,14 +8,13 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen, Upload, Wand2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { AiPostDialog } from './_components/ai-post-dialog';
 
 
 export default function AdminBlogPage() {
@@ -55,14 +54,6 @@ export default function AdminBlogPage() {
         setSelectedPost(post);
         setIsPostDialogOpen(true);
     };
-    
-    const handleArticleGenerated = (article: { title: string; content: string }) => {
-        const newPost: Partial<BlogPost> = {
-            title: article.title,
-            content: article.content,
-        };
-        handleOpenPostDialog(newPost);
-    };
 
     const handleSavePost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
@@ -72,16 +63,14 @@ export default function AdminBlogPage() {
             if (selectedPost && selectedPost.id) { // Editing
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
                 await updateDoc(postDocRef, data);
-                // Optimistic update
-                setPosts(posts.map(p => p.id === selectedPost.id ? { ...p, ...data } as BlogPost : p));
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
+                fetchPosts(); // Re-fetch all posts
             } else { // Adding new post
                 const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
                 const postsColRef = collection(firestore, 'blogPosts');
-                const docRef = await addDoc(postsColRef, newPostData);
-                // Optimistic update
-                setPosts(prev => [{ id: docRef.id, ...newPostData }, ...prev]);
+                await addDoc(postsColRef, newPostData);
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
+                fetchPosts(); // Re-fetch all posts
             }
             setIsPostDialogOpen(false);
         } catch (serverError) {
@@ -99,16 +88,13 @@ export default function AdminBlogPage() {
 
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
-        const originalPosts = [...posts];
-        // Optimistic update
-        setPosts(posts => posts.filter(p => p.id !== id));
         const postDocRef = doc(firestore, 'blogPosts', id);
         try {
             await deleteDoc(postDocRef)
             toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
+            fetchPosts(); // Re-fetch all posts
         }
         catch(serverError) {
-             setPosts(originalPosts); // Revert optimistic update on error
              const permissionError = new FirestorePermissionError({
                 path: postDocRef.path,
                 operation: 'delete',
@@ -132,11 +118,8 @@ export default function AdminBlogPage() {
                          <div className="text-center py-10">
                             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 font-headline text-2xl">لا توجد منشورات بعد</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور أو استخدم مساعد الذكاء الاصطناعي.</p>
+                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك.</p>
                             <div className="mt-6 flex justify-center gap-2">
-                                <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                                    <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
-                                </AiPostDialog>
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                             </div>
                         </div>
@@ -184,9 +167,6 @@ export default function AdminBlogPage() {
                 </div>
                  {showHeaderActions && (
                     <div className="flex gap-2">
-                        <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                           <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
-                        </AiPostDialog>
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                     </div>
                  )}
