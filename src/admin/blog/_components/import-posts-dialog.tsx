@@ -1,9 +1,8 @@
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, CheckCircle } from 'lucide-react';
@@ -22,13 +21,12 @@ import { errorEmitter, FirestorePermissionError } from '@/firebase';
 
 interface ImportPostsDialogProps {
     children: React.ReactNode;
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
     onImportComplete: () => void;
 }
 
 
-export function ImportPostsDialog({ children, open, onOpenChange, onImportComplete }: ImportPostsDialogProps) {
+export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDialogProps) {
+    const [open, setOpen] = useState(false);
     const [existingTitles, setExistingTitles] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(false);
     const [importingPostId, setImportingPostId] = useState<string | null>(null);
@@ -36,24 +34,25 @@ export function ImportPostsDialog({ children, open, onOpenChange, onImportComple
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    useEffect(() => {
-        const fetchExisting = async () => {
-            if (!firestore || !open) return;
-            setIsLoading(true);
-            try {
-                const postsColRef = collection(firestore, 'blogPosts');
-                const snapshot = await getDocs(postsColRef);
-                const titles = new Set(snapshot.docs.map(doc => (doc.data() as BlogPost).title));
-                setExistingTitles(titles);
-            } catch (error) {
-                console.error("Error fetching existing posts:", error);
-                toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب قائمة المقالات الحالية.' });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchExisting();
+    const fetchExisting = useCallback(async () => {
+        if (!firestore || !open) return;
+        setIsLoading(true);
+        try {
+            const postsColRef = collection(firestore, 'blogPosts');
+            const snapshot = await getDocs(postsColRef);
+            const titles = new Set(snapshot.docs.map(doc => (doc.data() as BlogPost).title));
+            setExistingTitles(titles);
+        } catch (error) {
+            console.error("Error fetching existing posts:", error);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب قائمة المقالات الحالية.' });
+        } finally {
+            setIsLoading(false);
+        }
     }, [firestore, open, toast]);
+
+    useEffect(() => {
+        fetchExisting();
+    }, [fetchExisting]);
     
 
     const handleImportPost = async (post: Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>) => {
@@ -86,7 +85,7 @@ export function ImportPostsDialog({ children, open, onOpenChange, onImportComple
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(o) => {setOpen(o); if(o) fetchExisting(); }}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
@@ -134,4 +133,3 @@ export function ImportPostsDialog({ children, open, onOpenChange, onImportComple
         </Dialog>
     );
 }
-
