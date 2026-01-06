@@ -28,7 +28,7 @@ const prompt = ai.definePrompt({
   name: 'generateAffiliatePostPrompt',
   input: { schema: GenerateAffiliatePostInputSchema },
   output: { schema: GenerateAffiliatePostOutputSchema },
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-1.5-flash-latest'),
   prompt: `أنت خبير تسويق رقمي ومؤلف إعلانات محترف. مهمتك هي كتابة منشور تسويقي جذاب ومقنع باللغة العربية للترويج لمنصة "حاجاتي" الرقمية.
 
 الهدف من المنشور هو تشجيع القراء على التسجيل في المنصة باستخدام رابط الإحالة المرفق.
