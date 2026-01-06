@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow for generating promotional content for affiliates.
@@ -24,11 +23,8 @@ const GenerateAffiliatePostOutputSchema = z.object({
 });
 export type GenerateAffiliatePostOutput = z.infer<typeof GenerateAffiliatePostOutputSchema>;
 
-const prompt = ai.definePrompt({
-  name: 'generateAffiliatePostPrompt',
-  input: { schema: GenerateAffiliatePostInputSchema },
-  output: { schema: GenerateAffiliatePostOutputSchema },
-  prompt: `أنت خبير تسويق رقمي ومؤلف إعلانات محترف. مهمتك هي كتابة منشور تسويقي جذاب ومقنع باللغة العربية للترويج لمنصة "حاجاتي" الرقمية.
+// Simplified prompt template
+const affiliatePostPromptTemplate = `أنت خبير تسويق رقمي ومؤلف إعلانات محترف. مهمتك هي كتابة منشور تسويقي جذاب ومقنع باللغة العربية للترويج لمنصة "حاجاتي" الرقمية.
 
 الهدف من المنشور هو تشجيع القراء على التسجيل في المنصة باستخدام رابط الإحالة المرفق.
 
@@ -49,8 +45,7 @@ const prompt = ai.definePrompt({
 - قم بتضمين رابط الإحالة التالي بشكل طبيعي داخل المحتوى: **{{{referralLink}}}**
 - استخدم تنسيق الماركداون (Markdown) لجعل المنشور سهل القراءة (عناوين، نقاط، نص عريض).
 - اجعل نبرة المنشور حماسية ومحفزة لاتخاذ إجراء (Call to Action).
-`,
-});
+`;
 
 const generateAffiliatePostFlow = ai.defineFlow(
   {
@@ -59,13 +54,21 @@ const generateAffiliatePostFlow = ai.defineFlow(
     outputSchema: GenerateAffiliatePostOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    // Correctly call ai.generate with the model, prompt, and input
+    const { output } = await ai.generate({
+      model: googleAI.model('gemini-1.5-flash-latest'),
+      prompt: {
+        template: affiliatePostPromptTemplate,
+        input,
+      },
+      output: {
+        schema: GenerateAffiliatePostOutputSchema,
+      },
+    });
     return output!;
   }
 );
 
-
 export async function generateAffiliatePost(input: GenerateAffiliatePostInput): Promise<GenerateAffiliatePostOutput> {
   return generateAffiliatePostFlow(input);
 }
-    
