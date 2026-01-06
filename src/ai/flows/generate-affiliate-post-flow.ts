@@ -9,8 +9,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
-import { gemini15Flash } from 'genkitx-google-vertexai';
 
 const GenerateAffiliatePostInputSchema = z.object({
   referralLink: z.string().url().describe("The affiliate's unique referral link."),
@@ -28,7 +28,7 @@ const prompt = ai.definePrompt({
   name: 'generateAffiliatePostPrompt',
   input: { schema: GenerateAffiliatePostInputSchema },
   output: { schema: GenerateAffiliatePostOutputSchema },
-  model: gemini15Flash,
+  model: googleAI.model('gemini-1.5-flash'),
   prompt: `أنت خبير تسويق رقمي ومؤلف إعلانات محترف. مهمتك هي كتابة منشور تسويقي جذاب ومقنع باللغة العربية للترويج لمنصة "حاجاتي" الرقمية.
 
 الهدف من المنشور هو تشجيع القراء على التسجيل في المنصة باستخدام رابط الإحالة المرفق.
