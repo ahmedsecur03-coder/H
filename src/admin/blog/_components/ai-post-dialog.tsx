@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -6,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
 import { isAiConfigured } from '@/ai/client';
@@ -22,8 +21,6 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
     const [isGenerating, setIsGenerating] = useState(false);
     const { toast } = useToast();
 
-    // Do not render anything if AI is not configured.
-    // The check is now inside the component to avoid layout shifts.
     if (!isAiConfigured()) {
         return null;
     }
@@ -58,7 +55,10 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>توليد منشور بالذكاء الاصطناعي</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Wand2 className="text-primary"/>
+                        توليد منشور بالذكاء الاصطناعي
+                    </DialogTitle>
                     <DialogDescription>
                         أدخل موضوعًا أو فكرة، وسيقوم الذكاء الاصطناعي بكتابة مسودة أولية للمقالة.
                     </DialogDescription>
