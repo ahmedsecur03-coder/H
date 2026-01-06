@@ -314,7 +314,7 @@ export default function AffiliatePage() {
         return <AffiliateSkeleton />;
     }
     
-    const referralLink = `https://hajaty.com/signup?ref=${userData.referralCode}`;
+    const referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com'}/auth/signup?ref=${userData.referralCode}`;
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
     const nextLevelKey = null; // This logic needs updating to be dynamic
