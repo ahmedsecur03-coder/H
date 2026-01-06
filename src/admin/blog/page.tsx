@@ -74,7 +74,7 @@ export default function AdminBlogPage() {
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
                 await updateDoc(postDocRef, data);
                 // Optimistic update
-                setPosts(posts.map(p => p.id === selectedPost.id ? { ...p, ...data } : p));
+                setPosts(posts.map(p => p.id === selectedPost.id ? { ...p, ...data } as BlogPost : p));
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
