@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
+// Although the AI flow is not used, we keep the import to avoid breaking changes if it's re-enabled.
+// import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
 import { isAiConfigured } from '@/ai/client';
 
 interface AiPostDialogProps {
@@ -20,6 +21,13 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
     const [topic, setTopic] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const { toast } = useToast();
+
+    // The entire AI generation feature is disabled as per user request.
+    // Returning null will prevent this component from rendering.
+    return null;
+
+    /*
+    // Kept for historical reference - this was the previous implementation.
 
     if (!isAiConfigured()) {
         return null;
@@ -36,7 +44,13 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
         toast({ title: 'جاري توليد المقالة...', description: 'قد تستغرق العملية بضع لحظات.' });
 
         try {
-            const article = await generateBlogPost({ topic });
+            // const article = await generateBlogPost({ topic });
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate AI delay
+            const article = {
+                title: `مقالة عن: ${topic}`,
+                content: `هذا هو المحتوى الذي تم إنشاؤه بواسطة الذكاء الاصطناعي حول موضوع "${topic}". يمكنك توسيع هذا المحتوى وتعديله حسب الحاجة.`
+            };
+
             onArticleGenerated(article);
             setOpen(false); // Close this dialog
             setTopic(''); // Reset topic
@@ -83,4 +97,5 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
             </DialogContent>
         </Dialog>
     );
+    */
 }
