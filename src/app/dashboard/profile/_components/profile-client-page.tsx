@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -9,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User as UserIcon, Palette } from 'lucide-react';
+import { Loader2, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User as UserType } from '@/lib/types';
 import {
@@ -24,9 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { GenerateAvatarDialog } from './generate-avatar-dialog';
-import { isAiConfigured } from '@/ai/client';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),
@@ -132,12 +128,6 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
              toast({ variant: 'destructive', title: 'خطأ', description: message });
         }
     };
-    
-    const handleAvatarGenerated = (dataUri: string) => {
-        profileForm.setValue('avatarUrl', dataUri);
-        // Automatically submit the form to save the new avatar
-        handleProfileUpdate({ name: profileForm.getValues('name'), avatarUrl: dataUri });
-    };
 
     const infoBadges = [
         { label: "الرتبة", value: userData.rank },
@@ -162,14 +152,6 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             <AvatarFallback className="text-4xl"><UserIcon /></AvatarFallback>
                         </Avatar>
                         {isSaving && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
-                        
-                         {isAiConfigured() && (
-                            <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
-                                <Button size="icon" className="absolute -bottom-2 -end-2 h-8 w-8 rounded-full border-2 border-background">
-                                    <Palette className="h-4 w-4"/>
-                                </Button>
-                            </GenerateAvatarDialog>
-                        )}
                     </div>
                     <div className="flex-1 text-center md:text-right">
                         

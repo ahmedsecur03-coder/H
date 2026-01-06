@@ -29,7 +29,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Twitter, Facebook } from "lucide-react";
 import { CopyButton } from './_components/copy-button';
-import { AiPostGenerator } from "./_components/ai-post-generator";
 
 // Inlined WithdrawalDialog component
 function WithdrawalDialog({ user, children }: { user: UserType, children: React.ReactNode }) {
@@ -398,8 +397,6 @@ export default function AffiliatePage() {
             </Card>
         </div>
         
-        <AiPostGenerator referralLink={referralLink} />
-
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
              <Card className="lg:col-span-1">
                 <CardHeader>

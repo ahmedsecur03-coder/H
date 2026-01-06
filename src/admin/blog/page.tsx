@@ -12,7 +12,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PostDialog } from './_components/post-dialog';
-import { AiPostDialog } from './_components/ai-post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsDialog } from './_components/import-posts-dialog';
@@ -54,15 +53,6 @@ export default function AdminBlogPage() {
         setSelectedPost(post);
         setIsPostDialogOpen(true);
     };
-
-    const handleArticleGenerated = (article: { title: string; content: string }) => {
-        const newPost: Partial<BlogPost> = {
-            title: article.title,
-            content: article.content,
-        };
-        handleOpenPostDialog(newPost);
-    };
-
 
     const handleSavePost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
@@ -134,7 +124,6 @@ export default function AdminBlogPage() {
                                 <ImportPostsDialog onImportComplete={fetchPosts}>
                                    <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد مقالات مقترحة</Button>
                                 </ImportPostsDialog>
-                                <AiPostDialog onArticleGenerated={handleArticleGenerated} />
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                             </div>
                         </div>
@@ -185,7 +174,6 @@ export default function AdminBlogPage() {
                         <ImportPostsDialog onImportComplete={fetchPosts}>
                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد مقالات مقترحة</Button>
                         </ImportPostsDialog>
-                        <AiPostDialog onArticleGenerated={handleArticleGenerated} />
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                     </div>
                  )}
