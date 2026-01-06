@@ -1,120 +1,67 @@
-
-'use client';
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, RotateCw, Palette } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { generateAvatar } from '@/ai/flows/generate-avatar-flow';
-import Image from 'next/image';
-
-interface GenerateAvatarDialogProps {
-    children: React.ReactNode;
-    onAvatarGenerated: (dataUri: string) => void;
-}
-
-export function GenerateAvatarDialog({ children, onAvatarGenerated }: GenerateAvatarDialogProps) {
-    const [open, setOpen] = useState(false);
-    const [prompt, setPrompt] = useState('An astronaut in a futuristic suit, cosmic background, vibrant colors');
-    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const { toast } = useToast();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!prompt.trim()) {
-            toast({ variant: 'destructive', title: 'Error', description: 'الرجاء إدخال وصف للصورة.' });
-            return;
-        }
-
-        setIsGenerating(true);
-        setGeneratedImage(null);
-        toast({ title: 'جاري توليد الصورة الرمزية...' });
-
-        try {
-            const result = await generateAvatar({ prompt });
-            if (result.imageDataUri) {
-                setGeneratedImage(result.imageDataUri);
-            } else {
-                throw new Error('لم يتم إرجاع أي صورة.');
-            }
-        } catch (error: any) {
-            console.error("AI Avatar Generation Error:", error);
-            toast({ variant: 'destructive', title: 'فشل توليد الصورة', description: error.message || 'An unknown error occurred.' });
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    const handleUseImage = () => {
-        if (generatedImage) {
-            onAvatarGenerated(generatedImage);
-            setOpen(false);
-            setGeneratedImage(null);
-        }
-    }
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>توليد صورة رمزية بالذكاء الاصطناعي</DialogTitle>
-                    <DialogDescription>
-                        صف الصورة الرمزية التي تريدها، وسيقوم الذكاء الاصطناعي بإنشائها لك.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                    <div className="relative aspect-square w-full rounded-lg bg-muted overflow-hidden flex items-center justify-center">
-                        {isGenerating && <Loader2 className="h-10 w-10 animate-spin text-primary" />}
-                        {generatedImage && !isGenerating && (
-                            <Image src={generatedImage} alt="Generated Avatar" layout="fill" objectFit="cover" />
-                        )}
-                        {!generatedImage && !isGenerating && (
-                             <div className="text-center text-muted-foreground p-4">
-                                <Palette className="h-10 w-10 mx-auto" />
-                                <p className="mt-2 text-sm">ستظهر الصورة المولدة هنا.</p>
-                             </div>
-                        )}
-                    </div>
-
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="prompt">وصف الصورة</Label>
-                        <Input 
-                            id="prompt" 
-                            value={prompt} 
-                            onChange={(e) => setPrompt(e.target.value)} 
-                            placeholder="مثال: رائد فضاء في حلة مستقبلية..."
-                            required 
-                            disabled={isGenerating}
-                        />
-                    </div>
-                     <DialogFooter className="gap-2 sm:justify-between">
-                       {generatedImage ? (
-                            <>
-                                 <Button type="submit" variant="outline" disabled={isGenerating}>
-                                    <RotateCw className="ml-2 h-4 w-4" />
-                                     إعادة المحاولة
-                                </Button>
-                                <Button type="button" onClick={handleUseImage}>
-                                    استخدام هذه الصورة
-                                </Button>
-                            </>
-                       ) : (
-                            <Button type="submit" disabled={isGenerating} className="w-full">
-                                {isGenerating ? <Loader2 className="animate-spin" /> : 'توليد الصورة'}
-                            </Button>
-                       )}
-
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 9002",
+    "build": "NODE_ENV=production next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.8.0",
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-navigation-menu": "^1.2.0",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.5.0",
+    "firebase": "^11.9.1",
+    "firebase-admin": "^12.3.0",
+    "framer-motion": "^11.3.19",
+    "lucide-react": "^0.475.0",
+    "next": "15.5.9",
+    "next-themes": "0.4.0",
+    "patch-package": "^8.0.0",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "react-hook-form": "^7.54.2",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "use-debounce": "^10.0.1",
+    "wav": "^1.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.13",
+    "@types/node": "^20",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "postcss": "^8",
+    "sass": "^1.77.8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
 }

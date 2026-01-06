@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User as UserIcon, Wand2 } from 'lucide-react';
+import { Loader2, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { User as UserType } from '@/lib/types';
 import {
@@ -24,8 +24,6 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth, useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { GenerateAvatarDialog } from './generate-avatar-dialog';
-import { isAiConfigured } from '@/ai/client';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم يجب أن يكون حرفين على الأقل." }),
@@ -64,11 +62,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
 
     const currentAvatarUrl = profileForm.watch('avatarUrl');
 
-    const handleAvatarGenerated = (dataUri: string) => {
-        profileForm.setValue('avatarUrl', dataUri);
-    };
-
-    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
+    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>>) => {
         if (!authUser || !firestore) return;
         
         toast({ title: "جاري تحديث الملف الشخصي..." });
@@ -158,15 +152,6 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
                             <AvatarFallback className="text-4xl"><UserIcon /></AvatarFallback>
                         </Avatar>
                         {isSaving && <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"><Loader2 className="animate-spin text-primary"/></div>}
-                         {isAiConfigured() && (
-                            <div className="absolute -bottom-2 -left-2 rtl:-right-2 rtl:left-auto">
-                                <GenerateAvatarDialog onAvatarGenerated={handleAvatarGenerated}>
-                                    <Button size="icon" className="rounded-full h-10 w-10 border-2 border-background">
-                                        <Wand2 className="h-5 w-5" />
-                                    </Button>
-                                </GenerateAvatarDialog>
-                            </div>
-                         )}
                     </div>
                     <div className="flex-1 text-center md:text-right">
                         

@@ -1,72 +1,67 @@
-'use server';
-/**
- * @fileOverview A flow for generating promotional content for affiliates.
- *
- * - generateAffiliatePost - A function that handles the affiliate post generation.
- * - GenerateAffiliatePostInput - The input type for the function.
- * - GenerateAffiliatePostOutput - The return type for the function.
- */
-
-import { ai } from '@/ai/genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-import { z } from 'zod';
-
-const GenerateAffiliatePostInputSchema = z.object({
-  referralLink: z.string().url().describe("The affiliate's unique referral link."),
-  platform: z.string().describe('The target platform for the post (e.g., Facebook, Twitter, Blog).'),
-});
-export type GenerateAffiliatePostInput = z.infer<typeof GenerateAffiliatePostInputSchema>;
-
-const GenerateAffiliatePostOutputSchema = z.object({
-  title: z.string().describe('The catchy title for the post.'),
-  content: z.string().describe('The full content of the promotional post in Arabic, formatted in Markdown.'),
-});
-export type GenerateAffiliatePostOutput = z.infer<typeof GenerateAffiliatePostOutputSchema>;
-
-const affiliatePostPrompt = ai.definePrompt({
-    name: 'affiliatePostPrompt',
-    input: { schema: GenerateAffiliatePostInputSchema },
-    output: { schema: GenerateAffiliatePostOutputSchema },
-    prompt: `أنت خبير تسويق رقمي ومؤلف إعلانات محترف. مهمتك هي كتابة منشور تسويقي جذاب ومقنع باللغة العربية للترويج لمنصة "حاجاتي" الرقمية.
-
-الهدف من المنشور هو تشجيع القراء على التسجيل في المنصة باستخدام رابط الإحالة المرفق.
-
-**تفاصيل المنصة (حاجاتي):**
-- هي منصة متكاملة لخدمات التسويق الرقمي (SMM).
-- تقدم خدمات لجميع المنصات (انستغرام، تيك توك، فيسبوك، إلخ).
-- تتيح إدارة حملات إعلانية ذكية على جوجل وميتا.
-- توفر حسابات إعلانية وكالة (Agency Accounts) لتجاوز قيود الحسابات الجديدة.
-- لديها نظام إحالة قوي ومتعدد المستويات.
-
-**المهمة:**
-قم بإنشاء عنوان جذاب ومحتوى تسويقي للمنصة المستهدفة: **{{{platform}}}**.
-
-**التعليمات:**
-- يجب أن يكون المحتوى باللغة العربية الفصحى، مع لمسة تسويقية حديثة.
-- خاطب نقطة الألم لدى الجمهور المستهدف (مثل: صعوبة النمو على السوشيال ميديا، تقييد الحسابات الإعلانية، البحث عن مصدر دخل إضافي).
-- أبرز الميزات والفوائد الرئيسية للمنصة.
-- قم بتضمين رابط الإحالة التالي بشكل طبيعي داخل المحتوى: **{{{referralLink}}}**
-- استخدم تنسيق الماركداون (Markdown) لجعل المنشور سهل القراءة (عناوين، نقاط، نص عريض).
-- اجعل نبرة المنشور حماسية ومحفزة لاتخاذ إجراء (Call to Action).
-`,
-    config: {
-        model: googleAI.model('gemini-1.5-flash-latest'),
-    }
-});
-
-
-const generateAffiliatePostFlow = ai.defineFlow(
-  {
-    name: 'generateAffiliatePostFlow',
-    inputSchema: GenerateAffiliatePostInputSchema,
-    outputSchema: GenerateAffiliatePostOutputSchema,
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 9002",
+    "build": "NODE_ENV=production next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
-  async (input) => {
-    const { output } = await affiliatePostPrompt(input);
-    return output!;
+  "dependencies": {
+    "@google-cloud/firestore": "^7.8.0",
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-navigation-menu": "^1.2.0",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.5.0",
+    "firebase": "^11.9.1",
+    "firebase-admin": "^12.3.0",
+    "framer-motion": "^11.3.19",
+    "lucide-react": "^0.475.0",
+    "next": "15.5.9",
+    "next-themes": "0.4.0",
+    "patch-package": "^8.0.0",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "react-hook-form": "^7.54.2",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "use-debounce": "^10.0.1",
+    "wav": "^1.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.13",
+    "@types/node": "^20",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "postcss": "^8",
+    "sass": "^1.77.8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
-);
-
-export async function generateAffiliatePost(input: GenerateAffiliatePostInput): Promise<GenerateAffiliatePostOutput> {
-  return generateAffiliatePostFlow(input);
 }

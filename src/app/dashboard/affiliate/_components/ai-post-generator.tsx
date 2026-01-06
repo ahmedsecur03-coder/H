@@ -1,111 +1,67 @@
-'use client';
-
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2, Sparkles, Copy, Check } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { generateAffiliatePost } from '@/ai/flows/generate-affiliate-post-flow';
-import { isAiConfigured } from '@/ai/client';
-import ReactMarkdown from 'react-markdown';
-
-type Platform = 'Facebook' | 'Twitter' | 'Blog';
-
-export function AiPostGenerator({ referralLink }: { referralLink: string }) {
-    const { toast } = useToast();
-    const [platform, setPlatform] = useState<Platform>('Facebook');
-    const [generatedPost, setGeneratedPost] = useState<{ title: string; content: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [copied, setCopied] = useState(false);
-
-    if (!isAiConfigured()) {
-        return null; // Do not render if AI is not configured
-    }
-
-    const handleGenerate = async () => {
-        setIsLoading(true);
-        setGeneratedPost(null);
-        toast({ title: 'جاري إنشاء المحتوى التسويقي...', description: 'قد تستغرق العملية بضع لحظات.' });
-        try {
-            const result = await generateAffiliatePost({ referralLink, platform });
-            setGeneratedPost(result);
-        } catch (error: any) {
-            console.error("AI Post Generation Error:", error);
-            toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message || 'حدث خطأ أثناء إنشاء المنشور.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    const handleCopy = () => {
-        if (!generatedPost) return;
-        const textToCopy = `${generatedPost.title}\n\n${generatedPost.content}`;
-        navigator.clipboard.writeText(textToCopy);
-        setCopied(true);
-        toast({ title: 'تم نسخ محتوى المنشور!' });
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    return (
-        <Card className="glassmorphism-card border-primary/20">
-            <CardHeader>
-                <div className="flex items-center gap-3">
-                    <div className="p-3 bg-primary/10 rounded-full">
-                        <Wand2 className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <CardTitle className="font-headline text-xl">مساعد التسويق الذكي</CardTitle>
-                        <CardDescription>
-                            دع الذكاء الاصطناعي يكتب لك منشورات تسويقية جذابة لاستخدامها في الترويج لرابط الإحالة الخاص بك.
-                        </CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="sm:col-span-2">
-                        <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="اختر المنصة" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Facebook">منشور فيسبوك</SelectItem>
-                                <SelectItem value="Twitter">تغريدة تويتر (X)</SelectItem>
-                                <SelectItem value="Blog">مقالة مدونة قصيرة</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Button onClick={handleGenerate} disabled={isLoading} className="w-full sm:col-span-1">
-                        {isLoading ? <Loader2 className="animate-spin me-2" /> : <Sparkles className="me-2 h-4 w-4" />}
-                        {isLoading ? 'جاري التوليد...' : 'أنشئ المحتوى'}
-                    </Button>
-                </div>
-
-                {generatedPost && (
-                    <div className="mt-4 p-4 border rounded-lg bg-background/50 relative">
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={handleCopy}
-                            className="absolute top-2 left-2 rtl:right-2 rtl:left-auto"
-                        >
-                            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                        </Button>
-                        <article className="prose prose-sm dark:prose-invert max-w-none">
-                            <h3 className="font-headline">{generatedPost.title}</h3>
-                            <ReactMarkdown>{generatedPost.content}</ReactMarkdown>
-                        </article>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    );
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 9002",
+    "build": "NODE_ENV=production next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.8.0",
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-navigation-menu": "^1.2.0",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.5.0",
+    "firebase": "^11.9.1",
+    "firebase-admin": "^12.3.0",
+    "framer-motion": "^11.3.19",
+    "lucide-react": "^0.475.0",
+    "next": "15.5.9",
+    "next-themes": "0.4.0",
+    "patch-package": "^8.0.0",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "react-hook-form": "^7.54.2",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "use-debounce": "^10.0.1",
+    "wav": "^1.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.13",
+    "@types/node": "^20",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "postcss": "^8",
+    "sass": "^1.77.8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
 }
-    
