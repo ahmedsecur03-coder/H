@@ -8,13 +8,14 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen, Upload } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { ImportPostsDialog } from './_components/import-posts-dialog';
 
 
 export default function AdminBlogPage() {
@@ -118,9 +119,12 @@ export default function AdminBlogPage() {
                          <div className="text-center py-10">
                             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 font-headline text-2xl">لا توجد منشورات بعد</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك.</p>
+                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك أو استورد مقالات جاهزة.</p>
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                                <ImportPostsDialog onImportComplete={fetchPosts}>
+                                    <Button variant="outline"><Upload className="ml-2 h-4 w-4"/>مكتبة المقالات</Button>
+                                </ImportPostsDialog>
                             </div>
                         </div>
                     </TableCell>
@@ -129,7 +133,7 @@ export default function AdminBlogPage() {
         }
         return posts.map(post => (
             <TableRow key={post.id}>
-                <TableCell className="font-medium">{post.title}</TableCell>
+                <TableCell className="font-medium max-w-sm truncate">{post.title}</TableCell>
                 <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString('ar-EG') : 'غير محدد'}</TableCell>
                 <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
                 <TableCell className="text-right">
@@ -168,12 +172,15 @@ export default function AdminBlogPage() {
                  {showHeaderActions && (
                     <div className="flex gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
+                        <ImportPostsDialog onImportComplete={fetchPosts}>
+                            <Button variant="outline"><Upload className="ml-2 h-4 w-4"/>مكتبة المقالات</Button>
+                        </ImportPostsDialog>
                     </div>
                  )}
             </div>
             <Card>
                 <CardHeader>
-                    <CardTitle>جميع المنشورات</CardTitle>
+                    <CardTitle>جميع المنشورات ({posts.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
