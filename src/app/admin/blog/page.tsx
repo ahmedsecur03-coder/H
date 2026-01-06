@@ -8,15 +8,15 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen, Upload } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { ImportPostsDialog } from './_components/import-posts-dialog';
-
+import { AiPostDialog } from './_components/ai-post-dialog';
+import { ImportPostsButton } from './_components/import-posts-button';
 
 export default function AdminBlogPage() {
     const firestore = useFirestore();
@@ -55,6 +55,12 @@ export default function AdminBlogPage() {
         setSelectedPost(post);
         setIsPostDialogOpen(true);
     };
+    
+    const handleArticleGenerated = (article: { title: string; content: string }) => {
+        // Open the PostDialog with the generated content
+        setSelectedPost(article);
+        setIsPostDialogOpen(true);
+    };
 
     const handleSavePost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
@@ -65,15 +71,14 @@ export default function AdminBlogPage() {
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
                 await updateDoc(postDocRef, data);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
-                fetchPosts(); // Re-fetch all posts
             } else { // Adding new post
                 const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
                 const postsColRef = collection(firestore, 'blogPosts');
                 await addDoc(postsColRef, newPostData);
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
-                fetchPosts(); // Re-fetch all posts
             }
             setIsPostDialogOpen(false);
+            fetchPosts(); // Re-fetch all posts
         } catch (serverError) {
              const permissionError = new FirestorePermissionError({ 
                 path: selectedPost?.id ? `blogPosts/${selectedPost.id}` : 'blogPosts',
@@ -106,7 +111,7 @@ export default function AdminBlogPage() {
 
     const renderContent = () => {
         if (isLoading) {
-            return Array.from({ length: 3 }).map((_, i) => (
+            return Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                     {Array.from({ length: 4 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
                 </TableRow>
@@ -122,9 +127,7 @@ export default function AdminBlogPage() {
                             <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك أو استورد مقالات جاهزة.</p>
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                                <ImportPostsDialog onImportComplete={fetchPosts}>
-                                    <Button variant="outline"><Upload className="ml-2 h-4 w-4"/>مكتبة المقالات</Button>
-                                </ImportPostsDialog>
+                                <ImportPostsButton onImportComplete={fetchPosts} />
                             </div>
                         </div>
                     </TableCell>
@@ -164,7 +167,7 @@ export default function AdminBlogPage() {
 
     return (
         <div className="space-y-6 pb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة المدونة</h1>
                     <p className="text-muted-foreground">إنشاء وتعديل وحذف منشورات الأخبار والإعلانات.</p>
@@ -172,9 +175,10 @@ export default function AdminBlogPage() {
                  {showHeaderActions && (
                     <div className="flex gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                        <ImportPostsDialog onImportComplete={fetchPosts}>
-                            <Button variant="outline"><Upload className="ml-2 h-4 w-4"/>مكتبة المقالات</Button>
-                        </ImportPostsDialog>
+                         <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                            <Button variant="secondary">توليد بالذكاء الاصطناعي</Button>
+                        </AiPostDialog>
+                        <ImportPostsButton onImportComplete={fetchPosts} />
                     </div>
                  )}
             </div>
@@ -206,3 +210,4 @@ export default function AdminBlogPage() {
         </div>
     );
 }
+
