@@ -3,10 +3,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, addDoc, getDocs, where, query } from 'firebase/firestore';
+import { collection, addDoc, getDocs, where, query, deleteDoc, getDoc, doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, CheckCircle } from 'lucide-react';
+import { Loader2, Upload, CheckCircle, Trash2 } from 'lucide-react';
 import type { BlogPost } from '@/lib/types';
 import { recommendedPosts } from './recommended-posts';
 import {
@@ -28,28 +28,33 @@ interface ImportPostsDialogProps {
 
 export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDialogProps) {
     const [open, setOpen] = useState(false);
-    const [existingTitles, setExistingTitles] = useState<Set<string>>(new Set());
+    const [existingPosts, setExistingPosts] = useState<Map<string, string[]>>(new Map()); // Map title to array of doc IDs
     const [isLoading, setIsLoading] = useState(false);
-    const [importingPostId, setImportingPostId] = useState<string | null>(null);
+    const [actionPostId, setActionPostId] = useState<string | null>(null);
 
     const firestore = useFirestore();
     const { toast } = useToast();
 
     const fetchExisting = useCallback(async () => {
-        if (!firestore || !open) return;
+        if (!firestore) return;
         setIsLoading(true);
         try {
             const postsColRef = collection(firestore, 'blogPosts');
             const snapshot = await getDocs(postsColRef);
-            const titles = new Set(snapshot.docs.map(doc => (doc.data() as BlogPost).title));
-            setExistingTitles(titles);
+            const postsMap = new Map<string, string[]>();
+            snapshot.docs.forEach(doc => {
+                const post = doc.data() as BlogPost;
+                const existing = postsMap.get(post.title) || [];
+                postsMap.set(post.title, [...existing, doc.id]);
+            });
+            setExistingPosts(postsMap);
         } catch (error) {
             console.error("Error fetching existing posts:", error);
             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب قائمة المقالات الحالية.' });
         } finally {
             setIsLoading(false);
         }
-    }, [firestore, open, toast]);
+    }, [firestore, toast]);
 
     useEffect(() => {
         if (open) {
@@ -61,26 +66,24 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
     const handleImportPost = async (post: Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>) => {
         if (!firestore) return;
 
-        setImportingPostId(post.title);
+        setActionPostId(post.title);
 
         try {
-            // This is an extra check, although the button should be disabled.
-            const q = query(collection(firestore, 'blogPosts'), where("title", "==", post.title));
-            const existingPost = await getDocs(q);
-            if (!existingPost.empty) {
-                toast({ variant: 'destructive', title: 'موجود بالفعل', description: `مقال "${post.title}" موجود بالفعل.` });
-                return;
-            }
-
             const postsColRef = collection(firestore, 'blogPosts');
             const newPost = {
                 ...post,
                 authorId: 'ai-generated',
                 publishDate: new Date().toISOString(),
             };
-            await addDoc(postsColRef, newPost);
+            const docRef = await addDoc(postsColRef, newPost);
             
-            setExistingTitles(prev => new Set(prev).add(post.title));
+            setExistingPosts(prev => {
+                const newMap = new Map(prev);
+                const existing = newMap.get(post.title) || [];
+                newMap.set(post.title, [...existing, docRef.id]);
+                return newMap;
+            });
+
             toast({ title: 'نجاح!', description: `تم استيراد مقال "${post.title}" بنجاح.` });
             onImportComplete();
 
@@ -91,20 +94,45 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
             });
             errorEmitter.emit('permission-error', permissionError);
         } finally {
-            setImportingPostId(null);
+            setActionPostId(null);
         }
     };
+    
+    const handleDeletePost = async (postId: string, title: string) => {
+        if (!firestore) return;
+        setActionPostId(postId);
+        try {
+            await deleteDoc(doc(firestore, 'blogPosts', postId));
+            setExistingPosts(prev => {
+                 const newMap = new Map(prev);
+                 const ids = newMap.get(title)?.filter(id => id !== postId);
+                 if (ids && ids.length > 0) {
+                     newMap.set(title, ids);
+                 } else {
+                     newMap.delete(title);
+                 }
+                 return newMap;
+            });
+            toast({ title: 'تم الحذف', description: 'تم حذف المقال المكرر.' });
+            onImportComplete();
+        } catch (error) {
+            const permissionError = new FirestorePermissionError({ path: `blogPosts/${postId}`, operation: 'delete' });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setActionPostId(null);
+        }
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl">
                 <DialogHeader>
-                    <DialogTitle>استيراد مقالات مقترحة</DialogTitle>
+                    <DialogTitle>مكتبة المقالات المقترحة</DialogTitle>
                     <DialogDescription>
-                        اختر المقالات التي تريد إضافتها إلى مدونتك. سيتم تجاهل المقالات الموجودة بالفعل.
+                        أضف مقالات جاهزة لمدونتك أو قم بتنظيف المقالات المكررة.
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[60vh] p-1">
@@ -114,27 +142,44 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
                                 <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
                             </div>
                         ) : recommendedPosts.map((post) => {
-                            const isImported = existingTitles.has(post.title);
-                            const isThisOneImporting = importingPostId === post.title;
+                            const existingIds = existingPosts.get(post.title) || [];
+                            const isImported = existingIds.length > 0;
+                            const isActionInProgress = actionPostId === post.title || existingIds.includes(actionPostId || '');
+
                             return (
-                                <div key={post.title} className="flex items-center justify-between p-3 rounded-md border bg-muted/30">
-                                    <span className="font-medium">{post.title}</span>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => handleImportPost(post)}
-                                        disabled={isImported || !!importingPostId}
-                                    >
-                                        {isThisOneImporting ? (
-                                             <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : isImported ? (
-                                            <>
-                                                <CheckCircle className="ml-2 h-4 w-4" />
-                                                تم الاستيراد
-                                            </>
-                                        ) : (
-                                             'استيراد'
-                                        )}
-                                    </Button>
+                                <div key={post.title} className="p-3 rounded-md border bg-muted/30">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium">{post.title}</span>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleImportPost(post)}
+                                            disabled={isImported || !!actionPostId}
+                                        >
+                                            {actionPostId === post.title ? (
+                                                 <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : isImported ? (
+                                                <>
+                                                    <CheckCircle className="ml-2 h-4 w-4" />
+                                                    موجود بالفعل
+                                                </>
+                                            ) : (
+                                                 'استيراد'
+                                            )}
+                                        </Button>
+                                    </div>
+                                    {existingIds.length > 1 && (
+                                        <div className="mt-2 space-y-1 ps-4 border-s-2 border-destructive">
+                                            <p className="text-xs text-destructive font-semibold">توجد نسخ مكررة من هذا المقال:</p>
+                                            {existingIds.map(id => (
+                                                <div key={id} className="flex items-center justify-between text-xs">
+                                                     <span className="font-mono text-muted-foreground">{id}</span>
+                                                     <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => handleDeletePost(id, post.title)} disabled={!!actionPostId}>
+                                                         {actionPostId === id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4"/>}
+                                                     </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })}
