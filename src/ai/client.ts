@@ -2,8 +2,7 @@
 
 // Helper function to check if the Gemini API key is configured on the client.
 export function isAiConfigured(): boolean {
-  // We will temporarily always return true to ensure the component is visible.
-  // In a real application, you would check for the presence of an API key
-  // that is safely exposed to the client.
-  return true;
+  // This environment variable is set during the build process
+  // and will be either 'true' or an empty string.
+  return process.env.NEXT_PUBLIC_GEMINI_API_KEY_CONFIGURED === 'true';
 }
