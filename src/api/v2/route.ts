@@ -74,19 +74,23 @@ export async function POST(request: NextRequest) {
         if (!user) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
-
-        // Log the API request only for non-admin users
-        if(user.role !== 'admin') {
-            const logData = {
-                event: 'api_request',
-                level: 'info' as const,
-                message: `API action '${action}' called by user ${user.id}`,
-                timestamp: new Date().toISOString(),
-                metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
-            };
-            const logsCollection = collection(firestore, 'systemLogs');
-            await addDoc(logsCollection, logData);
+        
+        // --- Role-based Authorization ---
+        if (action === 'services' && user.role !== 'admin') {
+            // Placeholder: Admins might get raw prices, users get margin prices.
+            // For now, it's the same, but the check is here for future use.
         }
+
+        // --- Action-specific validation and logic ---
+        const logData = {
+            event: 'api_request',
+            level: 'info' as const,
+            message: `API action '${action}' called by user ${user.id}`,
+            timestamp: new Date().toISOString(),
+            metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
+        };
+        const logsCollection = collection(firestore, 'systemLogs');
+        await addDoc(logsCollection, logData);
 
 
         switch (action) {
@@ -127,7 +131,6 @@ export async function POST(request: NextRequest) {
             }
 
             case 'add': {
-                 // --- 'add' action specific validation ---
                 const addOrderParse = AddOrderSchema.safeParse(params);
                 if (!addOrderParse.success) {
                     return NextResponse.json({ error: 'Invalid parameters for add action', details: addOrderParse.error.flatten() }, { status: 400 });
@@ -143,7 +146,7 @@ export async function POST(request: NextRequest) {
                 const priceDocRef = doc(firestore, 'servicePrices', String(serviceId));
                 const priceDoc = await getDoc(priceDocRef);
                 const price = priceDoc.exists() ? (priceDoc.data() as ServicePrice).price : staticService.price;
-                const finalPrice = price * PROFIT_MARGIN; // Apply profit margin
+                const finalPrice = price * PROFIT_MARGIN;
 
                 const mergedService = { ...staticService, price: finalPrice };
 
@@ -151,7 +154,6 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: `Quantity must be between ${mergedService.min} and ${mergedService.max}` }, { status: 400 });
                 }
                 
-                // Server-side cost calculation
                 const cost = (quantity / 1000) * mergedService.price;
                 
                 if (user.balance < cost) {
@@ -175,19 +177,16 @@ export async function POST(request: NextRequest) {
                      newOrderId = orderId;
                 });
 
-
                 return NextResponse.json({ order: newOrderId });
             }
 
             case 'status': {
-                 // --- 'status' action specific validation ---
                  const statusParse = StatusSchema.safeParse(params);
                  if (!statusParse.success) {
                      return NextResponse.json({ error: 'Invalid or missing `order` parameter' }, { status: 400 });
                  }
                 const { order: orderId } = statusParse.data;
 
-                // Query for the order within the user's subcollection
                 const orderDocRef = doc(firestore, `users/${user.id}/orders`, String(orderId));
                 const orderDoc = await getDoc(orderDocRef);
 
@@ -210,7 +209,6 @@ export async function POST(request: NextRequest) {
         }
     } catch (error: any) {
         console.error('API Error:', error);
-        // Log critical errors to systemLogs
          const logsCollection = collection(firestore, 'systemLogs');
          await addDoc(logsCollection, {
             event: 'api_error',

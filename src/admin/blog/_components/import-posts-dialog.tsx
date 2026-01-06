@@ -1,8 +1,9 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, where, query } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, CheckCircle } from 'lucide-react';
@@ -51,8 +52,10 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
     }, [firestore, open, toast]);
 
     useEffect(() => {
-        fetchExisting();
-    }, [fetchExisting]);
+        if (open) {
+            fetchExisting();
+        }
+    }, [open, fetchExisting]);
     
 
     const handleImportPost = async (post: Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>) => {
@@ -61,6 +64,14 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
         setImportingPostId(post.title);
 
         try {
+            // This is an extra check, although the button should be disabled.
+            const q = query(collection(firestore, 'blogPosts'), where("title", "==", post.title));
+            const existingPost = await getDocs(q);
+            if (!existingPost.empty) {
+                toast({ variant: 'destructive', title: 'موجود بالفعل', description: `مقال "${post.title}" موجود بالفعل.` });
+                return;
+            }
+
             const postsColRef = collection(firestore, 'blogPosts');
             const newPost = {
                 ...post,
@@ -85,7 +96,7 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
     };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => {setOpen(o); if(o) fetchExisting(); }}>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>

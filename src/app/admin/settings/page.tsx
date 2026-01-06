@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2, Send } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp, orderBy, collection, addDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp, orderBy, collection, addDoc, Firestore } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -27,6 +27,67 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Notification, Order, Deposit } from '@/lib/types';
+
+
+async function runCleanup(firestore: Firestore, type: 'orders' | 'deposits') {
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+    const collectionGroupRef = collectionGroup(firestore, type);
+    const snapshot = await getDocs(collectionGroupRef);
+
+    let docsToDelete: any[] = [];
+    
+    if (type === 'orders') {
+        docsToDelete = snapshot.docs.filter(doc => {
+            const order = doc.data() as Order;
+            return (order.status === 'مكتمل' || order.status === 'ملغي') && new Date(order.orderDate) < fiveDaysAgo;
+        });
+
+    } else if (type === 'deposits') {
+            docsToDelete = snapshot.docs.filter(doc => {
+            const deposit = doc.data() as Deposit;
+            return deposit.status === 'مرفوض' && new Date(deposit.depositDate) < fiveDaysAgo;
+        });
+    }
+    
+    if (docsToDelete.length === 0) {
+        return { count: 0 };
+    }
+
+    const batchArray: any[] = [];
+    let currentBatch = writeBatch(firestore);
+    let operationCount = 0;
+
+    docsToDelete.forEach((doc) => {
+        currentBatch.delete(doc.ref);
+        operationCount++;
+        if (operationCount === 499) {
+            batchArray.push(currentBatch);
+            currentBatch = writeBatch(firestore);
+            operationCount = 0;
+        }
+    });
+    batchArray.push(currentBatch);
+
+    await Promise.all(batchArray.map(batch => batch.commit()));
+    return { count: docsToDelete.length };
+}
+
+
+async function runBroadcast(firestore: Firestore, message: string, type: Notification['type']) {
+    // This is a placeholder for a Cloud Function trigger.
+    // In a real app, this would write to a 'broadcasts' collection,
+    // and a Cloud Function would handle the distribution.
+    const logData = {
+        event: 'broadcast_sent',
+        level: 'info' as const,
+        message: `Admin triggered a broadcast: "${message}"`,
+        timestamp: new Date().toISOString(),
+        metadata: { type, message },
+    };
+    await addDoc(collection(firestore, 'systemLogs'), logData);
+}
 
 
 export default function AdminSettingsPage() {
@@ -92,71 +153,23 @@ export default function AdminSettingsPage() {
         });
   };
 
-  const handleCleanup = async (type: 'orders' | 'deposits') => {
-    if (!firestore) return;
-    setIsCleaning(type);
-
-    const fiveDaysAgo = new Date();
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-
-    try {
-        const collectionGroupRef = collectionGroup(firestore, type);
-        const snapshot = await getDocs(collectionGroupRef);
-
-        let docsToDelete: any[] = [];
-        
-        if (type === 'orders') {
-            docsToDelete = snapshot.docs.filter(doc => {
-                const order = doc.data() as Order;
-                return (order.status === 'مكتمل' || order.status === 'ملغي') && new Date(order.orderDate) < fiveDaysAgo;
-            });
-
-        } else if (type === 'deposits') {
-             docsToDelete = snapshot.docs.filter(doc => {
-                const deposit = doc.data() as Deposit;
-                return deposit.status === 'مرفوض' && new Date(deposit.depositDate) < fiveDaysAgo;
-            });
-        }
-        
-        if (docsToDelete.length === 0) {
-            toast({ title: 'لا يوجد ما يمكن حذفه', description: `لم يتم العثور على أي ${type === 'orders' ? 'طلبات' : 'إيداعات'} قديمة.` });
-            setIsCleaning(null);
-            return;
-        }
-
-        const batchArray: any[] = [];
-        let currentBatch = writeBatch(firestore);
-        let operationCount = 0;
-
-        docsToDelete.forEach((doc) => {
-            currentBatch.delete(doc.ref);
-            operationCount++;
-            if (operationCount === 499) {
-                batchArray.push(currentBatch);
-                currentBatch = writeBatch(firestore);
-                operationCount = 0;
+    const handleCleanup = async (type: 'orders' | 'deposits') => {
+        if (!firestore) return;
+        setIsCleaning(type);
+        try {
+            const result = await runCleanup(firestore, type);
+            if (result.count > 0) {
+                 toast({ title: "نجاح!", description: `تم حذف ${result.count} ${type === 'orders' ? 'طلب' : 'إيداع'} قديم بنجاح.` });
+            } else {
+                toast({ title: 'لا يوجد ما يمكن حذفه', description: `لم يتم العثور على أي ${type === 'orders' ? 'طلبات' : 'إيداعات'} قديمة.` });
             }
-        });
-        batchArray.push(currentBatch);
-
-        await Promise.all(batchArray.map(batch => batch.commit()));
-
-        toast({
-            title: "نجاح!",
-            description: `تم حذف ${docsToDelete.length} ${type === 'orders' ? 'طلب' : 'إيداع'} قديم بنجاح.`,
-        });
-
-    } catch (error) {
-        console.error(`Error cleaning up ${type}:`, error);
-        const permissionError = new FirestorePermissionError({
-            path: `collectionGroup(${type})`,
-            operation: 'delete'
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    } finally {
-        setIsCleaning(null);
-    }
-}
+        } catch (error) {
+             const permissionError = new FirestorePermissionError({ path: `collectionGroup(${type})`, operation: 'delete' });
+             errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setIsCleaning(null);
+        }
+    };
 
   const handleBroadcast = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -167,31 +180,11 @@ export default function AdminSettingsPage() {
       setIsBroadcasting(true);
       
       try {
-        // In a real-world scenario, this would trigger a Cloud Function
-        // that iterates over all users and adds the notification.
-        // For this demo, we'll log it and show a success message.
-        console.log("Broadcasting:", { message: broadcastMessage, type: broadcastType });
-
-        const logData = {
-          event: 'broadcast_sent',
-          level: 'info' as const,
-          message: `Admin sent a broadcast: "${broadcastMessage}"`,
-          timestamp: new Date().toISOString(),
-          metadata: { type: broadcastType, message: broadcastMessage },
-        };
-        await addDoc(collection(firestore, 'systemLogs'), logData);
-
-        toast({
-            title: "جاري إرسال الإشعار...",
-            description: "سيتم إرسال الإشعار لجميع المستخدمين في الخلفية.",
-        });
+        await runBroadcast(firestore, broadcastMessage, broadcastType);
+        toast({ title: "جاري إرسال الإشعار...", description: "سيتم إرسال الإشعار لجميع المستخدمين في الخلفية." });
         setBroadcastMessage('');
-
       } catch (error) {
-          const permissionError = new FirestorePermissionError({
-              path: 'systemLogs',
-              operation: 'create',
-          });
+          const permissionError = new FirestorePermissionError({ path: 'systemLogs', operation: 'create' });
           errorEmitter.emit('permission-error', permissionError);
       } finally {
         setIsBroadcasting(false);
@@ -261,44 +254,61 @@ export default function AdminSettingsPage() {
                     </div>
                 </CardContent>
              </Card>
-
-              <Card>
-                  <CardHeader>
-                      <CardTitle>إرسال إشعار عام</CardTitle>
-                      <CardDescription>إرسال إشعار لجميع المستخدمين في المنصة. استخدمها للإعلانات الهامة أو تنبيهات الصيانة.</CardDescription>
-                  </CardHeader>
-                  <form onSubmit={handleBroadcast}>
-                      <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                              <Label htmlFor="broadcast-message">رسالة الإشعار</Label>
-                              <Textarea id="broadcast-message" value={broadcastMessage} onChange={e => setBroadcastMessage(e.target.value)} placeholder="مثال: صيانة مجدولة يوم الجمعة من الساعة 2 حتى 4 صباحًا." required />
-                          </div>
-                          <div className="space-y-2">
-                              <Label htmlFor="broadcast-type">نوع الإشعار</Label>
-                              <Select value={broadcastType} onValueChange={(v) => setBroadcastType(v as Notification['type'])}>
-                                  <SelectTrigger id="broadcast-type"><SelectValue/></SelectTrigger>
-                                  <SelectContent>
-                                      <SelectItem value="info">معلومة (Info)</SelectItem>
-                                      <SelectItem value="success">نجاح (Success)</SelectItem>
-                                      <SelectItem value="warning">تحذير (Warning)</SelectItem>
-                                      <SelectItem value="error">خطأ (Error)</SelectItem>
-                                  </SelectContent>
-                              </Select>
-                          </div>
-                      </CardContent>
-                      <CardFooter>
-                          <Button type="submit" disabled={isBroadcasting}>
-                              {isBroadcasting ? <Loader2 className="animate-spin me-2" /> : <Send className="me-2 h-4 w-4" />}
-                              إرسال الإشعار للجميع
-                          </Button>
-                      </CardFooter>
-                  </form>
-              </Card>
-
         </div>
 
         <div className="space-y-6">
-           
+           <Card>
+                <CardHeader>
+                    <CardTitle>إرسال إشعار عام</CardTitle>
+                    <CardDescription>إرسال إشعار لجميع المستخدمين. (هذه الميزة تتطلب وظيفة خادم لتكتمل).</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleBroadcast}>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="broadcast-message">رسالة الإشعار</Label>
+                            <Textarea id="broadcast-message" value={broadcastMessage} onChange={e => setBroadcastMessage(e.target.value)} placeholder="مثال: صيانة مجدولة يوم الجمعة..." required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="broadcast-type">نوع الإشعار</Label>
+                            <Select value={broadcastType} onValueChange={(v) => setBroadcastType(v as Notification['type'])}>
+                                <SelectTrigger id="broadcast-type"><SelectValue/></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="info">معلومة (Info)</SelectItem>
+                                    <SelectItem value="success">نجاح (Success)</SelectItem>
+                                    <SelectItem value="warning">تحذير (Warning)</SelectItem>
+                                    <SelectItem value="error">خطأ (Error)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" disabled={isBroadcasting}>
+                            {isBroadcasting ? <Loader2 className="animate-spin me-2" /> : <Send className="me-2 h-4 w-4" />}
+                            إرسال الإشعار
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>صيانة النظام</CardTitle>
+                    <CardDescription>تنظيف البيانات القديمة لتحسين الأداء.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <p>حذف الطلبات القديمة (أقدم من 5 أيام)</p>
+                         <Button variant="outline" size="sm" onClick={() => handleCleanup('orders')} disabled={!!isCleaning}>
+                            {isCleaning === 'orders' ? <Loader2 className="animate-spin" /> : <Trash2 className="h-4 w-4"/>}
+                        </Button>
+                    </div>
+                     <div className="flex justify-between items-center">
+                        <p>حذف طلبات الإيداع المرفوضة القديمة</p>
+                        <Button variant="outline" size="sm" onClick={() => handleCleanup('deposits')} disabled={!!isCleaning}>
+                            {isCleaning === 'deposits' ? <Loader2 className="animate-spin" /> : <Trash2 className="h-4 w-4"/>}
+                        </Button>
+                    </div>
+                </CardContent>
+             </Card>
         </div>
       </div>
        <Separator className="my-6" />
@@ -311,5 +321,3 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
-
-    

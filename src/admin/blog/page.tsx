@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -7,7 +8,7 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen, Upload } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen, Upload, Wand2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -15,6 +16,8 @@ import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsDialog } from './_components/import-posts-dialog';
+import { AiPostDialog } from './_components/ai-post-dialog';
+
 
 export default function AdminBlogPage() {
     const firestore = useFirestore();
@@ -53,6 +56,14 @@ export default function AdminBlogPage() {
         setSelectedPost(post);
         setIsPostDialogOpen(true);
     };
+    
+    const handleArticleGenerated = (article: { title: string; content: string }) => {
+        const newPost: Partial<BlogPost> = {
+            title: article.title,
+            content: article.content,
+        };
+        handleOpenPostDialog(newPost);
+    };
 
     const handleSavePost = async (data: { title: string; content: string }) => {
         if (!firestore || !user) return;
@@ -62,14 +73,17 @@ export default function AdminBlogPage() {
             if (selectedPost && selectedPost.id) { // Editing
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
                 await updateDoc(postDocRef, data);
+                // Optimistic update
+                setPosts(posts.map(p => p.id === selectedPost.id ? { ...p, ...data } : p));
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
                 const postsColRef = collection(firestore, 'blogPosts');
-                await addDoc(postsColRef, newPostData);
+                const docRef = await addDoc(postsColRef, newPostData);
+                // Optimistic update
+                setPosts(prev => [{ id: docRef.id, ...newPostData }, ...prev]);
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
             }
-            await fetchPosts(); // Refresh data
             setIsPostDialogOpen(false);
         } catch (serverError) {
              const permissionError = new FirestorePermissionError({ 
@@ -86,21 +100,21 @@ export default function AdminBlogPage() {
 
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
-        setIsSaving(true);
+        const originalPosts = [...posts];
+        // Optimistic update
+        setPosts(posts => posts.filter(p => p.id !== id));
         const postDocRef = doc(firestore, 'blogPosts', id);
         try {
             await deleteDoc(postDocRef)
             toast({ title: 'نجاح', description: 'تم حذف المنشور بنجاح.' });
-            await fetchPosts(); 
         }
         catch(serverError) {
+             setPosts(originalPosts); // Revert optimistic update on error
              const permissionError = new FirestorePermissionError({
                 path: postDocRef.path,
                 operation: 'delete',
             });
             errorEmitter.emit('permission-error', permissionError);
-        } finally {
-            setIsSaving(false); 
         }
     };
 
@@ -124,6 +138,9 @@ export default function AdminBlogPage() {
                                 <ImportPostsDialog onImportComplete={fetchPosts}>
                                    <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد مقالات مقترحة</Button>
                                 </ImportPostsDialog>
+                                <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                                    <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
+                                </AiPostDialog>
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                             </div>
                         </div>
@@ -137,12 +154,12 @@ export default function AdminBlogPage() {
                 <TableCell>{post.publishDate ? new Date(post.publishDate).toLocaleDateString('ar-EG') : 'غير محدد'}</TableCell>
                 <TableCell className="font-mono text-xs">{post.authorId}</TableCell>
                 <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)} disabled={isSaving}>
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenPostDialog(post)}>
                         <Pencil className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={isSaving}><Trash2 className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -174,6 +191,9 @@ export default function AdminBlogPage() {
                         <ImportPostsDialog onImportComplete={fetchPosts}>
                            <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد مقالات مقترحة</Button>
                         </ImportPostsDialog>
+                        <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                           <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
+                        </AiPostDialog>
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                     </div>
                  )}

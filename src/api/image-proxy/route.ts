@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextResponse } from 'next/server';
@@ -5,6 +6,7 @@ import { getAuthenticatedUser } from '@/firebase/server-auth';
 
 export async function POST(request: Request) {
   try {
+    // SECURE THE ROUTE: Only authenticated users can use this proxy.
     const { user } = await getAuthenticatedUser();
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

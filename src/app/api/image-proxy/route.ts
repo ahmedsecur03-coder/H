@@ -1,15 +1,33 @@
-
 'use server';
 
 import { NextResponse } from 'next/server';
+import { getAuthenticatedUser } from '@/firebase/server-auth';
 
 export async function POST(request: Request) {
   try {
+    // SECURE THE ROUTE: Only authenticated users can use this proxy.
+    const { user } = await getAuthenticatedUser();
+    if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+      
     const { imageUrl } = await request.json();
 
     if (!imageUrl) {
       return NextResponse.json({ error: 'Image URL is required' }, { status: 400 });
     }
+
+    // Basic validation to prevent abuse by checking allowed hostnames
+    const allowedHosts = ['images.unsplash.com', 'i.pravatar.cc', 'lh3.googleusercontent.com', 'oaidalleapiprodscus.blob.core.windows.net'];
+    try {
+        const url = new URL(imageUrl);
+        if (!allowedHosts.includes(url.hostname)) {
+          return NextResponse.json({ error: 'Invalid image host' }, { status: 400 });
+        }
+    } catch (e) {
+        return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 });
+    }
+
 
     const response = await fetch(imageUrl);
 
@@ -35,7 +53,7 @@ export async function OPTIONS(request: Request) {
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
     });
 }

@@ -1,19 +1,17 @@
 
-
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
-import { useUser, useFirestore, useDoc, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import type { User as UserType } from '@/lib/types';
-import { doc, updateDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 import { ApiKeyCard } from "./_components/api-key-card";
 import { CodeExample } from "./_components/code-example";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-// Removed server action import
-// import { regenerateApiKey } from "./_actions/api-key-actions";
+import { regenerateApiKey } from "./_actions/api-key-actions";
 
 function ApiPageSkeleton() {
     return (
@@ -31,34 +29,26 @@ function ApiPageSkeleton() {
 
 export default function ApiPage() {
     const { user } = useUser();
-    const firestore = useFirestore();
     const { toast } = useToast();
     const [isRegenerating, setIsRegenerating] = useState(false);
 
-    const userDocRef = useMemoFirebase(() => (user && firestore ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
+    const userDocRef = useMemoFirebase(() => (user ? doc(useFirestore(), 'users', user.uid) : null), [user, useFirestore()]);
     const { data: userData, isLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
 
     const handleRegenerateApiKey = async () => {
-        if (!user || !firestore) return;
+        if (!user) return;
         setIsRegenerating(true);
-        const newApiKey = `hy_${crypto.randomUUID()}`;
-        const userDocRef = doc(firestore, 'users', user.uid);
-
-        try {
-            await updateDoc(userDocRef, { apiKey: newApiKey });
+        const result = await regenerateApiKey(user.uid);
+        
+        if (result.success && result.apiKey) {
             forceDocUpdate(); // Re-fetch user data to display the new key
             toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
-        } catch (error: any) {
-             const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'update',
-                requestResourceData: { apiKey: 'REDACTED' },
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        } finally {
-            setIsRegenerating(false);
+        } else {
+            toast({ variant: 'destructive', title: 'فشل', description: result.error || 'حدث خطأ أثناء إنشاء مفتاح جديد.' });
         }
+
+        setIsRegenerating(false);
     }
 
 
@@ -111,11 +101,11 @@ export default function ApiPage() {
                 <CardHeader>
                     <CardTitle>نقاط النهاية (Endpoints)</CardTitle>
                      <CardDescription>
-                        جميع الطلبات يجب أن تكون من نوع POST إلى الرابط التالي. (ملاحظة: تم تعطيل هذا المسار حاليًا لأن التطبيق يعمل بوضع العميل فقط).
+                        جميع الطلبات يجب أن تكون من نوع POST إلى الرابط التالي.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <CodeExample code="https://hajaty.com/api/v2" language="bash" />
+                    <CodeExample code="/api/v2" language="bash" />
                     <h3 className="font-semibold text-lg mb-4 mt-6">الإجراءات المتاحة</h3>
 
                     <div className="space-y-8">

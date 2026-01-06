@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
 import type { BlogPost } from '@/lib/types';
+import { AiPostDialog } from './ai-post-dialog';
 
 interface PostDialogProps {
     open: boolean;
@@ -28,6 +30,11 @@ export function PostDialog({ open, onOpenChange, post, onSave, isSaving }: PostD
         }
     }, [open, post]);
 
+    const handleArticleGenerated = (article: { title: string; content: string }) => {
+        setTitle(article.title);
+        setContent(article.content);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         await onSave({ title, content });
@@ -35,12 +42,19 @@ export function PostDialog({ open, onOpenChange, post, onSave, isSaving }: PostD
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>{post?.id ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
-                    <DialogDescription>
-                        قم بملء تفاصيل المنشور هنا. سيتم عرضه في صفحة المدونة.
-                    </DialogDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <DialogTitle>{post?.id ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
+                            <DialogDescription>
+                                قم بملء تفاصيل المنشور هنا. سيتم عرضه في صفحة المدونة.
+                            </DialogDescription>
+                        </div>
+                        <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                           <Button variant="outline" size="sm"><Wand2 className="ml-2 h-4 w-4"/>إنشاء بالذكاء الاصطناعي</Button>
+                        </AiPostDialog>
+                    </div>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">
