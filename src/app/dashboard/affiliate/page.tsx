@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -182,11 +181,11 @@ function AffiliateSkeleton() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40" />)}
             </div>
+             <Skeleton className="h-64 w-full" />
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Skeleton className="h-64 lg:col-span-1" />
                 <Skeleton className="h-64 lg:col-span-2" />
             </div>
-             <Skeleton className="h-64 w-full" />
         </div>
     );
 }
@@ -399,6 +398,8 @@ export default function AffiliatePage() {
             </Card>
         </div>
         
+        <AiPostGenerator referralLink={referralLink} />
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
              <Card className="lg:col-span-1">
                 <CardHeader>
@@ -415,8 +416,6 @@ export default function AffiliatePage() {
                 <NetworkTree userData={userData} />
             </div>
         </div>
-
-        <AiPostGenerator referralLink={referralLink} />
 
         {authUser && <TransactionHistoryTable userId={authUser.uid} />}
     </div>
