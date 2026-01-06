@@ -15,7 +15,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { ImportPostsDialog } from './_components/import-posts-dialog';
 import { AiPostDialog } from './_components/ai-post-dialog';
 
 
@@ -133,11 +132,8 @@ export default function AdminBlogPage() {
                          <div className="text-center py-10">
                             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 font-headline text-2xl">لا توجد منشورات بعد</h3>
-                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور أو قم باستيراد مقالات مقترحة لزيادة التفاعل.</p>
+                            <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور أو استخدم مساعد الذكاء الاصطناعي.</p>
                             <div className="mt-6 flex justify-center gap-2">
-                                <ImportPostsDialog onImportComplete={fetchPosts}>
-                                   <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد مقالات مقترحة</Button>
-                                </ImportPostsDialog>
                                 <AiPostDialog onArticleGenerated={handleArticleGenerated}>
                                     <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
                                 </AiPostDialog>
@@ -188,9 +184,6 @@ export default function AdminBlogPage() {
                 </div>
                  {showHeaderActions && (
                     <div className="flex gap-2">
-                        <ImportPostsDialog onImportComplete={fetchPosts}>
-                           <Button variant="outline"><Upload className="ml-2 h-4 w-4" />استيراد مقالات مقترحة</Button>
-                        </ImportPostsDialog>
                         <AiPostDialog onArticleGenerated={handleArticleGenerated}>
                            <Button variant="outline"><Wand2 className="ml-2 h-4 w-4" />إنشاء بالذكاء الاصطناعي</Button>
                         </AiPostDialog>
