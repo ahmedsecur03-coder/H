@@ -109,5 +109,4 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
         </Card>
     );
 }
-
     

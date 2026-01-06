@@ -1,3 +1,4 @@
+
 'use client';
 
 // Helper function to check if the Gemini API key is configured on the client.

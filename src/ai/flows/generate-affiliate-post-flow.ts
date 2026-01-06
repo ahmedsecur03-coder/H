@@ -67,5 +67,4 @@ const generateAffiliatePostFlow = ai.defineFlow(
 export async function generateAffiliatePost(input: GenerateAffiliatePostInput): Promise<GenerateAffiliatePostOutput> {
   return generateAffiliatePostFlow(input);
 }
-
     
