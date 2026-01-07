@@ -23,7 +23,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6261,
         "min": 10,
         "max": 10000000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "2 ساعات 4 دقائق"
     },
     {
@@ -33,7 +33,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0008,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات إنستغرام |🔥يعمل على كل الروابط |⚡السرعة 100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاهدات إنستغرام |🔥يعمل على كل الروابط |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 ساعات 57 دقائق"
@@ -45,7 +45,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6091,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة + منشورات |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة + منشورات |⛔بدون ضمان",
         "avgTime": "4 ساعات 49 دقائق"
     },
     {
@@ -55,7 +55,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.9124,
         "min": 10,
         "max": 100000,
-        "description": "متابعين إنستغرام |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 42 دقائق"
@@ -67,7 +67,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1565,
         "min": 100,
         "max": 500000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 20 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⛔بدون ضمان",
         "avgTime": "3 ساعات 25 دقائق"
     },
     {
@@ -77,7 +77,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1537,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدايه فوريه |⚡السرعة 5 - 10 ألف/اليوم |⛔ بدون ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدايه فوريه |⛔ بدون ضمان",
         "avgTime": "2 ساعات 33 دقائق"
     },
     {
@@ -87,7 +87,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1342,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥 بدون نقص |⚡السرعة +5-10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "14 ساعات 3 دقائق"
@@ -99,7 +99,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1504,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 53 دقائق"
@@ -111,7 +111,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2031,
         "min": 100,
         "max": 1000000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 1 - 5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 20 دقائق"
@@ -123,7 +123,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1922,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 30 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "37 ساعات 43 دقائق"
@@ -135,7 +135,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2024,
         "min": 100,
         "max": 20000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥 بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "17 ساعات 29 دقائق"
@@ -147,7 +147,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3705,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥 بدون نقص |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 5 دقائق"
@@ -159,7 +159,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2875,
         "min": 100,
         "max": 100000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 20 ألف/يوم |✅30 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 42 دقائق"
@@ -171,7 +171,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6187,
         "min": 10,
         "max": 50000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +3 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "1 ساعة 35 دقائق"
     },
     {
@@ -181,7 +181,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.9335,
         "min": 10,
         "max": 10000000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 57 دقائق"
@@ -193,7 +193,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4277,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعه +20 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 40 دقائق"
@@ -205,7 +205,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0085,
         "min": 5000,
         "max": 2147483647,
-        "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية",
+        "description": "مشاهدات تيك توك |🔥بداية فورية",
         "avgTime": "30 دقائق"
     },
     {
@@ -215,7 +215,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0116,
         "min": 50,
         "max": 2147483647,
-        "description": "مشاهدات تيك توك |🔥بداية فورية |⚡السرعة 1 مليون |✅365 يوم ضمان",
+        "description": "مشاهدات تيك توك |🔥بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "22 دقائق"
@@ -227,7 +227,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8464,
         "min": 50,
         "max": 200000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +2 - 3 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "18 ساعات 6 دقائق"
     },
     {
@@ -237,7 +237,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1,
         "min": 10,
         "max": 10000000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +2 - 3 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 30 دقائق"
@@ -249,7 +249,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 10000000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "2 ساعات 18 دقائق"
     },
     {
@@ -259,7 +259,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1,
         "min": 10,
         "max": 10000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "31 ساعات 7 دقائق"
@@ -283,7 +283,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.045,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات يوتيوب |🔥خدمة جديدة - ننصح بها |⚡السرعة 1 - 5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥خدمة جديدة - ننصح بها |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 ساعات"
@@ -295,7 +295,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.308,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 دقائق"
@@ -307,7 +307,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.564,
         "min": 10,
         "max": 20000,
-        "description": "تعليقات يوتيوب مخصصة |🔥بدون نقص |⚡السرعة +10 ألف/اليوم|✅30 يوم ضمان",
+        "description": "تعليقات يوتيوب مخصصة |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "31 ساعات 46 دقائق"
@@ -329,7 +329,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.715,
         "min": 500,
         "max": 200000,
-        "description": "أعضاء تيليجرام |📢قناة / مجموعة |⚡السرعة +20 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "أعضاء تيليجرام |📢قناة / مجموعة |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 ساعات 1 دقيقة"
@@ -381,7 +381,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1265,
         "min": 500,
         "max": 1000000000,
-        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم",
+        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة",
         "avgTime": "1 دقيقة"
     },
     {
@@ -391,7 +391,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.132,
         "min": 100,
         "max": 2147483647,
-        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم",
+        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة",
         "avgTime": "36 دقائق"
     },
     {
@@ -401,7 +401,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.154,
         "min": 100,
         "max": 2147483647,
-        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم",
+        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة",
         "avgTime": "27 دقائق"
     },
     {
@@ -411,7 +411,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.165,
         "min": 100,
         "max": 2147483647,
-        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم",
+        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة",
         "avgTime": "44 دقائق"
     },
     {
@@ -421,7 +421,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.187,
         "min": 100,
         "max": 2147483647,
-        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة |⚡السرعة +500 ألف/اليوم",
+        "description": "نقاط معركة تيك توك |🔥بدء 0 - 1 دقيقة",
         "avgTime": "2 دقائق"
     },
     {
@@ -451,7 +451,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 31.9,
         "min": 10,
         "max": 5000,
-        "description": "تعليقات تيك توك مخصصة |🎯100%حسابات مصرية |⚡السرعة + 100/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات تيك توك مخصصة |🎯100%حسابات مصرية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "68 ساعات 3 دقائق"
@@ -463,7 +463,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3248,
         "min": 10,
         "max": 1000,
-        "description": "حفظ فيديو تيكتوك |🎯100%حسابات مصرية |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "حفظ فيديو تيكتوك |🎯100%حسابات مصرية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 56 دقائق"
@@ -475,7 +475,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.209,
         "min": 100,
         "max": 10000,
-        "description": "شير فيديو تيكتوك |🎯100%حسابات مصرية |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "شير فيديو تيكتوك |🎯100%حسابات مصرية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "111 ساعات 40 دقائق"
@@ -487,7 +487,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2128,
         "min": 10,
         "max": 20000,
-        "description": "تنزيل فيديو تيكتوك |🎯100%حسابات مصرية |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تنزيل فيديو تيكتوك |🎯100%حسابات مصرية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "28 ساعات 47 دقائق"
@@ -499,7 +499,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0003,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية",
+        "description": "مشاهدات تيك توك |🔥بداية فورية",
         "avgTime": "11 ساعات 7 دقائق"
     },
     {
@@ -509,7 +509,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0004,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات تيك توك |⚡السرعة 10 مليون | ✅30 يوم ضمان",
+        "description": "مشاهدات تيك توك | ✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 ساعات 22 دقائق"
@@ -521,7 +521,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0006,
         "min": 50,
         "max": 2147483647,
-        "description": "مشاهدات تيك توك |⚡السرعة 10 مليون |🔥بداية فورية",
+        "description": "مشاهدات تيك توك |🔥بداية فورية",
         "avgTime": "3 دقائق"
     },
     {
@@ -541,7 +541,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0009,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات تيك توك |⚡السرعة 10 مليون | ✅30 يوم ضمان",
+        "description": "مشاهدات تيك توك | ✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 دقائق"
@@ -553,7 +553,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من مصر |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من مصر |🔥بدون نقص",
         "avgTime": "1 ساعة 45 دقائق"
     },
     {
@@ -563,7 +563,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من السعودية |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من السعودية |🔥بدون نقص",
         "avgTime": "4 ساعات 6 دقائق"
     },
     {
@@ -573,7 +573,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من الكويت |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من الكويت |🔥بدون نقص",
         "avgTime": "1 ساعة 13 دقائق"
     },
     {
@@ -583,7 +583,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من الإمارات |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من الإمارات |🔥بدون نقص",
         "avgTime": "1 ساعة 26 دقائق"
     },
     {
@@ -593,7 +593,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من عمان |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من عمان |🔥بدون نقص",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -603,7 +603,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من قطر |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من قطر |🔥بدون نقص",
         "avgTime": "12 دقائق"
     },
     {
@@ -613,7 +613,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من الأردن |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من الأردن |🔥بدون نقص",
         "avgTime": "206 ساعات 15 دقائق"
     },
     {
@@ -623,7 +623,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من الجزائر |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من الجزائر |🔥بدون نقص",
         "avgTime": "20 ساعات 58 دقائق"
     },
     {
@@ -633,7 +633,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من المغرب |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من المغرب |🔥بدون نقص",
         "avgTime": "12 ساعات 3 دقائق"
     },
     {
@@ -643,7 +643,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0429,
         "min": 1000,
         "max": 1000000,
-        "description": "مشاهدات تيك توك |🎯من تونس |⚡السرعة 10 مليون |🔥بدون نقص",
+        "description": "مشاهدات تيك توك |🎯من تونس |🔥بدون نقص",
         "avgTime": "2 ساعات 5 دقائق"
     },
     {
@@ -653,7 +653,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2191,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |⛔ بدون ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⛔ بدون ضمان",
         "avgTime": "1 ساعة 47 دقائق"
     },
     {
@@ -663,7 +663,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2246,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅7 يوم ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅7 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 ساعات 44 دقائق"
@@ -675,7 +675,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2481,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅15 يوم ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅15 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 ساعات 47 دقائق"
@@ -687,7 +687,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2631,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 29 دقائق"
@@ -699,7 +699,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2995,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 40 دقائق"
@@ -711,7 +711,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.3238,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 12 دقائق"
@@ -723,7 +723,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.3723,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 40 دقائق"
@@ -735,7 +735,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4209,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🎯100% حسابات عربيه |⚡السرعة +50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين تيك توك |🎯100% حسابات عربيه |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 30 دقائق"
@@ -747,7 +747,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.902,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيكتوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تيكتوك |🔥بدون نقص |⛔بدون ضمان",
         "avgTime": "7 ساعات 58 دقائق"
     },
     {
@@ -757,7 +757,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.935,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "21 ساعات 15 دقائق"
@@ -769,7 +769,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.946,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "58 ساعات 30 دقائق"
@@ -781,7 +781,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.957,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "25 ساعات 20 دقائق"
@@ -793,7 +793,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.968,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "29 ساعات 27 دقائق"
@@ -805,7 +805,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.979,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "42 ساعات 48 دقائق"
@@ -817,7 +817,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.54,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تيك توك |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "31 ساعات 12 دقائق"
     },
     {
@@ -827,7 +827,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.551,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅7 أيام ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅7 أيام ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 35 دقائق"
@@ -839,7 +839,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.562,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅15 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅15 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "29 ساعات 11 دقائق"
@@ -851,7 +851,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.573,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "15 دقائق"
@@ -863,7 +863,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.584,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -875,7 +875,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.595,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "149 ساعات 44 دقائق"
@@ -887,7 +887,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.606,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 ساعات 52 دقائق"
@@ -899,7 +899,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.617,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين تيك توك |🔥بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 36 دقائق"
@@ -993,7 +993,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0825,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك + مشاهدات |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تيك توك + مشاهدات |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "19 دقائق"
     },
     {
@@ -1003,7 +1003,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0842,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 55 دقائق"
@@ -1015,7 +1015,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0867,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅60 يوم ضمان",
+        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "21 دقائق"
@@ -1027,7 +1027,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0891,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅90 يوم ضمان",
+        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 11 دقائق"
@@ -1039,7 +1039,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0908,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 دقائق"
@@ -1051,7 +1051,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0933,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |⚡السرعة +100 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات تيك توك + مشاهدات |🔥بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 دقائق"
@@ -1063,7 +1063,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0154,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |🔥بداية فورية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "1 ساعة 44 دقائق"
     },
     {
@@ -1073,7 +1073,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0165,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 53 دقائق"
@@ -1085,7 +1085,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0176,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅60 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "56 دقائق"
@@ -1097,7 +1097,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0187,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅90 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "44 دقائق"
@@ -1109,7 +1109,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0198,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "38 دقائق"
@@ -1121,7 +1121,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0209,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |🔥بدون نقص |⚡السرعة +20 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات تيك توك |🔥بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 11 دقائق"
@@ -1133,7 +1133,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0407,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تيك توك |⛔بدون ضمان",
         "avgTime": "57 دقائق"
     },
     {
@@ -1143,7 +1143,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0418,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +1 - 10 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تيك توك |⛔بدون ضمان",
         "avgTime": "23 دقائق"
     },
     {
@@ -1153,7 +1153,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0759,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تيك توك |⛔بدون ضمان",
         "avgTime": "12 دقائق"
     },
     {
@@ -1163,7 +1163,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0814,
         "min": 10,
         "max": 2000000,
-        "description": "إعجابات تيك توك |⚡السرعه +1 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تيك توك |⛔بدون ضمان",
         "avgTime": "24 دقائق"
     },
     {
@@ -1183,7 +1183,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0418,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 8 دقائق"
@@ -1195,7 +1195,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0149,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅60 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 5 دقائق"
@@ -1207,7 +1207,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0792,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +20 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "32 دقائق"
@@ -1219,7 +1219,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.033,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "33 دقائق"
@@ -1255,7 +1255,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0341,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +50 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "23 دقائق"
@@ -1267,7 +1267,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1155,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 45 دقائق"
@@ -1279,7 +1279,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1155,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "54 دقائق"
@@ -1291,7 +1291,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.121,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 51 دقائق"
@@ -1303,7 +1303,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.132,
         "min": 10,
         "max": 300000,
-        "description": "إعجابات تيك توك |⚡السرعه +5 - 10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 2 دقائق"
@@ -1315,7 +1315,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0143,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +100 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "30 دقائق"
@@ -1327,7 +1327,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0618,
         "min": 10,
         "max": 20000000,
-        "description": "إعجابات تيك توك |⚡السرعه +50 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 43 دقائق"
@@ -1339,7 +1339,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.165,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 6 دقائق"
@@ -1351,7 +1351,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.044,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات تيك توك |⚡السرعه +100 ألف/اليوم |🔥بداية فورية |✅365 يوم ضمان",
+        "description": "إعجابات تيك توك |🔥بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 20 دقائق"
@@ -1363,7 +1363,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1622,
         "min": 10,
         "max": 5000000,
-        "description": "إعجابات تيك توك |🔥نقص قليل |⚡السرعة +20 ألف/اليوم |🔥أفضل العروض",
+        "description": "إعجابات تيك توك |🔥نقص قليل |🔥أفضل العروض",
         "avgTime": "10 ساعات 1 دقيقة"
     },
     {
@@ -1373,7 +1373,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.715,
         "min": 1,
         "max": 100000,
-        "description": "تعليقات تيك توك عشوائية |⚡السرعة + 50 ألف/اليوم |🔥بداية فورية",
+        "description": "تعليقات تيك توك عشوائية |🔥بداية فورية",
         "avgTime": "26 دقائق"
     },
     {
@@ -1383,7 +1383,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 10,
         "max": 100000,
-        "description": "تعليقات تيك توك إيموجى |⚡السرعة + 5 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "تعليقات تيك توك إيموجى |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "20 دقائق"
@@ -1395,7 +1395,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 10,
         "max": 100000,
-        "description": "تعليقات تيك توك مخصصة |⚡السرعة + 5 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "تعليقات تيك توك مخصصة |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "16 دقائق"
@@ -1419,7 +1419,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.85,
         "min": 10,
         "max": 500000,
-        "description": "تعليقات تيك توك مخصصة |⚡السرعة + 20 ألف/اليوم |🔥بداية فورية |✅365 يوم ضمان",
+        "description": "تعليقات تيك توك مخصصة |🔥بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 7 دقائق"
@@ -1431,7 +1431,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 7.7,
         "min": 10,
         "max": 30000,
-        "description": "تعليقات تيك توك إيموجى |⚡السرعة + 30 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "تعليقات تيك توك إيموجى |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 21 دقائق"
@@ -1443,7 +1443,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 8.8,
         "min": 10,
         "max": 5000,
-        "description": "تعليقات تيك توك مخصصة |⚡السرعة + 5 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "تعليقات تيك توك مخصصة |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 دقائق"
@@ -1777,7 +1777,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.077,
         "min": 100,
         "max": 2147483647,
-        "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 5 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 5 دقائق",
         "avgTime": "1 ساعة 10 دقائق"
     },
     {
@@ -1787,7 +1787,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.088,
         "min": 100,
         "max": 2147483647,
-        "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 3 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 3 دقائق",
         "avgTime": "1 دقيقة"
     },
     {
@@ -1797,7 +1797,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.099,
         "min": 100,
         "max": 2147483647,
-        "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 1 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "إعجابات بث مباشر تيك توك |🔥بدء 0 - 1 دقائق",
         "avgTime": "1 دقيقة"
     },
     {
@@ -1807,7 +1807,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.07,
         "min": 10,
         "max": 2147483647,
-        "description": "إعجابات بث مباشر تيك توك❤️ |🔥بدء فورى |⚡السرعة +100 ألف/اليوم",
+        "description": "إعجابات بث مباشر تيك توك❤️ |🔥بدء فورى",
         "avgTime": "6 دقائق"
     },
     {
@@ -1817,7 +1817,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.044,
         "min": 50,
         "max": 10000000,
-        "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 1 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 1 دقائق",
         "avgTime": "183 ساعات 28 دقائق"
     },
     {
@@ -1827,7 +1827,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.099,
         "min": 10,
         "max": 10000000,
-        "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 10 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 10 دقائق",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1837,7 +1837,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.605,
         "min": 10,
         "max": 1000000,
-        "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 5 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "مشاركات بث مباشر تيك توك |🔥بدء 0 - 5 دقائق",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1847,7 +1847,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.231,
         "min": 50,
         "max": 10000000,
-        "description": "شير بث مباشر تيك توك⬆️|🔥بدء فورى |⚡السرعة +100 ألف/اليوم",
+        "description": "شير بث مباشر تيك توك⬆️|🔥بدء فورى",
         "avgTime": "27 ساعات 3 دقائق"
     },
     {
@@ -1857,7 +1857,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.902,
         "min": 10,
         "max": 10000000,
-        "description": "شير بث مباشر تيك توك⬆️|🔥بدء فورى |⚡السرعة +100 ألف/اليوم",
+        "description": "شير بث مباشر تيك توك⬆️|🔥بدء فورى",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1867,7 +1867,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.65,
         "min": 10,
         "max": 10000,
-        "description": "تعليقات إيموجى بث مباشر تيك توك |🔥بدء 0 - 1 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "تعليقات إيموجى بث مباشر تيك توك |🔥بدء 0 - 1 دقائق",
         "avgTime": "4 دقائق"
     },
     {
@@ -1877,7 +1877,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 10,
         "max": 100000,
-        "description": "تعليقات إيموجى بث مباشر تيك توك |🔥بدء 0 - 10 دقائق |⚡السرعة +500 ألف/اليوم",
+        "description": "تعليقات إيموجى بث مباشر تيك توك |🔥بدء 0 - 10 دقائق",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1887,7 +1887,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0209,
         "min": 10,
         "max": 2147483647,
-        "description": "إعجابات بث مباشر تيك توك❤️ |🔥بدء فورى |⚡السرعة +100 ألف/اليوم",
+        "description": "إعجابات بث مباشر تيك توك❤️ |🔥بدء فورى",
         "avgTime": "6 دقائق"
     },
     {
@@ -1897,7 +1897,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.63,
         "min": 5,
         "max": 10000,
-        "description": "تعليقات بث مباشر تيك توك عشوائية 💬|🔥بدء فورى |⚡السرعة 100 ألف/اليوم",
+        "description": "تعليقات بث مباشر تيك توك عشوائية 💬|🔥بدء فورى",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1907,7 +1907,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.748,
         "min": 10,
         "max": 10000,
-        "description": "تيكتوك تعليقات بث مباشر ( إيموجى ) |🔥بدون نقص |⚡السرعة +100 ألف/اليوم",
+        "description": "تيكتوك تعليقات بث مباشر ( إيموجى ) |🔥بدون نقص",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1917,7 +1917,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 13.684,
         "min": 5,
         "max": 10000,
-        "description": "تعليقات بث مباشر تيك توك مخصصة 💬|🔥بدء فورى |⚡السرعة 100 ألف/اليوم",
+        "description": "تعليقات بث مباشر تيك توك مخصصة 💬|🔥بدء فورى",
         "avgTime": "32 ساعات 29 دقائق"
     },
     {
@@ -1927,7 +1927,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.748,
         "min": 10,
         "max": 10000,
-        "description": "تيكتوك تعليقات بث مباشر ( عشوائيه) |🔥بدون نقص |⚡السرعة +100 ألف/اليوم",
+        "description": "تيكتوك تعليقات بث مباشر ( عشوائيه) |🔥بدون نقص",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1937,7 +1937,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.145,
         "min": 100,
         "max": 2000000,
-        "description": "مشاهدات يوتيوب |🎯حسابات مصرية |⚡السرعة 500 |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🎯حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -1949,7 +1949,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.198,
         "min": 10,
         "max": 1000000,
-        "description": "مشتركين يوتيوب |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "مشتركين يوتيوب |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1959,7 +1959,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.253,
         "min": 10,
         "max": 1000000,
-        "description": "مشتركين يوتيوب |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "مشتركين يوتيوب |⛔بدون ضمان",
         "avgTime": "1 ساعة 26 دقائق"
     },
     {
@@ -1969,7 +1969,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.275,
         "min": 10,
         "max": 100000,
-        "description": "مشتركين يوتيوب |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "مشتركين يوتيوب |⛔بدون ضمان",
         "avgTime": "4 ساعات 18 دقائق"
     },
     {
@@ -1979,7 +1979,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.253,
         "min": 10,
         "max": 50000,
-        "description": "مشتركين يوتيوب |✨جودة بوتات |⚡السرعة 10 ألف/اليوم |⛔ بدون ضمان",
+        "description": "مشتركين يوتيوب |✨جودة بوتات |⛔ بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1989,7 +1989,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.308,
         "min": 10,
         "max": 100000,
-        "description": "مشتركين يوتيوب |✨جودة بوتات |⚡السرعة 10 ألف/اليوم |⛔بدون ضمان",
+        "description": "مشتركين يوتيوب |✨جودة بوتات |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -1999,7 +1999,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 16.5,
         "min": 50,
         "max": 8000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة 100 - 200/اليوم |✅30 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "43 ساعات 56 دقائق"
@@ -2011,7 +2011,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 16.104,
         "min": 50,
         "max": 30000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة 200 - 300/اليوم |✅30 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "56 ساعات 36 دقائق"
@@ -2023,7 +2023,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 17.16,
         "min": 50,
         "max": 10000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة 200 - 500/اليوم |✅30 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2035,7 +2035,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 22.0,
         "min": 50,
         "max": 10000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +500 - 3 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2047,7 +2047,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 22.0,
         "min": 50,
         "max": 15000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +2 - 3 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 ساعات 16 دقائق"
@@ -2059,7 +2059,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 28.237,
         "min": 100,
         "max": 1000000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +5 - 10ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2071,7 +2071,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 27.5,
         "min": 50,
         "max": 50000,
-        "description": "مشتركين يوتيوب |🔥بدون نقص |⚡السرعة +10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "مشتركين يوتيوب |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 ساعات 19 دقائق"
@@ -2093,7 +2093,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 20.7,
         "min": 100,
         "max": 4000,
-        "description": "ساعات مشاهدة يوتيوب |🔥 بدون نقص |📊فيديو +60 دقيقة |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "ساعات مشاهدة يوتيوب |🔥 بدون نقص |📊فيديو +60 دقيقة |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "57 ساعات 21 دقائق"
@@ -2105,7 +2105,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 15.4,
         "min": 4000,
         "max": 4000,
-        "description": "ساعات مشاهدة يوتيوب (📢 باكدج 4 ألف ساعة مشاهده ) |📊فيديو +60 دقيقة |⚡السرعة +2 - 3 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "ساعات مشاهدة يوتيوب (📢 باكدج 4 ألف ساعة مشاهده ) |📊فيديو +60 dقيقة |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2117,7 +2117,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.989,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 1 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 58 دقائق"
@@ -2129,7 +2129,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.935,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 3-4 ألف/اليوم |🔥 بدون سقوط |✅ضمان 90 يوم",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان 90 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 23 دقائق"
@@ -2141,7 +2141,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.9775,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 2 - 5 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "14 ساعات 37 دقائق"
@@ -2153,7 +2153,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.375,
         "min": 500,
         "max": 100000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 4 - 8 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2165,7 +2165,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.913,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب + 1-3% لايكات |🔥 ننصح بها |⚡السرعة 500 - 2 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب + 1-3% لايكات |🔥 ننصح بها |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "41 ساعات 32 دقائق"
@@ -2177,7 +2177,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.979,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 38 دقائق"
@@ -2189,7 +2189,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.913,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "21 دقائق"
@@ -2201,7 +2201,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.671,
         "min": 50,
         "max": 100000,
-        "description": "مشاهدات يوتيوب + 1- 3% لايكات |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب + 1- 3% لايكات |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 41 دقائق"
@@ -2213,7 +2213,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.045,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 2 - 5 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "17 ساعات 48 دقائق"
@@ -2225,7 +2225,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.001,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 ساعات 42 دقائق"
@@ -2237,7 +2237,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.9471,
         "min": 100,
         "max": 5000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان 365 يوم",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان 365 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2249,7 +2249,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.001,
         "min": 100,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان 365 يوم",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان 365 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 دقائق"
@@ -2261,7 +2261,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.9471,
         "min": 100,
         "max": 5000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 500 - 2 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 22 دقائق"
@@ -2273,7 +2273,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.946,
         "min": 3000,
         "max": 100000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 7 - 15 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 27 دقائق"
@@ -2285,7 +2285,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.946,
         "min": 10000,
         "max": 5000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 100 - 500 ألف/اليوم |🔥 بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥 بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2297,7 +2297,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.056,
         "min": 10000,
         "max": 20000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 100 - 200 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "33 ساعات 39 دقائق"
@@ -2309,7 +2309,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.858,
         "min": 40000,
         "max": 10000000,
-        "description": "مشاهدات يوتيوب |⚡السرعة 250 - 500 ألف/اليوم |🔥بدون سقوط |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2321,7 +2321,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.7083,
         "min": 50,
         "max": 500000,
-        "description": "مشاهدات يوتيوب |📊مدة المشاهدة: تصل الى 1 دقيقة |⚡السرعة +5-10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |📊مدة المشاهدة: تصل الى 1 دقيقة |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 54 دقائق"
@@ -2333,7 +2333,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.4165,
         "min": 50,
         "max": 500000,
-        "description": "مشاهدات يوتيوب |📊مدة المشاهدة: تصل الى 2 دقيقة |⚡السرعة +5-10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب |📊مدة المشاهدة: تصل الى 2 دقيقة |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2345,7 +2345,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دول مكس |⚡السرعة+1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دول مكس |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "133 ساعات 37 دقائق"
@@ -2357,7 +2357,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة مصر |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة مصر |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "113 ساعات 29 دقائق"
@@ -2369,7 +2369,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة الأردن |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة الأردن |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2381,7 +2381,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة قطر |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة قطر |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2393,7 +2393,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة العراق |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة العراق |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2405,7 +2405,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة تونس |⚡السرعة+1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة تونس |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2417,7 +2417,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة المغرب |⚡السرعة +1 - 10 ألف/اليوم|✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة المغرب |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2429,7 +2429,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة عمان |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة عمان |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2441,7 +2441,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة الجزائر |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة الجزائر |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2453,7 +2453,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة لبنان |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة لبنان |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2465,7 +2465,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 500,
         "max": 1000000,
-        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة اليمن |⚡السرعة +1 - 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات ادوردز يوتيوب |🎯إستهداف دولة اليمن |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2477,7 +2477,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.869,
         "min": 40000,
         "max": 20000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +1 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "134 ساعات 35 دقائق"
@@ -2489,7 +2489,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.627,
         "min": 1000000,
         "max": 20000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +2 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2501,7 +2501,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.66,
         "min": 500000,
         "max": 5000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +1 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2513,7 +2513,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.902,
         "min": 30000,
         "max": 10000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +1 مليون/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2525,7 +2525,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.869,
         "min": 20000,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +50 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2537,7 +2537,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.88,
         "min": 20000,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +500 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2549,7 +2549,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.001,
         "min": 10000,
         "max": 100000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +200 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2561,7 +2561,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.935,
         "min": 2000,
         "max": 1000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +200 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 2 دقائق"
@@ -2573,7 +2573,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.133,
         "min": 3000,
         "max": 100000000,
-        "description": "مشاهدات يوتيوب (إعلانات) |⚡السرعة +100 ألف/اليوم |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
+        "description": "مشاهدات يوتيوب (إعلانات) |🔥بدون سقوط (مستخدمون حقيقيون) |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "39 ساعات 41 دقائق"
@@ -2585,7 +2585,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.045,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات فيديوهات قصيرة يوتيوب |🎯 مصدر متنوع |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديوهات قصيرة يوتيوب |🎯 مصدر متنوع |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2597,7 +2597,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.045,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات فيديوهات قصيرة يوتيوب |🎯 مصدر متنوع |⚡السرعة +10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديوهات قصيرة يوتيوب |🎯 مصدر متنوع |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2609,7 +2609,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.715,
         "min": 10,
         "max": 60000,
-        "description": "إعجابات فيديوهات قصيرة يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات فيديوهات قصيرة يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2621,7 +2621,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.682,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات فيديوهات قصيرة يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات فيديوهات قصيرة يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2633,7 +2633,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.071,
         "min": 10,
         "max": 100000,
-        "description": "تعليقات يوتيوب مخصصة للفيديوهات القصيرة |✨جودة حقيقية |⚡السرعة +10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "تعليقات يوتيوب مخصصة للفيديوهات القصيرة |✨جودة حقيقية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2645,7 +2645,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.165,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2657,7 +2657,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.176,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅60 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2669,7 +2669,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.187,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅90 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2681,7 +2681,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.198,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅180 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅180 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2693,7 +2693,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.207,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2705,7 +2705,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.216,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2717,7 +2717,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.506,
         "min": 10,
         "max": 50000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 - 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 دقائق"
@@ -2729,7 +2729,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.55,
         "min": 10,
         "max": 5000,
-        "description": "إعجابات يوتيوب |🔥بدون نقص |⚡السرعة +1 - 5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 دقائق"
@@ -2741,7 +2741,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.209,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2753,7 +2753,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.308,
         "min": 10,
         "max": 500000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2765,7 +2765,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.165,
         "min": 10,
         "max": 80000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2777,7 +2777,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.198,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات يوتيوب |🔥بدايه فوريه |⚡السرعة +20 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |🔥بدايه فوريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2789,7 +2789,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.363,
         "min": 20,
         "max": 100000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +20 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "4 دقائق"
     },
     {
@@ -2799,7 +2799,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.121,
         "min": 10,
         "max": 20000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "2 دقائق"
     },
     {
@@ -2809,7 +2809,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.275,
         "min": 10,
         "max": 80000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -2819,7 +2819,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.66,
         "min": 10,
         "max": 75000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2831,7 +2831,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.748,
         "min": 10,
         "max": 75000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +30 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2843,7 +2843,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.627,
         "min": 10,
         "max": 60000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2855,7 +2855,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.649,
         "min": 10,
         "max": 60000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +70 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2867,7 +2867,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.506,
         "min": 10,
         "max": 50000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2879,7 +2879,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.935,
         "min": 10,
         "max": 60000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +40 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 دقائق"
@@ -2891,7 +2891,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.968,
         "min": 20,
         "max": 500000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +500 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2903,7 +2903,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4945,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 دقائق"
@@ -2915,7 +2915,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.99,
         "min": 20,
         "max": 400000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +20 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2927,7 +2927,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.572,
         "min": 50,
         "max": 400000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +250 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 دقائق"
@@ -2939,7 +2939,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.495,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات يوتيوب |✨جودة حقيقية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات يوتيوب |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 دقائق"
@@ -2951,7 +2951,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.071,
         "min": 10,
         "max": 100000,
-        "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |⚡السرعة +10 ألف/اليوم|✅ضمان مدى الحياة",
+        "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 ساعات 25 دقائق"
@@ -2963,7 +2963,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.564,
         "min": 10,
         "max": 20000,
-        "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |⚡السرعة +5 ألف/اليوم|✅ضمان مدى الحياة",
+        "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2975,7 +2975,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 10,
         "max": 100,
-        "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |⚡السرعة +5 ألف/اليوم|✅ضمان مدى الحياة",
+        "description": "تعليقات يوتيوب مخصصة |🎯من جميع أنحاء العالم |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -2987,7 +2987,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6088,
         "min": 500,
         "max": 150000,
-        "description": "يوتيوب مشاركات | ✨ جودة حقيقية | ⚡ السرعة 1 ألف/اليوم | ✅ ضمان مدى الحياة",
+        "description": "يوتيوب مشاركات | ✨ جودة حقيقية | ✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 53 دقائق"
@@ -2999,7 +2999,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2574,
         "min": 100,
         "max": 100000,
-        "description": "يوتيوب مشاركات | ✨ من تويتر | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة",
+        "description": "يوتيوب مشاركات | ✨ من تويتر | ✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3011,7 +3011,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2574,
         "min": 100,
         "max": 100000,
-        "description": "يوتيوب مشاركات | ✨ من بينترست | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة",
+        "description": "يوتيوب مشاركات | ✨ من بينترست | ✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3023,7 +3023,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2574,
         "min": 100,
         "max": 100000,
-        "description": "يوتيوب مشاركات | ✨ من رديت | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة",
+        "description": "يوتيوب مشاركات | ✨ من رديت | ✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3035,7 +3035,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2574,
         "min": 100,
         "max": 100000,
-        "description": "يوتيوب مشاركات | ✨ من فكونتاكتي | ⚡ السرعة 10 ألف/اليوم | ✅ ضمان مدى الحياة",
+        "description": "يوتيوب مشاركات | ✨ من فكونتاكتي | ✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3047,7 +3047,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الطبخ |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الطبخ |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3059,7 +3059,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الألعاب |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الألعاب |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3071,7 +3071,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في التعليم |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في التعليم |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3083,7 +3083,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأفلام |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأفلام |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3095,7 +3095,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأغانى |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأغانى |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3107,7 +3107,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأخبار |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في الأخبار |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3119,7 +3119,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 100,
         "max": 50000,
-        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في المقالب |⚡ السرعة +1 ألف/اليوم |✅ضمان مدى الحباة",
+        "description": "مشاركة فيديو يوتيوب من مصر |🎯 أفضل فيديوهات في المقالب |✅ضمان مدى الحباة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3203,7 +3203,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.28,
         "min": 50,
         "max": 500000,
-        "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +180 دقيقة |✅ضمان مدى الحياة",
+        "description": "يوتيوب بث مباشر |🔥بداية فورية |📊مشاهدة لمدة +180 dقيقة |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 دقائق"
@@ -3261,7 +3261,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 4.35,
         "min": 1000,
         "max": 25000,
-        "description": "متابعين إنستغرام |🎯حسابات مصرية |⚡السرعة +1 - 3 ألف/اليوم |✅ضمان مدى الحياة [0 - 48 ساعة]",
+        "description": "متابعين إنستغرام |🎯حسابات مصرية |✅ضمان مدى الحياة [0 - 48 ساعة]",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3273,7 +3273,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.0,
         "min": 1000,
         "max": 25000,
-        "description": "متابعين إنستغرام |🎯حسابات مصرية |⚡السرعة +500 - 1 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين إنستغرام |🎯حسابات مصرية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3285,7 +3285,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.375,
         "min": 50,
         "max": 1000,
-        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +1 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "34 ساعات 31 دقائق"
     },
     {
@@ -3295,7 +3295,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.485,
         "min": 50,
         "max": 5000,
-        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "9 ساعات 20 دقائق"
     },
     {
@@ -3305,7 +3305,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.65,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "4 ساعات 38 دقائق"
     },
     {
@@ -3315,7 +3315,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.98,
         "min": 50,
         "max": 1000000,
-        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات مصرية |🔥بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 29 دقائق"
@@ -3327,7 +3327,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.243,
         "min": 50,
         "max": 1000,
-        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +1 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "6 ساعات 40 دقائق"
     },
     {
@@ -3337,7 +3337,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.5255,
         "min": 50,
         "max": 5000,
-        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "28 ساعات 20 دقائق"
     },
     {
@@ -3347,7 +3347,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.034,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⛔بدون ضمان",
         "avgTime": "2 ساعات 31 دقائق"
     },
     {
@@ -3357,7 +3357,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.26,
         "min": 20,
         "max": 1000000,
-        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات إنستغرام |🎯 حسابات عربيه |🔥بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "73 ساعات 34 دقائق"
@@ -3369,7 +3369,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات إنستغرام |🎯حسابات مصرية |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات إنستغرام |🎯حسابات مصرية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "53 ساعات 15 دقائق"
@@ -3381,7 +3381,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 100,
         "max": 50000,
-        "description": "إعجابات إنستغرام |🎯حسابات مصرية إناث |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات إنستغرام |🎯حسابات مصرية إناث |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "67 ساعات 56 دقائق"
@@ -3393,7 +3393,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 20,
         "max": 1000,
-        "description": "إعجابات إنستغرام |🎯حسابات سعودية |⚡السرعة 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات إنستغرام |🎯حسابات سعودية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "55 ساعات 25 دقائق"
@@ -3415,7 +3415,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0061,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات إنستغرام |🎯حسابات مصرية |⚡السرعة 1 مليون |✅ضمان مدى الحياة",
+        "description": "مشاهدات إنستغرام |🎯حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 21 دقائق"
@@ -3427,7 +3427,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0061,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات إنستغرام |🎯حسابات عربية |⚡السرعة 1 مليون |✅ضمان مدى الحياة",
+        "description": "مشاهدات إنستغرام |🎯حسابات عربية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 22 دقائق"
@@ -3439,7 +3439,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 11.0,
         "min": 30,
         "max": 20000,
-        "description": "تعليقات إنستغرام عشوائية |🎯حسابات مصرية |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات إنستغرام عشوائية |🎯حسابات مصرية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "28 ساعات 12 دقائق"
@@ -3451,7 +3451,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 11.0,
         "min": 30,
         "max": 20000,
-        "description": "تعليقات إنستغرام مخصصة |🎯حسابات مصرية |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات إنستغرام مخصصة |🎯حسابات مصرية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "14 ساعات 24 دقائق"
@@ -3463,7 +3463,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.616,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |⛔بدون ضمان",
         "avgTime": "2 ساعات 30 دقائق"
     },
     {
@@ -3473,7 +3473,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.66,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |⛔بدون ضمان",
         "avgTime": "1 ساعة 27 دقائق"
     },
     {
@@ -3483,7 +3483,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.0171,
         "min": 50,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -3493,7 +3493,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.842,
         "min": 50,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 دقائق"
@@ -3505,7 +3505,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 4.068,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 100 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 21 دقائق"
@@ -3517,7 +3517,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.9264,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |⛔بدون ضمان",
         "avgTime": "2 ساعات 32 دقائق"
     },
     {
@@ -3527,7 +3527,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1862,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 ساعات 41 دقائق"
@@ -3539,7 +3539,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.296,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 6 دقائق"
@@ -3551,7 +3551,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.3838,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 58 دقائق"
@@ -3563,7 +3563,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4637,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 15 دقائق"
@@ -3575,7 +3575,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.5435,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمة |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين إنستغرام |🔥حسابات قديمة |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 ساعات 33 دقائق"
@@ -3587,7 +3587,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4032,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |⛔بدون ضمان",
         "avgTime": "6 دقائق"
     },
     {
@@ -3597,7 +3597,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6364,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 2 دقائق"
@@ -3609,7 +3609,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.8012,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 6 دقائق"
@@ -3621,7 +3621,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.911,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "23 دقائق"
@@ -3633,7 +3633,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.0212,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "11 ساعات 22 دقائق"
@@ -3645,7 +3645,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.1499,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 ساعات 20 دقائق"
@@ -3657,7 +3657,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.695,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -3667,7 +3667,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.915,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3679,7 +3679,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3691,7 +3691,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.025,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -3703,7 +3703,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.135,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "17 دقائق"
@@ -3715,7 +3715,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.245,
         "min": 10,
         "max": 5000000,
-        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين إنستغرام |🔥حسابات قديمه |💧نقص قليل |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 33 دقائق"
@@ -3749,7 +3749,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.253,
         "min": 50,
         "max": 1000000,
-        "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات إنستغرام |🔥 بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "27 دقائق"
@@ -3771,7 +3771,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1318,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات إنستغرام |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 23 دقائق"
@@ -3783,7 +3783,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1395,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅60 يوم ضمان",
+        "description": "إعجابات إنستغرام |🔥 بداية فورية |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 41 دقائق"
@@ -3795,7 +3795,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1439,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅90 يوم ضمان",
+        "description": "إعجابات إنستغرام |🔥 بداية فورية |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 19 دقائق"
@@ -3807,7 +3807,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1483,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات إنستغرام |🔥 بداية فورية |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 21 دقائق"
@@ -3819,7 +3819,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1538,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات إنستغرام |🔥 بداية فورية |⚡السرعة 100 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات إنستغرام |🔥 بداية فورية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 17 دقائق"
@@ -3831,7 +3831,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 4.025,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات إيموجى إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات إيموجى إنستغرام |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 15 دقائق"
@@ -3843,7 +3843,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.85,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات إيموجى إنستغرام إيجابى | 💚🥰🌺👍🏼👑 |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات إيموجى إنستغرام إيجابى | 💚🥰🌺👍🏼👑 |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "37 ساعات 20 دقائق"
@@ -3855,7 +3855,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 6.05,
         "min": 5,
         "max": 10000,
-        "description": "تعليقات إيموجى إنستغرام سلبى | 😔🤮💔😈🥵 |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات إيموجى إنستغرام سلبى | 😔🤮💔😈🥵 |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "25 دقائق"
@@ -3867,7 +3867,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.52,
         "min": 10,
         "max": 100000,
-        "description": "تعليقات عشوائية إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات عشوائية إنستغرام |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 14 دقائق"
@@ -3879,7 +3879,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 10,
         "max": 50000,
-        "description": "تعليقات عشوائية إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات عشوائية إنستغرام |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 دقائق"
@@ -3891,7 +3891,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.77,
         "min": 20,
         "max": 100000,
-        "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "45 دقائق"
@@ -3903,7 +3903,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 20,
         "max": 100000,
-        "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 46 دقائق"
@@ -3915,7 +3915,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.5,
         "min": 10,
         "max": 20000,
-        "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |⚡السرعة +500 |✅30 يوم ضمان",
+        "description": "تعليقات مخصصة إنستغرام |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "14 ساعات"
@@ -3947,7 +3947,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0015,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات إنستغرام |🔥بداية فورية |⚡السرعة 1 مليون |🔥جميع أنواع الفيديوهات",
+        "description": "مشاهدات إنستغرام |🔥بداية فورية |🔥جميع أنواع الفيديوهات",
         "avgTime": "2 ساعات 12 دقائق"
     },
     {
@@ -3977,7 +3977,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.002,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "1 ساعة 11 دقائق"
     },
     {
@@ -3987,7 +3987,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0021,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "28 دقائق"
     },
     {
@@ -3997,7 +3997,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0022,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "1 ساعة"
     },
     {
@@ -4007,7 +4007,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0071,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "47 دقائق"
     },
     {
@@ -4017,7 +4017,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0083,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "57 دقائق"
     },
     {
@@ -4027,7 +4027,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0087,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "25 دقائق"
     },
     {
@@ -4037,7 +4037,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0093,
         "min": 50,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "27 دقائق"
     },
     {
@@ -4047,7 +4047,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0099,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4057,7 +4057,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0105,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "1 ساعة 1 دقيقة"
     },
     {
@@ -4067,7 +4067,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.011,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "24 دقائق"
     },
     {
@@ -4077,7 +4077,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0121,
         "min": 100,
         "max": 217545811,
-        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |⚡السرعة +100 ألف/اليوم |🔥فيديو + ريلز + تى فى",
+        "description": "مشاهدات فيديو إنستغرام |🔥بداية فورية |🔥فيديو + ريلز + تى فى",
         "avgTime": "47 دقائق"
     },
     {
@@ -4087,7 +4087,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4394,
         "min": 1,
         "max": 100000,
-        "description": "إعاده نشر إنستجرام |⚡السرعة +50 ألف/اليوم |🔥بداية فورية",
+        "description": "إعاده نشر إنستجرام |🔥بداية فورية",
         "avgTime": "4 ساعات 20 دقائق"
     },
     {
@@ -4097,7 +4097,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4758,
         "min": 1,
         "max": 10000,
-        "description": "إعاده نشر إنستجرام |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "إعاده نشر إنستجرام |🔥بداية فورية",
         "avgTime": "10 ساعات 8 دقائق"
     },
     {
@@ -4107,7 +4107,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.11,
         "min": 100,
         "max": 5000,
-        "description": "مشاهدات إستوري إنستغرام |✨أخر إستورى فقط |⚡السرعة 5 ألف/اليوم |🔥 بداية فورية",
+        "description": "مشاهدات إستوري إنستغرام |✨أخر إستورى فقط |🔥 بداية فورية",
         "avgTime": "1 ساعة 4 دقائق"
     },
     {
@@ -4137,7 +4137,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.771,
         "min": 100,
         "max": 10000,
-        "description": "انستقرام ستوري رفع الشاشة للأعلى |✨حد أقصى 1 مليون |⚡السرعة 10 ألف/اليوم |🔥 سريعة",
+        "description": "انستقرام ستوري رفع الشاشة للأعلى |✨حد أقصى 1 مليون |🔥 سريعة",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4219,7 +4219,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0483,
         "min": 100,
         "max": 5000000,
-        "description": "إنطباعات منشور إنستجرام |⚡50 ألف/اليوم |🔥بداية فورية",
+        "description": "إنطباعات منشور إنستجرام |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4229,7 +4229,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0438,
         "min": 100,
         "max": 5000000,
-        "description": "إنطباعات منشور إنستجرام |⚡100 ألف/اليوم |🔥بداية فورية",
+        "description": "إنطباعات منشور إنستجرام |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4259,7 +4259,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4833,
         "min": 100,
         "max": 100000,
-        "description": "إنطباعات + وصول منشور إنستجرام |⚡100 ألف/اليوم |🔥بداية فورية",
+        "description": "إنطباعات + وصول منشور إنستجرام |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4339,7 +4339,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0033,
         "min": 5,
         "max": 100000,
-        "description": "حفظ منشور إنستجرام |⚡السرعة +50 ألف/اليوم |🔥بداية فورية",
+        "description": "حفظ منشور إنستجرام |🔥بداية فورية",
         "avgTime": "4 ساعات 50 دقائق"
     },
     {
@@ -4349,7 +4349,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0025,
         "min": 5,
         "max": 1000000,
-        "description": "حفظ منشور إنستجرام |⚡السرعة +100 ألف/اليوم |🔥بداية فورية",
+        "description": "حفظ منشور إنستجرام |🔥بداية فورية",
         "avgTime": "5 ساعات 3 دقائق"
     },
     {
@@ -4359,7 +4359,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0028,
         "min": 10,
         "max": 80000,
-        "description": "حفظ منشور إنستجرام |⚡السرعة +80 ألف/اليوم |🔥بداية فورية",
+        "description": "حفظ منشور إنستجرام |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4369,7 +4369,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0044,
         "min": 5,
         "max": 30000,
-        "description": "حفظ منشور إنستجرام |⚡السرعة +30 ألف/اليوم |🔥بداية فورية",
+        "description": "حفظ منشور إنستجرام |🔥بداية فورية",
         "avgTime": "3 ساعات 58 دقائق"
     },
     {
@@ -4399,7 +4399,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1203,
         "min": 10,
         "max": 10000,
-        "description": "زيارات إنستجرام للحسابات |⚡السرعة +50 ألف/اليوم |🔥بداية فورية",
+        "description": "زيارات إنستجرام للحسابات |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4409,7 +4409,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.5192,
         "min": 100,
         "max": 100000,
-        "description": "زيارات إنستجرام للحسابات + وصول + إنطباعات |⚡السرعة +50 ألف/اليوم |🔥بداية فورية",
+        "description": "زيارات إنستجرام للحسابات + وصول + إنطباعات |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -4599,7 +4599,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1495,
         "min": 1000,
         "max": 100000,
-        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% صفحات مصريه |⚡السرعه +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% صفحات مصريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "51 ساعات 57 دقائق"
@@ -4611,7 +4611,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2375,
         "min": 1000,
         "max": 10000,
-        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% صفحات مصريه |⚡السرعه +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% صفحات مصريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "29 ساعات 5 دقائق"
@@ -4623,7 +4623,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2408,
         "min": 1000,
         "max": 50000,
-        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% حسابات مصريه |⚡السرعه +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% حسابات مصريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "19 ساعات 32 دقائق"
@@ -4635,7 +4635,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.29,
         "min": 1000,
         "max": 10000,
-        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% حسابات مصريه |⚡السرعه +5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعين صفحة فيسبوك |🎯100% حسابات مصريه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "8 ساعات 3 دقائق"
@@ -4657,7 +4657,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2408,
         "min": 1000,
         "max": 50000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🎯100% مصريين |⚡السرعه +5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🎯100% مصريين |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "27 ساعات 53 دقائق"
@@ -4669,7 +4669,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.045,
         "min": 1000,
         "max": 50000,
-        "description": "متابعين فيسبوك صفحة + بروفايل (من صفحات) | 🎯100% مصريين |⚡السرعه +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك صفحة + بروفايل (من صفحات) | 🎯100% مصريين |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "17 ساعات 35 دقائق"
@@ -4681,7 +4681,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1495,
         "min": 1000,
         "max": 100000,
-        "description": "متابعين فيسبوك صفحة + بروفايل (من صفحات) | 🎯100% مصريين |⚡السرعه +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك صفحة + بروفايل (من صفحات) | 🎯100% مصريين |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "41 ساعات 1 دقيقة"
@@ -4693,7 +4693,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.3147,
         "min": 1000,
         "max": 9000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🎯100% مصريين |⚡السرعه +5 ألف/اليوم | ✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🎯100% مصريين | ✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "103 ساعات 30 دقائق"
@@ -4715,7 +4715,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 ➕ ❤️ ➕ 🥰 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 ➕ ❤️ ➕ 🥰 |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "67 ساعات 9 دقائق"
@@ -4727,7 +4727,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 ➕ ❤️|🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 ➕ ❤️|🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "81 ساعات 17 دقائق"
@@ -4739,7 +4739,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز ❤️ ➕ 🥰|🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز ❤️ ➕ 🥰|🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "46 ساعات 23 دقائق"
@@ -4751,7 +4751,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "60 ساعات 44 دقائق"
@@ -4763,7 +4763,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز ❤️ |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز ❤️ |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "50 ساعات 28 دقائق"
@@ -4775,7 +4775,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "41 ساعات 5 دقائق"
@@ -4787,7 +4787,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 😂 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 😂 |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "55 ساعات 33 دقائق"
@@ -4799,7 +4799,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 😲 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 😲 |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "99 ساعات 38 دقائق"
@@ -4811,7 +4811,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.97,
         "min": 100,
         "max": 10000,
-        "description": "إعجابات منشور فيسبوك | رمز 😢 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 😢 |🎯100%حسابات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "32 ساعات 33 دقائق"
@@ -4823,7 +4823,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 + ❤️ + 🥰 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 + ❤️ + 🥰 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "55 ساعات 5 دقائق"
@@ -4835,7 +4835,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 + ❤️ |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 + ❤️ |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "59 ساعات 32 دقائق"
@@ -4847,7 +4847,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز ❤️ + 🥰 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز ❤️ + 🥰 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "40 ساعات 42 دقائق"
@@ -4859,7 +4859,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 4000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "64 ساعات 2 دقائق"
@@ -4871,7 +4871,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز❤️ |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز❤️ |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "53 ساعات 53 دقائق"
@@ -4883,7 +4883,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "48 ساعات 4 دقائق"
@@ -4895,7 +4895,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 😂 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 😂 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "34 ساعات 45 دقائق"
@@ -4907,7 +4907,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 😲 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 😲 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -4919,7 +4919,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 😥 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 😥 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -4931,7 +4931,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6382,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات منشور فيسبوك | رمز 🤬 |🎯100%صفحات مصرية |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "إعجابات منشور فيسبوك | رمز 🤬 |🎯100%صفحات مصرية |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "31 ساعات 59 دقائق"
@@ -4943,7 +4943,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز 👍 + ❤️ + 🥰 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 👍 + ❤️ + 🥰 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "49 ساعات 47 دقائق"
@@ -4955,7 +4955,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 4000,
-        "description": "إعجابات كومنت فيسبوك | رمز 👍 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 👍 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "54 ساعات 44 دقائق"
@@ -4967,7 +4967,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز ❤️ |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز ❤️ |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "32 ساعات 25 دقائق"
@@ -4979,7 +4979,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز 🥰 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 🥰 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -4991,7 +4991,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز 😂 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 😂 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5003,7 +5003,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز 😲 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 😲 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5015,7 +5015,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز 😢 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 😢 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5027,7 +5027,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.7871,
         "min": 250,
         "max": 5000,
-        "description": "إعجابات كومنت فيسبوك | رمز 🤬 |🎯100%حسابات مصرية |⚡السرعة +5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات كومنت فيسبوك | رمز 🤬 |🎯100%حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "73 ساعات 39 دقائق"
@@ -5039,7 +5039,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.963,
         "min": 250,
         "max": 10000,
-        "description": "تصويت فيسبوك |🔥جودة عالية |⚡السرعة +10 ألف/اليوم |🎯حسابات مصرية |✅ضمان مدى الحياة",
+        "description": "تصويت فيسبوك |🔥جودة عالية |🎯حسابات مصرية |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "22 ساعات 10 دقائق"
@@ -5051,7 +5051,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3461,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥 نقص قليل |⚡السرعة 10 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥 نقص قليل |⛔بدون ضمان",
         "avgTime": "3 ساعات 11 دقائق"
     },
     {
@@ -5061,7 +5061,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3809,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 57 دقائق"
@@ -5073,7 +5073,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3975,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅60 يوم ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "25 ساعات 12 دقائق"
@@ -5085,7 +5085,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.414,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅90 يوم ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 دقائق"
@@ -5097,7 +5097,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4306,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 21 دقائق"
@@ -5109,7 +5109,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4472,
         "min": 10,
         "max": 200000,
-        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "إعجابات + متابعة صفحة فيسبوك |🔥بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 32 دقائق"
@@ -5121,7 +5121,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1632,
         "min": 10,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥 نقص قليل |⚡السرعة +10 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥 نقص قليل |⛔بدون ضمان",
         "avgTime": "12 ساعات 49 دقائق"
     },
     {
@@ -5131,7 +5131,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1757,
         "min": 10,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥 بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "15 ساعات 59 دقائق"
@@ -5143,7 +5143,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1867,
         "min": 10,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🔥بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "27 ساعات 39 دقائق"
@@ -5155,7 +5155,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1975,
         "min": 10,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "19 ساعات 9 دقائق"
@@ -5167,7 +5167,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2083,
         "min": 10,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "40 ساعات"
@@ -5179,7 +5179,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.2191,
         "min": 10,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🔥بدون نقص |⚡السرعة 10 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) | 🔥بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "52 ساعات 31 دقائق"
@@ -5191,7 +5191,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1175,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⛔بدون ضمان",
         "avgTime": "5 ساعات 56 دقائق"
     },
     {
@@ -5201,7 +5201,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1282,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 55 دقائق"
@@ -5213,7 +5213,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1389,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥 بدون نقص |⚡السرعة 50 ألف/اليوم |✅60 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحة + بروفايل) |🔥 بدون نقص |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "14 ساعات 56 دقائق"
@@ -5225,7 +5225,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1496,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅90 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 ساعات 20 دقائق"
@@ -5237,7 +5237,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1602,
         "min": 100,
         "max": 100000,
-        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅365 يوم ضمان",
+        "description": "متابعين فيسبوك (صفحه + بروفايل) |🔥بدون نقص |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 ساعات 43 دقائق"
@@ -5249,7 +5249,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.0075,
         "min": 100,
         "max": 100000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 5-10 ألف/يوم |✅30 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "29 ساعات 46 دقائق"
@@ -5261,7 +5261,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.253,
         "min": 500,
         "max": 1000000000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 5 ألف/يوم |✅30 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5273,7 +5273,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.231,
         "min": 500,
         "max": 1000000000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 5-10 ألف/يوم |✅30 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 ساعات 45 دقائق"
@@ -5285,7 +5285,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8319,
         "min": 10,
         "max": 1000000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 10 ألف/يوم |✅30 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5297,7 +5297,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.88,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء جروب فيسبوك |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |⛔بدون ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥بدون نقص |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -5307,7 +5307,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.6322,
         "min": 10,
         "max": 30000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 50 ألف/اليوم |✅10 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅10 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5319,7 +5319,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.913,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "أعضاء جروب فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "11 دقائق"
@@ -5421,7 +5421,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3294,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "5 ساعات 18 دقائق"
     },
     {
@@ -5431,7 +5431,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6116,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز ❤️ |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز ❤️ |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "2 ساعات 48 دقائق"
     },
     {
@@ -5441,7 +5441,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6116,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "4 ساعات 42 دقائق"
     },
     {
@@ -5451,7 +5451,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6116,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز 😂 |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😂 |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -5461,7 +5461,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6116,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز 😲 |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😲 |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "15 ساعات 37 دقائق"
     },
     {
@@ -5471,7 +5471,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3529,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز 😢 |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😢 |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -5481,7 +5481,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6116,
         "min": 50,
         "max": 500000,
-        "description": "إعجابات منشور فيسبوك | رمز 🤬 |🔥 بداية فورية |⚡السرعة +1 - 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 🤬 |🔥 بداية فورية |⛔بدون ضمان",
         "avgTime": "11 دقائق"
     },
     {
@@ -5501,7 +5501,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 |⛔بدون ضمان",
         "avgTime": "2 ساعات 27 دقائق"
     },
     {
@@ -5511,7 +5511,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز ❤️ |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز ❤️ |⛔بدون ضمان",
         "avgTime": "8 ساعات 15 دقائق"
     },
     {
@@ -5521,7 +5521,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 🥰 |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 🥰 |⛔بدون ضمان",
         "avgTime": "4 ساعات 33 دقائق"
     },
     {
@@ -5531,7 +5531,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 😂 |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😂 |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -5541,7 +5541,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 😲 |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😲 |⛔بدون ضمان",
         "avgTime": "3 ساعات 55 دقائق"
     },
     {
@@ -5551,7 +5551,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 😢 |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😢 |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -5561,7 +5561,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8249,
         "min": 50,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 🤬 |⚡السرعة +500 - 2 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 🤬 |⛔بدون ضمان",
         "avgTime": "2 ساعات 5 دقائق"
     },
     {
@@ -5571,7 +5571,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 👍 |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 👍 |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 13 دقائق"
@@ -5583,7 +5583,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز ❤️ |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز ❤️ |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 58 دقائق"
@@ -5595,7 +5595,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 🥰 |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 37 دقائق"
@@ -5607,7 +5607,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 😂 |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😂 |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 ساعات 19 دقائق"
@@ -5619,7 +5619,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 😲 |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😲 |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 31 دقائق"
@@ -5631,7 +5631,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 😢 |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 😢 |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 57 دقائق"
@@ -5643,7 +5643,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3114,
         "min": 10,
         "max": 100000,
-        "description": "إعجابات منشور فيسبوك | رمز 🤬 |🔥 بداية فورية |⚡السرعة +100 ألف/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات منشور فيسبوك | رمز 🤬 |🔥 بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 23 دقائق"
@@ -5655,7 +5655,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.85,
         "min": 100,
         "max": 10000,
-        "description": "كومنتات عشوائية فيسبوك |🔥 بدون نقص |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "كومنتات عشوائية فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -5667,7 +5667,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 4.4,
         "min": 100,
         "max": 10000,
-        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "26 ساعات 50 دقائق"
@@ -5679,7 +5679,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.7986,
         "min": 5,
         "max": 10000,
-        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⚡السرعة 200 /يوم |⛔بدون ضمان",
+        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⛔بدون ضمان",
         "avgTime": "23 دقائق"
     },
     {
@@ -5689,7 +5689,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 4.8149,
         "min": 5,
         "max": 2000,
-        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⚡السرعة 300 /يوم |⛔بدون ضمان",
+        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⛔بدون ضمان",
         "avgTime": "21 دقائق"
     },
     {
@@ -5699,7 +5699,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 9.8356,
         "min": 3,
         "max": 2000,
-        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⚡السرعة 500 /يوم |⛔بدون ضمان",
+        "description": "كومنتات مخصصة فيسبوك |🔥 بدون نقص |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -5709,7 +5709,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.077,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |⚡السرعة +50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 50 دقائق"
@@ -5721,7 +5721,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0825,
         "min": 500,
         "max": 10000000,
-        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |⚡السرعة +10 - 100 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "28 ساعات 34 دقائق"
@@ -5733,7 +5733,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0351,
         "min": 500,
         "max": 100000000,
-        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |⚡السرعة +10 - 100 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "29 ساعات 11 دقائق"
@@ -5745,7 +5745,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0885,
         "min": 20,
         "max": 2000000000,
-        "description": "مشاهدات فيديو/ريلز فيسبوك |🔥 بدون نقص |⚡السرعة 50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك |🔥 بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 ساعات 43 دقائق"
@@ -5757,7 +5757,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.066,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |⚡السرعة +10 - 100 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 ساعات 17 دقائق"
@@ -5769,7 +5769,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.088,
         "min": 500,
         "max": 217545811,
-        "description": "مشاهدات فيديو/ريلز فيسبوك |⚡السرعة 5 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "10 ساعات 46 دقائق"
@@ -5781,7 +5781,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0825,
         "min": 500,
         "max": 2147483647,
-        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |⚡السرعة +10 - 100 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك | 🔥بدون سقوط |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "15 ساعات 24 دقائق"
@@ -5793,7 +5793,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.132,
         "min": 100,
         "max": 10000000,
-        "description": "مشاهدات فيديو/ريلز فيسبوك |🔥 بدون نقص |⚡السرعة 10 - 50 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "مشاهدات فيديو/ريلز فيسبوك |🔥 بدون نقص |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 49 دقائق"
@@ -5805,7 +5805,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.22,
         "min": 500,
         "max": 100000000,
-        "description": "مشاهدات فيديو/ريلز فيسبوك |🔥 بدون نقص |⚡السرعة 5 - 50 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "مشاهدات فيديو/ريلز فيسبوك |🔥 بدون نقص |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "40 ساعات 36 دقائق"
@@ -5995,7 +5995,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.77,
         "min": 1,
         "max": 1,
-        "description": "باقة تحقيق الربح للفيسبوك 60 ألف دقيقة |📊 فيديو 3 ساعات |⚡السرعة +60 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "باقة تحقيق الربح للفيسبوك 60 ألف دقيقة |📊 فيديو 3 ساعات |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6007,7 +6007,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.88,
         "min": 1,
         "max": 1,
-        "description": "باقة تحقيق الربح للفيسبوك 60 ألف دقيقة |📊 فيديو 2 ساعات |⚡السرعة +60 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "باقة تحقيق الربح للفيسبوك 60 ألف دقيقة |📊 فيديو 2 ساعات |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "11 ساعات 28 دقائق"
@@ -6019,7 +6019,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.21,
         "min": 1,
         "max": 1,
-        "description": "باقة تحقيق الربح للفيسبوك 60 ألف دقيقة |📊 فيديو 1 ساعات |⚡السرعة +60 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "باقة تحقيق الربح للفيسبوك 60 ألف دقيقة |📊 فيديو 1 ساعات |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "24 ساعات 6 دقائق"
@@ -6031,7 +6031,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.31,
         "min": 1,
         "max": 1,
-        "description": "باقة تحقيق الربح للفيسبوك 600 ألف دقيقة |📊 فيديو 3 ساعات |⚡السرعة +600 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "باقة تحقيق الربح للفيسبوك 600 ألف دقيقة |📊 فيديو 3 ساعات |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6043,7 +6043,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.475,
         "min": 1,
         "max": 1,
-        "description": "باقة تحقيق الربح للفيسبوك 600 ألف دقيقة |📊 فيديو 2 ساعات |⚡السرعة +600 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "باقة تحقيق الربح للفيسبوك 600 ألف دقيقة |📊 فيديو 2 ساعات |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "64 ساعات 7 دقائق"
@@ -6055,7 +6055,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.41,
         "min": 1,
         "max": 1,
-        "description": "باقة تحقيق الربح للفيسبوك 600 ألف دقيقة |📊 فيديو 1 ساعات |⚡السرعة +600 ألف/اليوم |✅ضمان مدى الحياة",
+        "description": "باقة تحقيق الربح للفيسبوك 600 ألف دقيقة |📊 فيديو 1 ساعات |✅ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6067,7 +6067,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4161,
         "min": 10,
         "max": 20000,
-        "description": "مشاهدات إستورى فيسبوك |🔥بدون نقص |⚡السرعة +1 ألف/الساعة",
+        "description": "مشاهدات إستورى فيسبوك |🔥بدون نقص",
         "avgTime": "18 ساعات 44 دقائق"
     },
     {
@@ -6077,7 +6077,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4161,
         "min": 10,
         "max": 20000,
-        "description": "مشاهدات إستورى فيسبوك |🔥بدون نقص |⚡السرعة +5-10 ألف/الساعة",
+        "description": "مشاهدات إستورى فيسبوك |🔥بدون نقص",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6087,7 +6087,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.4133,
         "min": 10,
         "max": 20000,
-        "description": "مشاهدات إستورى فيسبوك |🔥بدون نقص |⚡السرعة +50-100 ألف/الساعة",
+        "description": "مشاهدات إستورى فيسبوك |🔥بدون نقص",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6097,7 +6097,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0033,
         "min": 1000,
         "max": 2147483647,
-        "description": "مشاركات فيسبوك (منشور/صور فقط) |🔥بدون نقص |⚡السرعة 500 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاركات فيسبوك (منشور/صور فقط) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "188 ساعات 13 دقائق"
@@ -6109,7 +6109,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.5335,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاركات فيسبوك (منشور/صور/فيديو/ريلز/بث مباشر) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاركات فيسبوك (منشور/صور/فيديو/ريلز/بث مباشر) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 9 دقائق"
@@ -6121,7 +6121,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.5578,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاركات فيسبوك (منشور/صور/فيديو/ريلز/بث مباشر) |🔥بدون نقص |⚡السرعة 50 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاركات فيسبوك (منشور/صور/فيديو/ريلز/بث مباشر) |🔥بدون نقص |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 16 دقائق"
@@ -6133,7 +6133,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.033,
         "min": 1000,
         "max": 2147483647,
-        "description": "مشاركات منشور فيسبوك |⚡السرعة 5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاركات منشور فيسبوك |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "30 ساعات 17 دقائق"
@@ -6145,7 +6145,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.715,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 30 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 30 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "35 دقائق"
@@ -6157,7 +6157,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.43,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 60 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 60 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6169,7 +6169,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.145,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 90 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 90 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6181,7 +6181,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.86,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 120 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 120 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6193,7 +6193,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.575,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 150 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 150 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6205,7 +6205,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 4.29,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 180 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 180 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 دقائق"
@@ -6217,7 +6217,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.005,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 210 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 210 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6229,7 +6229,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 5.72,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 240 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 240 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6241,7 +6241,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 6.435,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 270 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 270 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6253,7 +6253,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 7.15,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 300 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 300 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6265,7 +6265,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 8.58,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 360 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 360 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6277,7 +6277,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 10.01,
         "min": 10,
         "max": 500000,
-        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 420 دقيقة | ⚡السرعة 10 ألف/اليوم | ✅ 30 يوم ضمان",
+        "description": "بث مباشر فيسبوك | 📊 مشاهدة لمدة 420 دقيقة | ✅ 30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6469,7 +6469,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 14.9006,
         "min": 50,
         "max": 10000,
-        "description": "تصويت فيسبوك |⚡السرعة 500/اليوم |🎯حسابات أسيوية |🔥جودة عالية",
+        "description": "تصويت فيسبوك |🎯حسابات أسيوية |🔥جودة عالية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6479,7 +6479,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.2984,
         "min": 50,
         "max": 500000,
-        "description": "حدث الفيسبوك (مهتم) |⚡السرعة +1 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "حدث الفيسبوك (مهتم) |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6491,7 +6491,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 198.0,
         "min": 500,
         "max": 500000000,
-        "description": "متابعين تويتر |✨جودة حقيقية |⚡السرعة +100 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6501,7 +6501,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 6.6,
         "min": 100,
         "max": 5000000,
-        "description": "متابعين تويتر |✨جودة حقيقية |⚡السرعة +20ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6511,7 +6511,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.792,
         "min": 100,
         "max": 1000000,
-        "description": "متابعين تويتر |✨جودة حقيقية |⚡السرعة +50 ألف/اليوم |⛔بدون ضمان",
+        "description": "متابعين تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "13 ساعات 40 دقائق"
     },
     {
@@ -6521,7 +6521,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.5698,
         "min": 10,
         "max": 20000,
-        "description": "إعجابات تويتر |✨جودة حقيقية |⚡السرعة +15 ألف/اليوم |⛔بدون ضمان",
+        "description": "إعجابات تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6531,7 +6531,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0051,
         "min": 100,
         "max": 100000000,
-        "description": "𝕏 - مشاهدات [تويت] تويتر |⚡100 مليون/اليوم |🔥بداية فورية",
+        "description": "𝕏 - مشاهدات [تويت] تويتر |🔥بداية فورية",
         "avgTime": "7 ساعات 47 دقائق"
     },
     {
@@ -6541,7 +6541,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0123,
         "min": 100,
         "max": 100000000,
-        "description": "𝕏 - نقرات روابط تويتر |⚡100 مليون/اليوم |🔥بداية فورية",
+        "description": "𝕏 - نقرات روابط تويتر |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6551,7 +6551,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0014,
         "min": 100,
         "max": 2147483647,
-        "description": "𝕏 - نقرات ملف شخصى تويتر |⚡100 مليون/اليوم |🔥بداية فورية",
+        "description": "𝕏 - نقرات ملف شخصى تويتر |🔥بداية فورية",
         "avgTime": "2 دقائق"
     },
     {
@@ -6561,7 +6561,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0014,
         "min": 100,
         "max": 2147483647,
-        "description": "𝕏 - نقرات تفاصيل تويتر |⚡100 مليون/اليوم |🔥بداية فورية",
+        "description": "𝕏 - نقرات تفاصيل تويتر |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6571,7 +6571,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0123,
         "min": 100,
         "max": 100000000,
-        "description": "𝕏 - مشاهدات فيديو تويتر |⚡100 مليون/اليوم |🔥بداية فورية",
+        "description": "𝕏 - مشاهدات فيديو تويتر |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6581,7 +6581,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0123,
         "min": 100,
         "max": 100000000,
-        "description": "𝕏 - نقرات هاشتاج تويتر |⚡100 مليون/اليوم |🔥بداية فورية",
+        "description": "𝕏 - نقرات هاشتاج تويتر |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6591,7 +6591,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0051,
         "min": 100,
         "max": 100000000,
-        "description": "مشاهدات فيديو تويتر |✨جودة حقيقية |⚡السرعة +1 مليون |🔥بدون نقص",
+        "description": "مشاهدات فيديو تويتر |✨جودة حقيقية |🔥بدون نقص",
         "avgTime": "1 ساعة 18 دقائق"
     },
     {
@@ -6601,7 +6601,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0198,
         "min": 100,
         "max": 2147483647,
-        "description": "مشاهدات فيديو تويتر |✨جودة حقيقية |⚡السرعة +1 مليون |🔥بدون نقص",
+        "description": "مشاهدات فيديو تويتر |✨جودة حقيقية |🔥بدون نقص",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6611,7 +6611,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.011,
         "min": 250,
         "max": 50000000,
-        "description": "مشاهدات فيديو تويتر |✨جودة حقيقية |⚡السرعة +1 مليون |🔥بدون نقص",
+        "description": "مشاهدات فيديو تويتر |✨جودة حقيقية |🔥بدون نقص",
         "avgTime": "33 دقائق"
     },
     {
@@ -6621,7 +6621,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0147,
         "min": 100,
         "max": 100000000,
-        "description": "مشاهدات تويتر للتغريدات (مخصصة لتفعيل الربح) |⚡السرعة +1 مليون |🔥بدون نقص",
+        "description": "مشاهدات تويتر للتغريدات (مخصصة لتفعيل الربح) |🔥بدون نقص",
         "avgTime": "13 دقائق"
     },
     {
@@ -6631,7 +6631,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.924,
         "min": 10,
         "max": 5000,
-        "description": "ريتويت تويتر |✨جودة حقيقية |⚡السرعة 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "ريتويت تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6641,7 +6641,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3091,
         "min": 10,
         "max": 15000,
-        "description": "ريتويت تويتر |✨جودة حقيقية |⚡السرعة 5 ألف/اليوم |⛔بدون ضمان",
+        "description": "ريتويت تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6651,7 +6651,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.8855,
         "min": 10,
         "max": 20000,
-        "description": "ريتويت تويتر |✨جودة حقيقية |⚡السرعة 20 ألف/اليوم |⛔بدون ضمان",
+        "description": "ريتويت تويتر |✨جودة حقيقية |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -6661,7 +6661,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 8.8,
         "min": 100,
         "max": 50000,
-        "description": "ريتويت تويتر |✨جودة حقيقية |⚡السرعة 5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "ريتويت تويتر |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6673,7 +6673,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 19.8,
         "min": 100,
         "max": 4000000,
-        "description": "ريتويت تويتر |✨جودة حقيقية |⚡السرعة 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "ريتويت تويتر |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6685,7 +6685,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.1,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة+2 ألف/اليوم |🔥نقص قليل",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |🔥نقص قليل",
         "avgTime": "53 دقائق"
     },
     {
@@ -6695,7 +6695,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.232,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة +5 ألف/اليوم |✅30 يوم ضمان",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 دقائق"
@@ -6707,7 +6707,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.375,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة +5 ألف/اليوم |✅60 يوم ضمان",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |✅60 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6719,7 +6719,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.43,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة +5 ألف/اليوم |✅90 يوم ضمان",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |✅90 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6731,7 +6731,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.485,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة +5 ألف/اليوم |✅180 يوم ضمان",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |✅180 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "13 دقائق"
@@ -6743,7 +6743,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.54,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة +5 ألف/اليوم |✅365 يوم ضمان",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |✅365 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "23 دقائق"
@@ -6755,7 +6755,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.32,
         "min": 10,
         "max": 50000,
-        "description": "أعضاء تيليجرام |🎯حسابات عربيه |⚡السرعة +10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "أعضاء تيليجرام |🎯حسابات عربيه |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6767,7 +6767,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.473,
         "min": 10,
         "max": 30000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +30 ألف/اليوم |⛔ بدون ضمان",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⛔ بدون ضمان",
         "avgTime": "13 دقائق"
     },
     {
@@ -6777,7 +6777,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3663,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام |📢قناة / مجموعة |⚡السرعة+15 ألف/اليوم |✅3 أيام تعويض تلقائى",
+        "description": "أعضاء تيليجرام |📢قناة / مجموعة |✅3 أيام تعويض تلقائى",
         "guarantee": true,
         "refill": true,
         "avgTime": "17 ساعات 22 دقائق"
@@ -6789,7 +6789,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.44,
         "min": 10,
         "max": 300000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +30 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "34 دقائق"
@@ -6801,7 +6801,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.935,
         "min": 100,
         "max": 250000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +20 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 دقائق"
@@ -6813,7 +6813,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.935,
         "min": 100,
         "max": 250000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +20 ألف/اليوم |✅ضمان 30 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6825,7 +6825,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.616,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +100 ألف/اليوم |✅ضمان 60 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 60 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 49 دقائق"
@@ -6837,7 +6837,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.968,
         "min": 500,
         "max": 50000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +100 ألف/اليوم |✅ضمان 60 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 60 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 ساعة 34 دقائق"
@@ -6849,7 +6849,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.4774,
         "min": 10,
         "max": 500000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +50 ألف/اليوم |✅ضمان 60 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 60 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 ساعات 4 دقائق"
@@ -6861,7 +6861,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.715,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +50 ألف/اليوم |✅ضمان 90 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 90 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "59 دقائق"
@@ -6873,7 +6873,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 18.7,
         "min": 10,
         "max": 100000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +50 ألف/اليوم |✅ضمان 90 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 90 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -6885,7 +6885,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.65,
         "min": 500,
         "max": 100000,
-        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |⚡السرعة +50 ألف/اليوم |✅ضمان 365 يوم",
+        "description": "أعضاء تيليجرام | 📢قناة / مجموعة |✅ضمان 365 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 39 دقائق"
@@ -7175,7 +7175,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0072,
         "min": 10,
         "max": 500000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 1 منشور | ⚡السرعة +100 ألف/اليوم | ⛔بدون ضمان",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 1 منشور | ⛔بدون ضمان",
         "avgTime": "33 دقائق"
     },
     {
@@ -7185,7 +7185,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0417,
         "min": 10,
         "max": 10000000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 5 منشور | ⚡السرعة +100 ألف/اليوم | ⛔بدون ضمان",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 5 منشور | ⛔بدون ضمان",
         "avgTime": "45 دقائق"
     },
     {
@@ -7195,7 +7195,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0695,
         "min": 10,
         "max": 10000000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 10 منشور | ⚡السرعة +100 ألف/اليوم | ⛔بدون ضمان",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 10 منشور | ⛔بدون ضمان",
         "avgTime": "6 ساعات 29 دقائق"
     },
     {
@@ -7205,7 +7205,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.1249,
         "min": 10,
         "max": 10000000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 20 منشور | ⚡السرعة +100 ألف/اليوم | ⛔بدون ضمان",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 20 منشور | ⛔بدون ضمان",
         "avgTime": "1 ساعة 23 دقائق"
     },
     {
@@ -7215,7 +7215,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.3469,
         "min": 10,
         "max": 10000000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 50 منشور | ⚡السرعة +100 ألف/اليوم | ⛔بدون ضمان",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 50 منشور | ⛔بدون ضمان",
         "avgTime": "2 ساعات 12 دقائق"
     },
     {
@@ -7225,7 +7225,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.6659,
         "min": 10,
         "max": 10000000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 100 منشور | ⚡السرعة +100 ألف/اليوم | ⛔بدون ضمان",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 100 منشور | ⛔بدون ضمان",
         "avgTime": "7 دقائق"
     },
     {
@@ -7235,7 +7235,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.011,
         "min": 100,
         "max": 50000000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 1 منشور | ⚡السرعة +300 آلاف يومياً |✅ ضمان 30 يوم",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 1 منشور |✅ ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "12 دقائق"
@@ -7247,7 +7247,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.055,
         "min": 100,
         "max": 100000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 5 منشور | ⚡السرعة +300 آلاف يومياً |✅ ضمان 30 يوم",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 5 منشور |✅ ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 14 دقائق"
@@ -7259,7 +7259,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.099,
         "min": 100,
         "max": 100000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 10 منشور | ⚡السرعة +300 آلاف يومياً |✅ ضمان 30 يوم",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 10 منشور |✅ ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 20 دقائق"
@@ -7271,7 +7271,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.187,
         "min": 100,
         "max": 100000,
-        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 20 منشور | ⚡السرعة +300 آلاف يومياً |✅ ضمان 30 يوم",
+        "description": "مشاهدات تيليجرام للمنشورات | 📢 اخر 20 منشور |✅ ضمان 30 يوم",
         "guarantee": true,
         "refill": true,
         "avgTime": "24 دقائق"
@@ -7283,7 +7283,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0143,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام إيجابى [👍🤩🔥❤️🥰] |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام إيجابى [👍🤩🔥❤️🥰] |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "31 دقائق"
@@ -7295,7 +7295,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0143,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام سلبى [👎😢💩🤮🤬] |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام سلبى [👎😢💩🤮🤬] |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7307,7 +7307,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [👍] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [👍] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 31 دقائق"
@@ -7319,7 +7319,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [👎] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [👎] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7331,7 +7331,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [❤️] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [❤️] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "7 دقائق"
@@ -7343,7 +7343,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [🔥] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [🔥] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "5 دقائق"
@@ -7355,7 +7355,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [😂] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [😂] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "39 دقائق"
@@ -7367,7 +7367,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [😱] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [😱] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7379,7 +7379,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [⚡️] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [⚡️] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 دقائق"
@@ -7391,7 +7391,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [🎉] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [🎉] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7403,7 +7403,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [🤩] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [🤩] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 دقائق"
@@ -7415,7 +7415,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [😁] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [😁] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 دقيقة"
@@ -7427,7 +7427,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.143,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [🙏] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [🙏] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7439,7 +7439,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [👌🏻] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [👌🏻] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7451,7 +7451,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [😢] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [😢] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "26 دقائق"
@@ -7463,7 +7463,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [💩] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [💩] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 دقائق"
@@ -7475,7 +7475,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [🤮] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [🤮] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7487,7 +7487,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [🖕] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [🖕] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 دقائق"
@@ -7499,7 +7499,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [😐] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [😐] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7511,7 +7511,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [😭] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [😭] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7523,7 +7523,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [💯] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [💯] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 20 دقائق"
@@ -7535,7 +7535,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [👻] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [👻] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -7547,150 +7547,10 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.0286,
         "min": 10,
         "max": 1000000,
-        "description": "تفاعل تليجرام [👀] + مشاهدات |⚡ السرعة +50 ألف/اليوم |✅ ضمان مدى الحياة",
+        "description": "تفاعل تليجرام [👀] + مشاهدات |✅ ضمان مدى الحياة",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 دقائق"
-    },
-    {
-        "id": "4355",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.055,
-        "min": 500,
-        "max": 40000,
-        "description": "Telegram Positive Reaction [👍🤩🎉🔥❤️🥰👏🏻]",
-        "avgTime": "21 ساعات 13 دقائق"
-    },
-    {
-        "id": "5738",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Mix Positive Reactions[👍❤️🔥🎉😁] + Free Views",
-        "avgTime": "4 دقائق"
-    },
-    {
-        "id": "5739",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Mix Negative Reactions[👎😱💩😢🤮] + Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5727",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 🎉+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5728",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction ❤️+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5729",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 👎+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5730",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 👍+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5731",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 🔥+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5732",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 🤩+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5733",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 😱+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5734",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 😁+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5735",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 😢+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5736",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 💩+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
-    },
-    {
-        "id": "5737",
-        "platform": "Telegram",
-        "category": "تفاعل",
-        "price": 0.1375,
-        "min": 100,
-        "max": 1000000,
-        "description": "Telegram Reaction 🤮+ Free Views",
-        "avgTime": "المعلومات غير كاملة"
     },
     {
         "id": "5756",
@@ -8189,7 +8049,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.495,
         "min": 10,
         "max": 50000,
-        "description": "مشاهدات إستورى تليجرام | 100 ألف/اليوم 🔥",
+        "description": "مشاهدات إستورى تليجرام 🔥",
         "avgTime": "3 دقائق"
     },
     {
@@ -8651,7 +8511,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.272,
         "min": 10,
         "max": 1000000,
-        "description": "متابعون كواي |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين كواي |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "2 ساعات 53 دقائق"
@@ -8663,7 +8523,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.66,
         "min": 10,
         "max": 1000000,
-        "description": "لايكات كواي |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "لايكات كواي |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "6 دقائق"
@@ -8675,7 +8535,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.136,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات كواي عشوائي |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات كواي عشوائي |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "1 دقيقة"
@@ -8687,7 +8547,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.468,
         "min": 10,
         "max": 1000000,
-        "description": "مشاركات كواي |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاركات كواي |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "3 دقائق"
@@ -8699,7 +8559,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.232,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات كواي مخصصة |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات كواي مخصصة |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8711,7 +8571,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.964,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات كواي عشوائي [بث مباشر] |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات كواي عشوائي [بث مباشر] |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 48 دقائق"
@@ -8723,7 +8583,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.204,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات كواي مخصصة [بث مباشر] |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات كواي مخصصة [بث مباشر] |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8735,7 +8595,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.164,
         "min": 10,
         "max": 1000000,
-        "description": "مشاركات كواي [بث مباشر] |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "مشاركات كواي [بث مباشر] |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8747,7 +8607,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.62,
         "min": 10,
         "max": 1000000,
-        "description": "لايكات كواي [بث مباشر] |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "لايكات كواي [بث مباشر] |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8759,7 +8619,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.884,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات كواي إيجابيه |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات كواي إيجابيه |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8771,7 +8631,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.884,
         "min": 10,
         "max": 1000000,
-        "description": "تعليقات كواي سلبيه |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "تعليقات كواي سلبيه |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8783,7 +8643,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.728,
         "min": 10,
         "max": 1000000,
-        "description": "لايكات تعليق كواي |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "لايكات تعليق كواي |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8795,7 +8655,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.768,
         "min": 10,
         "max": 1000000,
-        "description": "حفظ كواي |🎯100% عرب |⚡السرعة + 10 ألف/اليوم |✅30 يوم ضمان",
+        "description": "حفظ كواي |🎯100% عرب |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8807,7 +8667,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.726,
         "min": 10,
         "max": 1000000,
-        "description": "متابعين كواي |✨جودة حقيقية |⚡السرعة +500/اليوم |✅30 يوم ضمان",
+        "description": "متابعين كواي |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 ساعات 53 دقائق"
@@ -8819,7 +8679,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.363,
         "min": 10,
         "max": 1000000,
-        "description": "إعجابات كواي |✨جودة حقيقية |⚡السرعة +500/اليوم |✅30 يوم ضمان",
+        "description": "إعجابات كواي |✨جودة حقيقية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "9 دقائق"
@@ -8831,7 +8691,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 17.0,
         "min": 1000,
         "max": 15000,
-        "description": "متابعين سناب شات |🎯💯حسابات عربي خليجي |⚡السرعة +1 - 4 ألف/اليوم |✅30 يوم ضمان",
+        "description": "متابعين سناب شات |🎯💯حسابات عربي خليجي |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -8973,7 +8833,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 59.8842,
         "min": 100,
         "max": 100000,
-        "description": "مشاهدات سناب شات | 🎯 عربي خليجي مكس |✨ جودة حقيقية |⚡ السرعة + 1 ألف/اليوم | حد أقصى 20 إستورى",
+        "description": "مشاهدات سناب شات | 🎯 عربي خليجي مكس |✨ جودة حقيقية | حد أقصى 20 إستورى",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -8983,7 +8843,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 61.4196,
         "min": 100,
         "max": 100000,
-        "description": "مشاهدات سناب شات | 🎯 أوروبا مكس |✨ جودة حقيقية |⚡ السرعة + 1 ألف/اليوم | حد أقصى 20 إستورى",
+        "description": "مشاهدات سناب شات | 🎯 أوروبا مكس |✨ جودة حقيقية | حد أقصى 20 إستورى",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -8993,7 +8853,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 69.8649,
         "min": 50,
         "max": 100000,
-        "description": "مشاهدات منصة الاضواء - تحقيق الربح 💸|🎯عربى خليجى | ⚡السرعة + 500/اليوم | ⏱️ البدء 0 - 6 ساعات",
+        "description": "مشاهدات منصة الاضواء - تحقيق الربح 💸|🎯عربى خليجى | ⏱️ البدء 0 - 6 ساعات",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9003,7 +8863,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 72.9359,
         "min": 50,
         "max": 100000,
-        "description": "مشاهدات + لايكات منصة الاضواء - تحقيق الربح 💸|🎯عربى خليجى | ⚡السرعة + 500/اليوم | ⏱️ البدء 0 - 6 ساعات",
+        "description": "مشاهدات + لايكات منصة الاضواء - تحقيق الربح 💸|🎯عربى خليجى | ⏱️ البدء 0 - 6 ساعات",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9013,7 +8873,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 61.4196,
         "min": 50,
         "max": 100000,
-        "description": "مشاهدات منصة الاضواء - تحقيق الربح 💸|🎯اوروبا/امريكا | ⚡السرعة + 500/اليوم | ⏱️ البدء 0 - 6 ساعات",
+        "description": "مشاهدات منصة الاضواء - تحقيق الربح 💸|🎯اوروبا/امريكا | ⏱️ البدء 0 - 6 ساعات",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9023,7 +8883,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 69.0971,
         "min": 50,
         "max": 100000,
-        "description": "مشاهدات + لايكات منصة الاضواء - تحقيق الربح 💸|🎯اوروبا/امريكا | ⚡السرعة + 500/اليوم | ⏱️ البدء 0 - 6 ساعات",
+        "description": "مشاهدات + لايكات منصة الاضواء - تحقيق الربح 💸|🎯اوروبا/امريكا | ⏱️ البدء 0 - 6 ساعات",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9033,7 +8893,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات مصرية |📊تقييم 5 نجوم |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات مصرية |📊تقييم 5 نجوم |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9045,7 +8905,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات مصرية |📊تقييم 5 نجوم + تعليقات مخصصة |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات مصرية |📊تقييم 5 نجوم + تعليقات مخصصة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9067,7 +8927,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات سعودية |📊تقييم 5 نجوم |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات سعودية |📊تقييم 5 نجوم |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9079,7 +8939,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات سعودية |📊تقييم 5 نجوم + تعليقات مخصصة |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات سعودية |📊تقييم 5 نجوم + تعليقات مخصصة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9101,7 +8961,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات كويتية |📊تقييم 5 نجوم |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات كويتية |📊تقييم 5 نجوم |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9113,7 +8973,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات كويتية |📊تقييم 5 نجوم + تعليقات مخصصة |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات كويتية |📊تقييم 5 نجوم + تعليقات مخصصة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9135,7 +8995,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات قطرية |📊تقييم 5 نجوم |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات قطرية |📊تقييم 5 نجوم |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9147,7 +9007,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات قطرية |📊تقييم 5 نجوم + تعليقات مخصصة |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات قطرية |📊تقييم 5 نجوم + تعليقات مخصصة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9169,7 +9029,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات إماراتية |📊تقييم 5 نجوم |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات إماراتية |📊تقييم 5 نجوم |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9181,7 +9041,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3000.0,
         "min": 10,
         "max": 1000,
-        "description": "تقييمات خرائط جوجل |🎯حسابات إماراتية |📊تقييم 5 نجوم + تعليقات مخصصة |⚡السرعة +10 /اليوم |✅30 يوم ضمان",
+        "description": "تقييمات خرائط جوجل |🎯حسابات إماراتية |📊تقييم 5 نجوم + تعليقات مخصصة |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "المعلومات غير كاملة"
@@ -9193,7 +9053,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.65,
         "min": 10,
         "max": 50000,
-        "description": "اعضاء قناة واتساب |🎯100% أعضاء حقيقيون |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% أعضاء حقيقيون |🔥بداية فورية",
         "avgTime": "5 ساعات 53 دقائق"
     },
     {
@@ -9203,7 +9063,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 2.75,
         "min": 10,
         "max": 10000,
-        "description": "اعضاء قناة واتساب |🎯100% أعضاء حقيقيون |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% أعضاء حقيقيون |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9213,7 +9073,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 1.98,
         "min": 10,
         "max": 10000,
-        "description": "اعضاء قناة واتساب |🎯100% أعضاء حقيقيون |⚡السرعة +10 ألف/اليوم |🔥بداية فورية |✅30 يوم ضمان",
+        "description": "اعضاء قناة واتساب |🎯100% أعضاء حقيقيون |🔥بداية فورية |✅30 يوم ضمان",
         "guarantee": true,
         "refill": true,
         "avgTime": "4 ساعات 12 دقائق"
@@ -9224,8 +9084,8 @@ export const SMM_SERVICES: Service[] = [
         "category": "أعضاء قناة",
         "price": 3.3,
         "min": 10,
-        "max": 10000,
-        "description": "اعضاء قناة واتساب |🎯100% عرب |⚡السرعة +10 ألف/اليوم |🔥بدياة فورية |✅30 يوم ضمانِِ",
+        "max": 50000,
+        "description": "اعضاء قناة واتساب |🎯100% عرب |🔥بداية فورية |✅30 يوم ضمانِِ",
         "guarantee": true,
         "refill": true,
         "avgTime": "21 دقائق"
@@ -9237,7 +9097,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 10,
         "max": 50000,
-        "description": "اعضاء قناة واتساب |🎯100% عرب |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% عرب |🔥بداية فورية",
         "avgTime": "6 دقائق"
     },
     {
@@ -9247,7 +9107,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 10,
         "max": 50000,
-        "description": "اعضاء قناة واتساب |🎯100% من تركيا |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% من تركيا |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9257,7 +9117,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 10,
         "max": 50000,
-        "description": "اعضاء قناة واتساب |🎯100% من أمريكا |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% من أمريكا |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9267,7 +9127,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 10,
         "max": 50000,
-        "description": "اعضاء قناة واتساب |🎯100% من أوربا |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% من أوربا |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9277,7 +9137,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 3.3,
         "min": 10,
         "max": 50000,
-        "description": "اعضاء قناة واتساب |🎯100% من الهند |⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "اعضاء قناة واتساب |🎯100% من الهند |🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9287,7 +9147,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب مكس عشوائى | رمز👍❤️😂😲😥🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب مكس عشوائى | رمز👍❤️😂😲😥🙏|🔥بداية فورية",
         "avgTime": "5 دقائق"
     },
     {
@@ -9297,7 +9157,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب مكس عشوائى |🎯100% عرب | رمز👍❤️😂😲😥🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب مكس عشوائى |🎯100% عرب | رمز👍❤️😂😲😥🙏|🔥بداية فورية",
         "avgTime": "47 دقائق"
     },
     {
@@ -9307,7 +9167,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب مكس عشوائى |🎯100% من تركيا | رمز👍❤️😂😲😥🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب مكس عشوائى |🎯100% من تركيا | رمز👍❤️😂😲😥🙏|🔥بداية فورية",
         "avgTime": "1 ساعة 41 دقائق"
     },
     {
@@ -9317,7 +9177,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب مكس عشوائى |🎯100% من أمريكا | رمز👍❤️😂😲😥🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب مكس عشوائى |🎯100% من أمريكا | رمز👍❤️😂😲😥🙏|🔥بداية فورية",
         "avgTime": "2 ساعات 10 دقائق"
     },
     {
@@ -9327,7 +9187,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب مكس عشوائى |🎯100% من أوروبا | رمز👍❤️😂😲😥🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب مكس عشوائى |🎯100% من أوروبا | رمز👍❤️😂😲😥🙏|🔥بداية فورية",
         "avgTime": "5 دقائق"
     },
     {
@@ -9337,7 +9197,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب مكس عشوائى |🎯100% من الهند | رمز👍❤️😂😲😥🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب مكس عشوائى |🎯100% من الهند | رمز👍❤️😂😲😥🙏|🔥بداية فورية",
         "avgTime": "1 ساعة 20 دقائق"
     },
     {
@@ -9347,7 +9207,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز👍|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز👍|🔥بداية فورية",
         "avgTime": "1 ساعة 23 دقائق"
     },
     {
@@ -9357,7 +9217,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز❤️|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز❤️|🔥بداية فورية",
         "avgTime": "57 دقائق"
     },
     {
@@ -9367,7 +9227,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز😂|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز😂|🔥بداية فورية",
         "avgTime": "26 دقائق"
     },
     {
@@ -9377,7 +9237,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز😲|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز😲|🔥بداية فورية",
         "avgTime": "4 دقائق"
     },
     {
@@ -9387,7 +9247,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز😥|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز😥|🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9397,7 +9257,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز🙏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز🙏|🔥بداية فورية",
         "avgTime": "5 دقائق"
     },
     {
@@ -9407,7 +9267,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز👏|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز👏|🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9417,7 +9277,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز🔥|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز🔥|🔥بداية فورية",
         "avgTime": "4 دقائق"
     },
     {
@@ -9427,7 +9287,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز🏆|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز🏆|🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9437,7 +9297,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 0.825,
         "min": 10,
         "max": 50000,
-        "description": "تفاعل واتساب | رمز🎉|⚡السرعة +10 ألف/اليوم |🔥بداية فورية",
+        "description": "تفاعل واتساب | رمز🎉|🔥بداية فورية",
         "avgTime": "المعلومات غير كاملة"
     },
     {
@@ -9729,7 +9589,7 @@ export const SMM_SERVICES: Service[] = [
         "price": 18.7671,
         "min": 50,
         "max": 3500,
-        "description": "متابعين كلوب هاوس |🎯عربي + خليجي |⚡السرعة 500/اليوم |⛔بدون ضمان",
+        "description": "متابعين كلوب هاوس |🎯عربي + خليجي |⛔بدون ضمان",
         "avgTime": "المعلومات غير كاملة"
     },
     {
