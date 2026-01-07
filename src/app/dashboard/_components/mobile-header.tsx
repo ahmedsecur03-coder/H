@@ -79,6 +79,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
             <SheetContent side="right" className="sm:max-w-xs flex flex-col">
               <SheetHeader className="text-right mb-2">
                 <SheetTitle><Logo /></SheetTitle>
+                <SheetDescription className="sr-only">Main mobile navigation menu</SheetDescription>
               </SheetHeader>
 
               <div className="flex items-center gap-4 px-2 py-4">

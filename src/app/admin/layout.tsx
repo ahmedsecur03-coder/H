@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -38,6 +39,7 @@ import type { User, NestedNavItem, Deposit, Withdrawal, Campaign, Ticket } from 
 import { Notifications } from '@/components/notifications';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
+import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 
 function AdminNotifications() {
@@ -253,11 +255,12 @@ export default function AdminLayout({
         
         {/* Mobile Sidebar in a Sheet */}
         <Sidebar side="right" className="md:hidden">
-           <SidebarHeader>
+           <SheetHeader>
               <div className="flex h-16 items-center justify-between px-4">
-                  <Logo />
+                  <SheetTitle><Logo /></SheetTitle>
+                  <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
               </div>
-            </SidebarHeader>
+            </SheetHeader>
            <SidebarContent>
             <SidebarMenu>
                 <AdminNavItems />
