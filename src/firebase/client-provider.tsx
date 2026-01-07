@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { type ReactNode, useEffect, useState } from 'react';
@@ -25,8 +26,8 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
   const [services, setServices] = useState<FirebaseServices | null>(firebaseServices);
 
   useEffect(() => {
-    // This check ensures firebase is only initialized on the client-side.
-    if (!firebaseServices) {
+    // This check ensures firebase is only initialized on the client-side and only once.
+    if (typeof window !== 'undefined' && !firebaseServices) {
         firebaseServices = initializeFirebase();
         setServices(firebaseServices);
     }
