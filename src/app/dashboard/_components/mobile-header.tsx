@@ -76,13 +76,13 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-xs flex flex-col">
-              <SheetHeader className="text-right mb-2">
+            <SheetContent side="right" className="sm:max-w-xs flex flex-col p-0">
+              <SheetHeader className="border-b p-4">
                 <SheetTitle><Logo /></SheetTitle>
                 <SheetDescription className="sr-only">Main mobile navigation menu</SheetDescription>
               </SheetHeader>
 
-              <div className="flex items-center gap-4 px-2 py-4">
+              <div className="grid grid-cols-2 gap-4 p-4">
                 <div className="flex-1">
                     <div className="text-xs text-muted-foreground">الرصيد الأساسي</div>
                     <div className="font-bold font-mono text-lg">${(userData.balance ?? 0).toFixed(2)}</div>
@@ -94,7 +94,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
               </div>
 
               <Separator />
-              <nav className="grid gap-2 py-4 flex-1 overflow-y-auto">
+              <nav className="grid gap-2 p-4 flex-1 overflow-y-auto">
                  {dashboardNavItems.map(item => renderNavItem(item))}
                  {isAdmin && (
                     <SheetClose asChild>

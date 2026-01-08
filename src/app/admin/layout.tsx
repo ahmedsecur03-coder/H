@@ -39,7 +39,7 @@ import type { User, NestedNavItem, Deposit, Withdrawal, Campaign, Ticket } from 
 import { Notifications } from '@/components/notifications';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
-import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 
 function AdminNotifications() {
@@ -237,6 +237,7 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
+        {/* Desktop Sidebar */}
         <Sidebar side="right" className="hidden md:flex">
             <SidebarHeader>
               <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
@@ -253,21 +254,22 @@ export default function AdminLayout({
             </SidebarContent>
         </Sidebar>
         
-        {/* Mobile Sidebar in a Sheet */}
-        <Sidebar side="right" className="md:hidden">
-           <SheetHeader>
-              <div className="flex h-16 items-center justify-between px-4">
-                  <SheetTitle><Logo /></SheetTitle>
-                  <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
-              </div>
-            </SheetHeader>
-           <SidebarContent>
-            <SidebarMenu>
-                <AdminNavItems />
-            </SidebarMenu>
-            </SidebarContent>
-        </Sidebar>
-
+        {/* Mobile Sidebar (Sheet) */}
+        <Sheet>
+            <Sidebar>
+                <SheetContent side="right" className="flex flex-col p-0">
+                     <SheetHeader className="border-b p-4">
+                      <SheetTitle><Logo /></SheetTitle>
+                      <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
+                    </SheetHeader>
+                    <SidebarContent>
+                        <SidebarMenu>
+                            <AdminNavItems />
+                        </SidebarMenu>
+                    </SidebarContent>
+                </SheetContent>
+            </Sidebar>
+        </Sheet>
 
         <div className="flex flex-1 flex-col">
             <AdminHeader userData={userData} />
