@@ -23,16 +23,10 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
     const [isGenerating, setIsGenerating] = useState(false);
     const { toast } = useToast();
 
-    // The entire AI generation feature is disabled as per user request.
-    // Returning null will prevent this component from rendering.
-    return null;
-
-    /*
-    // Kept for historical reference - this was the previous implementation.
-
-    if (!isAiConfigured()) {
-        return null;
-    }
+    // The AI feature check can be enabled if needed in the future
+    // if (!isAiConfigured()) {
+    //     return null;
+    // }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,6 +39,7 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
         toast({ title: 'جاري توليد المقالة...', description: 'قد تستغرق العملية بضع لحظات.' });
 
         try {
+            // This is a placeholder for the actual AI call.
             // const article = await generateBlogPost({ topic });
             await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate AI delay
             const article = {
@@ -98,5 +93,4 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
             </DialogContent>
         </Dialog>
     );
-    */
 }
