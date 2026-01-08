@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, addDoc, getDocs, where, query, deleteDoc, getDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, where, query, deleteDoc, doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, CheckCircle, Trash2 } from 'lucide-react';
@@ -152,6 +152,7 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
                                         <span className="font-medium">{post.title}</span>
                                         <Button
                                             size="sm"
+                                            variant="outline"
                                             onClick={() => handleImportPost(post)}
                                             disabled={isImported || !!actionPostId}
                                         >
@@ -159,11 +160,14 @@ export function ImportPostsDialog({ children, onImportComplete }: ImportPostsDia
                                                  <Loader2 className="h-4 w-4 animate-spin" />
                                             ) : isImported ? (
                                                 <>
-                                                    <CheckCircle className="ml-2 h-4 w-4" />
+                                                    <CheckCircle className="ml-2 h-4 w-4 text-green-500" />
                                                     موجود بالفعل
                                                 </>
                                             ) : (
-                                                 'استيراد'
+                                                 <>
+                                                    <Upload className="ml-2 h-4 w-4" />
+                                                    استيراد
+                                                 </>
                                             )}
                                         </Button>
                                     </div>
