@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -31,16 +32,7 @@ import { Twitter, Facebook } from "lucide-react";
 import { CopyButton } from './_components/copy-button';
 import Link from "next/link";
 import { AiPostGenerator } from "./_components/ai-post-generator";
-import { generateAffiliatePost } from "@/ai/flows/generate-affiliate-post-flow";
-
-
-const PROMOTIONAL_TOPICS = [
-    "أسرع خدمات SMM في السوق", "طريقة مضمونة لزيادة متابعين انستغرام", "كيف تصبح مشهوراً على تيك توك",
-    "أفضل أسعار لخدمات التسويق الرقمي", "اجعل حسابك ينمو بسرعة الصاروخ", "الوصول إلى آلاف المشاهدات بسهولة",
-    "لماذا تعتبر خدماتنا الأفضل لنموك؟", "حقق أهدافك على السوشيال ميديا اليوم", "سر الحصول على العلامة الزرقاء",
-    "كيفية إدارة حملات إعلانية ناجحة على جوجل", "أسرار التسويق بالعمولة الناجح", "شحن عملات تيك توك بأفضل الأسعار",
-    "استراتيجيات مضمونة لزيادة متابعين فيسبوك", "احصل على حسابات إعلانية وكالة بدون قيود", "تحليل أداء حملاتك الإعلانية كالمحترفين",
-];
+import { recommendedAffiliatePosts } from "./_components/recommended-affiliate-posts";
 
 
 // Inlined WithdrawalDialog component
@@ -153,33 +145,37 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
     const { toast } = useToast();
     const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
-    const handleShare = async (platform: 'WhatsApp' | 'X' | 'Facebook') => {
-        setIsGenerating(platform);
-        toast({ title: 'جاري إنشاء منشور تسويقي ذكي...' });
-
-        try {
-            const randomTopic = PROMOTIONAL_TOPICS[Math.floor(Math.random() * PROMOTIONAL_TOPICS.length)];
-            const result = await generateAffiliatePost({ topic: randomTopic, referralLink });
-            const postContent = result.postContent;
-            
-            let shareUrl = '';
-            if (platform === 'WhatsApp') {
-                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
-            } else if (platform === 'X') {
-                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
-            } else if (platform === 'Facebook') {
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
-            }
-
-            window.open(shareUrl, '_blank', 'noopener,noreferrer');
-
-        } catch (error: any) {
-             toast({ variant: 'destructive', title: 'فشل التوليد', description: 'حدث خطأ أثناء إنشاء المنشور.' });
-        } finally {
-             setIsGenerating(null);
-        }
+    const getSimulatedPost = () => {
+        const randomPostTemplate = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
+        return randomPostTemplate.replace('{{referralLink}}', referralLink);
     };
 
+    const handleShare = (platform: 'WhatsApp' | 'X' | 'Facebook') => {
+        setIsGenerating(platform);
+        toast({ title: 'جاري تجهيز المنشور...' });
+        
+        setTimeout(() => {
+            try {
+                const postContent = getSimulatedPost();
+                
+                let shareUrl = '';
+                if (platform === 'WhatsApp') {
+                    shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
+                } else if (platform === 'X') {
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
+                } else if (platform === 'Facebook') {
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
+                }
+
+                window.open(shareUrl, '_blank', 'noopener,noreferrer');
+
+            } catch (error: any) {
+                toast({ variant: 'destructive', title: 'فشل', description: 'حدث خطأ أثناء تجهيز المنشور.' });
+            } finally {
+                setIsGenerating(null);
+            }
+        }, 300); // Simulate generation delay
+    };
 
     const shareTargets = [
         { name: 'WhatsApp', icon: WhatsAppIcon, action: () => handleShare('WhatsApp') },
@@ -353,7 +349,6 @@ export default function AffiliatePage() {
     }
     
     const referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'}/auth/signup?ref=${userData.referralCode}`;
-    const publicProfileLink = `/user/${authUser?.uid}`;
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
     const nextLevelKey = null; // This logic needs updating to be dynamic
@@ -455,9 +450,10 @@ export default function AffiliatePage() {
                     </div>
                 </CardContent>
                  <CardFooter className="flex-col items-stretch border-t p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-semibold flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" />مولّد المنشورات بالذكاء الاصطناعي</h3>
-                    </div>
+                    <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
+                        <Wand2 className="h-4 w-4 text-primary" />
+                        مولّد المنشورات بالذكاء الاصطناعي
+                    </h3>
                     <AiPostGenerator referralLink={referralLink} />
                  </CardFooter>
             </Card>

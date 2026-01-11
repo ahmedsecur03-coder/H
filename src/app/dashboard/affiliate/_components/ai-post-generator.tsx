@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -6,57 +7,33 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles } from 'lucide-react';
-import { isAiConfigured } from '@/ai/client';
-import { generateAffiliatePost } from '@/ai/flows/generate-affiliate-post-flow';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CopyButton } from './copy-button';
-
-// Expanded and more diverse promotional topics
-const PROMOTIONAL_TOPICS = [
-    "أسرع خدمات SMM في السوق",
-    "طريقة مضمونة لزيادة متابعين انستغرام",
-    "كيف تصبح مشهوراً على تيك توك",
-    "أفضل أسعار لخدمات التسويق الرقمي",
-    "اجعل حسابك ينمو بسرعة الصاروخ",
-    "الوصول إلى آلاف المشاهدات بسهولة",
-    "لماذا تعتبر خدماتنا الأفضل لنموك؟",
-    "حقق أهدافك على السوشيال ميديا اليوم",
-    "سر الحصول على العلامة الزرقاء",
-    "كيفية إدارة حملات إعلانية ناجحة على جوجل",
-    "أسرار التسويق بالعمولة الناجح",
-    "شحن عملات تيك توك بأفضل الأسعار",
-    "استراتيجيات مضمونة لزيادة متابعين فيسبوك",
-    "احصل على حسابات إعلانية وكالة بدون قيود",
-    "تحليل أداء حملاتك الإعلانية كالمحترفين",
-];
+import { recommendedAffiliatePosts } from './recommended-affiliate-posts';
 
 export function AiPostGenerator({ referralLink }: { referralLink: string }) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedPost, setGeneratedPost] = useState('');
     const { toast } = useToast();
 
-    if (!isAiConfigured()) {
-        return null; 
-    }
+    const getSimulatedPost = () => {
+        const randomPostTemplate = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
+        return randomPostTemplate.replace('{{referralLink}}', referralLink);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const randomTopic = PROMOTIONAL_TOPICS[Math.floor(Math.random() * PROMOTIONAL_TOPICS.length)];
-
         setIsGenerating(true);
         setGeneratedPost('');
-        toast({ title: 'جاري توليد منشور جديد...', description: `باستخدام فكرة: "${randomTopic}"` });
+        toast({ title: 'جاري توليد منشور جديد...' });
 
-        try {
-            const result = await generateAffiliatePost({ topic: randomTopic, referralLink });
-            setGeneratedPost(result.postContent);
-        } catch (error: any) {
-            console.error("AI Post Generation Error:", error);
-            toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message || 'حدث خطأ أثناء إنشاء المنشور.' });
-        } finally {
+        // Simulate a short delay to mimic AI generation
+        setTimeout(() => {
+            const post = getSimulatedPost();
+            setGeneratedPost(post);
             setIsGenerating(false);
-        }
+        }, 500);
     };
 
     return (
