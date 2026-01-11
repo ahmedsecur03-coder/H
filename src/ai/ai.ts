@@ -1,5 +1,3 @@
-
-'use server';
 /**
  * @file This file is the entrypoint for Genkit settings for the application.
  */
