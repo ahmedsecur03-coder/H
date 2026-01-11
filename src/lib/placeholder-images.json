@@ -35,6 +35,42 @@
       "description": "Image illustrating professional accounts",
       "imageUrl": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGJ1c2luZXNzJTIwYWNjb3VudHxlbnwwfHwwfHx8MA%3D%3D",
       "imageHint": "business professional"
+    },
+    {
+      "id": "social-growth",
+      "description": "Image showing social media growth on a phone",
+      "imageUrl": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=1080",
+      "imageHint": "social media"
+    },
+    {
+      "id": "ads-dashboard",
+      "description": "A dashboard showing advertising performance metrics",
+      "imageUrl": "https://images.unsplash.com/photo-1642427749670-f20e2e76f8c8?q=80&w=1080",
+      "imageHint": "analytics dashboard"
+    },
+    {
+      "id": "affiliate-earnings",
+      "description": "Image representing earnings and money",
+      "imageUrl": "https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=1080",
+      "imageHint": "money earnings"
+    },
+    {
+      "id": "secure-account",
+      "description": "Image of a lock symbolizing account security",
+      "imageUrl": "https://images.unsplash.com/photo-1550791822-4a7a5c55d1c2?q=80&w=1080",
+      "imageHint": "security lock"
+    },
+    {
+      "id": "smm-promo",
+      "description": "Generic social media marketing promotion image",
+      "imageUrl": "https://images.unsplash.com/photo-1611926653458-09294b3142bf?q=80&w=1080",
+      "imageHint": "social media"
+    },
+    {
+      "id": "rocket-launch",
+      "description": "A rocket launching, symbolizing a fast start",
+      "imageUrl": "https://images.unsplash.com/photo-1541185934-01b604e066c4?q=80&w=1080",
+      "imageHint": "rocket launch"
     }
   ]
 }
