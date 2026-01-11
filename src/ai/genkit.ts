@@ -5,24 +5,12 @@
 
 import { generateBlogPostFlow } from '@/ai/flows/generate-blog-post-flow';
 import { generateAffiliatePostFlow } from '@/ai/flows/generate-affiliate-post-flow';
-import { googleAI } from '@genkit-ai/google-genai';
-import { genkit, configureGenkit } from 'genkit';
-
-configureGenkit({
-  plugins: [
-    googleAI({
-      apiVersion: 'v1beta',
-    }),
-  ],
-  flowStateStore: 'firebase',
-  traceStore: 'firebase',
-  enableTracingAndMetrics: true,
-  logLevel: 'debug',
-});
+import { ai } from './ai';
 
 export const allFlows = {
   generateBlogPostFlow,
   generateAffiliatePostFlow,
 };
 
-export const ai = genkit;
+// Re-export ai for simplicity, though direct import from @/ai/ai is preferred
+export { ai };

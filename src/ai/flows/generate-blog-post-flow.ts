@@ -7,7 +7,7 @@
  * - GenerateBlogPostOutput - The return type for the generateBlogPost function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '@/ai/ai';
 import { z } from 'genkit';
 
 export const GenerateBlogPostInputSchema = z.object({
