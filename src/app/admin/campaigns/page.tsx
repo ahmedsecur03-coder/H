@@ -27,13 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, ListChecks, Hourglass, BarChart2, TrendingUp, FileText } from 'lucide-react';
+import { DollarSign, ListChecks, Hourglass, BarChart2, TrendingUp, FileText, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { CampaignDetailsDialog } from '@/app/dashboard/campaigns/_components/campaign-details-dialog';
 import { CampaignActions } from './_components/campaign-actions';
@@ -56,18 +54,18 @@ export default function AdminCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchCampaignsAndStats = useCallback(async () => {
+  const fetchCampaigns = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
-      let q = collectionGroup(firestore, 'campaigns');
+      let q: any = collectionGroup(firestore, 'campaigns');
 
       if (filter !== 'all') {
           q = query(q, where('status', '==', filter));
       }
       
-      const campaignsQuery = query(q, orderBy('startDate', 'desc'));
+      const campaignsQuery = query(q, orderBy('startDate', 'desc'), limit(50)); // Limit to last 50 for performance
       
       const querySnapshot = await getDocs(campaignsQuery);
       let fetchedCampaigns: Campaign[] = [];
@@ -88,32 +86,11 @@ export default function AdminCampaignsPage() {
       setIsLoading(false);
     }
   }, [firestore, toast, filter]);
-  
-  const stats = useMemo(() => {
-    let tempTotalBudget = 0;
-    let tempTotalSpend = 0;
-    const tempStatusCounts = ALL_STATUSES.reduce((acc, status) => ({...acc, [status]: 0}), {} as Record<Status, number>);
-
-    campaigns.forEach(campaign => {
-        tempTotalBudget += campaign.budget;
-        tempTotalSpend += campaign.spend || 0;
-        if (tempStatusCounts.hasOwnProperty(campaign.status)) {
-            tempStatusCounts[campaign.status]++;
-        }
-    });
-
-    return {
-        active: tempStatusCounts['نشط'],
-        totalBudget: tempTotalBudget,
-        totalSpend: tempTotalSpend,
-        statusCounts: ALL_STATUSES.map(s => ({ status: s, count: tempStatusCounts[s] }))
-    };
-  }, [campaigns]);
 
 
   useEffect(() => {
-    fetchCampaignsAndStats();
-  }, [fetchCampaignsAndStats, filter]);
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -146,60 +123,22 @@ export default function AdminCampaignsPage() {
             <CampaignDetailsDialog campaign={campaign}>
                  <Button variant="outline" size="sm"><FileText className="ml-2 h-4 w-4" />تفاصيل</Button>
             </CampaignDetailsDialog>
-            <CampaignActions campaign={campaign} onUpdate={fetchCampaignsAndStats} />
+            <CampaignActions campaign={campaign} onUpdate={fetchCampaigns} />
         </TableCell>
       </TableRow>
     ));
   }
 
-  const chartConfig = {
-    count: { label: "عدد الحملات" },
-  };
-  ALL_STATUSES.forEach((s, i) => {
-    chartConfig[s] = { label: s, color: `hsl(var(--chart-${(i % 5) + 1}))` };
-  });
-
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">مراقبة الحملات</h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2"><Megaphone className="h-8 w-8" />مراقبة الحملات</h1>
         <p className="text-muted-foreground">
-          عرض جميع الحملات الإعلانية في النظام ومراجعتها.
+          عرض جميع الحملات الإعلانية في النظام ومراجعتها (آخر 50 حملة).
         </p>
       </div>
 
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">الحملات النشطة حاليًا</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats.active}</div>}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الميزانيات</CardTitle>
-            <ListChecks className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-             {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">${stats.totalBudget.toLocaleString('en-US', {maximumFractionDigits: 0})}</div>}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الإنفاق</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">${stats.totalSpend.toLocaleString('en-US', {maximumFractionDigits: 0})}</div>}
-          </CardContent>
-        </Card>
-      </div>
-
-       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <Card className="lg:col-span-3">
             <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>قائمة الحملات</CardTitle>
                 <div className="w-48">
@@ -213,9 +152,6 @@ export default function AdminCampaignsPage() {
                             <SelectItem key={status} value={status}>
                               <div className="flex items-center gap-2">
                                 <span>{status}</span>
-                                {status === 'بانتظار المراجعة' && stats.statusCounts.find(s => s.status === status)!.count > 0 && 
-                                  <Badge variant="destructive" className="px-1.5">{stats.statusCounts.find(s => s.status === status)!.count}</Badge>
-                                }
                               </div>
                             </SelectItem>
                             ))}
@@ -244,24 +180,6 @@ export default function AdminCampaignsPage() {
             </div>
             </CardContent>
         </Card>
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>توزيع حالات الحملات</CardTitle>
-                <CardDescription>نظرة سريعة على عدد الحملات في كل حالة.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isLoading ? <Skeleton className="h-64 w-full" /> : 
-                <ChartContainer config={chartConfig} className="h-64 w-full">
-                    <BarChart data={stats.statusCounts} layout="vertical" margin={{left: 10, right:10}}>
-                         <YAxis dataKey="status" type="category" tickLine={false} axisLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}} />
-                         <XAxis type="number" hide />
-                         <Tooltip cursor={{fill: 'hsl(var(--muted))'}} content={<ChartTooltipContent />} />
-                         <Bar dataKey="count" layout="vertical" radius={5} fill="hsl(var(--primary))" />
-                    </BarChart>
-                </ChartContainer>}
-            </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
