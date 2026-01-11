@@ -94,12 +94,10 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child) => (
                <SidebarMenuItem key={child.href}>
-                <Link href={child.href || '#'} passHref legacyBehavior>
-                  <SidebarMenuSubButton asChild isActive={pathname === child.href}>
-                      <a>
-                        {child.icon && <child.icon className="w-4 h-4" />}
-                        <span>{child.label}</span>
-                      </a>
+                <Link href={child.href || '#'} passHref>
+                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                      {child.icon && <child.icon className="w-4 h-4" />}
+                      <span>{child.label}</span>
                   </SidebarMenuSubButton>
                 </Link>
               </SidebarMenuItem>
@@ -112,10 +110,10 @@ function NavItems() {
     return (
         <SidebarMenuItem key={item.href}>
             <Link href={item.href || '#'} passHref>
-            <SidebarMenuButton isActive={pathname === item.href}>
-                {Icon && <Icon className="h-4 w-4" />}
-                <span>{item.label}</span>
-            </SidebarMenuButton>
+                <SidebarMenuButton isActive={pathname === item.href}>
+                    {Icon && <Icon className="h-4 w-4" />}
+                    <span>{item.label}</span>
+                </SidebarMenuButton>
             </Link>
         </SidebarMenuItem>
     );
@@ -134,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const firestore = useFirestore();
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
-    const { data: userData, isLoading: isUserDataLoading, forceDocUpdate } = useDoc<User>(userDocRef);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
     
     React.useEffect(() => {
         if(!isUserLoading && !user) {
