@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// Although the AI flow is not used, we keep the import to avoid breaking changes if it's re-enabled.
-// import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
+import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
 import { isAiConfigured } from '@/ai/client';
 
 interface AiPostDialogProps {
@@ -23,10 +22,9 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
     const [isGenerating, setIsGenerating] = useState(false);
     const { toast } = useToast();
 
-    // The AI feature check can be enabled if needed in the future
-    // if (!isAiConfigured()) {
-    //     return null;
-    // }
+    if (!isAiConfigured()) {
+        return null;
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,14 +37,8 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
         toast({ title: 'جاري توليد المقالة...', description: 'قد تستغرق العملية بضع لحظات.' });
 
         try {
-            // This is a placeholder for the actual AI call.
-            // const article = await generateBlogPost({ topic });
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate AI delay
-            const article = {
-                title: `مقالة عن: ${topic}`,
-                content: `هذا هو المحتوى الذي تم إنشاؤه بواسطة الذكاء الاصطناعي حول موضوع "${topic}". يمكنك توسيع هذا المحتوى وتعديله حسب الحاجة.`
-            };
-
+            const article = await generateBlogPost({ topic });
+            
             onArticleGenerated(article);
             setOpen(false); // Close this dialog
             setTopic(''); // Reset topic
