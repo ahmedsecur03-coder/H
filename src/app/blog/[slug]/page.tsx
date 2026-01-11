@@ -1,21 +1,16 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { initializeFirebaseServer } from '@/firebase/init-server';
+import { collection, query, getDocs } from 'firebase/firestore';
+import type { Metadata, ResolvingMetadata } from 'next';
 import type { BlogPost } from '@/lib/types';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import ReactMarkdown from 'react-markdown';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowRight, ChevronLeft } from 'lucide-react';
-import { useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
+import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 
+type Props = {
+  params: { slug: string }
+}
 
 function titleToSlug(title: string): string {
     if (!title) return '';
-     return title
+    return title
     .toString()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -26,130 +21,69 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-function BlogPostSkeleton() {
-    return (
-        <div className="max-w-4xl mx-auto py-8">
-            <Skeleton className="h-8 w-32 mb-4" />
-             <Card>
-                <CardHeader>
-                    <Skeleton className="h-10 w-3/4" />
-                    <Skeleton className="h-5 w-1/4 mt-2" />
-                </CardHeader>
-                <CardContent className="space-y-4 pt-6">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-5/6" />
-                    <br/>
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                </CardContent>
-            </Card>
-        </div>
-    )
+async function getPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return undefined;
+    
+    try {
+        const postsQuery = query(collection(firestore, 'blogPosts'));
+        const querySnapshot = await getDocs(postsQuery);
+        const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+        return allPosts.find(p => titleToSlug(p.title) === slug);
+    } catch (error) {
+        console.error("Error fetching post for metadata:", error);
+        return undefined;
+    }
 }
 
-export default function BlogPostPage() {
-    const firestore = useFirestore();
-    const params = useParams();
-    const slug = params.slug as string;
+export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
+  const post = await getPostBySlug(params.slug);
 
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [prevPost, setPrevPost] = useState<BlogPost | null>(null);
-    const [nextPost, setNextPost] = useState<BlogPost | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        if (!firestore || !slug) return;
-
-        const fetchPostData = async () => {
-            setIsLoading(true);
-            try {
-                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-                const querySnapshot = await getDocs(postsQuery);
-                const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-
-                const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
-                if (currentPost) {
-                    setPost(currentPost);
-                    const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
-                    setPrevPost(currentIndex > 0 ? allPosts[currentIndex - 1] : null);
-                    setNextPost(currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null);
-                } else {
-                    notFound();
-                }
-            } catch (error) {
-                console.error("Error fetching post data:", error);
-                notFound();
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchPostData();
-    }, [firestore, slug]);
-    
-
-    if (isLoading) {
-        return <BlogPostSkeleton />;
+  if (!post) {
+    return {
+      title: 'المقالة غير موجودة',
     }
+  }
 
-    if (!post) {
-        return null; // notFound() would have been called in useEffect
-    }
+  const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
+
+  return {
+    title: post.title,
+    description: description,
+    openGraph: {
+      title: post.title,
+      description: description,
+      type: 'article',
+      publishedTime: post.publishDate,
+      authors: ['Hagaaty Team'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: description,
+    },
+  }
+}
+
+export async function generateStaticParams() {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return [];
+
+    try {
+        const postsQuery = query(collection(firestore, 'blogPosts'));
+        const querySnapshot = await getDocs(postsQuery);
+        const posts = querySnapshot.docs.map(doc => doc.data() as BlogPost);
     
-    return (
-            <div className="max-w-4xl mx-auto py-8">
-                <Button variant="ghost" asChild className="mb-4">
-                    <Link href="/blog">
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                        العودة إلى المدونة
-                    </Link>
-                </Button>
-                <article>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-3xl md:text-4xl font-headline leading-tight">{post.title}</CardTitle>
-                            <CardDescription>
-                                نُشر في: {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="prose dark:prose-invert max-w-none">
-                            <ReactMarkdown
-                                components={{
-                                    h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
-                                    h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
-                                }}
-                            >
-                                {post.content}
-                            </ReactMarkdown>
-                        </CardContent>
-                    </Card>
-                </article>
+        return posts.map((post) => ({
+            slug: titleToSlug(post.title),
+        }));
+    } catch (error) {
+        console.error("Failed to generate static params for blog posts:", error);
+        return [];
+    }
+}
 
-                <nav className="flex justify-between items-center mt-8 gap-4">
-                    <div>
-                        {prevPost && (
-                            <Button asChild variant="outline">
-                                <Link href={`/blog/${titleToSlug(prevPost.title)}`} title={prevPost.title}>
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                    المقالة السابقة
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                    <div>
-                        {nextPost && (
-                            <Button asChild>
-                                <Link href={`/blog/${titleToSlug(nextPost.title)}`} title={nextPost.title}>
-                                    المقالة التالية
-                                    <ChevronLeft className="mr-2 h-4 w-4" />
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                </nav>
-            </div>
-    );
+export default function BlogPostPage({ params }: Props) {
+    // This is now a server component, it will pass the slug to the client component
+    return <BlogPostPageClient slug={params.slug} />;
 }

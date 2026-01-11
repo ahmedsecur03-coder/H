@@ -1,20 +1,42 @@
-
-'use client';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { ThemeProvider } from '@/components/theme-provider';
-import React, { useEffect } from 'react';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
-import PublicHeader from '@/components/public-header';
-import PublicFooter from '@/components/public-footer';
-import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
-import { FloatingActionButtons } from '@/components/floating-action-buttons';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { Providers } from '@/components/providers';
+import type { Metadata } from 'next';
+
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | حاجاتي - بوابتك لنمو أعمالك الرقمية',
+    default: 'حاجاتي - بوابتك لنمو أعمالك الرقمية',
+  },
+  description: 'منصتك المتكاملة لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.',
+  openGraph: {
+    title: 'حاجاتي - بوابتك لنمو أعمالك الرقمية',
+    description: 'نوفر حلولاً متكاملة لزيادة المتابعين، إدارة الحملات الإعلانية، وحسابات وكالة موثوقة.',
+    url: 'https://hajaty.com',
+    siteName: 'Hagaaty',
+    images: [
+      {
+        url: 'https://hajaty.com/og-image.png', // Replace with your actual OG image URL
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'ar_AR',
+    type: 'website',
+  },
+   twitter: {
+    card: 'summary_large_image',
+    title: 'حاجاتي - بوابتك لنمو أعمالك الرقمية',
+    description: 'منصتك المتكاملة لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.',
+    images: ['https://hajaty.com/og-image.png'], // Replace with your actual OG image URL
+  },
+}
 
 
 const fontSans = Tajawal({
@@ -28,28 +50,6 @@ const fontHeadline = Tajawal({
   weight: ['900'],
   variable: '--font-headline',
 });
-
-function AppContent({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isAuthPage = pathname.startsWith('/auth');
-  const isDashboardPage = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
-  const isPublicPage = !isDashboardPage && !isAuthPage;
-
-  return (
-    <>
-      {/* FirebaseErrorListener is moved here to ensure Firebase is initialized */}
-      <FirebaseErrorListener />
-      {isPublicPage && <PublicHeader />}
-      <div className="flex-1 flex flex-col">
-        <main className={cn("flex-1", isPublicPage && "container py-8")}>
-          {children}
-        </main>
-        {isPublicPage && <PublicFooter />}
-      </div>
-      {isPublicPage && <FloatingActionButtons />}
-    </>
-  );
-}
 
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
@@ -66,16 +66,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Suspense>
           <GoogleAnalytics gaId={measurementId} />
         </Suspense>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-           <FirebaseClientProvider>
-                <div className="flex flex-col min-h-screen">
-                    <Suspense fallback={<div className="flex-1" />}>
-                        <AppContent>{children}</AppContent>
-                    </Suspense>
-                </div>
-           </FirebaseClientProvider>
-           <Toaster />
-        </ThemeProvider>
+        <Providers>
+            {children}
+            <Toaster />
+        </Providers>
       </body>
     </html>
   );
