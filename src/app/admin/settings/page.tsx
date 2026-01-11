@@ -34,22 +34,16 @@ async function runCleanup(firestore: Firestore, type: 'orders' | 'deposits') {
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
     const collectionGroupRef = collectionGroup(firestore, type);
-    const snapshot = await getDocs(collectionGroupRef);
-
-    let docsToDelete: any[] = [];
     
+    let docsQuery;
     if (type === 'orders') {
-        docsToDelete = snapshot.docs.filter(doc => {
-            const order = doc.data() as Order;
-            return (order.status === 'مكتمل' || order.status === 'ملغي') && new Date(order.orderDate) < fiveDaysAgo;
-        });
-
-    } else if (type === 'deposits') {
-            docsToDelete = snapshot.docs.filter(doc => {
-            const deposit = doc.data() as Deposit;
-            return deposit.status === 'مرفوض' && new Date(deposit.depositDate) < fiveDaysAgo;
-        });
+        docsQuery = query(collectionGroupRef, where('status', 'in', ['مكتمل', 'ملغي']), where('orderDate', '<', fiveDaysAgo.toISOString()));
+    } else { // deposits
+        docsQuery = query(collectionGroupRef, where('status', '==', 'مرفوض'), where('depositDate', '<', fiveDaysAgo.toISOString()));
     }
+
+    const snapshot = await getDocs(docsQuery);
+    const docsToDelete = snapshot.docs;
     
     if (docsToDelete.length === 0) {
         return { count: 0 };
@@ -68,7 +62,10 @@ async function runCleanup(firestore: Firestore, type: 'orders' | 'deposits') {
             operationCount = 0;
         }
     });
-    batchArray.push(currentBatch);
+    
+    if (operationCount > 0) {
+        batchArray.push(currentBatch);
+    }
 
     await Promise.all(batchArray.map(batch => batch.commit()));
     return { count: docsToDelete.length };
@@ -76,17 +73,13 @@ async function runCleanup(firestore: Firestore, type: 'orders' | 'deposits') {
 
 
 async function runBroadcast(firestore: Firestore, message: string, type: Notification['type']) {
-    // This is a placeholder for a Cloud Function trigger.
-    // In a real app, this would write to a 'broadcasts' collection,
-    // and a Cloud Function would handle the distribution.
-    const logData = {
-        event: 'broadcast_sent',
-        level: 'info' as const,
-        message: `Admin triggered a broadcast: "${message}"`,
-        timestamp: new Date().toISOString(),
-        metadata: { type, message },
+    const broadcastData = {
+        message,
+        type,
+        createdAt: new Date().toISOString(),
+        sent: false, // This field can be used by a Cloud Function to track which broadcasts have been processed
     };
-    await addDoc(collection(firestore, 'systemLogs'), logData);
+    await addDoc(collection(firestore, 'broadcasts'), broadcastData);
 }
 
 
@@ -181,10 +174,10 @@ export default function AdminSettingsPage() {
       
       try {
         await runBroadcast(firestore, broadcastMessage, broadcastType);
-        toast({ title: "جاري إرسال الإشعار...", description: "سيتم إرسال الإشعار لجميع المستخدمين في الخلفية." });
+        toast({ title: "تم إرسال طلب البث", description: "سيقوم الخادم بتوزيع الإشعار على جميع المستخدمين." });
         setBroadcastMessage('');
       } catch (error) {
-          const permissionError = new FirestorePermissionError({ path: 'systemLogs', operation: 'create' });
+          const permissionError = new FirestorePermissionError({ path: 'broadcasts', operation: 'create' });
           errorEmitter.emit('permission-error', permissionError);
       } finally {
         setIsBroadcasting(false);
@@ -260,7 +253,7 @@ export default function AdminSettingsPage() {
            <Card>
                 <CardHeader>
                     <CardTitle>إرسال إشعار عام</CardTitle>
-                    <CardDescription>إرسال إشعار لجميع المستخدمين. (هذه الميزة تتطلب وظيفة خادم لتكتمل).</CardDescription>
+                    <CardDescription>إرسال إشعار لجميع المستخدمين. يتطلب وظيفة خادم للتوزيع.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleBroadcast}>
                     <CardContent className="space-y-4">

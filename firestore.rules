@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -87,7 +88,7 @@ service cloud.firestore {
     }
     
     // =================================
-    // Admin-Only Collections (Logs & Stats)
+    // Admin-Only Collections
     // =================================
 
     // System logs can only be read or written by admins.
@@ -99,7 +100,10 @@ service cloud.firestore {
     match /dailyStats/{date} {
         allow read, write: if isAdmin(); 
     }
+    
+    // Broadcasts can only be created by admins.
+    match /broadcasts/{broadcastId} {
+        allow read, write: if isAdmin();
+    }
   }
 }
-
-    
