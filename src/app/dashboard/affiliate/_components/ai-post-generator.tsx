@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -48,19 +47,19 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                     ولّد لي منشورًا مع صورة
                 </Button>
                 {generatedPost && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                         {generatedImage && (
                             <div className="space-y-2">
                                 <Label>الصورة المقترحة:</Label>
-                                <div className="relative aspect-square">
+                                <div className="relative aspect-video md:aspect-square">
                                     <Image 
                                         src={generatedImage.url} 
                                         alt={generatedImage.hint} 
                                         fill 
-                                        className="rounded-lg object-cover"
+                                        className="rounded-lg object-cover border"
                                         data-ai-hint={generatedImage.hint}
                                     />
-                                    <Button asChild size="icon" className="absolute bottom-2 right-2">
+                                    <Button asChild size="icon" className="absolute bottom-2 left-2">
                                         <a href={generatedImage.url} download target="_blank" rel="noopener noreferrer">
                                             <Download className="h-4 w-4" />
                                         </a>
@@ -69,14 +68,15 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                             </div>
                         )}
                         <div className="space-y-2">
-                            <Label>المنشور المقترح:</Label>
+                             <Label>المنشور المقترح:</Label>
                             <div className="relative">
                                 <Textarea
                                     readOnly
                                     value={generatedPost}
-                                    className="min-h-[220px] pr-12"
+                                    className="min-h-[220px] md:min-h-full"
+                                    rows={10}
                                 />
-                                <div className="absolute top-2 right-2">
+                                <div className="absolute top-2 left-2 rtl:left-auto rtl:right-2">
                                     <CopyButton textToCopy={generatedPost} />
                                 </div>
                             </div>
