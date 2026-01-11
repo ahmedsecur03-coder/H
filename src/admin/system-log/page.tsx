@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, Info, Terminal, Code2, User } from 'lucide-react';
+import { AlertTriangle, Info, Terminal, Code2, User, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Tooltip,
@@ -51,7 +51,9 @@ const levelConfig = {
 const eventConfig: {[key: string]: { icon: React.ElementType }} = {
     'api_request': { icon: Code2 },
     'permission_denied': { icon: AlertTriangle },
-    'user_created': { icon: User },
+    'user_created': { icon: UserPlus },
+    'broadcast_sent': { icon: Terminal },
+    'api_error': { icon: Code2 },
     'default': { icon: Terminal }
 }
 
@@ -61,16 +63,13 @@ export default function SystemLogPage() {
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const logsQuery = useMemoFirebase(() => (
-    firestore ? query(collection(firestore, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100)) : null
-  ),[firestore]);
-
   useEffect(() => {
-    if (!logsQuery) return;
+    if (!firestore) return;
 
     const fetchLogs = async () => {
         setIsLoading(true);
         try {
+            const logsQuery = query(collection(firestore, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100));
             const querySnapshot = await getDocs(logsQuery);
             const fetchedLogs: SystemLog[] = [];
             querySnapshot.forEach(doc => {
@@ -87,7 +86,7 @@ export default function SystemLogPage() {
     };
     
     fetchLogs();
-  }, [logsQuery, toast]);
+  }, [firestore, toast]);
   
   const renderContent = () => {
     if (isLoading) {
@@ -111,7 +110,7 @@ export default function SystemLogPage() {
     return logs.map((log) => {
         const config = levelConfig[log.level] || levelConfig.info;
         const Icon = config.icon;
-        const EventIcon = eventConfig[log.event] ? eventConfig[log.event].icon : eventConfig.default.icon;
+        const EventIcon = eventConfig[log.event as keyof typeof eventConfig] ? eventConfig[log.event as keyof typeof eventConfig].icon : eventConfig.default.icon;
         return (
             <TableRow key={log.id}>
                 <TableCell>

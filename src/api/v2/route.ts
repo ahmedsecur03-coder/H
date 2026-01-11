@@ -38,7 +38,7 @@ const BaseSchema = z.object({
 
 const AddOrderSchema = z.object({
     service: z.union([z.string(), z.number()]),
-    link: z.string().url(),
+    link: z.string().url({ message: "Invalid URL format for link." }),
     quantity: z.number().int().min(1),
 });
 
@@ -75,13 +75,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
         
-        // --- Role-based Authorization ---
-        if (action === 'services' && user.role !== 'admin') {
-            // Placeholder: Admins might get raw prices, users get margin prices.
-            // For now, it's the same, but the check is here for future use.
-        }
-
-        // --- Action-specific validation and logic ---
+        // Log the API request only for non-admin users for security auditing
         if(user.role !== 'admin') {
             const logData = {
                 event: 'api_request',
@@ -109,7 +103,7 @@ export async function POST(request: NextRequest) {
                 const mergedServices = SMM_SERVICES.map(service => {
                     const dynamicPrice = pricesMap.get(String(service.id));
                     const price = dynamicPrice ?? service.price; // Fallback to static price
-                    const finalPrice = price * PROFIT_MARGIN; // Apply profit margin
+                    const finalPrice = price * PROFIT_MARGIN; // Apply profit margin for all users
 
                     return {
                         service: service.id,
@@ -133,6 +127,7 @@ export async function POST(request: NextRequest) {
             }
 
             case 'add': {
+                 // --- 'add' action specific validation ---
                 const addOrderParse = AddOrderSchema.safeParse(params);
                 if (!addOrderParse.success) {
                     return NextResponse.json({ error: 'Invalid parameters for add action', details: addOrderParse.error.flatten() }, { status: 400 });
@@ -148,7 +143,7 @@ export async function POST(request: NextRequest) {
                 const priceDocRef = doc(firestore, 'servicePrices', String(serviceId));
                 const priceDoc = await getDoc(priceDocRef);
                 const price = priceDoc.exists() ? (priceDoc.data() as ServicePrice).price : staticService.price;
-                const finalPrice = price * PROFIT_MARGIN;
+                const finalPrice = price * PROFIT_MARGIN; // Apply profit margin
 
                 const mergedService = { ...staticService, price: finalPrice };
 
@@ -156,6 +151,7 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ error: `Quantity must be between ${mergedService.min} and ${mergedService.max}` }, { status: 400 });
                 }
                 
+                // Server-side cost calculation
                 const cost = (quantity / 1000) * mergedService.price;
                 
                 if (user.balance < cost) {
@@ -179,16 +175,19 @@ export async function POST(request: NextRequest) {
                      newOrderId = orderId;
                 });
 
+
                 return NextResponse.json({ order: newOrderId });
             }
 
             case 'status': {
+                 // --- 'status' action specific validation ---
                  const statusParse = StatusSchema.safeParse(params);
                  if (!statusParse.success) {
                      return NextResponse.json({ error: 'Invalid or missing `order` parameter' }, { status: 400 });
                  }
                 const { order: orderId } = statusParse.data;
 
+                // Query for the order within the user's subcollection
                 const orderDocRef = doc(firestore, `users/${user.id}/orders`, String(orderId));
                 const orderDoc = await getDoc(orderDocRef);
 
@@ -211,6 +210,7 @@ export async function POST(request: NextRequest) {
         }
     } catch (error: any) {
         console.error('API Error:', error);
+        // Log critical errors to systemLogs
          const logsCollection = collection(firestore, 'systemLogs');
          await addDoc(logsCollection, {
             event: 'api_error',
@@ -222,5 +222,3 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message || 'An internal server error occurred.' }, { status: 500 });
     }
 }
-
-    
