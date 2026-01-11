@@ -46,7 +46,9 @@ export default function SignupForm() {
 
       await runTransaction(firestore, async (transaction) => {
         let referrerId: string | null = null;
-        let adBalanceBonus = 0; // Default ad balance bonus
+        
+        // Always give a $5 bonus
+        const adBalanceBonus = 5; 
 
         if (referralCode) {
           const usersRef = collection(firestore, 'users');
@@ -55,7 +57,6 @@ export default function SignupForm() {
           if (!querySnapshot.empty) {
               const referrerDoc = querySnapshot.docs[0];
               referrerId = referrerDoc.id;
-              adBalanceBonus = 5; // Set the $5 bonus if referred
               // Increment referrer's count within the transaction
               transaction.update(referrerDoc.ref, { referralsCount: increment(1) });
           }
@@ -67,7 +68,7 @@ export default function SignupForm() {
           email: newUser.email!,
           avatarUrl: avatarUrl,
           balance: 0,
-          adBalance: adBalanceBonus, // Apply the bonus here
+          adBalance: adBalanceBonus, // Apply the bonus here for everyone
           totalSpent: 0,
           rank: 'مستكشف نجمي',
           role: 'user',
@@ -85,7 +86,7 @@ export default function SignupForm() {
         transaction.set(dailyStatRef, { newUsers: increment(1) }, { merge: true });
       });
 
-      toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
+      toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح وحصلت على 5$ رصيد إعلاني. سيتم توجيهك الآن.' });
       router.push('/dashboard');
 
     } catch (error: any) {
@@ -120,7 +121,7 @@ export default function SignupForm() {
             <div className="text-center">
                  <h1 className="text-2xl font-headline font-bold">إنشاء حساب جديد</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                    {referralCode ? `أنت على وشك الانضمام عبر دعوة. أكمل التسجيل واحصل على 5$ رصيد إعلاني مجاني!` : 'انضم إلى منصة حاجاتي وابدأ في تنمية أعمالك'}
+                    انضم إلى منصة حاجاتي واحصل على 5$ رصيد إعلاني مجاني لبدء رحلتك!
                 </p>
             </div>
             <form onSubmit={handleSignup} className="space-y-6">
