@@ -28,7 +28,8 @@ import {
   Info,
   Terminal,
   WalletCards,
-  ShoppingBag
+  ShoppingBag,
+  ServerCrash
 } from 'lucide-react';
 import { PLATFORM_ICONS } from './icon-data';
 
@@ -112,6 +113,7 @@ export const adminNavItems: NestedNavItem[] = [
         children: [
             { href: '/admin/settings', label: 'الإعدادات العامة', icon: Settings },
             { href: '/admin/system-log', label: 'سجل النظام', icon: Terminal },
+            { href: '/admin/system-status', label: 'حالة النظام', icon: ServerCrash },
         ]
     },
     { href: '/dashboard', label: 'عرض كـ مستخدم', icon: Shield },
