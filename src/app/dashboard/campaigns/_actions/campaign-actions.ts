@@ -1,10 +1,12 @@
-
 'use server';
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { initializeFirebaseServer } from '@/firebase/init';
 import { doc, runTransaction, increment } from 'firebase/firestore';
 
+// This function is no longer used for activation from the admin panel,
+// but is kept in case it's needed for other server-side campaign logic in the future.
+// The primary activation logic is now handled in the new campaign page action.
 export async function activateCampaignAndDeductBalance(userId: string, campaignId: string) {
-    const { firestore } = initializeFirebaseServer();
+    const { firestore } = initializeFirebase();
     if (!firestore) {
         console.error("Firestore is not initialized on the server.");
         return { success: false, error: "Server error" };

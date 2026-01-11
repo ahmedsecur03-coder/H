@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError, useDoc, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc } from 'firebase/firestore';
+import { addDoc, collection, doc, runTransaction, increment } from 'firebase/firestore';
 import { Separator } from '@/components/ui/separator';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { cn } from '@/lib/utils';
@@ -172,9 +172,9 @@ export default function NewCampaignPage() {
             targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
             targetInterests: formData.get('targetInterests') as string,
             targetAudience: '', // Kept for schema compatibility, but not used in form
-            startDate: '', // Will be set on approval
+            startDate: '', // Will be set on activation
             spend: 0,
-            status: 'بانتظار المراجعة', // Set to pending review
+            status: 'بانتظار المراجعة',
             impressions: 0, clicks: 0, results: 0, ctr: 0, cpc: 0,
         };
         
@@ -182,8 +182,17 @@ export default function NewCampaignPage() {
             const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
             const docRef = await addDoc(campaignsColRef, campaignData);
             
-            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعتها من قبل الإدارة في أقرب وقت." });
-            setStep(3); // Go to success step
+            // Now, use the server action to activate and deduct balance
+            const activationResult = await activateCampaignAndDeductBalance(authUser.uid, docRef.id);
+
+            if (activationResult.success) {
+                toast({ title: "تم إنشاء وتفعيل حملتك بنجاح!", description: "سيتم الآن البدء في عرض إعلاناتك." });
+                setStep(3); // Go to success step
+            } else {
+                // Handle activation failure
+                toast({ variant: "destructive", title: "فشل تفعيل الحملة", description: activationResult.error || "حدث خطأ أثناء محاولة تفعيل الحملة."});
+            }
+
         } catch (error) {
             const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
             errorEmitter.emit('permission-error', permissionError);
@@ -277,7 +286,7 @@ export default function NewCampaignPage() {
                                 </CardContent>
                                 <CardFooter>
                                     <Button type="submit" disabled={loading} className="w-full">
-                                        {loading ? <Loader2 className="animate-spin" /> : 'إرسال الحملة للمراجعة'}
+                                        {loading ? <Loader2 className="animate-spin" /> : 'إرسال وتفعيل الحملة'}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -292,9 +301,9 @@ export default function NewCampaignPage() {
                                  <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto">
                                      <Rocket className="h-8 w-8" />
                                  </div>
-                                <h2 className="text-2xl font-bold mt-4">تم إرسال حملتك بنجاح!</h2>
+                                <h2 className="text-2xl font-bold mt-4">تم إطلاق حملتك بنجاح!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    سيقوم فريقنا بمراجعتها وتفعيلها في أقرب وقت ممكن. يمكنك متابعة حالتها من صفحة إدارة الحملات.
+                                    حملتك الآن نشطة! يمكنك متابعة أدائها من صفحة إدارة الحملات.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>
