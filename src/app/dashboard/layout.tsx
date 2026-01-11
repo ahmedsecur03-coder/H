@@ -94,10 +94,12 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child) => (
                <SidebarMenuItem key={child.href}>
-                <Link href={child.href || '#'} passHref>
-                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                <Link href={child.href || '#'}>
+                  <SidebarMenuSubButton asChild isActive={pathname === child.href}>
+                    <span>
                       {child.icon && <child.icon className="w-4 h-4" />}
                       <span>{child.label}</span>
+                    </span>
                   </SidebarMenuSubButton>
                 </Link>
               </SidebarMenuItem>
@@ -109,7 +111,7 @@ function NavItems() {
 
     return (
         <SidebarMenuItem key={item.href}>
-            <Link href={item.href || '#'} passHref>
+            <Link href={item.href || '#'}>
                 <SidebarMenuButton isActive={pathname === item.href}>
                     {Icon && <Icon className="h-4 w-4" />}
                     <span>{item.label}</span>
