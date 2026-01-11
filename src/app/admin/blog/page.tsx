@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -7,15 +8,16 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen, Library } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
+import { ImportPostsButton } from './_components/import-posts-button';
 import { AiPostDialog } from './_components/ai-post-dialog';
-import { ImportPostsDialog } from './_components/import-posts-dialog';
+
 
 export default function AdminBlogPage() {
     const firestore = useFirestore();
@@ -126,9 +128,7 @@ export default function AdminBlogPage() {
                             <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك أو استورد مقالات جاهزة.</p>
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                                <ImportPostsDialog onImportComplete={fetchPosts}>
-                                    <Button variant="outline"><Library className="ml-2 h-4 w-4" />مكتبة المقالات</Button>
-                                </ImportPostsDialog>
+                                <ImportPostsButton onImportComplete={fetchPosts} />
                             </div>
                         </div>
                     </TableCell>
@@ -179,9 +179,7 @@ export default function AdminBlogPage() {
                          <AiPostDialog onArticleGenerated={handleArticleGenerated}>
                             <Button variant="outline">توليد بالذكاء الاصطناعي</Button>
                         </AiPostDialog>
-                        <ImportPostsDialog onImportComplete={fetchPosts}>
-                            <Button variant="outline"><Library className="ml-2 h-4 w-4" />مكتبة المقالات</Button>
-                        </ImportPostsDialog>
+                        <ImportPostsButton onImportComplete={fetchPosts} />
                     </div>
                  )}
             </div>

@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
 import { isAiConfigured } from '@/ai/client';
 
 interface AiPostDialogProps {
@@ -34,22 +35,13 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
 
         setIsGenerating(true);
         toast({ title: 'جاري توليد المقالة...', description: 'قد تستغرق العملية بضع لحظات.' });
-        
-        try {
-            // Placeholder for AI generation logic
-            // In a real scenario, you'd call your server action/API here.
-            // const article = await generateBlogPost({ topic });
-            
-            // For now, let's simulate a delay and return a dummy article
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            const article = {
-                title: `مقالة عن: ${topic}`,
-                content: `هذا هو المحتوى الذي تم إنشاؤه بواسطة الذكاء الاصطناعي حول موضوع "${topic}". يمكنك توسيع هذا المحتوى وتعديله حسب الحاجة.`
-            };
 
+        try {
+            const article = await generateBlogPost({ topic });
+            
             onArticleGenerated(article);
-            setOpen(false); 
-            setTopic(''); 
+            setOpen(false); // Close this dialog
+            setTopic(''); // Reset topic
         } catch (error: any) {
             console.error("AI Post Generation Error:", error);
             toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message || 'حدث خطأ أثناء إنشاء المقالة.' });
@@ -94,4 +86,3 @@ export function AiPostDialog({ children, onArticleGenerated }: AiPostDialogProps
         </Dialog>
     );
 }
-
