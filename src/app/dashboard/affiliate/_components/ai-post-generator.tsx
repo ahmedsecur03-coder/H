@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -12,7 +13,6 @@ import { Label } from '@/components/ui/label';
 
 export function AiPostGenerator({ referralLink }: { referralLink: string }) {
     const [generatedPost, setGeneratedPost] = useState('');
-    const [topic, setTopic] = useState('');
 
     const handleGeneratePost = () => {
         // This is a simplified, non-AI version as requested.
@@ -34,15 +34,6 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="topic">موضوع المنشور (اختياري)</Label>
-                    <Input 
-                        id="topic" 
-                        placeholder="مثال: أسرع خدمات SMM"
-                        value={topic}
-                        onChange={(e) => setTopic(e.target.value)}
-                    />
-                </div>
                 <Button onClick={handleGeneratePost} className="w-full">
                     <Wand2 className="ml-2 h-4 w-4" />
                     ولّد لي منشورًا
