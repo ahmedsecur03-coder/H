@@ -10,10 +10,7 @@ import { FloatingActionButtons } from '@/components/floating-action-buttons';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { cn } from '@/lib/utils';
 
-/**
- * This component contains the actual UI logic and will only be rendered
- * after the FirebaseClientProvider has initialized.
- */
+
 function AppContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isAuthPage = pathname.startsWith('/auth');
@@ -22,6 +19,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="flex flex-col min-h-screen">
+            {/* The listener is now guaranteed to be within a valid Firebase context */}
             <FirebaseErrorListener />
             {isPublicPage && <PublicHeader />}
             <main className={cn("flex-1", isPublicPage && "container py-8")}>
@@ -33,10 +31,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
 }
 
-/**
- * The main Providers component. Its role is to set up the context providers
- * in the correct order.
- */
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>

@@ -33,10 +33,12 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     }
   }, []);
 
+  // CRITICAL CHANGE: Do not render children until Firebase services are initialized.
+  // This prevents any child component from trying to access a context that isn't ready.
   if (!services) {
-    // Render a loading state or the children without the provider on the server
-    // and during the initial client-side render before useEffect runs.
-    return <>{children}</>;
+    // You can render a global loader here if desired, but for now, returning null
+    // is the safest way to prevent the error. The layout will still be present.
+    return null;
   }
 
   return (
