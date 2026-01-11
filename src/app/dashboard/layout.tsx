@@ -79,47 +79,49 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
 function NavItems() {
   const pathname = usePathname();
 
-  const renderNavItem = (item: NestedNavItem, idx: number) => {
+  const renderNavItem = (item: NestedNavItem) => {
     const Icon = item.icon;
 
     if (item.children) {
       return (
-        <SidebarMenuItem key={item.label + idx}>
-            <SidebarMenuSub>
-                <SidebarMenuSubTrigger>
-                    <div className='flex items-center gap-2'>
-                    {Icon && <Icon className="h-4 w-4" />}
-                    <span>{item.label}</span>
-                    </div>
-                </SidebarMenuSubTrigger>
-                <SidebarMenuSubContent>
-                    {item.children.map((child, childIdx) => (
-                        <SidebarMenuSubButton key={child.href + childIdx} href={child.href || '#'} isActive={pathname === child.href}>
-                            {child.icon && <child.icon className="w-4 h-4" />}
-                            <span>{child.label}</span>
-                        </SidebarMenuSubButton>
-                    ))}
-                </SidebarMenuSubContent>
-            </SidebarMenuSub>
-        </SidebarMenuItem>
+        <SidebarMenuSub key={item.label}>
+          <SidebarMenuSubTrigger>
+            <div className='flex items-center gap-2'>
+              {Icon && <Icon className="h-4 w-4" />}
+              <span>{item.label}</span>
+            </div>
+          </SidebarMenuSubTrigger>
+          <SidebarMenuSubContent>
+            {item.children.map((child) => (
+               <SidebarMenuItem key={child.href}>
+                <Link href={child.href || '#'} passHref>
+                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                      {child.icon && <child.icon className="w-4 h-4" />}
+                      <span>{child.label}</span>
+                  </SidebarMenuSubButton>
+                </Link>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenuSubContent>
+        </SidebarMenuSub>
       );
     }
 
     return (
-        <SidebarMenuItem key={item.href}>
-            <Link href={item.href || '#'} passHref>
-            <SidebarMenuButton isActive={pathname === item.href}>
-                {Icon && <Icon className="h-4 w-4" />}
-                <span>{item.label}</span>
-            </SidebarMenuButton>
-            </Link>
-      </SidebarMenuItem>
+        <Link href={item.href || '#'} passHref key={item.href}>
+          <SidebarMenuButton isActive={pathname === item.href}>
+            {Icon && <Icon className="h-4 w-4" />}
+            <span>{item.label}</span>
+          </SidebarMenuButton>
+        </Link>
     );
   };
 
   return (
     <>
-      {dashboardNavItems.map((item, idx) => renderNavItem(item, idx))}
+      {dashboardNavItems.map((item) => (
+        <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>
+      ))}
     </>
   );
 }
