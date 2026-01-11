@@ -436,10 +436,11 @@ const SidebarMenuSubContent = ({ ...props }: React.ComponentProps<typeof Collaps
 
 const SidebarMenuSubButton = React.forwardRef<
   HTMLAnchorElement,
-  { isActive?: boolean } & React.ComponentPropsWithoutRef<"a">
->(({ isActive, className, children, ...props }, ref) => {
+  { isActive?: boolean; asChild?: boolean } & React.ComponentPropsWithoutRef<"a">
+>(({ isActive, asChild = false, className, children, ...props }, ref) => {
+  const Comp = asChild ? Slot : "a";
   return (
-    <a
+    <Comp
       ref={ref}
       data-active={isActive}
       className={cn(
@@ -449,7 +450,7 @@ const SidebarMenuSubButton = React.forwardRef<
       {...props}
     >
       {children}
-    </a>
+    </Comp>
   )
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton";

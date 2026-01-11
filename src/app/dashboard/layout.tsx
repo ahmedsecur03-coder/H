@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -93,10 +94,12 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child) => (
                <SidebarMenuItem key={child.href}>
-                <Link href={child.href || '#'} passHref>
-                  <SidebarMenuSubButton isActive={pathname === child.href}>
-                      {child.icon && <child.icon className="w-4 h-4" />}
-                      <span>{child.label}</span>
+                <Link href={child.href || '#'} passHref legacyBehavior>
+                  <SidebarMenuSubButton asChild isActive={pathname === child.href}>
+                      <a>
+                        {child.icon && <child.icon className="w-4 h-4" />}
+                        <span>{child.label}</span>
+                      </a>
                   </SidebarMenuSubButton>
                 </Link>
               </SidebarMenuItem>

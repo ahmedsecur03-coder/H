@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -173,10 +174,14 @@ function AdminNavItems() {
                     <SidebarMenuSubContent>
                         {item.children.map((child) => (
                            <SidebarMenuItem key={child.href}>
-                             <SidebarMenuSubButton href={child.href || '#'} isActive={pathname === child.href}>
-                                {child.icon && <child.icon className="w-5 h-5" />}
-                                <span>{child.label}</span>
-                             </SidebarMenuSubButton>
+                            <Link href={child.href || '#'} passHref legacyBehavior>
+                              <SidebarMenuSubButton asChild isActive={pathname === child.href}>
+                                <a>
+                                 {child.icon && <child.icon className="w-5 h-5" />}
+                                 <span>{child.label}</span>
+                                </a>
+                              </SidebarMenuSubButton>
+                            </Link>
                            </SidebarMenuItem>
                         ))}
                     </SidebarMenuSubContent>
