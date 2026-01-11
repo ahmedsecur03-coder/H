@@ -46,13 +46,16 @@ export default function SignupForm() {
 
       await runTransaction(firestore, async (transaction) => {
         let referrerId: string | null = null;
+        let adBalanceBonus = 0; // Default ad balance bonus
+
         if (referralCode) {
           const usersRef = collection(firestore, 'users');
           const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-          const querySnapshot = await getDocs(q); // Use getDocs, not transaction.get, for initial check
+          const querySnapshot = await getDocs(q); 
           if (!querySnapshot.empty) {
               const referrerDoc = querySnapshot.docs[0];
               referrerId = referrerDoc.id;
+              adBalanceBonus = 5; // Set the $5 bonus if referred
               // Increment referrer's count within the transaction
               transaction.update(referrerDoc.ref, { referralsCount: increment(1) });
           }
@@ -64,7 +67,7 @@ export default function SignupForm() {
           email: newUser.email!,
           avatarUrl: avatarUrl,
           balance: 0,
-          adBalance: 0,
+          adBalance: adBalanceBonus, // Apply the bonus here
           totalSpent: 0,
           rank: 'مستكشف نجمي',
           role: 'user',
@@ -117,7 +120,7 @@ export default function SignupForm() {
             <div className="text-center">
                  <h1 className="text-2xl font-headline font-bold">إنشاء حساب جديد</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                    {referralCode ? `أنت على وشك الانضمام عبر دعوة. أكمل التسجيل!` : 'انضم إلى منصة حاجاتي وابدأ في تنمية أعمالك'}
+                    {referralCode ? `أنت على وشك الانضمام عبر دعوة. أكمل التسجيل واحصل على 5$ رصيد إعلاني مجاني!` : 'انضم إلى منصة حاجاتي وابدأ في تنمية أعمالك'}
                 </p>
             </div>
             <form onSubmit={handleSignup} className="space-y-6">
