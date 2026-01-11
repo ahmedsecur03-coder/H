@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -6,12 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { isAiConfigured } from '@/ai/client';
 import { generateAffiliatePost } from '@/ai/flows/generate-affiliate-post-flow';
 import { AnimatePresence, motion } from 'framer-motion';
+import { CopyButton } from './copy-button';
 
-// Predefined topics for random generation
+// Expanded and more diverse promotional topics
 const PROMOTIONAL_TOPICS = [
     "أسرع خدمات SMM في السوق",
     "طريقة مضمونة لزيادة متابعين انستغرام",
@@ -21,22 +21,27 @@ const PROMOTIONAL_TOPICS = [
     "الوصول إلى آلاف المشاهدات بسهولة",
     "لماذا تعتبر خدماتنا الأفضل لنموك؟",
     "حقق أهدافك على السوشيال ميديا اليوم",
+    "سر الحصول على العلامة الزرقاء",
+    "كيفية إدارة حملات إعلانية ناجحة على جوجل",
+    "أسرار التسويق بالعمولة الناجح",
+    "شحن عملات تيك توك بأفضل الأسعار",
+    "استراتيجيات مضمونة لزيادة متابعين فيسبوك",
+    "احصل على حسابات إعلانية وكالة بدون قيود",
+    "تحليل أداء حملاتك الإعلانية كالمحترفين",
 ];
 
 export function AiPostGenerator({ referralLink }: { referralLink: string }) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedPost, setGeneratedPost] = useState('');
-    const [copied, setCopied] = useState(false);
     const { toast } = useToast();
 
     if (!isAiConfigured()) {
-        return null; // Don't render if AI is not configured
+        return null; 
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Select a random topic
         const randomTopic = PROMOTIONAL_TOPICS[Math.floor(Math.random() * PROMOTIONAL_TOPICS.length)];
 
         setIsGenerating(true);
@@ -52,14 +57,6 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
         } finally {
             setIsGenerating(false);
         }
-    };
-    
-    const handleCopy = () => {
-        if (!generatedPost) return;
-        navigator.clipboard.writeText(generatedPost);
-        setCopied(true);
-        toast({ title: 'تم نسخ المنشور!' });
-        setTimeout(() => setCopied(false), 2000);
     };
 
     return (
@@ -85,16 +82,11 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                                 value={generatedPost}
                                 readOnly
                                 rows={6}
-                                className="pr-12"
+                                className="pe-12"
                             />
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={handleCopy}
-                                className="absolute top-2 left-2 rtl:right-2 rtl:left-auto"
-                            >
-                                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                            </Button>
+                            <div className="absolute top-2 left-2 rtl:right-2 rtl:left-auto">
+                                <CopyButton textToCopy={generatedPost} />
+                            </div>
                         </div>
                     </motion.div>
                 )}

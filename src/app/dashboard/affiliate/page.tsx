@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -32,6 +31,17 @@ import { Twitter, Facebook } from "lucide-react";
 import { CopyButton } from './_components/copy-button';
 import Link from "next/link";
 import { AiPostGenerator } from "./_components/ai-post-generator";
+import { generateAffiliatePost } from "@/ai/flows/generate-affiliate-post-flow";
+
+
+const PROMOTIONAL_TOPICS = [
+    "أسرع خدمات SMM في السوق", "طريقة مضمونة لزيادة متابعين انستغرام", "كيف تصبح مشهوراً على تيك توك",
+    "أفضل أسعار لخدمات التسويق الرقمي", "اجعل حسابك ينمو بسرعة الصاروخ", "الوصول إلى آلاف المشاهدات بسهولة",
+    "لماذا تعتبر خدماتنا الأفضل لنموك؟", "حقق أهدافك على السوشيال ميديا اليوم", "سر الحصول على العلامة الزرقاء",
+    "كيفية إدارة حملات إعلانية ناجحة على جوجل", "أسرار التسويق بالعمولة الناجح", "شحن عملات تيك توك بأفضل الأسعار",
+    "استراتيجيات مضمونة لزيادة متابعين فيسبوك", "احصل على حسابات إعلانية وكالة بدون قيود", "تحليل أداء حملاتك الإعلانية كالمحترفين",
+];
+
 
 // Inlined WithdrawalDialog component
 function WithdrawalDialog({ user, children }: { user: UserType, children: React.ReactNode }) {
@@ -140,13 +150,41 @@ function WithdrawalDialog({ user, children }: { user: UserType, children: React.
 }
 
 function ShareButtons({ referralLink }: { referralLink: string }) {
-    const shareText = encodeURIComponent(`انضم إلى منصة حاجاتي عبر الرابط الخاص بي واحصل على بداية قوية لرحلتك الرقمية!`);
-    const encodedLink = encodeURIComponent(referralLink);
+    const { toast } = useToast();
+    const [isGenerating, setIsGenerating] = useState<string | null>(null);
+
+    const handleShare = async (platform: 'WhatsApp' | 'X' | 'Facebook') => {
+        setIsGenerating(platform);
+        toast({ title: 'جاري إنشاء منشور تسويقي ذكي...' });
+
+        try {
+            const randomTopic = PROMOTIONAL_TOPICS[Math.floor(Math.random() * PROMOTIONAL_TOPICS.length)];
+            const result = await generateAffiliatePost({ topic: randomTopic, referralLink });
+            const postContent = result.postContent;
+            
+            let shareUrl = '';
+            if (platform === 'WhatsApp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
+            } else if (platform === 'X') {
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
+            } else if (platform === 'Facebook') {
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
+            }
+
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+
+        } catch (error: any) {
+             toast({ variant: 'destructive', title: 'فشل التوليد', description: 'حدث خطأ أثناء إنشاء المنشور.' });
+        } finally {
+             setIsGenerating(null);
+        }
+    };
+
 
     const shareTargets = [
-        { name: 'WhatsApp', icon: WhatsAppIcon, url: `https://api.whatsapp.com/send?text=${shareText}%20${encodedLink}` },
-        { name: 'X', icon: Twitter, url: `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedLink}` },
-        { name: 'Facebook', icon: Facebook, url: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}` },
+        { name: 'WhatsApp', icon: WhatsAppIcon, action: () => handleShare('WhatsApp') },
+        { name: 'X', icon: Twitter, action: () => handleShare('X') },
+        { name: 'Facebook', icon: Facebook, action: () => handleShare('Facebook') },
     ];
     
     return (
@@ -158,11 +196,10 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
                 <div className="flex gap-2">
                     {shareTargets.map(target => {
                         const Icon = target.icon;
+                        const isLoading = isGenerating === target.name;
                         return (
-                            <Button key={target.name} size="icon" variant="ghost" asChild>
-                                <a href={target.url} target="_blank" rel="noopener noreferrer">
-                                    <Icon className="h-5 w-5" />
-                                </a>
+                            <Button key={target.name} size="icon" variant="ghost" onClick={target.action} disabled={!!isGenerating}>
+                                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
                             </Button>
                         )
                     })}
@@ -418,7 +455,7 @@ export default function AffiliatePage() {
                     </div>
                 </CardContent>
                  <CardFooter className="flex-col items-stretch border-t p-4">
-                    <h3 className="text-sm font-semibold mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold mb-4 flex items-center justify-between">
                         <span className="flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" />مولّد المنشورات بالذكاء الاصطناعي</span>
                     </h3>
                     <AiPostGenerator referralLink={referralLink} />
