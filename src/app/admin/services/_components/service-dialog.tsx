@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -27,7 +26,7 @@ export function ServiceDialog({ service, onSave, children, onOpenChange, open }:
         try {
             await onSave({ price: parseFloat(String(price)) || 0 });
         } finally {
-            // The parent component is responsible for closing the dialog and resetting isSaving
+            setIsSaving(false);
         }
     };
     

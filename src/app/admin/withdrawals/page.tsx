@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -163,11 +162,9 @@ export default function AdminWithdrawalsPage() {
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                // 1. Read all documents first
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) throw new Error('المستخدم غير موجود.');
                 
-                // 2. Perform all writes
                 transaction.update(withdrawalDocRef, { status: newStatus });
 
                 if (newStatus === 'مقبول') {
@@ -177,7 +174,6 @@ export default function AdminWithdrawalsPage() {
                     }
                     transaction.update(userRef, { affiliateEarnings: increment(-amount) });
                 }
-                // No action needed for 'مرفوض' besides updating status
             });
             toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.` });
             await fetchAllData();

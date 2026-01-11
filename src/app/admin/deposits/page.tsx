@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -185,7 +184,6 @@ export default function AdminDepositsPage() {
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                // 1. Read all necessary documents first.
                 const userDoc = await transaction.get(userRef);
                 if (!userDoc.exists()) throw new Error('المستخدم صاحب الإيداع غير موجود.');
 
@@ -204,7 +202,6 @@ export default function AdminDepositsPage() {
                     }
                 }
 
-                // 2. Now, perform all write operations.
                 transaction.update(depositDocRef, { status: newStatus });
 
                 if (newStatus === 'مقبول') {
@@ -218,7 +215,6 @@ export default function AdminDepositsPage() {
                         notifications: arrayUnion(notification)
                     });
 
-                    // Handle Affiliate Commissions
                     for (let level = 0; level < referrerDocs.length; level++) {
                         const commissionRate = COMMISSION_RATES[level];
                         const commissionAmount = amount * commissionRate;
@@ -242,7 +238,7 @@ export default function AdminDepositsPage() {
             });
 
             toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب الإيداع بنجاح.` });
-            await fetchAllData();
+            await fetchAllData(); // Re-fetch data on success
 
         } catch (error: any) {
             const isPermissionError = error.code === 'permission-denied';
