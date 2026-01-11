@@ -140,13 +140,41 @@ function WithdrawalDialog({ user, children }: { user: UserType, children: React.
 }
 
 function ShareButtons({ referralLink }: { referralLink: string }) {
-    const shareText = encodeURIComponent(`انضم إلى منصة حاجاتي عبر الرابط الخاص بي واحصل على بداية قوية لرحلتك الرقمية!`);
-    const encodedLink = encodeURIComponent(referralLink);
+    const { toast } = useToast();
+
+    const handleFacebookShare = () => {
+        const randomPostData = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
+        const postWithLink = randomPostData.text.replace('{{referralLink}}', referralLink);
+        
+        navigator.clipboard.writeText(postWithLink);
+        toast({
+            title: 'تم نسخ منشور تسويقي!',
+            description: 'الصق المنشور في فيسبوك وشاركه مع أصدقائك.',
+        });
+
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
+        window.open(url, '_blank');
+    };
+
+    const handleGenericShare = (platform: 'twitter' | 'whatsapp') => {
+        const randomPostData = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
+        const text = randomPostData.text.replace('{{referralLink}}', referralLink);
+        const encodedText = encodeURIComponent(text);
+        
+        let url = '';
+        if (platform === 'twitter') {
+            url = `https://twitter.com/intent/tweet?text=${encodedText}`;
+        } else {
+            url = `https://api.whatsapp.com/send?text=${encodedText}`;
+        }
+        window.open(url, '_blank');
+    };
+
 
     const shareTargets = [
-        { name: 'WhatsApp', icon: WhatsAppIcon, url: `https://api.whatsapp.com/send?text=${shareText}%20${encodedLink}` },
-        { name: 'X', icon: Twitter, url: `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedLink}` },
-        { name: 'Facebook', icon: Facebook, url: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}` },
+        { name: 'WhatsApp', icon: WhatsAppIcon, action: () => handleGenericShare('whatsapp') },
+        { name: 'X', icon: Twitter, action: () => handleGenericShare('twitter') },
+        { name: 'Facebook', icon: Facebook, action: handleFacebookShare },
     ];
     
     return (
@@ -159,10 +187,8 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
                     {shareTargets.map(target => {
                         const Icon = target.icon;
                         return (
-                             <Button key={target.name} size="icon" variant="ghost" asChild>
-                                <a href={target.url} target="_blank" rel="noopener noreferrer">
-                                    <Icon className="h-5 w-5" />
-                                </a>
+                             <Button key={target.name} size="icon" variant="ghost" onClick={target.action}>
+                                <Icon className="h-5 w-5" />
                             </Button>
                         )
                     })}
@@ -400,32 +426,29 @@ export default function AffiliatePage() {
             </Card>
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div className="lg:col-span-1 space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>أدوات التسويق</CardTitle>
-                        <CardDescription>استخدم هذه الروابط والأدوات لدعوة مستخدمين جدد.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="referral-link" className="text-xs text-muted-foreground">رابط الإحالة المباشر</Label>
-                            <div className="flex items-center gap-2">
-                                <Input id="referral-link" readOnly value={referralLink} placeholder="جاري تحميل الرابط..." className="text-left" dir="ltr" />
-                                <CopyButton textToCopy={referralLink} />
-                                <ShareButtons referralLink={referralLink} />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                 <AiPostGenerator referralLink={referralLink} />
-            </div>
-            <div className="lg:col-span-2">
-                <NetworkTree userData={userData} />
-            </div>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>أدوات التسويق</CardTitle>
+                <CardDescription>استخدم هذه الروابط والأدوات لدعوة مستخدمين جدد.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="referral-link" className="text-xs text-muted-foreground">رابط الإحالة المباشر الخاص بك</Label>
+                    <div className="flex items-center gap-2">
+                        <Input id="referral-link" readOnly value={referralLink} placeholder="جاري تحميل الرابط..." className="text-left" dir="ltr" />
+                        <CopyButton textToCopy={referralLink} />
+                        <ShareButtons referralLink={referralLink} />
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
 
-        {authUser && <TransactionHistoryTable userId={authUser.uid} />}
+        <AiPostGenerator referralLink={referralLink} />
+
+        <div className="grid gap-6 md:grid-cols-2">
+            <NetworkTree userData={userData} />
+             {authUser && <TransactionHistoryTable userId={authUser.uid} />}
+        </div>
     </div>
   );
 }

@@ -16,8 +16,6 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
     const [generatedImage, setGeneratedImage] = useState<{ url: string, hint: string } | null>(null);
 
     const handleGeneratePost = () => {
-        // This is a simplified, non-AI version as requested.
-        // It picks a random post from the predefined list.
         const randomPostData = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
         const postWithLink = randomPostData.text.replace('{{referralLink}}', referralLink);
         setGeneratedPost(postWithLink);
@@ -33,25 +31,25 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Wand2 className="text-primary" />
+                <CardTitle className="flex items-center gap-2 font-headline text-2xl">
+                    <Wand2 className="text-primary h-6 w-6" />
                     مولّد المنشورات التسويقية
                 </CardTitle>
                 <CardDescription>
-                    اضغط على الزر لتوليد منشور تسويقي مع صورة جاهزة للنسخ والتحميل.
+                    بضغطة زر، احصل على منشور تسويقي احترافي مع صورة جاهزة للنسخ والتحميل للترويج لرابط الإحالة الخاص بك.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <Button onClick={handleGeneratePost} className="w-full">
-                    <Wand2 className="ml-2 h-4 w-4" />
-                    ولّد لي منشورًا مع صورة
+            <CardContent className="space-y-6">
+                <Button onClick={handleGeneratePost} className="w-full text-base py-6">
+                    <Wand2 className="ml-2 h-5 w-5" />
+                    ولّد لي منشورًا جديدًا
                 </Button>
                 {generatedPost && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
                         {generatedImage && (
                             <div className="space-y-2">
-                                <Label>الصورة المقترحة:</Label>
-                                <div className="relative aspect-video md:aspect-square">
+                                <Label className="text-base">الصورة المقترحة:</Label>
+                                <div className="relative aspect-square">
                                     <Image 
                                         src={generatedImage.url} 
                                         alt={generatedImage.hint} 
@@ -67,14 +65,13 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                                 </div>
                             </div>
                         )}
-                        <div className="space-y-2">
-                             <Label>المنشور المقترح:</Label>
-                            <div className="relative">
+                        <div className="space-y-2 flex flex-col">
+                             <Label className="text-base">المنشور المقترح:</Label>
+                            <div className="relative flex-grow">
                                 <Textarea
                                     readOnly
                                     value={generatedPost}
-                                    className="min-h-[220px] md:min-h-full"
-                                    rows={10}
+                                    className="min-h-[220px] h-full resize-none"
                                 />
                                 <div className="absolute top-2 left-2 rtl:left-auto rtl:right-2">
                                     <CopyButton textToCopy={generatedPost} />
