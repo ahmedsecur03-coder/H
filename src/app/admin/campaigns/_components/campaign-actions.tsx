@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -17,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, deleteDoc, runTransaction, increment } from 'firebase/firestore';
+import { doc, deleteDoc, runTransaction, increment, updateDoc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 
 export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; onUpdate: () => void }) {
@@ -32,53 +33,39 @@ export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; on
         const { userId, id: campaignId } = campaign;
         const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, campaignId);
 
-        if (action === 'delete') {
-            try {
-                await deleteDoc(campaignDocRef);
-                toast({ title: 'نجاح', description: 'تم حذف الحملة بنجاح.' });
-                onUpdate();
-            } catch (error) {
-                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'delete' });
-                errorEmitter.emit('permission-error', permissionError);
-            } finally {
-                setLoading(false);
-            }
-            return;
-        }
-
-        const userDocRef = doc(firestore, 'users', userId);
         try {
-            await runTransaction(firestore, async (transaction) => {
-                // 1. Read all documents first
-                const userDoc = await transaction.get(userDocRef);
-                const campaignDoc = await transaction.get(campaignDocRef);
-
-                if (!userDoc.exists() || !campaignDoc.exists()) throw new Error("المستخدم أو الحملة غير موجود.");
-
-                const userData = userDoc.data() as User;
-                const campaignData = campaignDoc.data() as Campaign;
-                
-                // 2. Perform all writes
-                if (action === 'activate') {
-                    if (campaignData.status !== 'متوقف' && campaignData.status !== 'بانتظار المراجعة') throw new Error("يمكن فقط تفعيل الحملات المتوقفة أو التي بانتظار المراجعة.");
-                    if (userData.adBalance < campaignData.budget) throw new Error("رصيد إعلانات المستخدم غير كافٍ.");
-                    transaction.update(userDocRef, { adBalance: increment(-campaignData.budget) });
-                    transaction.update(campaignDocRef, { status: 'نشط', startDate: new Date().toISOString() });
-                } else if (action === 'pause') {
-                    if (campaignData.status !== 'نشط') throw new Error("يمكن فقط إيقاف الحملات النشطة.");
-                    const remainingBudget = campaignData.budget - (campaignData.spend || 0);
-                    if (remainingBudget > 0) {
-                        transaction.update(userDocRef, { adBalance: increment(remainingBudget) });
+             if (action === 'delete') {
+                // For delete, we first check if we need to refund any budget
+                const userDocRef = doc(firestore, 'users', userId);
+                await runTransaction(firestore, async (transaction) => {
+                    const campaignDoc = await transaction.get(campaignDocRef);
+                    if (!campaignDoc.exists()) return; // Already deleted
+                    
+                    const campaignData = campaignDoc.data() as Campaign;
+                    
+                    // Only refund if the campaign is not completed.
+                    if (campaignData.status !== 'مكتمل') {
+                        const remainingBudget = campaignData.budget - (campaignData.spend || 0);
+                        if (remainingBudget > 0) {
+                            transaction.update(userDocRef, { adBalance: increment(remainingBudget) });
+                        }
                     }
-                    transaction.update(campaignDocRef, { status: 'متوقف' });
-                }
-            });
-            toast({ title: 'نجاح', description: `تم ${action === 'activate' ? 'تفعيل' : 'إيقاف'} الحملة بنجاح.` });
+                    transaction.delete(campaignDocRef);
+                });
+                toast({ title: 'نجاح', description: 'تم حذف الحملة بنجاح.' });
+
+            } else if (action === 'activate') {
+                await updateDoc(campaignDocRef, { status: 'نشط', startDate: new Date().toISOString() });
+                toast({ title: 'نجاح', description: 'تم تفعيل الحملة بنجاح.' });
+            } else if (action === 'pause') {
+                await updateDoc(campaignDocRef, { status: 'متوقف' });
+                toast({ title: 'نجاح', description: 'تم إيقاف الحملة بنجاح.' });
+            }
             onUpdate();
         } catch (error: any) {
             const isPermissionError = error.code === 'permission-denied';
              if (isPermissionError) {
-                const permissionError = new FirestorePermissionError({ path: userDocRef.path, operation: 'update' });
+                const permissionError = new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update' });
                 errorEmitter.emit('permission-error', permissionError);
             } else {
                 console.error("Campaign Action Error:", error);
@@ -115,7 +102,7 @@ export function CampaignActions({ campaign, onUpdate }: { campaign: Campaign; on
                     <AlertDialogHeader>
                         <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
                         <AlertDialogDescription>
-                            هذا الإجراء سيحذف الحملة بشكل نهائي. لا يمكن التراجع عن هذا الأمر.
+                            سيتم حذف الحملة بشكل نهائي وإعادة أي ميزانية غير منفقة إلى رصيد إعلانات المستخدم. لا يمكن التراجع عن هذا الأمر.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

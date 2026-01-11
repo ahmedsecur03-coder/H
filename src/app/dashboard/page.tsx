@@ -57,62 +57,6 @@ import { cn } from '@/lib/utils';
 import { DailyRewardCard } from './_components/daily-reward-card';
 
 
-function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
-    if (campaign.status !== 'نشط' || !campaign.startDate) {
-        return {};
-    }
-
-    const { startDate, durationDays, budget } = campaign;
-    const now = Date.now();
-    const startTime = new Date(startDate).getTime();
-    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
-    const endTime = startTime + totalDurationMillis;
-
-    const elapsedMillis = Math.max(0, now - startTime);
-    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
-    
-    if (progress >= 1) {
-        const finalSpend = budget; 
-        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 20));
-        const finalClicks = (campaign.clicks || 0) + Math.floor(Math.random() * (budget * 2));
-        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
-        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
-
-        return { 
-            status: 'مكتمل', 
-            spend: finalSpend,
-            impressions: finalImpressions,
-            clicks: finalClicks,
-            ctr: finalCtr,
-            cpc: finalCpc,
-            results: Math.floor(finalClicks * 0.2),
-        };
-    }
-
-    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
-
-    if (simulatedSpend <= (campaign.spend || 0)) {
-        return {}; // No new spend to report
-    }
-
-    const spendIncrement = simulatedSpend - (campaign.spend || 0);
-    const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
-    const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
-    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-    const cpc = clicks > 0 ? simulatedSpend / clicks : 0;
-    const results = (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2);
-
-    return {
-        spend: simulatedSpend,
-        impressions,
-        clicks,
-        ctr,
-        cpc,
-        results,
-    };
-};
-
-
 function DashboardSkeleton() {
     return (
         <div className="space-y-6">
@@ -166,28 +110,6 @@ export default function DashboardPage() {
     const agencyAccountsQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/agencyAccounts`)) : null, [authUser, firestore]);
     const { data: agencyAccounts, isLoading: areAgencyAccountsLoading } = useCollection<AgencyAccount>(agencyAccountsQuery);
 
-    const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
-
-    useEffect(() => {
-        if (allCampaigns) {
-            setLiveCampaigns(allCampaigns);
-        }
-    }, [allCampaigns]);
-
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setLiveCampaigns(currentCampaigns => {
-                 return currentCampaigns.map(c => {
-                    const performanceUpdate = calculateCampaignPerformance(c);
-                    return { ...c, ...performanceUpdate };
-                });
-            });
-        }, 3600000); // Update every hour
-
-        return () => clearInterval(interval);
-    }, []);
-
 
     const isLoading = isUserLoading || isUserDataLoading || areOrdersLoading || areCampaignsLoading || areAgencyAccountsLoading;
     
@@ -217,8 +139,8 @@ export default function DashboardPage() {
         }
         
         let activeCampaignsCount = 0;
-        if (liveCampaigns) {
-            liveCampaigns.forEach(campaign => {
+        if (allCampaigns) {
+            allCampaigns.forEach(campaign => {
                  const campaignStartDate = campaign.startDate?.split('T')[0];
                  if (campaign.spend && campaignStartDate && performanceDataMap.has(campaignStartDate)) {
                      performanceDataMap.get(campaignStartDate)!.campaigns += campaign.spend;
@@ -249,7 +171,7 @@ export default function DashboardPage() {
             }
         };
 
-    }, [allOrders, liveCampaigns, userData, agencyAccounts]);
+    }, [allOrders, allCampaigns, userData, agencyAccounts]);
 
 
     if (isLoading || !userData || !authUser) {

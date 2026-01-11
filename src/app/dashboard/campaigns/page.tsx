@@ -6,7 +6,7 @@ import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase, errorEmi
 import { collection, query, orderBy, doc, updateDoc, runTransaction, increment } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Rocket, Clock, Briefcase, TrendingUp, DollarSign, PauseCircle, MoreHorizontal, FileText, Wallet, Zap } from "lucide-react";
+import { PlusCircle, Rocket, Briefcase, TrendingUp, DollarSign, PauseCircle, MoreHorizontal, FileText, Wallet, Zap } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Campaign, User as UserType } from '@/lib/types';
@@ -36,63 +36,6 @@ import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
 
 
-// This function simulates campaign performance on the client-side for visual feedback.
-function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
-    const { startDate, durationDays, budget, status } = campaign;
-
-    // Don't simulate for campaigns that aren't active or haven't started.
-    if (status !== 'نشط' || !startDate) {
-        return {};
-    }
-
-    const now = Date.now();
-    const startTime = new Date(startDate).getTime();
-    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
-    const endTime = startTime + totalDurationMillis;
-
-    const elapsedMillis = Math.max(0, now - startTime);
-    const progress = Math.min(elapsedMillis / totalDurationMillis, 1);
-    
-    // If progress is 100%, the campaign is complete. Generate final stats.
-    if (progress >= 1) {
-        const finalSpend = budget;
-        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 50) + (budget * 10)); // Ensure some base impressions
-        const finalClicks = (campaign.clicks || 0) + Math.floor(finalImpressions * (Math.random() * 0.05 + 0.01));
-        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
-        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
-        const finalResults = Math.floor(finalClicks * (Math.random() * 0.3 + 0.1));
-
-        return { 
-            status: 'مكتمل', 
-            spend: finalSpend,
-            impressions: finalImpressions,
-            clicks: finalClicks,
-            ctr: finalCtr,
-            cpc: finalCpc,
-            results: finalResults,
-        };
-    }
-    
-    // If still active, simulate incremental performance
-    const simulatedSpend = Math.min(budget * progress * (1 + (Math.random() - 0.5) * 0.1), budget);
-    const spendIncrement = simulatedSpend - (campaign.spend || 0);
-
-    if (spendIncrement > 0) {
-        const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
-        const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
-        return {
-            spend: simulatedSpend,
-            impressions,
-            clicks,
-            ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
-            cpc: clicks > 0 ? simulatedSpend / clicks : 0,
-            results: (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2),
-        };
-    }
-
-    return {};
-};
-
 function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -108,29 +51,20 @@ function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Ca
 
         try {
             await runTransaction(firestore, async (transaction) => {
-                // 1. Read all documents first
-                const userDoc = await transaction.get(userDocRef);
                 const campaignDoc = await transaction.get(campaignDocRef);
-
-                if (!userDoc.exists()) throw new Error("المستخدم غير موجود.");
                 if (!campaignDoc.exists()) throw new Error("الحملة غير موجودة.");
                 
                 const currentCampaignData = campaignDoc.data() as Campaign;
                 if (currentCampaignData.status !== 'نشط') throw new Error("لا يمكن إيقاف إلا الحملات النشطة.");
 
-                // 2. Perform all writes
-                const finalPerformance = calculateCampaignPerformance(currentCampaignData);
-                const finalSpend = (finalPerformance as any).spend ?? currentCampaignData.spend;
-                const remainingBudget = currentCampaignData.budget - (finalSpend || 0);
+                const remainingBudget = currentCampaignData.budget - (currentCampaignData.spend || 0);
 
                 if (remainingBudget > 0) {
                     transaction.update(userDocRef, { adBalance: increment(remainingBudget) });
                 }
 
                 transaction.update(campaignDocRef, { 
-                    ...finalPerformance,
                     status: 'متوقف',
-                    spend: finalSpend,
                 });
             });
 
@@ -268,7 +202,7 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: rawCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
     
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -276,40 +210,10 @@ export default function CampaignsPage() {
     );
     const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
-    const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
-
-    useEffect(() => {
-        if (rawCampaigns) {
-            setLiveCampaigns(rawCampaigns);
-        }
-    }, [rawCampaigns]);
-
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setLiveCampaigns(currentCampaigns => {
-                let hasChanged = false;
-                const updatedCampaigns = currentCampaigns.map(c => {
-                    if (c.status === 'نشط') {
-                         const performanceUpdate = calculateCampaignPerformance(c);
-                         if (Object.keys(performanceUpdate).length > 0) {
-                            hasChanged = true;
-                            return { ...c, ...performanceUpdate };
-                         }
-                    }
-                    return c;
-                });
-                return hasChanged ? updatedCampaigns : currentCampaigns;
-            });
-        }, 5000); // Update visuals every 5 seconds
-
-        return () => clearInterval(interval);
-    }, []);
-
-
-    const campaigns = useMemo(() => {
-        return [...liveCampaigns].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
-    }, [liveCampaigns]);
+    const sortedCampaigns = useMemo(() => {
+        if (!campaigns) return [];
+        return [...campaigns].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+    }, [campaigns]);
 
 
     const stats = useMemo(() => {
@@ -400,11 +304,11 @@ export default function CampaignsPage() {
                 <CardDescription>عرض لجميع حملاتك الإعلانية وحالاتها.</CardDescription>
             </CardHeader>
             <CardContent>
-                {campaigns && campaigns.length > 0 ? (
+                {sortedCampaigns && sortedCampaigns.length > 0 ? (
                     <>
                         {/* Mobile View */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
-                            {campaigns.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} onUpdate={forceCollectionUpdate} />)}
+                            {sortedCampaigns.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} onUpdate={forceCollectionUpdate} />)}
                         </div>
 
                         {/* Desktop View */}
@@ -419,7 +323,7 @@ export default function CampaignsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {campaigns.map((campaign) => {
+                                    {sortedCampaigns.map((campaign) => {
                                         const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
                                         return (
                                         <TableRow key={campaign.id}>
