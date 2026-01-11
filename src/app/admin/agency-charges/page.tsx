@@ -12,6 +12,7 @@ import {
   increment,
   arrayUnion,
   getDoc,
+  where,
 } from 'firebase/firestore';
 import type { AgencyChargeRequest, User, Notification, AgencyAccount } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';

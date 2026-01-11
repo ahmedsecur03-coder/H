@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -36,23 +37,21 @@ export function OrderActions({ order, onOrderUpdate }: { order: Order; onOrderUp
             status: status,
         };
 
-        updateDoc(orderDocRef, updateData)
-            .then(() => {
-                toast({ title: 'نجاح', description: 'تم تحديث حالة الطلب.' });
-                onOrderUpdate();
-                setOpen(false);
-            })
-            .catch((error) => {
-                const permissionError = new FirestorePermissionError({
-                    path: orderDocRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-            })
-            .finally(() => {
-                 setIsSaving(false);
+        try {
+            await updateDoc(orderDocRef, updateData);
+            toast({ title: 'نجاح', description: 'تم تحديث حالة الطلب.' });
+            onOrderUpdate();
+            setOpen(false);
+        } catch (error) {
+            const permissionError = new FirestorePermissionError({
+                path: orderDocRef.path,
+                operation: 'update',
+                requestResourceData: updateData,
             });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+             setIsSaving(false);
+        }
     };
     
     return (
