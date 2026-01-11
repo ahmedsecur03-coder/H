@@ -3,23 +3,11 @@
  * @fileOverview An AI flow for generating blog posts.
  *
  * - generateBlogPost - A function that handles the blog post generation process.
- * - GenerateBlogPostInput - The input type for the generateBlogPost function.
- * - GenerateBlogPostOutput - The return type for the generateBlogPost function.
  */
 
 import { ai } from '@/ai/ai';
-import { z } from 'genkit';
+import { GenerateBlogPostInputSchema, GenerateBlogPostOutputSchema, type GenerateBlogPostInput, type GenerateBlogPostOutput } from './schemas';
 
-export const GenerateBlogPostInputSchema = z.object({
-  topic: z.string().describe('The topic for the blog post.'),
-});
-export type GenerateBlogPostInput = z.infer<typeof GenerateBlogPostInputSchema>;
-
-export const GenerateBlogPostOutputSchema = z.object({
-  title: z.string().describe('The generated title of the blog post.'),
-  content: z.string().describe('The generated content of the blog post in Markdown format.'),
-});
-export type GenerateBlogPostOutput = z.infer<typeof GenerateBlogPostOutputSchema>;
 
 const prompt = ai.definePrompt(
   {
@@ -42,7 +30,7 @@ The blog post should be:
   },
 );
 
-export const generateBlogPostFlow = ai.defineFlow(
+const generateBlogPostFlow = ai.defineFlow(
   {
     name: 'generateBlogPostFlow',
     inputSchema: GenerateBlogPostInputSchema,

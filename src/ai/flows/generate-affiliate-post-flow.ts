@@ -3,23 +3,10 @@
  * @fileOverview An AI flow for generating affiliate marketing posts.
  *
  * - generateAffiliatePost - A function that handles the affiliate post generation process.
- * - GenerateAffiliatePostInput - The input type for the generateAffiliatePost function.
- * - GenerateAffiliatePostOutput - The return type for the generateAffiliatePost function.
  */
 
 import { ai } from '@/ai/ai';
-import { z } from 'genkit';
-
-export const GenerateAffiliatePostInputSchema = z.object({
-  topic: z.string().describe('The topic or idea for the social media post.'),
-  referralLink: z.string().url().describe('The affiliate referral link to include in the post.'),
-});
-export type GenerateAffiliatePostInput = z.infer<typeof GenerateAffiliatePostInputSchema>;
-
-export const GenerateAffiliatePostOutputSchema = z.object({
-  postContent: z.string().describe('The generated social media post content in Arabic, including the referral link and relevant hashtags.'),
-});
-export type GenerateAffiliatePostOutput = z.infer<typeof GenerateAffiliatePostOutputSchema>;
+import { GenerateAffiliatePostInputSchema, GenerateAffiliatePostOutputSchema, type GenerateAffiliatePostInput, type GenerateAffiliatePostOutput } from './schemas';
 
 const prompt = ai.definePrompt(
   {
@@ -45,7 +32,7 @@ Example Output:
   },
 );
 
-export const generateAffiliatePostFlow = ai.defineFlow(
+const generateAffiliatePostFlow = ai.defineFlow(
   {
     name: 'generateAffiliatePostFlow',
     inputSchema: GenerateAffiliatePostInputSchema,
