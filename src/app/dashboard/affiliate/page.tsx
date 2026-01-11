@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -153,12 +152,17 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
             const postContent = getSimulatedPost();
             let shareUrl = '';
 
-            if (platform === 'WhatsApp') {
+            if (platform === 'Facebook') {
+                navigator.clipboard.writeText(postContent);
+                toast({
+                    title: "تم نسخ المنشور!",
+                    description: "المنشور جاهز، قم بلصقه الآن في نافذة المشاركة على فيسبوك."
+                });
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
+            } else if (platform === 'WhatsApp') {
                 shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
             } else if (platform === 'X') {
                 shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
-            } else if (platform === 'Facebook') {
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
             }
 
             window.open(shareUrl, '_blank', 'noopener,noreferrer');
