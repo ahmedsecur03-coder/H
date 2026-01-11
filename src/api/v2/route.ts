@@ -82,15 +82,17 @@ export async function POST(request: NextRequest) {
         }
 
         // --- Action-specific validation and logic ---
-        const logData = {
-            event: 'api_request',
-            level: 'info' as const,
-            message: `API action '${action}' called by user ${user.id}`,
-            timestamp: new Date().toISOString(),
-            metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
-        };
-        const logsCollection = collection(firestore, 'systemLogs');
-        await addDoc(logsCollection, logData);
+        if(user.role !== 'admin') {
+            const logData = {
+                event: 'api_request',
+                level: 'info' as const,
+                message: `API action '${action}' called by user ${user.id}`,
+                timestamp: new Date().toISOString(),
+                metadata: { userId: user.id, action, params: action === 'add' ? {service: params.service, quantity: params.quantity} : params },
+            };
+            const logsCollection = collection(firestore, 'systemLogs');
+            await addDoc(logsCollection, logData);
+        }
 
 
         switch (action) {
@@ -220,3 +222,5 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message || 'An internal server error occurred.' }, { status: 500 });
     }
 }
+
+    
