@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -33,47 +34,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
-
-// --- Re-introduced Simulation Logic ---
-function calculateCampaignPerformance(campaign: Campaign): Campaign {
-  if (campaign.status !== 'نشط' || !campaign.startDate) {
-    return campaign;
-  }
-
-  const now = new Date();
-  const startTime = new Date(campaign.startDate);
-  const elapsedTimeHours = (now.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-
-  // If campaign has finished its duration
-  if (elapsedTimeHours / 24 >= campaign.durationDays) {
-    return {
-      ...campaign,
-      status: 'مكتمل',
-      spend: campaign.budget,
-    };
-  }
-
-  const spendRatePerHour = campaign.budget / (campaign.durationDays * 24);
-  const currentSpend = Math.min(campaign.budget, elapsedTimeHours * spendRatePerHour);
-
-  // Simulate metrics based on spend
-  const impressions = Math.floor(currentSpend * (Math.random() * (1500 - 800) + 800));
-  const clicks = Math.floor(impressions * (Math.random() * (0.02 - 0.005) + 0.005));
-  const ctr = (clicks / impressions) * 100 || 0;
-  const cpc = currentSpend / clicks || 0;
-  const results = Math.floor(clicks * (Math.random() * (0.1 - 0.02) + 0.02));
-
-  return {
-    ...campaign,
-    spend: currentSpend,
-    impressions,
-    clicks,
-    ctr,
-    cpc,
-    results,
-  };
-}
-// --- End Simulation Logic ---
 
 
 function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
@@ -238,33 +198,11 @@ export default function CampaignsPage() {
     const { user: authUser, isUserLoading } = useUser();
     const firestore = useFirestore();
 
-    // The original query to get the base data from Firestore
     const campaignsQuery = useMemoFirebase(
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: initialCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
-    
-    // State to hold the simulated, live-updating campaign data
-    const [liveCampaigns, setLiveCampaigns] = useState<Campaign[] | null>(null);
-
-    useEffect(() => {
-        if (!initialCampaigns) {
-            setLiveCampaigns(null);
-            return;
-        }
-
-        // Initialize live data with the fetched data
-        setLiveCampaigns(initialCampaigns);
-
-        const interval = setInterval(() => {
-            setLiveCampaigns(prevCampaigns => 
-                prevCampaigns?.map(campaign => calculateCampaignPerformance(campaign)) || null
-            );
-        }, 2000); // Update every 2 seconds
-
-        return () => clearInterval(interval);
-    }, [initialCampaigns]);
+    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
 
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -273,19 +211,19 @@ export default function CampaignsPage() {
     const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
 
     const sortedCampaigns = useMemo(() => {
-        if (!liveCampaigns) return [];
-        return [...liveCampaigns].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
-    }, [liveCampaigns]);
+        if (!campaigns) return [];
+        return [...campaigns].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+    }, [campaigns]);
 
 
     const stats = useMemo(() => {
-        if (!liveCampaigns) return { active: 0, totalSpend: 0 };
-        return liveCampaigns.reduce((acc, c) => {
+        if (!campaigns) return { active: 0, totalSpend: 0 };
+        return campaigns.reduce((acc, c) => {
             if (c.status === 'نشط') acc.active++;
             acc.totalSpend += c.spend || 0;
             return acc;
         }, { active: 0, totalSpend: 0 });
-    }, [liveCampaigns]);
+    }, [campaigns]);
 
     const isLoading = isUserLoading || campaignsLoading || userLoading;
     
