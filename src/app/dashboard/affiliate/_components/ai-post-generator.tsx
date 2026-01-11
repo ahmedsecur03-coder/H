@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -11,10 +10,12 @@ import { recommendedAffiliatePosts } from './recommended-affiliate-posts';
 import { Label } from '@/components/ui/label';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
 export function AiPostGenerator({ referralLink }: { referralLink: string }) {
     const [generatedPost, setGeneratedPost] = useState('');
     const [generatedImageId, setGeneratedImageId] = useState('');
+    const { toast } = useToast();
 
     const handleGeneratePost = () => {
         const randomIndex = Math.floor(Math.random() * recommendedAffiliatePosts.length);
@@ -29,28 +30,37 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
         return PlaceHolderImages.find(img => img.id === generatedImageId);
     }, [generatedImageId]);
 
-    const handleDownloadImage = () => {
+    const handleDownloadImage = async () => {
         if (!selectedImage) return;
-        // Using a proxy to bypass CORS issues when downloading from a different origin
-        fetch('/api/image-proxy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl: selectedImage.imageUrl })
-        })
-        .then(res => res.json())
-        .then(({ dataUri, error }) => {
-            if (error) {
-                console.error("Failed to download image:", error);
-                return;
-            }
+        try {
+            // Fetch the image directly
+            const response = await fetch(selectedImage.imageUrl);
+            const blob = await response.blob();
+            
+            // Create a temporary URL for the blob
+            const url = window.URL.createObjectURL(blob);
+            
+            // Create a link element and trigger download
             const link = document.createElement('a');
-            link.href = dataUri;
-            link.download = `${selectedImage.imageHint.replace(' ', '-')}.png`;
+            link.href = url;
+            link.download = `${selectedImage.imageHint.replace(/ /g, '-')}.png`;
             document.body.appendChild(link);
             link.click();
+            
+            // Clean up by removing the link and revoking the URL
             document.body.removeChild(link);
-        });
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            console.error("Failed to download image:", error);
+            toast({
+                variant: 'destructive',
+                title: 'فشل تحميل الصورة',
+                description: 'حدث خطأ أثناء محاولة تحميل الصورة. قد يكون بسبب قيود المتصفح.',
+            });
+        }
     };
+
 
     return (
         <Card className="w-full">
@@ -70,7 +80,7 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                 </Button>
                 
                 {generatedPost && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
                         {/* Image Column */}
                         <div className="space-y-2">
                              <Label className="text-base">الصورة المقترحة:</Label>
@@ -97,7 +107,7 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
                                 <Textarea
                                     readOnly
                                     value={generatedPost}
-                                    className="min-h-[200px] resize-none"
+                                    className="h-full min-h-[200px] resize-none"
                                 />
                                 <div className="absolute top-2 left-2 rtl:left-auto rtl:right-2">
                                     <CopyButton textToCopy={generatedPost} />
