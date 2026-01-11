@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -413,18 +414,6 @@ export default function AffiliatePage() {
                             <Input id="referral-link" readOnly value={referralLink} placeholder="جاري تحميل الرابط..." className="text-left" dir="ltr" />
                             <CopyButton textToCopy={referralLink} />
                             <ShareButtons referralLink={referralLink} />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="public-profile-link" className="text-xs text-muted-foreground">رابط صفحتك التسويقية</Label>
-                        <div className="flex items-center gap-2">
-                             <Button variant="outline" asChild className="flex-1 justify-start overflow-hidden">
-                                <Link href={publicProfileLink} target="_blank">
-                                    <Eye className="h-4 w-4 me-2" />
-                                    <span className="truncate" dir="ltr">{`${process.env.NEXT_PUBLIC_SITE_URL || ''}${publicProfileLink}`}</span>
-                                </Link>
-                             </Button>
-                            <CopyButton textToCopy={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'}${publicProfileLink}`} />
                         </div>
                     </div>
                 </CardContent>
