@@ -71,6 +71,18 @@
       "description": "A rocket launching, symbolizing a fast start",
       "imageUrl": "https://images.unsplash.com/photo-1541185934-01b604e066c4?q=80&w=1080",
       "imageHint": "rocket launch"
+    },
+    {
+      "id": "seo-strategy",
+      "description": "Image representing SEO and digital marketing strategy.",
+      "imageUrl": "https://images.unsplash.com/photo-1554672408-730436b60dde?q=80&w=1080",
+      "imageHint": "seo strategy"
+    },
+    {
+      "id": "affiliate-network",
+      "description": "Abstract image of a network, for affiliate marketing.",
+      "imageUrl": "https://images.unsplash.com/photo-1543269664-56d93c1b41a6?q=80&w=1080",
+      "imageHint": "people network"
     }
   ]
 }
