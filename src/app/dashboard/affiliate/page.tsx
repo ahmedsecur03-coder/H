@@ -151,14 +151,13 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
     const handleShare = (platform: 'WhatsApp' | 'X' | 'Facebook') => {
         try {
             const postContent = getSimulatedPost();
-            
             let shareUrl = '';
+
             if (platform === 'WhatsApp') {
                 shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
             } else if (platform === 'X') {
                 shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
             } else if (platform === 'Facebook') {
-                // This method is more reliable for pre-filling content on Facebook.
                 shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
             }
 
