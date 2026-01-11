@@ -7,13 +7,18 @@ import { doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Crown, Users, BarChart, Copy, Check } from 'lucide-react';
+import { Crown, Users, BarChart, Copy, Check, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AFFILIATE_LEVELS } from '@/lib/service';
 import Link from 'next/link';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { WhatsAppIcon } from '@/components/ui/icons';
+import { Facebook, Share2, Twitter } from 'lucide-react';
+import { CopyButton } from '@/app/dashboard/affiliate/_components/copy-button';
 
 function ProfileSkeleton() {
     return (
@@ -37,11 +42,42 @@ function ProfileSkeleton() {
     );
 }
 
+function ShareButtons({ referralLink }: { referralLink: string }) {
+    const shareText = encodeURIComponent(`انضم إلى منصة حاجاتي عبر الرابط الخاص بي واحصل على بداية قوية لرحلتك الرقمية!`);
+    const encodedLink = encodeURIComponent(referralLink);
+
+    const shareTargets = [
+        { name: 'WhatsApp', icon: WhatsAppIcon, url: `https://api.whatsapp.com/send?text=${shareText}%20${encodedLink}` },
+        { name: 'X', icon: Twitter, url: `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedLink}` },
+        { name: 'Facebook', icon: Facebook, url: `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}` },
+    ];
+    
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button size="icon" variant="outline"><Share2 className="h-4 w-4"/></Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+                <div className="flex gap-2">
+                    {shareTargets.map(target => {
+                        const Icon = target.icon;
+                        return (
+                            <Button key={target.name} size="icon" variant="ghost" asChild>
+                                <a href={target.url} target="_blank" rel="noopener noreferrer">
+                                    <Icon className="h-5 w-5" />
+                                </a>
+                            </Button>
+                        )
+                    })}
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 
 export default function UserProfilePageClient({ userId }: { userId: string }) {
     const firestore = useFirestore();
-    const { toast } = useToast();
-    const [copied, setCopied] = useState(false);
 
     const userDocRef = useMemoFirebase(
       () => (firestore && userId ? doc(firestore, `users/${userId}`) : null),
@@ -56,13 +92,6 @@ export default function UserProfilePageClient({ userId }: { userId: string }) {
         }
     }, [isLoading, userData]);
 
-
-    const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        toast({ title: 'تم نسخ رابط الإحالة!' });
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     if (isLoading || !userData) {
         return <ProfileSkeleton />;
@@ -107,9 +136,8 @@ export default function UserProfilePageClient({ userId }: { userId: string }) {
                         <Label htmlFor="referral-link" className="text-center block mb-2">انضم من خلالي واحصل على بداية قوية!</Label>
                         <div className="flex items-center gap-2">
                              <Input id="referral-link" readOnly value={referralLink} className="text-center font-mono" />
-                             <Button size="icon" variant="outline" onClick={() => handleCopy(referralLink)}>
-                                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                            </Button>
+                             <CopyButton textToCopy={referralLink} />
+                             <ShareButtons referralLink={referralLink} />
                         </div>
                      </div>
                       <Button asChild size="lg" className="w-full">

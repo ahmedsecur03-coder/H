@@ -1,8 +1,12 @@
+'use server';
+
 import { initializeFirebaseServer } from '@/firebase/init-server';
 import { collection, query, getDocs } from 'firebase/firestore';
 import type { Metadata, ResolvingMetadata } from 'next';
 import type { BlogPost } from '@/lib/types';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Props = {
   params: { slug: string }
@@ -83,7 +87,32 @@ export async function generateStaticParams() {
     }
 }
 
+function BlogPostPageSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+            <Skeleton className="h-8 w-32 mb-4" />
+             <div className="space-y-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-5 w-1/4" />
+                <br/>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <br/>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+            </div>
+        </div>
+    )
+}
+
 export default function BlogPostPage({ params }: Props) {
     // This is now a server component, it will pass the slug to the client component
-    return <BlogPostPageClient slug={params.slug} />;
+    return (
+        <Suspense fallback={<BlogPostPageSkeleton />}>
+            <BlogPostPageClient slug={params.slug} />
+        </Suspense>
+    );
 }

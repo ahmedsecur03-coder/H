@@ -25,7 +25,7 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-function BlogPostSkeleton() {
+function BlogPostPageSkeleton() {
     return (
         <div className="max-w-4xl mx-auto py-8">
             <Skeleton className="h-8 w-32 mb-4" />
@@ -89,7 +89,7 @@ export default function BlogPostPageClient({ slug }: { slug: string }) {
     
 
     if (isLoading) {
-        return <BlogPostSkeleton />;
+        return <BlogPostPageSkeleton />;
     }
 
     if (!post) {
