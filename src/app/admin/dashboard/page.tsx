@@ -87,12 +87,12 @@ export default function AdminDashboardPage() {
                 const ordersColGroup = collectionGroup(firestore, 'orders');
                 const ticketsColGroup = collectionGroup(firestore, 'tickets');
 
-                // Get counts from server
-                const totalUsersSnapshot = await getCountFromServer(usersCol);
-                const totalOrdersSnapshot = await getCountFromServer(ordersColGroup);
-                
-                // Fetch and filter tickets client-side to avoid index requirement
+                const usersSnapshot = await getDocs(usersCol);
+                const ordersSnapshot = await getDocs(ordersColGroup);
                 const ticketsSnapshot = await getDocs(ticketsColGroup);
+
+                const totalUsersCount = usersSnapshot.size;
+                const totalOrdersCount = ordersSnapshot.size;
                 const openTicketsCount = ticketsSnapshot.docs.filter(doc => doc.data().status !== 'مغلقة').length;
 
                 
@@ -112,8 +112,8 @@ export default function AdminDashboardPage() {
                 // --- Set State ---
                 setStats({
                     totalRevenue: totalRevenue,
-                    totalUsers: totalUsersSnapshot.data().count,
-                    totalOrders: totalOrdersSnapshot.data().count,
+                    totalUsers: totalUsersCount,
+                    totalOrders: totalOrdersCount,
                     openTickets: openTicketsCount,
                     newUsersLast7Days: newUsersLast7Days,
                 });
