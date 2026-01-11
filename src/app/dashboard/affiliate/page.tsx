@@ -3,7 +3,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Users, Crown, Loader2, Target, Share2, Wand2 } from "lucide-react";
+import { DollarSign, Users, Crown, Loader2, Target, Share2, Wand2, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import type { User as UserType, AffiliateTransaction, Withdrawal } from "@/lib/types";
@@ -29,6 +29,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Twitter, Facebook } from "lucide-react";
 import { CopyButton } from './_components/copy-button';
+import Link from "next/link";
 
 // Inlined WithdrawalDialog component
 function WithdrawalDialog({ user, children }: { user: UserType, children: React.ReactNode }) {
@@ -313,6 +314,7 @@ export default function AffiliatePage() {
     }
     
     const referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'}/auth/signup?ref=${userData.referralCode}`;
+    const publicProfileLink = `/user/${authUser?.uid}`;
     const currentLevelKey = userData?.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey as keyof typeof AFFILIATE_LEVELS];
     const nextLevelKey = null; // This logic needs updating to be dynamic
@@ -400,13 +402,30 @@ export default function AffiliatePage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
              <Card className="lg:col-span-1">
                 <CardHeader>
-                    <CardTitle>رابط الإحالة الخاص بك</CardTitle>
-                    <CardDescription>شاركه مع أصدقائك لتبدأ في كسب العمولات.</CardDescription>
+                    <CardTitle>أدوات التسويق</CardTitle>
+                    <CardDescription>استخدم هذه الروابط لدعوة مستخدمين جدد.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex items-center gap-2">
-                    <Input readOnly value={referralLink} placeholder="جاري تحميل الرابط..." />
-                    <CopyButton textToCopy={referralLink} />
-                    <ShareButtons referralLink={referralLink} />
+                <CardContent className="space-y-4">
+                    <div>
+                        <Label htmlFor="referral-link" className="text-xs text-muted-foreground">رابط الإحالة المباشر</Label>
+                        <div className="flex items-center gap-2">
+                            <Input id="referral-link" readOnly value={referralLink} placeholder="جاري تحميل الرابط..." />
+                            <CopyButton textToCopy={referralLink} />
+                            <ShareButtons referralLink={referralLink} />
+                        </div>
+                    </div>
+                     <div>
+                        <Label htmlFor="public-profile-link" className="text-xs text-muted-foreground">رابط صفحتك التسويقية</Label>
+                        <div className="flex items-center gap-2">
+                             <Button variant="outline" asChild className="flex-1 justify-start overflow-hidden">
+                                <Link href={publicProfileLink} target="_blank">
+                                    <Eye className="h-4 w-4 me-2" />
+                                    <span className="truncate">/{publicProfileLink}</span>
+                                </Link>
+                             </Button>
+                            <CopyButton textToCopy={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'}${publicProfileLink}`} />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
             <div className="lg:col-span-2">
