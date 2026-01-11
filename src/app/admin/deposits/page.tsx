@@ -1,118 +1,268 @@
-import type { NestedNavItem } from '@/lib/types';
+
+'use client';
+
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  ListOrdered,
-  DollarSign,
-  Users,
-  Megaphone,
-  MessageSquare,
-  Settings,
-  Banknote,
-  Users2,
-  BookOpen,
-  HeartPulse,
-  Code2,
-  Rocket,
-  PenSquare,
-  Briefcase,
-  Palette,
-  Shield,
-  History,
-  Home,
-  HandCoins,
-  AppWindow,
-  UserCircle,
-  Info,
-  Terminal,
-  WalletCards,
-  ShoppingBag,
-  ServerCrash
-} from 'lucide-react';
-import { PLATFORM_ICONS } from './icon-data';
+  collectionGroup,
+  query,
+  getDocs,
+  runTransaction,
+  doc,
+  increment,
+  arrayUnion,
+  getDoc,
+} from 'firebase/firestore';
+import type { Deposit, User, Notification } from '@/lib/types';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Check, X, Loader2, Banknote } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
+import { AFFILIATE_LEVELS } from '@/lib/service';
+
+type Status = 'معلق' | 'مقبول' | 'مرفوض';
+
+function DepositsTable({ deposits, isLoading, onAction, loadingActionId }: { deposits: Deposit[], isLoading: boolean, onAction: (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => void, loadingActionId: string | null }) {
+
+  const status = deposits.length > 0 ? deposits[0].status : 'معلق';
+  
+  if (isLoading) {
+    return (
+      <div className="overflow-x-auto">
+       <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>المستخدم</TableHead>
+              <TableHead>المبلغ</TableHead>
+              <TableHead>الطريقة</TableHead>
+              <TableHead>التفاصيل</TableHead>
+              <TableHead>التاريخ</TableHead>
+              {status === 'معلق' && <TableHead className="text-right">إجراءات</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({length: 5}).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({length: status === 'معلق' ? 6 : 5}).map((_, j) => (
+                      <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
+                  ))}
+                </TableRow>
+            ))}
+          </TableBody>
+       </Table>
+       </div>
+    );
+  }
+
+  if (!deposits || deposits.length === 0) {
+    return (
+      <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
+        لا توجد طلبات إيداع في هذا القسم.
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>المستخدم</TableHead>
+          <TableHead>المبلغ</TableHead>
+          <TableHead>الطريقة</TableHead>
+          <TableHead>التفاصيل</TableHead>
+          <TableHead>تاريخ الطلب</TableHead>
+          {status === 'معلق' && <TableHead className="text-right">إجراءات</TableHead>}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {deposits.map((deposit) => (
+          <TableRow key={deposit.id}>
+            <TableCell>
+              <Link href={`/admin/users?search=${deposit.userId}`} className="font-mono text-xs text-primary hover:underline">{deposit.userId}</Link>
+            </TableCell>
+            <TableCell>${deposit.amount.toFixed(2)}</TableCell>
+            <TableCell>{deposit.paymentMethod}</TableCell>
+            <TableCell className="font-mono text-xs">
+              {deposit.details?.senderNumber || deposit.details?.transactionId || 'N/A'}
+            </TableCell>
+            <TableCell>
+              {new Date(deposit.depositDate).toLocaleString('ar-EG')}
+            </TableCell>
+            {status === 'معلق' && (
+              <TableCell className="text-right">
+                {loadingActionId === deposit.id ? <Loader2 className="animate-spin mx-auto" /> : (
+                  <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مقبول')} className="text-green-500 hover:border-green-500 hover:text-green-600">
+                          <Check className="h-4 w-4"/>
+                      </Button>
+                      <Button variant="outline" size="icon" onClick={() => onAction(deposit, 'مرفوض')} className="text-red-500 hover:border-red-500 hover:text-red-600">
+                          <X className="h-4 w-4"/>
+                      </Button>
+                  </div>
+                )}
+              </TableCell>
+            )}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+    </div>
+  )
+}
+
+export default function AdminDepositsPage() {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [allDeposits, setAllDeposits] = useState<Deposit[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
+
+    const fetchData = useCallback(async () => {
+        if(!firestore) return;
+        setIsLoading(true);
+        try {
+            const depositsQuery = query(collectionGroup(firestore, 'deposits'));
+            const snapshot = await getDocs(depositsQuery);
+            const fetchedData = snapshot.docs.map(doc => {
+                 const pathSegments = doc.ref.path.split('/');
+                 const userId = pathSegments[1];
+                 return { id: doc.id, userId, ...doc.data()} as Deposit
+            });
+            // Sort client-side
+            fetchedData.sort((a, b) => new Date(b.depositDate).getTime() - new Date(a.depositDate).getTime());
+            setAllDeposits(fetchedData);
+        } catch (error) {
+             console.error("Error fetching deposits:", error);
+             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
+        } finally {
+            setIsLoading(false);
+        }
+    }, [firestore, toast]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    const handleDepositAction = async (deposit: Deposit, newStatus: 'مقبول' | 'مرفوض') => {
+        if (!firestore) return;
+        setLoadingActionId(deposit.id);
+        const { userId, id: depositId, amount } = deposit;
+
+        const userRef = doc(firestore, 'users', userId);
+        const depositDocRef = doc(firestore, `users/${userId}/deposits`, depositId);
+        
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) throw new Error('المستخدم صاحب الطلب غير موجود.');
+                
+                transaction.update(depositDocRef, { status: newStatus });
+                
+                if (newStatus === 'مقبول') {
+                    // Update user's balance and total spent
+                    transaction.update(userRef, {
+                        balance: increment(amount),
+                        totalSpent: increment(amount)
+                    });
+                    
+                    // Add notification for the user
+                     const notification: Notification = {
+                        id: `deposit-ok-${depositId}`,
+                        message: `تمت إضافة ${amount}$ إلى رصيدك بنجاح.`,
+                        type: 'success', read: false, createdAt: new Date().toISOString(), href: '/dashboard/add-funds'
+                    };
+                    transaction.update(userRef, { notifications: arrayUnion(notification) });
+
+                    // Handle affiliate commission logic if a referrer exists
+                    const userData = userDoc.data() as User;
+                    if (userData.referrerId) {
+                        const referrerRef = doc(firestore, 'users', userData.referrerId);
+                        const referrerDoc = await transaction.get(referrerRef); // Use transaction.get
+                        if (referrerDoc.exists()) {
+                            const referrerData = referrerDoc.data() as User;
+                            const levelKey = referrerData.affiliateLevel || 'برونزي';
+                            const commissionRate = AFFILIATE_LEVELS[levelKey].commission / 100;
+                            const commissionAmount = amount * commissionRate;
+                            
+                            transaction.update(referrerRef, { affiliateEarnings: increment(commissionAmount) });
+                        }
+                    }
+
+                } else { // Rejected
+                    const notification: Notification = {
+                        id: `deposit-rej-${depositId}`,
+                        message: `تم رفض طلب إيداعك بمبلغ ${amount}$. يرجى مراجعة الدعم الفني.`,
+                        type: 'error', read: false, createdAt: new Date().toISOString(), href: '/dashboard/support'
+                    };
+                    transaction.update(userRef, { notifications: arrayUnion(notification) });
+                }
+            });
+
+            toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح.` });
+            await fetchData();
+
+        } catch (error: any) {
+             const isPermissionError = error.code === 'permission-denied';
+             if (isPermissionError) {
+                const permissionError = new FirestorePermissionError({ path: userRef.path, operation: 'update' });
+                errorEmitter.emit('permission-error', permissionError);
+            } else {
+                console.error("Deposit Action Error:", error);
+                toast({ variant: 'destructive', title: 'فشل الإجراء', description: error.message });
+            }
+        } finally {
+          setLoadingActionId(null);
+        }
+    };
+
+    const filteredDeposits = useMemo(() => {
+        return {
+            pending: allDeposits.filter(d => d.status === 'معلق'),
+            approved: allDeposits.filter(d => d.status === 'مقبول'),
+            rejected: allDeposits.filter(d => d.status === 'مرفوض'),
+        }
+    }, [allDeposits]);
 
 
-export const publicNavItems: NestedNavItem[] = [
-    { href: '/', label: 'الرئيسية', icon: Home },
-    { 
-      label: 'الخدمات',
-      icon: Package,
-      children: [
-        { href: '/dashboard/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية وكالة', description: 'تجاوز قيود الحسابات بحسابات موثوقة ذات حدود إنفاق عالية.', icon: Briefcase },
-      ]
-    },
-    { href: '/about', label: 'من نحن', icon: Info },
-    { href: '/blog', label: 'المدونة', icon: BookOpen },
-];
+  return (
+    <div className="space-y-6 pb-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2"><Banknote className="h-8 w-8" /> إدارة الإيداعات</h1>
+        <p className="text-muted-foreground">مراجعة طلبات الإيداع اليدوية والموافقة عليها.</p>
+      </div>
 
-export const dashboardNavItems: NestedNavItem[] = [
-  { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
-  { 
-    label: 'خدمات المنصة',
-    icon: ShoppingBag,
-    children: [
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
-        { href: '/dashboard/services', label: 'كل خدمات SMM', icon: Rocket },
-        { href: '/dashboard/mass-order', label: 'طلب جماعي SMM', icon: Package },
-        { href: '/dashboard/orders', label: 'سجل طلبات SMM', icon: ListOrdered },
-    ]
-  },
-  { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
-  { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
-  { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/blog', label: 'المدونة', icon: BookOpen },
-  { 
-      label: 'الحساب',
-      icon: UserCircle,
-      children: [
-        { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
-        { href: '/dashboard/api', label: 'API', icon: Code2 },
-        { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
-      ]
-   },
-   { href: '/dashboard/system-status', label: 'حالة النظام', icon: HeartPulse },
-];
-
-export const adminNavItems: NestedNavItem[] = [
-    { href: '/admin/dashboard', label: 'لوحة التحكم', icon: LayoutDashboard },
-    { href: '/admin/users', label: 'المستخدمون', icon: Users2 },
-    { 
-        label: 'العمليات المالية',
-        icon: DollarSign,
-        children: [
-           { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
-           { href: '/admin/agency-charges', label: 'شحن حسابات الوكالة', icon: WalletCards },
-        ]
-    },
-    { 
-        label: 'الطلبات والحملات',
-        icon: ShoppingCart,
-        children: [
-           { href: '/admin/orders', label: 'طلبات SMM', icon: ListOrdered },
-           { href: '/admin/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
-        ]
-    },
-    { href: '/admin/services', label: 'الخدمات', icon: Package },
-    { href: '/admin/support', label: 'الدعم', icon: MessageSquare },
-    { 
-        label: 'إدارة المحتوى',
-        icon: PenSquare,
-        children: [
-           { href: '/admin/blog', label: 'المدونة', icon: BookOpen },
-        ]
-    },
-    { 
-        label: 'النظام',
-        icon: Settings,
-        children: [
-            { href: '/admin/settings', label: 'الإعدادات العامة', icon: Settings },
-            { href: '/admin/system-log', label: 'سجل النظام', icon: Terminal },
-            { href: '/admin/system-status', label: 'حالة النظام', icon: ServerCrash },
-        ]
-    },
-    { href: '/dashboard', label: 'عرض كـ مستخدم', icon: Shield },
-];
+      <Tabs defaultValue="معلق" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="معلق">طلبات معلقة</TabsTrigger>
+            <TabsTrigger value="مقبول">طلبات مقبولة</TabsTrigger>
+            <TabsTrigger value="مرفوض">طلبات مرفوضة</TabsTrigger>
+        </TabsList>
+        <Card className="mt-4">
+          <CardContent className="p-0">
+            <TabsContent value="معلق" className="m-0">
+              <DepositsTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
+            </TabsContent>
+            <TabsContent value="مقبول" className="m-0">
+              <DepositsTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
+            </TabsContent>
+            <TabsContent value="مرفوض" className="m-0">
+              <DepositsTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
+            </TabsContent>
+          </CardContent>
+        </Card>
+      </Tabs>
+    </div>
+  );
+}
