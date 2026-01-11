@@ -85,7 +85,6 @@ export const adminNavItems: NestedNavItem[] = [
         label: 'العمليات المالية',
         icon: DollarSign,
         children: [
-           { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
            { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
            { href: '/admin/agency-charges', label: 'شحن حسابات الوكالة', icon: WalletCards },
         ]
