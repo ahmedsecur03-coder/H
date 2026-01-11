@@ -21,6 +21,13 @@ interface FirebaseServices {
 // Store the initialized services in a variable at the module level
 let firebaseServices: FirebaseServices | null = null;
 
+function AppContent({ children }: { children: React.ReactNode }) {
+    // This component now solely exists to render children after the provider is ready.
+    // The FirebaseErrorListener is moved into FirebaseProvider to ensure context readiness.
+    return <>{children}</>;
+}
+
+
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   // Use state to trigger re-render once services are confirmed, but initialize only once.
   const [services, setServices] = useState<FirebaseServices | null>(firebaseServices);
@@ -33,11 +40,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     }
   }, []);
 
-  // CRITICAL CHANGE: Do not render children until Firebase services are initialized.
-  // This prevents any child component from trying to access a context that isn't ready.
   if (!services) {
-    // You can render a global loader here if desired, but for now, returning null
-    // is the safest way to prevent the error. The layout will still be present.
     return null;
   }
 
@@ -47,7 +50,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       auth={services.auth}
       firestore={services.firestore}
     >
-      {children}
+      <AppContent>{children}</AppContent>
     </FirebaseProvider>
   );
 }

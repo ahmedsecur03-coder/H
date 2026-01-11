@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, updateDoc, increment } from 'firebase/firestore';
+import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,31 +34,53 @@ export default function SignupForm() {
     setLoading(true);
     
     try {
-      // Step 1: Create user in Auth to get the UID
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
       const avatarUrl = `https://i.pravatar.cc/150?u=${newUser.uid}`;
 
-      // Step 2: Update the user's auth profile (displayName, photoURL)
-      // This is important for the UserInitializer to pick up the correct name.
       await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
-      
-      // If a referral code exists, find the referrer to link them.
-      let referrerId: string | null = null;
-      if (referralCode) {
+
+      const userDocRef = doc(firestore, 'users', newUser.uid);
+      const today = new Date().toISOString().split('T')[0];
+      const dailyStatRef = doc(firestore, 'dailyStats', today);
+
+      await runTransaction(firestore, async (transaction) => {
+        let referrerId: string | null = null;
+        if (referralCode) {
           const usersRef = collection(firestore, 'users');
           const q = query(usersRef, where('referralCode', '==', referralCode), limit(1));
-          const querySnapshot = await getDocs(q);
+          const querySnapshot = await getDocs(q); // Use getDocs, not transaction.get, for initial check
           if (!querySnapshot.empty) {
               const referrerDoc = querySnapshot.docs[0];
               referrerId = referrerDoc.id;
-              // We'll increment the count in the UserInitializer now
+              // Increment referrer's count within the transaction
+              transaction.update(referrerDoc.ref, { referralsCount: increment(1) });
           }
-      }
-      
-      // The UserInitializer will now handle creating the user document on the next load,
-      // which is more robust.
-      // For immediate creation if needed (e.g. for server-side logic), it would be done here.
+        }
+        
+        const newUserDoc: User = {
+          id: newUser.uid,
+          name: name,
+          email: newUser.email!,
+          avatarUrl: avatarUrl,
+          balance: 0,
+          adBalance: 0,
+          totalSpent: 0,
+          rank: 'مستكشف نجمي',
+          role: 'user',
+          apiKey: `hy_${crypto.randomUUID().replace(/-/g, '')}`,
+          referralCode: crypto.randomUUID().substring(0, 8),
+          referrerId: referrerId,
+          createdAt: new Date().toISOString(),
+          notificationPreferences: {
+            newsletter: false,
+            orderUpdates: true
+          }
+        };
+
+        transaction.set(userDocRef, newUserDoc);
+        transaction.set(dailyStatRef, { newUsers: increment(1) }, { merge: true });
+      });
 
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
