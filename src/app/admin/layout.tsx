@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -175,10 +176,10 @@ function AdminNavItems() {
                            <SidebarMenuItem key={child.href}>
                             <Link href={child.href || '#'}>
                               <SidebarMenuSubButton asChild isActive={pathname === child.href}>
-                                 <>
-                                 {child.icon && <child.icon className="w-5 h-5" />}
-                                 <span>{child.label}</span>
-                                 </>
+                                 <span>
+                                     {child.icon && <child.icon className="w-5 h-5" />}
+                                     <span>{child.label}</span>
+                                 </span>
                               </SidebarMenuSubButton>
                             </Link>
                            </SidebarMenuItem>
