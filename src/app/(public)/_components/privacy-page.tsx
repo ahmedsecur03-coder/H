@@ -8,7 +8,7 @@ export default function PrivacyPolicyPageClient() {
         <CardHeader>
           <CardTitle className="text-3xl font-headline">سياسة الخصوصية</CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-invert max-w-none">
+        <CardContent className="prose dark:prose-invert max-w-none">
           <h2>1. المعلومات التي نجمعها</h2>
           <p>
             نقوم بجمع المعلومات التي تقدمها مباشرة لنا، مثل عندما تنشئ حسابًا، أو تطلب خدمة، أو تتواصل مع دعم العملاء. قد تتضمن هذه المعلومات اسمك وعنوان بريدك الإلكتروني ومعلومات الدفع.

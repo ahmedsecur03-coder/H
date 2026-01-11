@@ -8,7 +8,7 @@ export default function TermsOfServicePageClient() {
         <CardHeader>
           <CardTitle className="text-3xl font-headline">شروط الخدمة</CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-invert max-w-none">
+        <CardContent className="prose dark:prose-invert max-w-none">
           <h2>1. مقدمة</h2>
           <p>
             مرحبًا بك في منصة حاجاتي. باستخدامك لمنصتنا، فإنك توافق على الالتزام بهذه الشروط والأحكام.

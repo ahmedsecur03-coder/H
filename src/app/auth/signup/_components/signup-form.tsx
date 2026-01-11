@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, updateDoc, increment } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
