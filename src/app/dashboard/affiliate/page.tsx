@@ -143,7 +143,6 @@ function WithdrawalDialog({ user, children }: { user: UserType, children: React.
 
 function ShareButtons({ referralLink }: { referralLink: string }) {
     const { toast } = useToast();
-    const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
     const getSimulatedPost = () => {
         const randomPostTemplate = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
@@ -151,30 +150,24 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
     };
 
     const handleShare = (platform: 'WhatsApp' | 'X' | 'Facebook') => {
-        setIsGenerating(platform);
-        toast({ title: 'جاري تجهيز المنشور...' });
-        
-        setTimeout(() => {
-            try {
-                const postContent = getSimulatedPost();
-                
-                let shareUrl = '';
-                if (platform === 'WhatsApp') {
-                    shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
-                } else if (platform === 'X') {
-                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
-                } else if (platform === 'Facebook') {
-                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
-                }
-
-                window.open(shareUrl, '_blank', 'noopener,noreferrer');
-
-            } catch (error: any) {
-                toast({ variant: 'destructive', title: 'فشل', description: 'حدث خطأ أثناء تجهيز المنشور.' });
-            } finally {
-                setIsGenerating(null);
+        try {
+            const postContent = getSimulatedPost();
+            
+            let shareUrl = '';
+            if (platform === 'WhatsApp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(postContent)}`;
+            } else if (platform === 'X') {
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postContent)}`;
+            } else if (platform === 'Facebook') {
+                // This method is more reliable for pre-filling content on Facebook.
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(postContent.replace(referralLink, ''))}`;
             }
-        }, 300); // Simulate generation delay
+
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'فشل', description: 'حدث خطأ أثناء تجهيز المنشور.' });
+        }
     };
 
     const shareTargets = [
@@ -192,10 +185,9 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
                 <div className="flex gap-2">
                     {shareTargets.map(target => {
                         const Icon = target.icon;
-                        const isLoading = isGenerating === target.name;
                         return (
-                            <Button key={target.name} size="icon" variant="ghost" onClick={target.action} disabled={!!isGenerating}>
-                                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
+                            <Button key={target.name} size="icon" variant="ghost" onClick={target.action}>
+                               <Icon className="h-5 w-5" />
                             </Button>
                         )
                     })}
@@ -450,7 +442,7 @@ export default function AffiliatePage() {
                     </div>
                 </CardContent>
                  <CardFooter className="flex-col items-stretch border-t p-4">
-                    <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
+                    <h3 className="text-sm font-semibold flex items-center gap-2 mb-4 justify-center">
                         <Wand2 className="h-4 w-4 text-primary" />
                         مولّد المنشورات بالذكاء الاصطناعي
                     </h3>
@@ -466,3 +458,4 @@ export default function AffiliatePage() {
     </div>
   );
 }
+
