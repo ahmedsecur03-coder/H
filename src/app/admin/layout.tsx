@@ -174,12 +174,10 @@ function AdminNavItems() {
                     <SidebarMenuSubContent>
                         {item.children.map((child) => (
                            <SidebarMenuItem key={child.href}>
-                            <Link href={child.href || '#'} passHref legacyBehavior>
-                              <SidebarMenuSubButton asChild isActive={pathname === child.href}>
-                                <a>
+                            <Link href={child.href || '#'}>
+                              <SidebarMenuSubButton isActive={pathname === child.href}>
                                  {child.icon && <child.icon className="w-5 h-5" />}
                                  <span>{child.label}</span>
-                                </a>
                               </SidebarMenuSubButton>
                             </Link>
                            </SidebarMenuItem>
@@ -191,7 +189,7 @@ function AdminNavItems() {
 
         return (
             <SidebarMenuItem key={item.href}>
-                <Link href={item.href || '#'} passHref>
+                <Link href={item.href || '#'}>
                     <SidebarMenuButton isActive={pathname === item.href}>
                         {Icon && <Icon className="h-5 w-5" />}
                         <span>{item.label}</span>
