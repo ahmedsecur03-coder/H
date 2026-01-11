@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetClose,
   SheetTrigger,
+  SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from "@/components/ui/button";
 import { LogIn, UserPlus, Menu, ChevronDown, Loader2, LayoutDashboard } from 'lucide-react';
@@ -163,7 +164,10 @@ function PublicHeader() {
                 <Button variant="ghost" size="icon"><Menu /></Button>
               </SheetTrigger>
               <SheetContent side="right">
-                <SheetHeader className="mb-8"><Logo /></SheetHeader>
+                <SheetHeader className="mb-8">
+                  <SheetTitle className="sr-only">Main Menu</SheetTitle>
+                  <Logo />
+                </SheetHeader>
                 <div className="flex flex-col space-y-3">
                   {publicNavItems.map((item) =>
                     item.children ? (
