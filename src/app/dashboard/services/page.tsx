@@ -2,7 +2,6 @@
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User as UserType } from '@/lib/types';
-import { QuickOrderForm } from '../_components/quick-order-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { redirect } from 'next/navigation';
 import { ServicesTable } from './_components/services-table';

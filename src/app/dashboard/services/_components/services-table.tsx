@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo, useState, useEffect, Suspense } from 'react';
 import type { Service, ServicePrice } from '@/lib/types';
@@ -84,7 +83,7 @@ function ServicesTableSkeleton() {
   );
 }
 
-function ServicesTableComponent() {
+export function ServicesTable() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -300,11 +299,4 @@ function ServicesTableComponent() {
   );
 }
 
-
-export function ServicesTable() {
-    return (
-        <Suspense fallback={<ServicesTableSkeleton />}>
-            <ServicesTableComponent />
-        </Suspense>
-    )
-}
+export { ServicesTable };
