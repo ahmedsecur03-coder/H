@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -18,12 +19,12 @@ import {
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
-import type { NestedNavItem, User } from '@/lib/types';
-import React from 'react';
+import type { NestedNavItem, User, Notification, SystemLog } from '@/lib/types';
+import React, {useEffect} from 'react';
 import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
 import { ChevronDown, Shield, Loader2, Wallet, DollarSign } from 'lucide-react';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend, RANKS } from '@/lib/service';
 import { redirect, usePathname } from 'next/navigation';
@@ -34,6 +35,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
+
 
 function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User }) {
   const appUser = {
@@ -117,7 +119,9 @@ function NavItems() {
 
   return (
     <>
-      {dashboardNavItems.map((item) => <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>)}
+      {dashboardNavItems.map((item) => (
+        <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>
+      ))}
     </>
   );
 }

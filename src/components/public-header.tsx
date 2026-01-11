@@ -115,15 +115,15 @@ function MobileAuthButtons() {
 }
 
 function PublicHeader() {
-  const renderNavItem = (item: NestedNavItem, index: number) => {
+  const renderNavItem = (item: NestedNavItem) => {
     if (item.children) {
       return (
-        <NavigationMenuItem key={`${item.label}-${index}`}>
+        <NavigationMenuItem key={item.label}>
           <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {item.children.map((component, childIndex) => (
-                  <ListItem key={`${component.label}-${childIndex}`} href={component.href || '#'} title={component.label}>
+              {item.children.map((component) => (
+                  <ListItem key={component.label} href={component.href || '#'} title={component.label}>
                     {component.description}
                   </ListItem>
               ))}
@@ -133,7 +133,7 @@ function PublicHeader() {
       );
     }
     return (
-      <NavigationMenuItem key={item.label}>
+      <NavigationMenuItem key={item.href}>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
             <Link href={item.href || '#'}>
                 {item.label}
@@ -149,7 +149,7 @@ function PublicHeader() {
         <Logo />
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {publicNavItems.map((item, i) => renderNavItem(item, i))}
+            {publicNavItems.map((item) => renderNavItem(item))}
           </NavigationMenuList>
         </NavigationMenu>
 
