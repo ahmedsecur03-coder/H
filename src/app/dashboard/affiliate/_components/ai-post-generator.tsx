@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
@@ -11,8 +10,19 @@ import { isAiConfigured } from '@/ai/client';
 import { generateAffiliatePost } from '@/ai/flows/generate-affiliate-post-flow';
 import { AnimatePresence, motion } from 'framer-motion';
 
+// Predefined topics for random generation
+const PROMOTIONAL_TOPICS = [
+    "أسرع خدمات SMM في السوق",
+    "طريقة مضمونة لزيادة متابعين انستغرام",
+    "كيف تصبح مشهوراً على تيك توك",
+    "أفضل أسعار لخدمات التسويق الرقمي",
+    "اجعل حسابك ينمو بسرعة الصاروخ",
+    "الوصول إلى آلاف المشاهدات بسهولة",
+    "لماذا تعتبر خدماتنا الأفضل لنموك؟",
+    "حقق أهدافك على السوشيال ميديا اليوم",
+];
+
 export function AiPostGenerator({ referralLink }: { referralLink: string }) {
-    const [topic, setTopic] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedPost, setGeneratedPost] = useState('');
     const [copied, setCopied] = useState(false);
@@ -24,17 +34,16 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!topic.trim()) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال فكرة للمنشور.' });
-            return;
-        }
+        
+        // Select a random topic
+        const randomTopic = PROMOTIONAL_TOPICS[Math.floor(Math.random() * PROMOTIONAL_TOPICS.length)];
 
         setIsGenerating(true);
         setGeneratedPost('');
-        toast({ title: 'جاري توليد المنشور...', description: 'قد تستغرق العملية بضع لحظات.' });
+        toast({ title: 'جاري توليد منشور جديد...', description: `باستخدام فكرة: "${randomTopic}"` });
 
         try {
-            const result = await generateAffiliatePost({ topic, referralLink });
+            const result = await generateAffiliatePost({ topic: randomTopic, referralLink });
             setGeneratedPost(result.postContent);
         } catch (error: any) {
             console.error("AI Post Generation Error:", error);
@@ -54,21 +63,10 @@ export function AiPostGenerator({ referralLink }: { referralLink: string }) {
 
     return (
         <div className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="post-topic">فكرة أو موضوع المنشور</Label>
-                    <Input
-                        id="post-topic"
-                        value={topic}
-                        onChange={(e) => setTopic(e.target.value)}
-                        placeholder="مثال: أسرع خدمات SMM، أفضل طريقة لزيادة المتابعين"
-                        required
-                        disabled={isGenerating}
-                    />
-                </div>
+            <form onSubmit={handleSubmit}>
                 <Button type="submit" disabled={isGenerating} className="w-full">
                     {isGenerating ? <Loader2 className="animate-spin me-2" /> : <Sparkles className="me-2 h-4 w-4" />}
-                    توليد منشور تسويقي
+                    توليد منشور تسويقي جديد
                 </Button>
             </form>
 
