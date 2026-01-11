@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -181,14 +182,7 @@ export default function NewCampaignPage() {
             const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
             const docRef = await addDoc(campaignsColRef, campaignData);
             
-            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعتها وتفعيلها تلقائيًا خلال لحظات." });
-            
-            // --- AUTOMATIC ACTIVATION LOGIC ---
-            // Simulating a delay for the "review" process then activating via Server Action
-            setTimeout(() => {
-                activateCampaignAndDeductBalance(authUser.uid, docRef.id);
-            }, 3000); // 3-second delay
-
+            toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعتها من قبل الإدارة في أقرب وقت." });
             setStep(3); // Go to success step
         } catch (error) {
             const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
@@ -251,7 +245,7 @@ export default function NewCampaignPage() {
                                          <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground"><ArrowRight className="h-5 w-5" /></button>
                                         <div>
                                             <CardTitle>الخطوة 2: تفاصيل حملة {currentConfig.title}</CardTitle>
-                                            <CardDescription>املأ بيانات حملتك. سيتم خصم الميزانية عند التفعيل التلقائي. رصيد إعلاناتك: ${userData?.adBalance?.toFixed(2) || '0.00'}</CardDescription>
+                                            <CardDescription>املأ بيانات حملتك. سيتم خصم الميزانية عند التفعيل. رصيد إعلاناتك: ${userData?.adBalance?.toFixed(2) || '0.00'}</CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -300,7 +294,7 @@ export default function NewCampaignPage() {
                                  </div>
                                 <h2 className="text-2xl font-bold mt-4">تم إرسال حملتك بنجاح!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    سيقوم نظامنا بمراجعتها وتفعيلها تلقائيًا خلال لحظات. يمكنك متابعة حالتها من صفحة إدارة الحملات.
+                                    سيقوم فريقنا بمراجعتها وتفعيلها في أقرب وقت ممكن. يمكنك متابعة حالتها من صفحة إدارة الحملات.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>
