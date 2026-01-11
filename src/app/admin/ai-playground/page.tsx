@@ -7,14 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Sparkles, Wand2 } from 'lucide-react';
+import { Loader2, Sparkles, Wand2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { generateBlogPost } from '@/ai/flows/generate-blog-post-flow';
 import { generateAffiliatePost } from '@/ai/flows/generate-affiliate-post-flow';
+import { generateImage } from '@/ai/flows/generate-image-flow';
 import { isAiConfigured } from '@/ai/client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
 
 export default function AiPlaygroundPage() {
     const { toast } = useToast();
@@ -28,6 +30,11 @@ export default function AiPlaygroundPage() {
     const [affiliateTopic, setAffiliateTopic] = useState('');
     const [isGeneratingAffiliate, setIsGeneratingAffiliate] = useState(false);
     const [affiliateResult, setAffiliateResult] = useState<string | null>(null);
+
+    // State for Image Generator
+    const [imagePrompt, setImagePrompt] = useState('');
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [imageResult, setImageResult] = useState<string | null>(null);
 
     if (!isAiConfigured()) {
         return (
@@ -87,6 +94,26 @@ export default function AiPlaygroundPage() {
         }
     };
 
+    const handleGenerateImage = async () => {
+        if (!imagePrompt.trim()) {
+            toast({ variant: 'destructive', title: 'الرجاء إدخال وصف للصورة.' });
+            return;
+        }
+        setIsGeneratingImage(true);
+        setImageResult(null);
+        toast({ title: 'جاري توليد الصورة...', description: 'قد تستغرق هذه العملية عدة ثوانٍ.' });
+        try {
+            const result = await generateImage({ prompt: imagePrompt });
+            setImageResult(result.imageUrl);
+            toast({ title: 'نجاح', description: 'تم توليد الصورة بنجاح.' });
+        } catch (error: any) {
+            console.error("Image Generation Error:", error);
+            toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message });
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -94,9 +121,39 @@ export default function AiPlaygroundPage() {
                 <p className="text-muted-foreground">اختبار وتجربة نماذج الذكاء الاصطناعي.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+                {/* Image Generator Card */}
+                <Card className="xl:col-span-1">
+                    <CardHeader>
+                        <CardTitle>مولّد الصور</CardTitle>
+                        <CardDescription>اختبار تدفق `generateImage`.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="image-prompt">وصف الصورة</Label>
+                            <Textarea id="image-prompt" value={imagePrompt} onChange={(e) => setImagePrompt(e.target.value)} placeholder="مثال: رائد فضاء يركب جملاً على سطح المريخ" />
+                        </div>
+                        <Button onClick={handleGenerateImage} disabled={isGeneratingImage} className="w-full">
+                            {isGeneratingImage ? <Loader2 className="animate-spin me-2" /> : <ImageIcon className="me-2 h-4 w-4" />}
+                            توليد صورة
+                        </Button>
+                    </CardContent>
+                    {isGeneratingImage && (
+                        <CardFooter className="pt-4 border-t">
+                            <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
+                                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                            </div>
+                        </CardFooter>
+                    )}
+                    {imageResult && (
+                        <CardFooter className="pt-4 border-t">
+                             <Image src={imageResult} alt="Generated image" width={512} height={512} className="rounded-lg aspect-square object-cover" />
+                        </CardFooter>
+                    )}
+                </Card>
+
                 {/* Blog Post Card */}
-                <Card>
+                <Card className="xl:col-span-2">
                     <CardHeader>
                         <CardTitle>مولّد مقالات المدونة</CardTitle>
                         <CardDescription>اختبار تدفق `generateBlogPost`.</CardDescription>
@@ -122,7 +179,7 @@ export default function AiPlaygroundPage() {
                 </Card>
 
                 {/* Affiliate Post Card */}
-                <Card>
+                <Card className="xl:col-span-3">
                     <CardHeader>
                         <CardTitle>مولّد المنشورات التسويقية</CardTitle>
                         <CardDescription>اختبار تدفق `generateAffiliatePost`.</CardDescription>

@@ -24,3 +24,15 @@ export const GenerateBlogPostOutputSchema = z.object({
   content: z.string().describe('The generated content of the blog post in Markdown format.'),
 });
 export type GenerateBlogPostOutput = z.infer<typeof GenerateBlogPostOutputSchema>;
+
+
+// Schema for generateImage flow
+export const GenerateImageInputSchema = z.object({
+    prompt: z.string().describe('The text prompt for image generation.'),
+});
+export type GenerateImageInput = z.infer<typeof GenerateImageInputSchema>;
+
+export const GenerateImageOutputSchema = z.object({
+    imageUrl: z.string().url().describe('The data URI of the generated image.'),
+});
+export type GenerateImageOutput = z.infer<typeof GenerateImageOutputSchema>;
