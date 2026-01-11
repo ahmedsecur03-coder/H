@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -14,14 +13,14 @@ interface PostDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     post?: Partial<BlogPost>;
-    onSave: (data: { title: string; content: string }) => void;
+    onSave: (data: { title: string; content: string }) => Promise<void>;
+    isSaving: boolean;
 }
 
-export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps) {
+export function PostDialog({ open, onOpenChange, post, onSave, isSaving }: PostDialogProps) {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
+    
     useEffect(() => {
         if (open) {
             setTitle(post?.title || '');
@@ -29,24 +28,23 @@ export function PostDialog({ open, onOpenChange, post, onSave }: PostDialogProps
         }
     }, [open, post]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSaving(true);
-        onSave({ title, content });
-        // The parent component is responsible for closing the dialog
-        // and handling the async logic.
-        setIsSaving(false);
-        onOpenChange(false);
+        await onSave({ title, content });
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>{post?.id ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
-                    <DialogDescription>
-                        قم بملء تفاصيل المنشور هنا. سيتم عرضه في صفحة المدونة.
-                    </DialogDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <DialogTitle>{post?.id ? 'تعديل المنشور' : 'إضافة منشور جديد'}</DialogTitle>
+                            <DialogDescription>
+                                قم بملء تفاصيل المنشور هنا. سيتم عرضه في صفحة المدونة.
+                            </DialogDescription>
+                        </div>
+                    </div>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">

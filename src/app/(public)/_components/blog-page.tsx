@@ -33,7 +33,7 @@ function BlogPageSkeleton() {
                 <Skeleton className="h-5 w-2/3 mt-2" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
+                {Array.from({ length: 6 }).map((_, i) => (
                     <Card key={i} className="flex flex-col">
                         <CardHeader>
                             <Skeleton className="h-6 w-full" />

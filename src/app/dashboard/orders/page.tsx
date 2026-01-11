@@ -140,7 +140,7 @@ function OrdersPageComponent() {
 
   // Memoized client-side filtering
   const { paginatedOrders, pageCount } = useMemo(() => {
-    if (!allOrders) {
+    if (isLoading) {
       return { paginatedOrders: [], pageCount: 0 };
     }
 
@@ -161,7 +161,7 @@ function OrdersPageComponent() {
       paginatedOrders: filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE),
       pageCount: totalPages,
     };
-  }, [allOrders, currentStatus, currentSearch, currentPage]);
+  }, [allOrders, currentStatus, currentSearch, currentPage, isLoading]);
 
   const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -250,7 +250,7 @@ function OrdersPageComponent() {
     </Card>
   );
   
-  if (isLoading) {
+  if (isLoading || isUserLoading) {
     return <OrdersPageSkeleton />;
   }
 

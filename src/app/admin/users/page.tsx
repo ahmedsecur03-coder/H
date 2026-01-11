@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
@@ -75,39 +74,22 @@ function AdminUsersPageComponent() {
   const currentSearch = searchParams.get('search') || '';
   
   const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastVisible, setLastVisible] = useState<DocumentData | null>(null);
-  const [firstVisible, setFirstVisible] = useState<DocumentData | null>(null);
-  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
   
-  const fetchUsers = useCallback(async (pageDirection: 'next' | 'prev' | 'current' = 'current') => {
+  const fetchUsers = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
     try {
         let q = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'));
         
-        if (pageDirection === 'next' && lastVisible) {
-            q = query(q, startAfter(lastVisible), limit(ITEMS_PER_PAGE));
-        } else if (pageDirection === 'prev' && firstVisible) {
-             q = query(q, endBefore(firstVisible), limitToLast(ITEMS_PER_PAGE));
-        } else {
-             q = query(q, limit(ITEMS_PER_PAGE));
-        }
-
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
             const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-            setUsers(usersData);
-            setFirstVisible(snapshot.docs[0]);
-            setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-
-            let nextQuery = query(collection(firestore, 'users'), orderBy('createdAt', 'desc'), startAfter(snapshot.docs[snapshot.docs.length - 1]), limit(1));
-            const nextSnapshot = await getDocs(nextQuery);
-            setIsNextPageAvailable(!nextSnapshot.empty);
+            setAllUsers(usersData);
         } else {
-            if (pageDirection === 'current') setUsers([]);
-            if(pageDirection === 'next') setIsNextPageAvailable(false);
+            setAllUsers([]);
         }
     } catch (error) {
         console.error(error);
@@ -115,31 +97,42 @@ function AdminUsersPageComponent() {
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, lastVisible, firstVisible]);
+  }, [firestore, toast]);
 
 
   useEffect(() => {
-    setFirstVisible(null);
-    setLastVisible(null);
-    fetchUsers('current');
-  }, [currentSearch, fetchUsers]);
+    fetchUsers();
+  }, [fetchUsers]);
 
-  const handlePageChange = (direction: 'next' | 'prev') => {
-    const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+  const handlePageChange = (direction: 'next' | 'prev' | number) => {
+    let newPage: number;
+    if (typeof direction === 'number') {
+        newPage = direction;
+    } else {
+        newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(newPage));
     router.replace(`${pathname}?${params.toString()}`);
-    fetchUsers(direction);
   };
   
-  const filteredUsers = useMemo(() => {
-    if (!currentSearch) return users;
-    return users.filter(user => 
+  const { paginatedUsers, pageCount } = useMemo(() => {
+     if (isLoading) return { paginatedUsers: [], pageCount: 0 };
+     
+     const filtered = allUsers.filter(user => 
+        !currentSearch ||
         user.email?.toLowerCase().includes(currentSearch.toLowerCase()) || 
         user.name?.toLowerCase().includes(currentSearch.toLowerCase()) ||
         user.id.toLowerCase().includes(currentSearch.toLowerCase())
     );
-  }, [users, currentSearch]);
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    
+    return { paginatedUsers: paginated, pageCount: totalPages };
+
+  }, [allUsers, isLoading, currentSearch, currentPage]);
 
 
   const handleFilterChange = (key: 'search', value: string) => {
@@ -179,14 +172,14 @@ function AdminUsersPageComponent() {
             </div>
         </CardContent>
         <CardFooter>
-            <EditUserDialog user={user} onUserUpdate={() => fetchUsers('current')}>
+            <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
                 <Button variant="outline" size="sm" className="w-full">تعديل</Button>
             </EditUserDialog>
         </CardFooter>
     </Card>
   );
   
-  if (isLoading && users.length === 0) {
+  if (isLoading && allUsers.length === 0) {
     return <UsersPageSkeleton />;
   }
 
@@ -206,18 +199,18 @@ function AdminUsersPageComponent() {
               <Input
                 placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."
                 className="pe-10 rtl:ps-10"
-                defaultValue={currentSearch}
+                value={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
               />
             </div>
         </CardHeader>
        </Card>
 
-       {isLoading && filteredUsers.length === 0 ? <UsersPageSkeleton /> : filteredUsers.length > 0 ? (
+       {isLoading && paginatedUsers.length === 0 ? <UsersPageSkeleton /> : paginatedUsers.length > 0 ? (
          <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
-                {filteredUsers.map((user) => <UserCard key={user.id} user={user} />)}
+                {paginatedUsers.map((user) => <UserCard key={user.id} user={user} />)}
             </div>
 
             {/* Desktop View */}
@@ -238,7 +231,7 @@ function AdminUsersPageComponent() {
                           </TableRow>
                           </TableHeader>
                           <TableBody>
-                              {filteredUsers.map((user) => (
+                              {paginatedUsers.map((user) => (
                               <TableRow key={user.id}>
                                   <TableCell>
                                   <div className="flex items-center gap-3">
@@ -266,7 +259,7 @@ function AdminUsersPageComponent() {
                                   <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                   <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                   <TableCell className="text-right">
-                                      <EditUserDialog user={user} onUserUpdate={() => fetchUsers('current')}>
+                                      <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
                                           <Button variant="outline" size="sm">تعديل</Button>
                                       </EditUserDialog>
                                   </TableCell>
@@ -277,19 +270,21 @@ function AdminUsersPageComponent() {
                   </div>
               </CardContent>
             </Card>
+            {pageCount > 1 && (
             <Pagination>
                 <PaginationContent>
                     <PaginationItem>
                         <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange('prev'); }} disabled={currentPage === 1}/>
                     </PaginationItem>
                      <PaginationItem>
-                        <span className="p-2 text-sm">صفحة {currentPage}</span>
+                        <span className="p-2 text-sm">صفحة {currentPage} من {pageCount}</span>
                     </PaginationItem>
                     <PaginationItem>
-                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange('next'); }} disabled={!isNextPageAvailable} />
+                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange('next'); }} disabled={currentPage === pageCount} />
                     </PaginationItem>
                 </PaginationContent>
             </Pagination>
+            )}
         </>
        ) : (
           <Card className="flex flex-col items-center justify-center py-20 text-center">
