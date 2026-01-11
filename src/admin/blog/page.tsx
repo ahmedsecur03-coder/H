@@ -16,7 +16,6 @@ import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsButton } from './_components/import-posts-button';
-import { AiPostDialog } from './_components/ai-post-dialog';
 
 
 export default function AdminBlogPage() {
@@ -54,12 +53,6 @@ export default function AdminBlogPage() {
 
     const handleOpenPostDialog = (post?: Partial<BlogPost>) => {
         setSelectedPost(post);
-        setIsPostDialogOpen(true);
-    };
-
-    const handleArticleGenerated = (article: { title: string; content: string }) => {
-        // Open the PostDialog with the generated content
-        setSelectedPost(article);
         setIsPostDialogOpen(true);
     };
 
@@ -176,9 +169,6 @@ export default function AdminBlogPage() {
                  {showHeaderActions && (
                     <div className="flex gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                         <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                            <Button variant="outline">توليد بالذكاء الاصطناعي</Button>
-                        </AiPostDialog>
                         <ImportPostsButton onImportComplete={fetchPosts} />
                     </div>
                  )}

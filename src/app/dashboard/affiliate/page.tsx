@@ -4,7 +4,7 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Users, Crown, Loader2, Target, Share2, Wand2, Eye } from "lucide-react";
+import { DollarSign, Users, Crown, Loader2, Target, Share2, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import type { User as UserType, AffiliateTransaction, Withdrawal } from "@/lib/types";
@@ -31,7 +31,6 @@ import { WhatsAppIcon } from "@/components/ui/icons";
 import { Twitter, Facebook } from "lucide-react";
 import { CopyButton } from './_components/copy-button';
 import Link from "next/link";
-import { AiPostGenerator } from "./_components/ai-post-generator";
 import { recommendedAffiliatePosts } from "./_components/recommended-affiliate-posts";
 
 
@@ -441,13 +440,6 @@ export default function AffiliatePage() {
                         </div>
                     </div>
                 </CardContent>
-                 <CardFooter className="flex-col items-stretch border-t p-4">
-                    <h3 className="text-sm font-semibold flex items-center gap-2 mb-4 justify-center">
-                        <Wand2 className="h-4 w-4 text-primary" />
-                        مولّد المنشورات بالذكاء الاصطناعي
-                    </h3>
-                    <AiPostGenerator referralLink={referralLink} />
-                 </CardFooter>
             </Card>
             <div className="lg:col-span-2">
                 <NetworkTree userData={userData} />
@@ -458,4 +450,3 @@ export default function AffiliatePage() {
     </div>
   );
 }
-
