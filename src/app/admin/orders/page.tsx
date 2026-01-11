@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
@@ -46,6 +47,8 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { FirestorePermissionError, errorEmitter } from '@/firebase';
+import { PLATFORM_ICONS } from '@/lib/icon-data';
+import { useServices } from '@/hooks/useServices';
 
 const statusVariant = {
   'مكتمل': 'default',
@@ -63,43 +66,22 @@ const STATUS_OPTIONS: (keyof typeof statusVariant)[] = [
 
 const ITEMS_PER_PAGE = 15;
 
-function OrdersPageSkeleton() {
+function TableSkeleton() {
     return (
-        <div className="space-y-6 pb-8">
-            <div>
-                <Skeleton className="h-8 w-1/4 mb-2" />
-                <Skeleton className="h-5 w-1/2" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-                 <CardFooter className="justify-center border-t pt-4">
-                    <Skeleton className="h-9 w-32" />
-                 </CardFooter>
-            </Card>
-        </div>
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    {Array.from({ length: 7 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                    <TableRow key={i}>
+                        {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     );
 }
 
@@ -109,6 +91,7 @@ function AdminOrdersPageComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { services } = useServices();
 
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentStatus = searchParams.get('status') || 'all';
@@ -126,21 +109,16 @@ function AdminOrdersPageComponent() {
     try {
         let q: Query = collectionGroup(firestore, 'orders');
         
-        // Apply filtering
         if (currentStatus !== 'all') {
             q = query(q, where('status', '==', currentStatus));
         }
 
         if (currentSearch) {
-          // This is a simplified search. For a robust solution, a dedicated search service
-          // like Algolia/Elasticsearch is needed as Firestore does not support native partial text search on multiple fields.
-          // This query will only find exact matches for userId or orderId.
           q = query(q, where('userId', '==', currentSearch)); 
         }
 
         q = query(q, orderBy('orderDate', 'desc'));
         
-        // Apply pagination
         const currentPageMarker = pageMarkers[page-1];
 
         if (direction === 'next' && page > 1 && currentPageMarker) {
@@ -167,7 +145,6 @@ function AdminOrdersPageComponent() {
                 return newMarkers;
             });
             
-            // Check for next page
             let nextQuery = query(q, startAfter(lastVisible), limit(1));
             const nextSnapshot = await getDocs(nextQuery);
             setIsNextPageAvailable(!nextSnapshot.empty);
@@ -265,10 +242,6 @@ function AdminOrdersPageComponent() {
     </Card>
   );
 
-  if (isLoading && orders.length === 0) {
-    return <OrdersPageSkeleton />;
-  }
-
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -305,7 +278,15 @@ function AdminOrdersPageComponent() {
         </CardHeader>
       </Card>
 
-      {isLoading ? <OrdersPageSkeleton /> : orders.length > 0 ? (
+      {isLoading ? (
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <TableSkeleton />
+              </div>
+            </CardContent>
+          </Card>
+      ) : orders.length > 0 ? (
         <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
@@ -329,35 +310,44 @@ function AdminOrdersPageComponent() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {orders.map((order) => (
-                        <TableRow key={order.id}>
-                            <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
-                            <TableCell>
-                               <Link href={`/admin/users?search=${order.userId}`} className="font-mono text-xs text-primary hover:underline">{order.userId.substring(0,8)}...</Link>
-                            </TableCell>
-                            <TableCell className="font-medium">{order.serviceName}</TableCell>
-                            <TableCell><a href={order.link} className="text-primary hover:underline truncate block max-w-xs" target="_blank">{order.link}</a></TableCell>
-                            <TableCell>
-                                <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
-                            </TableCell>
-                            <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
-                            <TableCell className="text-right flex items-center justify-end gap-2">
-                                <OrderActions order={order} onOrderUpdate={() => fetchOrders(currentPage, 'current')} />
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader><AlertDialogTitle>تأكيد الحذف</AlertDialogTitle><AlertDialogDescription>هل أنت متأكد أنك تريد حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription></AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDelete(order)}>حذف</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </TableCell>
-                        </TableRow>
-                        ))}
+                        {orders.map((order) => {
+                            const service = services?.find(s => s.id === order.serviceId);
+                            const Icon = service ? PLATFORM_ICONS[service.platform] : PLATFORM_ICONS.Default;
+                            return (
+                                <TableRow key={order.id}>
+                                    <TableCell className="font-mono text-xs">{order.id.substring(0,8)}...</TableCell>
+                                    <TableCell>
+                                    <Link href={`/admin/users?search=${order.userId}`} className="font-mono text-xs text-primary hover:underline">{order.userId.substring(0,8)}...</Link>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <Icon className="w-4 h-4 text-muted-foreground"/>
+                                            <span>{order.serviceName}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell><a href={order.link} className="text-primary hover:underline truncate block max-w-xs" target="_blank">{order.link}</a></TableCell>
+                                    <TableCell>
+                                        <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>{order.status}</Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
+                                    <TableCell className="text-right flex items-center justify-end gap-2">
+                                        <OrderActions order={order} onOrderUpdate={() => fetchOrders(currentPage, 'current')} />
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader><AlertDialogTitle>تأكيد الحذف</AlertDialogTitle><AlertDialogDescription>هل أنت متأكد أنك تريد حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription></AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(order)}>حذف</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                     </Table>
                 </div>
@@ -401,10 +391,30 @@ function AdminOrdersPageComponent() {
 
 export default function AdminOrdersPage() {
     return (
-        <Suspense fallback={<OrdersPageSkeleton />}>
+        <Suspense fallback={
+             <div className="space-y-6 pb-8">
+                <div>
+                    <Skeleton className="h-8 w-1/4 mb-2" />
+                    <Skeleton className="h-5 w-1/2" />
+                </div>
+                <Card>
+                    <CardHeader>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    </CardHeader>
+                </Card>
+                 <Card>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                           <TableSkeleton />
+                        </div>
+                    </CardContent>
+                 </Card>
+            </div>
+        }>
             <AdminOrdersPageComponent />
         </Suspense>
     )
 }
-
-    

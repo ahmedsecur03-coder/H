@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
@@ -26,42 +27,26 @@ import {
 
 const ITEMS_PER_PAGE = 15;
 
-function UsersPageSkeleton() {
+
+function TableSkeleton() {
     return (
-        <div className="space-y-6 pb-8">
-            <div>
-                <Skeleton className="h-9 w-1/3" />
-                <Skeleton className="h-5 w-2/3 mt-2" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-10 w-full" />
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-                <CardFooter className="justify-center border-t pt-4">
-                    <Skeleton className="h-9 w-32" />
-                </CardFooter>
-            </Card>
-        </div>
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                    <TableRow key={i}>
+                        {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     );
 }
+
 
 function AdminUsersPageComponent() {
   const firestore = useFirestore();
@@ -84,9 +69,6 @@ function AdminUsersPageComponent() {
     try {
         let q: Query = collection(firestore, 'users');
 
-        // This is a basic client-side search for simplicity as Firestore doesn't support partial text search natively.
-        // For a full-featured search, an external service like Algolia or Elasticsearch is recommended.
-        // The query is still paginated for performance.
         if (currentSearch) {
              q = query(q, where('email', '>=', currentSearch), where('email', '<=', currentSearch + '\uf8ff'));
         }
@@ -95,9 +77,6 @@ function AdminUsersPageComponent() {
 
         if (direction === 'next' && page > 1 && pageMarkers[page-1]) {
             q = query(q, startAfter(pageMarkers[page-1]));
-        } else if (direction === 'prev' && page > 0 && pageMarkers[page-1]) {
-             // This is tricky with dynamic queries, so we'll just refetch from start for prev page
-             // A more robust solution would involve more complex cursor management
         }
         
         q = query(q, limit(ITEMS_PER_PAGE));
@@ -116,17 +95,16 @@ function AdminUsersPageComponent() {
         }
     } catch (error) {
         console.error(error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch users.' });
+        toast({ variant: 'destructive', title: "خطأ في الاستعلام", description: 'لا يمكن جلب المستخدمين. قد يتطلب هذا البحث إنشاء فهرس مركب في Firestore. تحقق من سجلات الأخطاء للحصول على رابط الإنشاء.'})
     } finally {
         setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firestore, toast, currentSearch]);
+  }, [firestore, toast, currentSearch, pageMarkers]);
   
   useEffect(() => {
     fetchUsers(1, 'current');
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSearch]); // Refetch when search term changes
+  }, [currentSearch]); 
 
   const handlePageChange = (newPage: number) => {
     const direction = newPage > currentPage ? 'next' : 'prev';
@@ -180,9 +158,6 @@ function AdminUsersPageComponent() {
     </Card>
   );
   
-  if (isLoading && users.length === 0) {
-    return <UsersPageSkeleton />;
-  }
 
   return (
     <div className="space-y-6 pb-8">
@@ -207,7 +182,15 @@ function AdminUsersPageComponent() {
         </CardHeader>
        </Card>
 
-       {isLoading ? <UsersPageSkeleton /> : users.length > 0 ? (
+       {isLoading ? (
+         <Card>
+            <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <TableSkeleton />
+                </div>
+            </CardContent>
+          </Card>
+       ) : users.length > 0 ? (
          <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
@@ -310,10 +293,25 @@ function AdminUsersPageComponent() {
 
 export default function AdminUsersPage() {
     return (
-        <Suspense fallback={<UsersPageSkeleton />}>
+        <Suspense fallback={
+            <div className="space-y-6 pb-8">
+                <div>
+                    <Skeleton className="h-9 w-1/3" />
+                    <Skeleton className="h-5 w-2/3 mt-2" />
+                </div>
+                <Card>
+                    <CardHeader><Skeleton className="h-10 w-full" /></CardHeader>
+                </Card>
+                <Card>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <TableSkeleton />
+                      </div>
+                    </CardContent>
+                </Card>
+            </div>
+        }>
             <AdminUsersPageComponent />
         </Suspense>
     )
 }
-
-    
