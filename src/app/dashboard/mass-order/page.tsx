@@ -1,18 +1,17 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { runTransaction, collection, doc, query } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ListOrdered, Loader2, PlusCircle, Trash2, Copy } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from '@/hooks/use-toast';
 import type { Service, Order, User } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { SMM_SERVICES } from '@/lib/smm-services';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -144,7 +143,7 @@ function MassOrderPageComponent() {
     const { data: userData, isLoading: isUserLoading } = useDoc<User>(userDocRef);
     
     useEffect(() => {
-        if (servicesLoading || allServices.length === 0) return; // Wait for services to load
+        if (servicesLoading || !allServices || allServices.length === 0) return; // Wait for services to load
 
         const prefillData = searchParams.get('prefill');
         if (prefillData) {
@@ -172,15 +171,15 @@ function MassOrderPageComponent() {
     const rank = getRankForSpend(userData?.totalSpent ?? 0);
     const discountPercentage = rank.discount / 100;
 
-    const platforms = useMemo(() => [...new Set(allServices.map(s => s.platform))], [allServices]);
+    const platforms = useMemo(() => allServices ? [...new Set(allServices.map(s => s.platform))] : [], [allServices]);
 
     const getCategoriesForPlatform = useCallback((platform: string) => {
-        if (!platform) return [];
+        if (!platform || !allServices) return [];
         return [...new Set(allServices.filter(s => s.platform === platform).map(s => s.category))];
     }, [allServices]);
 
     const getServicesForCategory = useCallback((platform: string, category: string) => {
-         if (!platform || !category) return [];
+         if (!platform || !category || !allServices) return [];
         return allServices.filter(s => s.platform === platform && s.category === category);
     }, [allServices]);
 
@@ -211,6 +210,7 @@ function MassOrderPageComponent() {
     };
     
     const { totalCost, validRows } = useMemo(() => {
+        if (!allServices) return { totalCost: 0, validRows: [] };
         const validRows = rows.filter(row => {
             const service = allServices.find(s => s.id === row.serviceId);
             const quantity = parseInt(row.quantity, 10);
@@ -221,7 +221,7 @@ function MassOrderPageComponent() {
     }, [rows, allServices]);
 
     const handleMassOrderSubmit = async () => {
-        if (!userData || !firestore || !authUser) {
+        if (!userData || !firestore || !authUser || !allServices) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'لا يمكن معالجة الطلب حاليًا.' });
             return;
         }

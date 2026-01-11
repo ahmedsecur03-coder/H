@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         if (!user) {
             return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
         }
-
+        
         // Log the API request only for non-admin users
         if(user.role !== 'admin') {
             const logData = {

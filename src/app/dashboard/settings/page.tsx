@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { User } from '@/lib/types';
@@ -38,7 +39,6 @@ export default function SettingsPage() {
         const updateData = { notificationPreferences: preferences };
         toast({ title: 'جاري حفظ التفضيلات...' });
         
-        // Non-blocking update
         updateDoc(userDocRef, updateData)
             .then(() => {
                 forceDocUpdate(); // Force a re-fetch to update the UI optimistically

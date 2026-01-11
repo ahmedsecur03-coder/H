@@ -22,17 +22,24 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, Info, Terminal } from 'lucide-react';
+import { AlertTriangle, Info, Terminal, Code2, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const levelConfig = {
   info: {
     variant: 'secondary' as const,
     icon: Info,
+    className: 'border-blue-500/50 text-blue-500'
   },
   warning: {
     variant: 'default' as const,
-    className: 'bg-yellow-500/80 text-yellow-foreground hover:bg-yellow-500/90',
+    className: 'bg-yellow-500/20 border-yellow-500/50 text-yellow-600 dark:text-yellow-400',
     icon: AlertTriangle,
   },
   error: {
@@ -41,19 +48,29 @@ const levelConfig = {
   },
 };
 
+const eventConfig: {[key: string]: { icon: React.ElementType }} = {
+    'api_request': { icon: Code2 },
+    'permission_denied': { icon: AlertTriangle },
+    'user_created': { icon: User },
+    'default': { icon: Terminal }
+}
+
 export default function SystemLogPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const logsQuery = useMemoFirebase(() => (
+    firestore ? query(collection(firestore, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100)) : null
+  ),[firestore]);
+
   useEffect(() => {
-    if (!firestore) return;
+    if (!logsQuery) return;
 
     const fetchLogs = async () => {
         setIsLoading(true);
         try {
-            const logsQuery = query(collection(firestore, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100));
             const querySnapshot = await getDocs(logsQuery);
             const fetchedLogs: SystemLog[] = [];
             querySnapshot.forEach(doc => {
@@ -62,8 +79,6 @@ export default function SystemLogPage() {
             setLogs(fetchedLogs);
         } catch (error) {
             console.error("Error fetching system logs:", error);
-            // If the collection doesn't exist, it might throw a permission error or another error.
-            // We'll catch it and show an empty state, which is better than crashing.
             setLogs([]); 
             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب سجلات النظام. قد تكون المجموعة غير موجودة أو هناك مشكلة في الصلاحيات.' });
         } finally {
@@ -72,7 +87,7 @@ export default function SystemLogPage() {
     };
     
     fetchLogs();
-  }, [firestore, toast]);
+  }, [logsQuery, toast]);
   
   const renderContent = () => {
     if (isLoading) {
@@ -96,6 +111,7 @@ export default function SystemLogPage() {
     return logs.map((log) => {
         const config = levelConfig[log.level] || levelConfig.info;
         const Icon = config.icon;
+        const EventIcon = eventConfig[log.event] ? eventConfig[log.event].icon : eventConfig.default.icon;
         return (
             <TableRow key={log.id}>
                 <TableCell>
@@ -105,8 +121,24 @@ export default function SystemLogPage() {
                     </Badge>
                 </TableCell>
                 <TableCell className="font-medium">{log.message}</TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">{log.event}</TableCell>
-                <TableCell className="text-muted-foreground">{new Date(log.timestamp).toLocaleString('ar-EG')}</TableCell>
+                <TableCell>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                               <div className="flex items-center gap-2 text-muted-foreground font-mono text-xs">
+                                 <EventIcon className="h-4 w-4" />
+                                 <span>{log.event}</span>
+                               </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <pre className="text-xs max-w-sm overflow-auto p-2 bg-background">
+                                    {JSON.stringify(log.metadata, null, 2)}
+                                </pre>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-xs">{new Date(log.timestamp).toLocaleString('ar-EG')}</TableCell>
             </TableRow>
         );
     });
@@ -125,22 +157,24 @@ export default function SystemLogPage() {
        <Card>
         <CardHeader>
           <CardTitle>آخر 100 حدث</CardTitle>
-           <CardDescription>يتم عرض الأحداث من الأحدث إلى الأقدم.</CardDescription>
+           <CardDescription>يتم عرض الأحداث من الأحدث إلى الأقدم. مرر الفأرة فوق الحدث لعرض التفاصيل.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">المستوى</TableHead>
-                <TableHead>الرسالة</TableHead>
-                <TableHead>الحدث</TableHead>
-                <TableHead>الوقت</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {renderContent()}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead className="w-[120px]">المستوى</TableHead>
+                    <TableHead>الرسالة</TableHead>
+                    <TableHead>الحدث</TableHead>
+                    <TableHead>الوقت</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {renderContent()}
+                </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
