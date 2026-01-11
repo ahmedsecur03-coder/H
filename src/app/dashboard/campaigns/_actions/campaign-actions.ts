@@ -1,4 +1,3 @@
-
 'use server';
 
 import { initializeFirebaseServer } from "@/firebase/init-server";
@@ -48,8 +47,9 @@ export async function activateCampaignAndDeductBalance(userId: string, campaignI
                     href: '/dashboard/add-funds'
                 };
                 transaction.update(campaignDocRef, { status: 'متوقف' });
-                // We do not update the user's notifications in this transaction to avoid read-after-write conflicts if another process modifies it.
-                // Notifications will be handled by a separate, more robust system or can be added in a different transaction context if needed.
+                transaction.update(userDocRef, {
+                    notifications: arrayUnion(notification)
+                });
                 return;
             }
 

@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useUser, useFirestore, errorEmitter, FirestorePermissionError, useDoc, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, runTransaction, arrayUnion } from 'firebase/firestore';
+import { addDoc, collection, doc } from 'firebase/firestore';
 import { Separator } from '@/components/ui/separator';
 import { PLATFORM_ICONS } from '@/lib/icon-data';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { activateCampaignAndDeductBalance } from '../_actions/campaign-actions';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -138,81 +139,6 @@ export default function NewCampaignPage() {
         setStep(2);
     };
 
-    const activateCampaignAndDeductBalance = async (userId: string, campaignId: string) => {
-        if (!firestore) {
-            console.error("Firestore not available.");
-            return { error: "Could not connect to the database." };
-        }
-    
-        try {
-            const userDocRef = doc(firestore, 'users', userId);
-            const campaignDocRef = doc(firestore, `users/${userId}/campaigns`, campaignId);
-    
-            await runTransaction(firestore, async (transaction) => {
-                const userDoc = await transaction.get(userDocRef);
-                const campaignDoc = await transaction.get(campaignDocRef);
-    
-                if (!userDoc.exists() || !campaignDoc.exists()) {
-                    throw new Error(`User ${userId} or Campaign ${campaignId} not found for activation.`);
-                }
-                
-                const userData = userDoc.data() as UserType;
-                const campaignData = campaignDoc.data() as Campaign;
-    
-                if (campaignData.status !== 'بانتظار المراجعة') {
-                    return; // Already processed
-                }
-    
-                if ((userData.adBalance ?? 0) < campaignData.budget) {
-                    const notification: Notification = {
-                        id: `campaign-fail-${campaignId}`,
-                        message: `فشلت مراجعة حملتك "${campaignData.name}" بسبب عدم كفاية رصيد الإعلانات.`,
-                        type: 'error',
-                        read: false,
-                        createdAt: new Date().toISOString(),
-                        href: '/dashboard/add-funds'
-                    };
-                    transaction.update(campaignDocRef, { status: 'متوقف' });
-                    transaction.update(userDocRef, {
-                        notifications: arrayUnion(notification),
-                    });
-                    return;
-                }
-    
-                const newAdBalance = (userData.adBalance ?? 0) - campaignData.budget;
-                
-                const campaignUpdates = { 
-                    status: 'نشط' as const,
-                    startDate: new Date().toISOString(),
-                };
-                
-                const notification: Notification = {
-                    id: `campaign-act-${campaignId}`,
-                    message: `تم تفعيل حملتك الإعلانية "${campaignData.name}" بنجاح وبدأت في العمل.`,
-                    type: 'success',
-                    read: false,
-                    createdAt: new Date().toISOString(),
-                    href: '/dashboard/campaigns'
-                };
-    
-                transaction.update(userDocRef, { 
-                    adBalance: newAdBalance,
-                    notifications: arrayUnion(notification)
-                });
-                transaction.update(campaignDocRef, campaignUpdates);
-            });
-            return { success: true };
-        } catch (error: any) {
-            console.error(`Failed to activate campaign ${campaignId} for user ${userId}:`, error);
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'update',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            return { error: error.message };
-        }
-    }
-
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!firestore || !authUser || !selectedPlatform) {
@@ -224,14 +150,14 @@ export default function NewCampaignPage() {
         const budget = parseFloat(formData.get('budget') as string);
         const durationDays = parseInt(formData.get('durationDays') as string, 10);
         
-        if (!userData || userData.adBalance < budget) {
-            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance.toFixed(2)}$ فقط. يرجى شحن رصيد الإعلانات أولاً.` });
+        if (!userData || (userData.adBalance ?? 0) < budget) {
+            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance?.toFixed(2) || '0.00'}$ فقط. يرجى شحن رصيد الإعلانات أولاً.` });
             return;
         }
 
         setLoading(true);
 
-        const campaignData: Omit<Campaign, 'id' | 'targetAudience'> = {
+        const campaignData: Omit<Campaign, 'id'> = {
             userId: authUser.uid,
             name: formData.get('name') as string,
             platform: selectedPlatform,
@@ -244,6 +170,7 @@ export default function NewCampaignPage() {
             targetAge: formData.get('targetAge') as string,
             targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
             targetInterests: formData.get('targetInterests') as string,
+            targetAudience: '', // Kept for schema compatibility, but not used in form
             startDate: '', // Will be set on approval
             spend: 0,
             status: 'بانتظار المراجعة', // Set to pending review
@@ -257,7 +184,7 @@ export default function NewCampaignPage() {
             toast({ title: "تم إرسال حملتك للمراجعة", description: "سيتم مراجعتها وتفعيلها تلقائيًا خلال لحظات." });
             
             // --- AUTOMATIC ACTIVATION LOGIC ---
-            // Simulating a delay for the "review" process then activating
+            // Simulating a delay for the "review" process then activating via Server Action
             setTimeout(() => {
                 activateCampaignAndDeductBalance(authUser.uid, docRef.id);
             }, 3000); // 3-second delay
@@ -324,7 +251,7 @@ export default function NewCampaignPage() {
                                          <button type="button" onClick={() => setStep(1)} className="text-muted-foreground hover:text-foreground"><ArrowRight className="h-5 w-5" /></button>
                                         <div>
                                             <CardTitle>الخطوة 2: تفاصيل حملة {currentConfig.title}</CardTitle>
-                                            <CardDescription>املأ بيانات حملتك. سيتم خصم الميزانية عند التفعيل التلقائي. رصيد إعلاناتك: ${userData?.adBalance.toFixed(2) || '0.00'}</CardDescription>
+                                            <CardDescription>املأ بيانات حملتك. سيتم خصم الميزانية عند التفعيل التلقائي. رصيد إعلاناتك: ${userData?.adBalance?.toFixed(2) || '0.00'}</CardDescription>
                                         </div>
                                     </div>
                                 </CardHeader>
