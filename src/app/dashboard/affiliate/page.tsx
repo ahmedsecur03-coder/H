@@ -455,9 +455,9 @@ export default function AffiliatePage() {
                     </div>
                 </CardContent>
                  <CardFooter className="flex-col items-stretch border-t p-4">
-                    <h3 className="text-sm font-semibold mb-4 flex items-center justify-between">
-                        <span className="flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" />مولّد المنشورات بالذكاء الاصطناعي</span>
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" />مولّد المنشورات بالذكاء الاصطناعي</h3>
+                    </div>
                     <AiPostGenerator referralLink={referralLink} />
                  </CardFooter>
             </Card>
