@@ -60,21 +60,23 @@ export function EditUserDialog({ user, children, onUserUpdate }: { user: User, c
             role: role,
         };
 
-        try {
-            await updateDoc(userDocRef, updateData);
-            toast({ title: 'نجاح', description: 'تم تحديث بيانات المستخدم.' });
-            onUserUpdate();
-            setOpen(false);
-        } catch (error) {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'update',
-                requestResourceData: updateData,
+        updateDoc(userDocRef, updateData)
+            .then(() => {
+                toast({ title: 'نجاح', description: 'تم تحديث بيانات المستخدم.' });
+                onUserUpdate();
+                setOpen(false);
+            })
+            .catch(error => {
+                const permissionError = new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'update',
+                    requestResourceData: updateData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsSaving(false);
             });
-            errorEmitter.emit('permission-error', permissionError);
-        } finally {
-            setIsSaving(false);
-        }
     };
     
     return (

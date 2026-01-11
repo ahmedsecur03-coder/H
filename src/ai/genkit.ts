@@ -4,6 +4,7 @@
  */
 
 import { generateBlogPostFlow } from '@/ai/flows/generate-blog-post-flow';
+import { generateAffiliatePostFlow } from '@/ai/flows/generate-affiliate-post-flow';
 import { googleAI } from '@genkit-ai/google-genai';
 import { genkit, configureGenkit } from 'genkit';
 
@@ -21,6 +22,7 @@ configureGenkit({
 
 export const allFlows = {
   generateBlogPostFlow,
+  generateAffiliatePostFlow,
 };
 
 export const ai = genkit;

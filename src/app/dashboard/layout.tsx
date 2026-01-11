@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -108,20 +107,20 @@ function NavItems() {
     }
 
     return (
-        <Link href={item.href || '#'} passHref key={item.href}>
-          <SidebarMenuButton isActive={pathname === item.href}>
-            {Icon && <Icon className="h-4 w-4" />}
-            <span>{item.label}</span>
-          </SidebarMenuButton>
-        </Link>
+        <SidebarMenuItem key={item.href}>
+            <Link href={item.href || '#'} passHref>
+            <SidebarMenuButton isActive={pathname === item.href}>
+                {Icon && <Icon className="h-4 w-4" />}
+                <span>{item.label}</span>
+            </SidebarMenuButton>
+            </Link>
+        </SidebarMenuItem>
     );
   };
 
   return (
     <>
-      {dashboardNavItems.map((item) => (
-        <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>
-      ))}
+      {dashboardNavItems.map((item) => renderNavItem(item))}
     </>
   );
 }
@@ -132,7 +131,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const firestore = useFirestore();
 
     const userDocRef = useMemoFirebase(() => (firestore && user ? doc(firestore, `users/${user.uid}`) : null), [firestore, user]);
-    const { data: userData, isLoading: isUserDataLoading } = useDoc<User>(userDocRef);
+    const { data: userData, isLoading: isUserDataLoading, forceDocUpdate } = useDoc<User>(userDocRef);
     
     React.useEffect(() => {
         if(!isUserLoading && !user) {

@@ -30,6 +30,7 @@ import { WhatsAppIcon } from "@/components/ui/icons";
 import { Twitter, Facebook } from "lucide-react";
 import { CopyButton } from './_components/copy-button';
 import Link from "next/link";
+import { AiPostGenerator } from "./_components/ai-post-generator";
 
 // Inlined WithdrawalDialog component
 function WithdrawalDialog({ user, children }: { user: UserType, children: React.ReactNode }) {
@@ -345,7 +346,7 @@ export default function AffiliatePage() {
                     <WithdrawalDialog user={userData}>
                        <Button className="w-full" disabled={(userData?.affiliateEarnings ?? 0) < 10}>طلب سحب الأرباح</Button>
                     </WithdrawalDialog>
-                </CardFooter>
+                 </CardFooter>
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -403,7 +404,7 @@ export default function AffiliatePage() {
              <Card className="lg:col-span-1">
                 <CardHeader>
                     <CardTitle>أدوات التسويق</CardTitle>
-                    <CardDescription>استخدم هذه الروابط لدعوة مستخدمين جدد.</CardDescription>
+                    <CardDescription>استخدم هذه الروابط والأدوات لدعوة مستخدمين جدد.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div>
@@ -427,6 +428,10 @@ export default function AffiliatePage() {
                         </div>
                     </div>
                 </CardContent>
+                 <CardFooter className="flex-col items-stretch border-t p-4">
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" />مولّد المنشورات بالذكاء الاصطناعي</h3>
+                    <AiPostGenerator referralLink={referralLink} />
+                 </CardFooter>
             </Card>
             <div className="lg:col-span-2">
                 <NetworkTree userData={userData} />

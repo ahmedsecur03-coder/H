@@ -1,67 +1,105 @@
-{
-  "name": "nextn",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack -p 9002",
-    "build": "NODE_ENV=production next build",
-    "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@google-cloud/firestore": "^7.8.0",
-    "@hookform/resolvers": "^4.1.3",
-    "@radix-ui/react-alert-dialog": "^1.1.6",
-    "@radix-ui/react-avatar": "^1.1.3",
-    "@radix-ui/react-collapsible": "^1.1.11",
-    "@radix-ui/react-dialog": "^1.1.6",
-    "@radix-ui/react-dropdown-menu": "^2.1.6",
-    "@radix-ui/react-label": "^2.1.2",
-    "@radix-ui/react-navigation-menu": "^1.2.0",
-    "@radix-ui/react-popover": "^1.1.6",
-    "@radix-ui/react-progress": "^1.1.2",
-    "@radix-ui/react-radio-group": "^1.2.3",
-    "@radix-ui/react-scroll-area": "^1.2.3",
-    "@radix-ui/react-select": "^2.1.6",
-    "@radix-ui/react-separator": "^1.1.2",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-switch": "^1.1.3",
-    "@radix-ui/react-tabs": "^1.1.3",
-    "@radix-ui/react-toast": "^1.2.6",
-    "@radix-ui/react-tooltip": "^1.1.8",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
-    "dotenv": "^16.5.0",
-    "firebase": "^11.9.1",
-    "firebase-admin": "^12.3.0",
-    "framer-motion": "^11.3.19",
-    "lucide-react": "^0.475.0",
-    "next": "15.5.9",
-    "next-themes": "0.4.0",
-    "patch-package": "^8.0.0",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
-    "react-hook-form": "^7.54.2",
-    "react-markdown": "^9.0.1",
-    "react-syntax-highlighter": "^15.5.0",
-    "recharts": "^2.15.1",
-    "tailwind-merge": "^3.0.1",
-    "tailwindcss-animate": "^1.0.7",
-    "use-debounce": "^10.0.1",
-    "wav": "^1.0.2",
-    "zod": "^3.24.2"
-  },
-  "devDependencies": {
-    "@tailwindcss/typography": "^0.5.13",
-    "@types/node": "^20",
-    "@types/react": "^19.2.1",
-    "@types/react-dom": "^19.2.1",
-    "@types/react-syntax-highlighter": "^15.5.13",
-    "postcss": "^8",
-    "sass": "^1.77.8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+'use client';
+
+import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
+import { isAiConfigured } from '@/ai/client';
+import { generateAffiliatePost } from '@/ai/flows/generate-affiliate-post-flow';
+import { AnimatePresence, motion } from 'framer-motion';
+
+export function AiPostGenerator({ referralLink }: { referralLink: string }) {
+    const [topic, setTopic] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedPost, setGeneratedPost] = useState('');
+    const [copied, setCopied] = useState(false);
+    const { toast } = useToast();
+
+    if (!isAiConfigured()) {
+        return null; // Don't render if AI is not configured
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!topic.trim()) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'الرجاء إدخال فكرة للمنشور.' });
+            return;
+        }
+
+        setIsGenerating(true);
+        setGeneratedPost('');
+        toast({ title: 'جاري توليد المنشور...', description: 'قد تستغرق العملية بضع لحظات.' });
+
+        try {
+            const result = await generateAffiliatePost({ topic, referralLink });
+            setGeneratedPost(result.postContent);
+        } catch (error: any) {
+            console.error("AI Post Generation Error:", error);
+            toast({ variant: 'destructive', title: 'فشل التوليد', description: error.message || 'حدث خطأ أثناء إنشاء المنشور.' });
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+    
+    const handleCopy = () => {
+        if (!generatedPost) return;
+        navigator.clipboard.writeText(generatedPost);
+        setCopied(true);
+        toast({ title: 'تم نسخ المنشور!' });
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="post-topic">فكرة أو موضوع المنشور</Label>
+                    <Input
+                        id="post-topic"
+                        value={topic}
+                        onChange={(e) => setTopic(e.target.value)}
+                        placeholder="مثال: أسرع خدمات SMM، أفضل طريقة لزيادة المتابعين"
+                        required
+                        disabled={isGenerating}
+                    />
+                </div>
+                <Button type="submit" disabled={isGenerating} className="w-full">
+                    {isGenerating ? <Loader2 className="animate-spin me-2" /> : <Sparkles className="me-2 h-4 w-4" />}
+                    توليد منشور تسويقي
+                </Button>
+            </form>
+
+            <AnimatePresence>
+                {generatedPost && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-2"
+                    >
+                        <Label htmlFor="generated-post">المنشور المقترح</Label>
+                        <div className="relative">
+                            <Textarea
+                                id="generated-post"
+                                value={generatedPost}
+                                readOnly
+                                rows={6}
+                                className="pr-12"
+                            />
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={handleCopy}
+                                className="absolute top-2 left-2 rtl:right-2 rtl:left-auto"
+                            >
+                                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
