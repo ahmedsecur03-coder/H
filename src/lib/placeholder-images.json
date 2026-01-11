@@ -1,88 +1,322 @@
 {
   "placeholderImages": [
     {
-      "id": "hero",
-      "description": "Abstract digital services concept image",
-      "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxkaWdpdGFsJTIwbmV0d29ya3xlbnwwfHx8fDE3NjUzNjkwODF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "digital network"
-    },
-    {
-      "id": "avatar1",
-      "description": "User avatar 1",
-      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjUzNDA5MTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
-    },
-    {
-      "id": "avatar2",
-      "description": "User avatar 2 - a woman",
-      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "imageHint": "woman portrait"
-    },
-    {
-      "id": "avatar3",
-      "description": "User avatar 3",
-      "imageUrl": "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjUzNDA5MTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
-    },
-    {
-      "id": "campaigns-placeholder",
-      "description": "Image illustrating advertising campaigns",
-      "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8YWR2ZXJ0aXNpbmd8ZW58MHx8MHx8fDA%3D",
-      "imageHint": "advertising campaign"
-    },
-    {
-      "id": "agency-accounts-placeholder",
-      "description": "Image illustrating professional accounts",
-      "imageUrl": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGJ1c2luZXNzJTIwYWNjb3VudHxlbnwwfHwwfHx8MA%3D%3D",
-      "imageHint": "business professional"
-    },
-    {
-      "id": "social-growth",
-      "description": "Image showing social media growth on a phone",
+      "id": "social-1",
+      "description": "Person on phone with social icons",
       "imageUrl": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=1080",
       "imageHint": "social media"
     },
     {
-      "id": "ads-dashboard",
-      "description": "A dashboard showing advertising performance metrics",
-      "imageUrl": "https://images.unsplash.com/photo-1642427749670-f20e2e76f8c8?q=80&w=1080",
-      "imageHint": "analytics dashboard"
+      "id": "social-2",
+      "description": "Social media apps on a phone screen",
+      "imageUrl": "https://images.unsplash.com/photo-1611162616805-6a457c0205f8?q=80&w=1080",
+      "imageHint": "social apps"
     },
     {
-      "id": "affiliate-earnings",
-      "description": "Image representing earnings and money",
-      "imageUrl": "https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=1080",
-      "imageHint": "money earnings"
+      "id": "social-3",
+      "description": "Flat lay of social media icons",
+      "imageUrl": "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?q=80&w=1080",
+      "imageHint": "social icons"
     },
     {
-      "id": "secure-account",
-      "description": "Image of a lock symbolizing account security",
-      "imageUrl": "https://images.unsplash.com/photo-1550791822-4a7a5c55d1c2?q=80&w=1080",
-      "imageHint": "security lock"
+      "id": "social-4",
+      "description": "Analytics chart on a laptop",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1080",
+      "imageHint": "data analytics"
     },
     {
-      "id": "smm-promo",
-      "description": "Generic social media marketing promotion image",
-      "imageUrl": "https://images.unsplash.com/photo-1611926653458-09294b3142bf?q=80&w=1080",
-      "imageHint": "social media"
+      "id": "social-5",
+      "description": "Upward trend arrow on a graph",
+      "imageUrl": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1080",
+      "imageHint": "growth chart"
     },
     {
-      "id": "rocket-launch",
-      "description": "A rocket launching, symbolizing a fast start",
+      "id": "social-6",
+      "description": "Person typing on a laptop with charts in background",
+      "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1080",
+      "imageHint": "digital marketing"
+    },
+    {
+      "id": "social-7",
+      "description": "Megaphone for announcement",
+      "imageUrl": "https://images.unsplash.com/photo-1589996448606-2e6989417f53?q=80&w=1080",
+      "imageHint": "announcement marketing"
+    },
+    {
+      "id": "social-8",
+      "description": "Lightbulb idea concept",
+      "imageUrl": "https://images.unsplash.com/photo-1524522173746-f628baad3644?q=80&w=1080",
+      "imageHint": "idea concept"
+    },
+    {
+      "id": "social-9",
+      "description": "Rocket launching into the sky",
       "imageUrl": "https://images.unsplash.com/photo-1541185934-01b604e066c4?q=80&w=1080",
       "imageHint": "rocket launch"
     },
     {
-      "id": "seo-strategy",
-      "description": "Image representing SEO and digital marketing strategy.",
+      "id": "social-10",
+      "description": "A network of connected people",
+      "imageUrl": "https://images.unsplash.com/photo-1543269664-56d93c1b41a6?q=80&w=1080",
+      "imageHint": "people network"
+    },
+    {
+      "id": "social-11",
+      "description": "Person working on a creative project",
+      "imageUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1080",
+      "imageHint": "creative work"
+    },
+    {
+      "id": "social-12",
+      "description": "Hands holding a smartphone showing a graph",
+      "imageUrl": "https://images.unsplash.com/photo-1633113088983-12fb3b2fe0ac?q=80&w=1080",
+      "imageHint": "mobile analytics"
+    },
+    {
+      "id": "social-13",
+      "description": "A target with an arrow in the bullseye",
+      "imageUrl": "https://images.unsplash.com/photo-1583025738840-752b8b598929?q=80&w=1080",
+      "imageHint": "target goal"
+    },
+    {
+      "id": "social-14",
+      "description": "Stack of coins representing earnings",
+      "imageUrl": "https://images.unsplash.com/photo-1553729459-efe14ef6055d?q=80&w=1080",
+      "imageHint": "money earnings"
+    },
+    {
+      "id": "social-15",
+      "description": "Team collaboration in an office",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1080",
+      "imageHint": "team collaboration"
+    },
+    {
+      "id": "social-16",
+      "description": "Padlock symbolizing security",
+      "imageUrl": "https://images.unsplash.com/photo-1550791822-4a7a5c55d1c2?q=80&w=1080",
+      "imageHint": "security lock"
+    },
+    {
+      "id": "social-17",
+      "description": "SEO letters made from wood blocks",
       "imageUrl": "https://images.unsplash.com/photo-1554672408-730436b60dde?q=80&w=1080",
       "imageHint": "seo strategy"
     },
     {
-      "id": "affiliate-network",
-      "description": "Abstract image of a network, for affiliate marketing.",
-      "imageUrl": "https://images.unsplash.com/photo-1543269664-56d93c1b41a6?q=80&w=1080",
-      "imageHint": "people network"
+      "id": "social-18",
+      "description": "Digital abstract network connections",
+      "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1080",
+      "imageHint": "digital network"
+    },
+    {
+      "id": "social-19",
+      "description": "Person pointing at a tablet screen",
+      "imageUrl": "https://images.unsplash.com/photo-1587440871875-191322ee64b0?q=80&w=1080",
+      "imageHint": "strategy presentation"
+    },
+    {
+      "id": "social-20",
+      "description": "Close up of a smartphone with apps",
+      "imageUrl": "https://images.unsplash.com/photo-1589739900223-4eff82a71542?q=80&w=1080",
+      "imageHint": "mobile apps"
+    },
+    {
+      "id": "social-21",
+      "description": "A desk with a laptop and coffee",
+      "imageUrl": "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1080",
+      "imageHint": "work desk"
+    },
+    {
+      "id.ts": "social-22",
+      "description": "Neon sign saying 'Open'",
+      "imageUrl": "https://images.unsplash.com/photo-1533511588698-c9679105436f?q=80&w=1080",
+      "imageHint": "open sign"
+    },
+    {
+      "id": "social-23",
+      "description": "A person celebrating success",
+      "imageUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1080",
+      "imageHint": "team success"
+    },
+    {
+      "id": "social-24",
+      "description": "Crowd of people at a concert",
+      "imageUrl": "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1080",
+      "imageHint": "audience crowd"
+    },
+    {
+      "id": "social-25",
+      "description": "Smartphone taking a picture of food",
+      "imageUrl": "https://images.unsplash.com/photo-1556048224-54c733927640?q=80&w=1080",
+      "imageHint": "food photography"
+    },
+    {
+      "id": "social-26",
+      "description": "Online shopping cart icon",
+      "imageUrl": "https://images.unsplash.com/photo-1585144582302-2735e783519c?q=80&w=1080",
+      "imageHint": "online shopping"
+    },
+    {
+      "id": "social-27",
+      "description": "A world map with connection lines",
+      "imageUrl": "https://images.unsplash.com/photo-1563829424821-6571590413a3?q=80&w=1080",
+      "imageHint": "global network"
+    },
+    {
+      "id": "social-28",
+      "description": "A brain with digital connections",
+      "imageUrl": "https://images.unsplash.com/photo-1535378917042-10a22c95931a?q=80&w=1080",
+      "imageHint": "artificial intelligence"
+    },
+    {
+      "id": "social-29",
+      "description": "A magnifying glass over a computer screen",
+      "imageUrl": "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?q=80&w=1080",
+      "imageHint": "data analysis"
+    },
+    {
+      "id": "social-30",
+      "description": "A person holding a 'Follow Me' sign",
+      "imageUrl": "https://images.unsplash.com/photo-1587691592099-24045742c593?q=80&w=1080",
+      "imageHint": "follow sign"
+    },
+    {
+      "id": "social-31",
+      "description": "A group of diverse people smiling",
+      "imageUrl": "https://images.unsplash.com/photo-1530785602389-075941b8b8f0?q=80&w=1080",
+      "imageHint": "diverse people"
+    },
+    {
+      "id": "social-32",
+      "description": "Video camera recording",
+      "imageUrl": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1080",
+      "imageHint": "video camera"
+    },
+    {
+      "id": "social-33",
+      "description": "A person speaking into a microphone for a podcast",
+      "imageUrl": "https://images.unsplash.com/photo-1590602843 Zubransky-z-q=80&w=1080",
+      "imageHint": "podcast recording"
+    },
+    {
+      "id": "social-34",
+      "description": "A live stream setup with a phone and ring light",
+      "imageUrl": "https://images.unsplash.com/photo-1616334237443-0498444342a6?q=80&w=1080",
+      "imageHint": "live streaming"
+    },
+    {
+      "id": "social-35",
+      "description": "A hand holding a phone with a 'Like' notification",
+      "imageUrl": "https://images.unsplash.com/photo-1616469829934-2a033958373b?q=80&w=1080",
+      "imageHint": "like notification"
+    },
+    {
+      "id": "social-36",
+      "description": "A neon heart sign",
+      "imageUrl": "https://images.unsplash.com/photo-1581404135548-3932a3eca538?q=80&w=1080",
+      "imageHint": "neon heart"
+    },
+    {
+      "id": "social-37",
+      "description": "Abstract colorful social media feed",
+      "imageUrl": "https://images.unsplash.com/photo-1604194098363-23d9a7003463?q=80&w=1080",
+      "imageHint": "social feed"
+    },
+    {
+      "id": "social-38",
+      "description": "A person winning a trophy",
+      "imageUrl": "https://images.unsplash.com/photo-1593348128912-4a74334f1a7d?q=80&w=1080",
+      "imageHint": "winning trophy"
+    },
+    {
+      "id": "social-39",
+      "description": "A gift box with a ribbon",
+      "imageUrl": "https://images.unsplash.com/photo-1513201099705-4874684e20d7?q=80&w=1080",
+      "imageHint": "gift box"
+    },
+    {
+      "id": "social-40",
+      "description": "A smartphone showing a TikTok interface",
+      "imageUrl": "https://images.unsplash.com/photo-1611605698335-8b1569810432?q=80&w=1080",
+      "imageHint": "tiktok app"
+    },
+    {
+      "id": "social-41",
+      "description": "A smartphone showing a YouTube interface",
+      "imageUrl": "https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?q=80&w=1080",
+      "imageHint": "youtube app"
+    },
+    {
+      "id": "social-42",
+      "description": "A smartphone showing a Facebook interface",
+      "imageUrl": "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1080",
+      "imageHint": "facebook app"
+    },
+    {
+      "id": "social-43",
+      "description": "A smartphone showing a Twitter/X interface",
+      "imageUrl": "https://images.unsplash.com/photo-1611605698323-b1e79aa5a7da?q=80&w=1080",
+      "imageHint": "twitter app"
+    },
+    {
+      "id": "social-44",
+      "description": "Person scrolling on a laptop with social media open",
+      "imageUrl": "https://images.unsplash.com/photo-1585144582302-2735e783519c?q=80&w=1080",
+      "imageHint": "social browsing"
+    },
+    {
+      "id": "social-45",
+      "description": "A comment bubble icon",
+      "imageUrl": "https://images.unsplash.com/photo-1598369153327-05c3a2f419c5?q=80&w=1080",
+      "imageHint": "comment icon"
+    },
+    {
+      "id": "social-46",
+      "description": "A paper plane, symbolizing a message being sent",
+      "imageUrl": "https://images.unsplash.com/photo-1518176258769-f227c798150e?q=80&w=1080",
+      "imageHint": "send message"
+    },
+    {
+      "id": "social-47",
+      "description": "A digital representation of a sales funnel",
+      "imageUrl": "https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=1080",
+      "imageHint": "sales funnel"
+    },
+    {
+      "id": "social-48",
+      "description": "A laptop with code on the screen",
+      "imageUrl": "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1080",
+      "imageHint": "coding programming"
+    },
+    {
+      "id": "social-49",
+      "description": "A key for API access concept",
+      "imageUrl": "https://images.unsplash.com/photo-1563299796-17596c6a2163?q=80&w=1080",
+      "imageHint": "key access"
+    },
+    {
+      "id": "social-50",
+      "description": "A crown symbolizing being the best or a winner",
+      "imageUrl": "https://images.unsplash.com/photo-1588135899947-195159039e16?q=80&w=1080",
+      "imageHint": "crown winner"
+    },
+    {
+      "id": "social-51",
+      "description": "A fast car on a road, symbolizing speed",
+      "imageUrl": "https://images.unsplash.com/photo-1553440569-bcc63803a840?q=80&w=1080",
+      "imageHint": "fast speed"
+    },
+    {
+      "id": "social-52",
+      "description": "A piggy bank for saving money",
+      "imageUrl": "https://images.unsplash.com/photo-1579621970795-87f55d90727b?q=80&w=1080",
+      "imageHint": "saving money"
+    },
+    {
+      "id": "social-53",
+      "description": "A happy person using a laptop",
+      "imageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1080",
+      "imageHint": "happy user"
     }
   ]
 }

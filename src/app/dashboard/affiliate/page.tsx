@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
@@ -143,22 +144,18 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
     const { toast } = useToast();
 
     const handleFacebookShare = () => {
-        const randomPostData = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
-        const postWithLink = randomPostData.text.replace('{{referralLink}}', referralLink);
-        
+        const postWithLink = `اكتشف منصة حاجاتي، أفضل مكان لخدمات التسويق الرقمي! سجل من خلالي واحصل على هدية. ${referralLink}`;
         navigator.clipboard.writeText(postWithLink);
         toast({
             title: 'تم نسخ منشور تسويقي!',
             description: 'الصق المنشور في فيسبوك وشاركه مع أصدقائك.',
         });
-
         const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
         window.open(url, '_blank');
     };
 
     const handleGenericShare = (platform: 'twitter' | 'whatsapp') => {
-        const randomPostData = recommendedAffiliatePosts[Math.floor(Math.random() * recommendedAffiliatePosts.length)];
-        const text = randomPostData.text.replace('{{referralLink}}', referralLink);
+        const text = `اكتشف منصة حاجاتي، أفضل مكان لخدمات التسويق الرقمي! سجل من خلالي واحصل على هدية. ${referralLink}`;
         const encodedText = encodeURIComponent(text);
         
         let url = '';
@@ -169,7 +166,6 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
         }
         window.open(url, '_blank');
     };
-
 
     const shareTargets = [
         { name: 'WhatsApp', icon: WhatsAppIcon, action: () => handleGenericShare('whatsapp') },
@@ -444,10 +440,14 @@ export default function AffiliatePage() {
         </Card>
 
         <AiPostGenerator referralLink={referralLink} />
-
-        <div className="grid gap-6 md:grid-cols-2">
-            <NetworkTree userData={userData} />
-             {authUser && <TransactionHistoryTable userId={authUser.uid} />}
+        
+        <div className="grid gap-6 md:grid-cols-3">
+             <div className="md:col-span-3 lg:col-span-2">
+                {authUser && <TransactionHistoryTable userId={authUser.uid} />}
+            </div>
+            <div className="md:col-span-3 lg:col-span-1">
+                 <NetworkTree userData={userData} />
+            </div>
         </div>
     </div>
   );
