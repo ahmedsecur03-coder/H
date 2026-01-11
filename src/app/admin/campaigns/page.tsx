@@ -3,9 +3,8 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collectionGroup, query, getDocs } from 'firebase/firestore';
+import { collectionGroup, query, getDocs, where, orderBy, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
-import { handleAdminAction } from '@/app/admin/_actions/admin-actions';
 import {
   Card,
   CardContent,
@@ -39,58 +38,6 @@ import Link from 'next/link';
 import { CampaignDetailsDialog } from '@/app/dashboard/campaigns/_components/campaign-details-dialog';
 import { CampaignActions } from './_components/campaign-actions';
 
-// This function simulates campaign performance on the client-side for visual feedback.
-function calculateCampaignPerformance(campaign: Campaign): Partial<Campaign> {
-    const { startDate, durationDays, budget, status } = campaign;
-
-    if (status !== 'نشط' || !startDate) {
-        return {};
-    }
-
-    const now = Date.now();
-    const startTime = new Date(startDate).getTime();
-    const totalDurationMillis = durationDays * 24 * 60 * 60 * 1000;
-    const progress = Math.min((now - startTime) / totalDurationMillis, 1);
-    
-    if (progress >= 1) {
-        const finalSpend = budget;
-        const finalImpressions = (campaign.impressions || 0) + Math.floor(Math.random() * (budget * 50) + (budget * 10));
-        const finalClicks = (campaign.clicks || 0) + Math.floor(finalImpressions * (Math.random() * 0.05 + 0.01));
-        const finalCtr = finalImpressions > 0 ? (finalClicks / finalImpressions) * 100 : 0;
-        const finalCpc = finalClicks > 0 ? finalSpend / finalClicks : 0;
-        const finalResults = Math.floor(finalClicks * (Math.random() * 0.3 + 0.1));
-
-        return { 
-            status: 'مكتمل', 
-            spend: finalSpend,
-            impressions: finalImpressions,
-            clicks: finalClicks,
-            ctr: finalCtr,
-            cpc: finalCpc,
-            results: finalResults,
-        };
-    }
-    
-    const simulatedSpend = Math.min(budget * progress * 1.1, budget);
-    const spendIncrement = simulatedSpend - (campaign.spend || 0);
-
-    if (spendIncrement > 0) {
-        const impressions = (campaign.impressions || 0) + Math.floor(spendIncrement * (Math.random() * 150 + 50));
-        const clicks = (campaign.clicks || 0) + Math.floor((impressions - (campaign.impressions || 0)) * (Math.random() * 0.05 + 0.01));
-        return {
-            spend: simulatedSpend,
-            impressions,
-            clicks,
-            ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
-            cpc: clicks > 0 ? simulatedSpend / clicks : 0,
-            results: (campaign.results || 0) + Math.floor((clicks - (campaign.clicks || 0)) * 0.2),
-        };
-    }
-
-    return {};
-};
-
-
 const statusVariant = {
   'نشط': 'default',
   'متوقف': 'secondary',
@@ -114,7 +61,13 @@ export default function AdminCampaignsPage() {
     setIsLoading(true);
 
     try {
-      const campaignsQuery = collectionGroup(firestore, 'campaigns');
+      let q = collectionGroup(firestore, 'campaigns');
+
+      if (filter !== 'all') {
+          q = query(q, where('status', '==', filter));
+      }
+      
+      const campaignsQuery = query(q, orderBy('startDate', 'desc'));
       
       const querySnapshot = await getDocs(campaignsQuery);
       let fetchedCampaigns: Campaign[] = [];
@@ -123,18 +76,9 @@ export default function AdminCampaignsPage() {
         const pathSegments = doc.ref.path.split('/');
         const userId = pathSegments[1];
         const campaign = { id: doc.id, userId, ...doc.data() } as Campaign;
-        
-        // Apply final performance calculation if campaign is completed but has no stats
-        if (campaign.status === 'مكتمل' && !campaign.impressions) {
-            const finalPerformance = calculateCampaignPerformance({ ...campaign, status: 'نشط', startDate: campaign.startDate || new Date(Date.now() - (campaign.durationDays * 86400000)).toISOString() });
-             fetchedCampaigns.push({ ...campaign, ...finalPerformance });
-        } else {
-            fetchedCampaigns.push(campaign);
-        }
+        fetchedCampaigns.push(campaign);
       });
       
-      // Sort by date client-side
-      fetchedCampaigns.sort((a,b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
 
       setCampaigns(fetchedCampaigns);
     } catch (error) {
@@ -143,13 +87,12 @@ export default function AdminCampaignsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [firestore, toast]);
+  }, [firestore, toast, filter]);
   
-  // Stats are now derived from the 'campaigns' state
   const stats = useMemo(() => {
-    const tempStatusCounts = ALL_STATUSES.reduce((acc, status) => ({...acc, [status]: 0}), {} as Record<Status, number>);
     let tempTotalBudget = 0;
     let tempTotalSpend = 0;
+    const tempStatusCounts = ALL_STATUSES.reduce((acc, status) => ({...acc, [status]: 0}), {} as Record<Status, number>);
 
     campaigns.forEach(campaign => {
         tempTotalBudget += campaign.budget;
@@ -170,13 +113,7 @@ export default function AdminCampaignsPage() {
 
   useEffect(() => {
     fetchCampaignsAndStats();
-  }, [fetchCampaignsAndStats]);
-
-  const filteredCampaigns = useMemo(() => {
-      if (filter === 'all') return campaigns;
-      return campaigns.filter(c => c.status === filter);
-  }, [campaigns, filter])
-
+  }, [fetchCampaignsAndStats, filter]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -186,7 +123,7 @@ export default function AdminCampaignsPage() {
         </TableRow>
       ));
     }
-    if (!filteredCampaigns || filteredCampaigns.length === 0) {
+    if (!campaigns || campaigns.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={7} className="h-24 text-center">
@@ -195,7 +132,7 @@ export default function AdminCampaignsPage() {
         </TableRow>
       );
     }
-    return filteredCampaigns.map((campaign) => (
+    return campaigns.map((campaign) => (
       <TableRow key={campaign.id}>
         <TableCell className="font-medium">{campaign.name}</TableCell>
         <TableCell>
