@@ -12,12 +12,14 @@ function ProfileSkeleton() {
     );
 }
 
-export default async function PublicUserProfilePage({ params }: { params: { userId: string } }) {
+export default async function PublicUserProfilePage({ params }: { params: Promise<{ userId: string }> }) {
   // This is now a Server Component. It gets the userId from params
   // and passes it down to the Client Component.
+  const { userId } = await params;
+
   return (
     <Suspense fallback={<ProfileSkeleton />}>
-        <UserProfilePageClient userId={params.userId} />
+        <UserProfilePageClient userId={userId} />
     </Suspense>
   );
 }
