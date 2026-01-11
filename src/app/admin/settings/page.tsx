@@ -32,14 +32,15 @@ import type { Notification, Order, Deposit } from '@/lib/types';
 async function runCleanup(firestore: Firestore, type: 'orders' | 'deposits') {
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+    const fiveDaysAgoISO = fiveDaysAgo.toISOString();
 
     const collectionGroupRef = collectionGroup(firestore, type);
     
     let docsQuery;
     if (type === 'orders') {
-        docsQuery = query(collectionGroupRef, where('status', 'in', ['مكتمل', 'ملغي']), where('orderDate', '<', fiveDaysAgo.toISOString()));
+        docsQuery = query(collectionGroupRef, where('status', 'in', ['مكتمل', 'ملغي']), where('orderDate', '<', fiveDaysAgoISO));
     } else { // deposits
-        docsQuery = query(collectionGroupRef, where('status', '==', 'مرفوض'), where('depositDate', '<', fiveDaysAgo.toISOString()));
+        docsQuery = query(collectionGroupRef, where('status', '==', 'مرفوض'), where('depositDate', '<', fiveDaysAgoISO));
     }
 
     const snapshot = await getDocs(docsQuery);
