@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useFirestore, useUser } from '@/firebase';
@@ -28,6 +28,7 @@ export function FirebaseErrorListener() {
       });
       
       // Log the error to the backend for monitoring purposes
+      // This check is important because firestore might be null on initial render
       if (firestore) {
         const logData: Omit<SystemLog, 'id'> = {
             event: 'permission_denied',

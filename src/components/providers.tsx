@@ -20,8 +20,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
       <FirebaseClientProvider>
+        <FirebaseErrorListener />
         <div className="flex flex-col min-h-screen">
-          <FirebaseErrorListener />
           {isPublicPage && <PublicHeader />}
           <main className={cn("flex-1", isPublicPage && "container py-8")}>
             {children}
