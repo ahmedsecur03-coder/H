@@ -4,10 +4,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // WARNING: Rules are temporarily open for development.
-    // Any authenticated user can read or write to any document.
+    // WARNING: Rules are wide open for development.
+    // Anyone can read, write, or delete any data.
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
   }
 }
