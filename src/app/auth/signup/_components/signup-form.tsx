@@ -41,8 +41,6 @@ export default function SignupForm() {
       await updateProfile(newUser, { displayName: name, photoURL: avatarUrl });
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
-      const today = new Date().toISOString().split('T')[0];
-      const dailyStatRef = doc(firestore, 'dailyStats', today);
 
       await runTransaction(firestore, async (transaction) => {
         let referrerId: string | null = null;
@@ -83,8 +81,17 @@ export default function SignupForm() {
         };
 
         transaction.set(userDocRef, newUserDoc);
-        transaction.set(dailyStatRef, { newUsers: increment(1) }, { merge: true });
       });
+
+      // The dailyStats update is moved out of the user creation transaction.
+      // In a production app, this should be handled by a Cloud Function triggered on user creation.
+      // For this client-side prototype, we'll do it as a separate, non-critical write.
+      const today = new Date().toISOString().split('T')[0];
+      const dailyStatRef = doc(firestore, 'dailyStats', today);
+      setDoc(dailyStatRef, { newUsers: increment(1) }, { merge: true }).catch(err => {
+        console.warn("Could not update daily new user stats. This is non-critical.", err);
+      });
+
 
       toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح وحصلت على 5$ رصيد إعلاني. سيتم توجيهك الآن.' });
       router.push('/dashboard');
@@ -97,6 +104,11 @@ export default function SignupForm() {
             description = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
         } else if (error.code === 'auth/invalid-email') {
             description = 'البريد الإلكتروني الذي أدخلته غير صالح.';
+        } else {
+             // For permission errors during the transaction
+            const permissionError = new FirestorePermissionError({ path: `users/${auth.currentUser?.uid}`, operation: 'create' });
+            errorEmitter.emit('permission-error', permissionError);
+            description = "فشل إنشاء ملف المستخدم بسبب الصلاحيات."
         }
         
         toast({
