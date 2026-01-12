@@ -281,7 +281,7 @@ export default function CampaignsPage() {
              // We call forceCollectionUpdate to get the latest data from the client cache after updates.
              // This is not the most efficient way but it works for client-side simulation.
              forceCollectionUpdate();
-        }, 3600000); // Run every 1 hour
+        }, 1800000); // Run every 30 minutes
 
         return () => clearInterval(interval);
     }, [campaigns, firestore, forceCollectionUpdate]);
