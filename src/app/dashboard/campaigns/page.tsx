@@ -287,7 +287,7 @@ export default function CampaignsPage() {
         // Run once on mount to catch up on progress
         updateAllCampaigns();
 
-        const interval = setInterval(updateAllCampaigns, 1800000); // Run every 30 minutes
+        const interval = setInterval(updateAllCampaigns, 300000); // Run every 5 minutes
 
         return () => clearInterval(interval);
     }, [campaigns, firestore, authUser, forceCollectionUpdate]);
