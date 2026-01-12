@@ -60,6 +60,8 @@ export default function AdminCampaignsPage() {
 
     try {
       const allCampaigns: Campaign[] = [];
+      // This is inefficient but avoids complex index creation.
+      // A better long-term solution is a server-side function or a more structured DB.
       const usersSnapshot = await getDocs(collection(firestore, 'users'));
 
       for (const userDoc of usersSnapshot.docs) {

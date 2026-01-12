@@ -36,6 +36,56 @@ import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
 
 
+// This function simulates the performance of a single active campaign
+const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => {
+    if (campaign.status !== 'نشط') return {};
+
+    const now = new Date();
+    const startDate = new Date(campaign.startDate);
+    const elapsedSeconds = (now.getTime() - startDate.getTime()) / 1000;
+
+    // Avoid updates if campaign just started
+    if (elapsedSeconds < 5) return {};
+
+    // Simulate spend rate based on budget and duration
+    const totalDurationSeconds = campaign.durationDays * 24 * 60 * 60;
+    const spendRatePerSecond = campaign.budget / totalDurationSeconds;
+    let newSpend = (campaign.spend || 0) + (spendRatePerSecond * 5); // 5 seconds interval
+
+    // Simulate performance metrics
+    const baseCpc = (campaign.platform === 'Google' ? 0.5 : 0.2) + (Math.random() * 0.3);
+    const newClicks = Math.floor(newSpend / baseCpc) - (campaign.clicks || 0);
+    const newImpressions = (newClicks > 0 ? newClicks / (0.01 + Math.random() * 0.02) : 0);
+
+    const updatedCampaign: Partial<Campaign> = {
+        spend: Math.min(newSpend, campaign.budget),
+        impressions: (campaign.impressions || 0) + Math.round(newImpressions),
+        clicks: (campaign.clicks || 0) + Math.round(newClicks),
+    };
+
+    // Recalculate CTR and CPC
+    if (updatedCampaign.impressions && updatedCampaign.impressions > 0) {
+        updatedCampaign.ctr = ((updatedCampaign.clicks || 0) / updatedCampaign.impressions) * 100;
+    }
+    if (updatedCampaign.clicks && updatedCampaign.clicks > 0) {
+        updatedCampaign.cpc = (updatedCampaign.spend || 0) / updatedCampaign.clicks;
+    }
+    
+    // Simulate results based on goal
+    if (updatedCampaign.clicks) {
+        updatedCampaign.results = Math.round(updatedCampaign.clicks * (0.1 + Math.random() * 0.15));
+    }
+
+    // Check for completion
+    if (updatedCampaign.spend! >= campaign.budget) {
+        updatedCampaign.status = 'مكتمل';
+        updatedCampaign.spend = campaign.budget; // Cap spend at budget
+    }
+
+    return updatedCampaign;
+};
+
+
 function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -209,6 +259,34 @@ export default function CampaignsPage() {
         [firestore, authUser]
     );
     const { data: userData, isLoading: userLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
+    
+
+    // Client-side campaign simulation effect
+    useEffect(() => {
+        if (!campaigns || !firestore) return;
+
+        const interval = setInterval(() => {
+            campaigns.forEach(campaign => {
+                if (campaign.status === 'بانتظار المراجعة') {
+                    // Auto-activate pending campaigns after a short delay
+                    const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+                    updateDoc(campaignDocRef, { status: 'نشط', startDate: new Date().toISOString() });
+                } else if (campaign.status === 'نشط') {
+                    const updates = calculateCampaignPerformance(campaign);
+                    if (Object.keys(updates).length > 0) {
+                        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
+                        updateDoc(campaignDocRef, updates);
+                    }
+                }
+            });
+             // We call forceCollectionUpdate to get the latest data from the client cache after updates.
+             // This is not the most efficient way but it works for client-side simulation.
+             forceCollectionUpdate();
+        }, 5000); // Run every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [campaigns, firestore, forceCollectionUpdate]);
+
 
     const sortedCampaigns = useMemo(() => {
         if (!campaigns) return [];

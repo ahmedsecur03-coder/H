@@ -34,8 +34,6 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// Removed unused server action import
-// import { activateCampaignAndDeductBalance } from '../_actions/campaign-actions';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -145,19 +143,26 @@ export default function NewCampaignPage() {
         event.preventDefault();
         setLoading(true);
 
-        const formData = new FormData(event.currentTarget);
-        const budget = parseFloat(formData.get('budget') as string);
-        
-        if (!userData || (userData.adBalance ?? 0) < budget) {
-            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance?.toFixed(2) || '0.00'}$ فقط.` });
+        if (!authUser || !firestore || !userData) {
+            toast({ variant: "destructive", title: "خطأ", description: "لا يمكن إنشاء الحملة. يرجى المحاولة مرة أخرى." });
             setLoading(false);
             return;
         }
 
-        const campaignData = {
-            userId: authUser?.uid,
+        const formData = new FormData(event.currentTarget);
+        const budget = parseFloat(formData.get('budget') as string);
+        const adBalance = userData.adBalance || 0;
+        
+        if (adBalance < budget) {
+            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${adBalance.toFixed(2)}$ فقط.` });
+            setLoading(false);
+            return;
+        }
+
+        const campaignData: Omit<Campaign, 'id'> = {
+            userId: authUser.uid,
             name: formData.get('name') as string,
-            platform: selectedPlatform,
+            platform: selectedPlatform!,
             goal: formData.get('goal') as Goal,
             budget,
             durationDays: parseInt(formData.get('durationDays') as string, 10),
@@ -167,20 +172,38 @@ export default function NewCampaignPage() {
             targetAge: formData.get('targetAge') as string,
             targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
             targetInterests: formData.get('targetInterests') as string,
+            targetAudience: '', // Kept for schema compatibility, but not in form
+            startDate: '', // Will be set on activation
+            spend: 0,
             status: 'بانتظار المراجعة',
+            impressions: 0,
+            clicks: 0,
+            results: 0,
+            ctr: 0,
+            cpc: 0
         };
-        
-        // WORKAROUND: Log to console instead of writing to Firestore to prevent permission errors.
-        console.log("Campaign Data Submitted (WORKAROUND):", campaignData);
 
-        // Simulate a successful operation.
-        toast({ title: "تم استلام طلب الحملة بنجاح!", description: "سيتم مراجعتها من قبل المسؤول. (البيانات في الكونسول)" });
-        
-        // Go to success step after a short delay
-        setTimeout(() => {
-            setStep(3);
+        const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
+        const userDocRef = doc(firestore, `users/${authUser.uid}`);
+
+        try {
+            await runTransaction(firestore, async (transaction) => {
+                // Deduct budget immediately
+                transaction.update(userDocRef, { adBalance: increment(-budget) });
+                // Create the campaign doc
+                const newCampaignRef = doc(campaignsColRef); // Auto-generate ID
+                transaction.set(newCampaignRef, campaignData);
+            });
+            
+            toast({ title: "تم استلام طلب الحملة بنجاح!", description: "سيتم مراجعتها وتفعيلها تلقائيًا قريبًا." });
+            setStep(3); // Go to success step
+
+        } catch (error) {
+            const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     const isLoading = isUserLoading || isUserDataLoading;
@@ -285,7 +308,7 @@ export default function NewCampaignPage() {
                                  </div>
                                 <h2 className="text-2xl font-bold mt-4">تم استلام طلب حملتك!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    طلبك الآن في قائمة المراجعة وسيتم تفعيله قريباً من قبل المسؤول.
+                                    طلبك الآن في قائمة المراجعة وسيتم تفعيله تلقائيًا قريبًا.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>
@@ -300,4 +323,3 @@ export default function NewCampaignPage() {
         </div>
     );
 }
-
