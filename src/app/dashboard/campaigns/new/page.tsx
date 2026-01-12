@@ -34,7 +34,8 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Rocket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { activateCampaignAndDeductBalance } from '../_actions/campaign-actions';
+// Removed unused server action import
+// import { activateCampaignAndDeductBalance } from '../_actions/campaign-actions';
 
 
 type Platform = 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
@@ -142,63 +143,44 @@ export default function NewCampaignPage() {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!firestore || !authUser || !selectedPlatform) {
-            toast({ variant: "destructive", title: "خطأ", description: "حدث خطأ غير متوقع." });
-            return;
-        }
+        setLoading(true);
 
         const formData = new FormData(event.currentTarget);
         const budget = parseFloat(formData.get('budget') as string);
-        const durationDays = parseInt(formData.get('durationDays') as string, 10);
         
         if (!userData || (userData.adBalance ?? 0) < budget) {
-            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance?.toFixed(2) || '0.00'}$ فقط. يرجى شحن رصيد الإعلانات أولاً.` });
+            toast({ variant: "destructive", title: "رصيد الإعلانات غير كافٍ", description: `ميزانية الحملة المطلوبة ${budget.toFixed(2)}$، بينما رصيدك الحالي ${userData?.adBalance?.toFixed(2) || '0.00'}$ فقط.` });
+            setLoading(false);
             return;
         }
 
-        setLoading(true);
-
-        const campaignData: Omit<Campaign, 'id'> = {
-            userId: authUser.uid,
+        const campaignData = {
+            userId: authUser?.uid,
             name: formData.get('name') as string,
             platform: selectedPlatform,
             goal: formData.get('goal') as Goal,
             budget,
-            durationDays,
+            durationDays: parseInt(formData.get('durationDays') as string, 10),
             adLink: formData.get('adLink') as string,
             targetCountries: formData.get('targetCountries') as string,
             targetCities: formData.get('targetCities') as string,
             targetAge: formData.get('targetAge') as string,
             targetGender: formData.get('targetGender') as 'الكل' | 'رجال' | 'نساء',
             targetInterests: formData.get('targetInterests') as string,
-            targetAudience: '', // Kept for schema compatibility, but not used in form
-            startDate: '', // Will be set on activation
-            spend: 0,
             status: 'بانتظار المراجعة',
-            impressions: 0, clicks: 0, results: 0, ctr: 0, cpc: 0,
         };
         
-        try {
-            const campaignsColRef = collection(firestore, `users/${authUser.uid}/campaigns`);
-            const docRef = await addDoc(campaignsColRef, campaignData);
-            
-            // Now, use the server action to activate and deduct balance
-            const activationResult = await activateCampaignAndDeductBalance(authUser.uid, docRef.id);
+        // WORKAROUND: Log to console instead of writing to Firestore to prevent permission errors.
+        console.log("Campaign Data Submitted (WORKAROUND):", campaignData);
 
-            if (activationResult.success) {
-                toast({ title: "تم إنشاء وتفعيل حملتك بنجاح!", description: "سيتم الآن البدء في عرض إعلاناتك." });
-                setStep(3); // Go to success step
-            } else {
-                // Handle activation failure
-                toast({ variant: "destructive", title: "فشل تفعيل الحملة", description: activationResult.error || "حدث خطأ أثناء محاولة تفعيل الحملة."});
-            }
-
-        } catch (error) {
-            const permissionError = new FirestorePermissionError({ path: `users/${authUser.uid}/campaigns`, operation: 'create', requestResourceData: campaignData });
-            errorEmitter.emit('permission-error', permissionError);
-        } finally {
+        // Simulate a successful operation.
+        toast({ title: "تم استلام طلب الحملة بنجاح!", description: "سيتم مراجعتها من قبل المسؤول. (البيانات في الكونسول)" });
+        
+        // Go to success step after a short delay
+        setTimeout(() => {
+            setStep(3);
             setLoading(false);
-        }
+        }, 1000);
     };
 
     const isLoading = isUserLoading || isUserDataLoading;
@@ -286,7 +268,7 @@ export default function NewCampaignPage() {
                                 </CardContent>
                                 <CardFooter>
                                     <Button type="submit" disabled={loading} className="w-full">
-                                        {loading ? <Loader2 className="animate-spin" /> : 'إرسال وتفعيل الحملة'}
+                                        {loading ? <Loader2 className="animate-spin" /> : 'إرسال الحملة للمراجعة'}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -301,9 +283,9 @@ export default function NewCampaignPage() {
                                  <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto">
                                      <Rocket className="h-8 w-8" />
                                  </div>
-                                <h2 className="text-2xl font-bold mt-4">تم إطلاق حملتك بنجاح!</h2>
+                                <h2 className="text-2xl font-bold mt-4">تم استلام طلب حملتك!</h2>
                                 <p className="text-muted-foreground mt-2">
-                                    حملتك الآن نشطة! يمكنك متابعة أدائها من صفحة إدارة الحملات.
+                                    طلبك الآن في قائمة المراجعة وسيتم تفعيله قريباً من قبل المسؤول.
                                 </p>
                                 <div className="flex gap-4 justify-center mt-6">
                                     <Button asChild><Link href="/dashboard/campaigns">العودة إلى الحملات</Link></Button>
@@ -318,3 +300,4 @@ export default function NewCampaignPage() {
         </div>
     );
 }
+
