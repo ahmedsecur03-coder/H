@@ -24,7 +24,7 @@ service cloud.firestore {
                 && data.name is string
                 && data.email == request.auth.token.email
                 && data.balance == 0
-                && data.adBalance == 0
+                && data.adBalance >= 0
                 && data.totalSpent == 0
                 && data.role == 'user'
                 && data.rank == 'مستكشف نجمي'
@@ -62,7 +62,8 @@ service cloud.firestore {
     // A user can manage all documents within their own subcollections. 
     // An Admin can manage ANY document in ANY user's subcollections.
     match /users/{userId}/{userCollection}/{docId} {
-        allow read, write, create, delete: if isOwner(userId) || isAdmin();
+        allow read, write, delete: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId);
     }
     
     // =================================
