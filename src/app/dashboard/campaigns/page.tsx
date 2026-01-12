@@ -38,31 +38,33 @@ import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-
 
 // This function simulates the performance of a single active campaign
 const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => {
-    if (campaign.status !== 'نشط') return {};
+    if (campaign.status !== 'نشط' || !campaign.startDate) return {};
 
     const now = new Date();
     const startDate = new Date(campaign.startDate);
     const elapsedHours = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
 
-    if (elapsedHours < 1) return {};
+    if (elapsedHours <= 0) return {};
 
     // Simulate spend rate based on budget and duration
     const totalDurationHours = campaign.durationDays * 24;
     const spendRatePerHour = campaign.budget / totalDurationHours;
-    let newSpend = (campaign.spend || 0) + spendRatePerHour; 
+    let newSpend = elapsedHours * spendRatePerHour;
 
-    // Simulate performance metrics
-    const baseCpc = (campaign.platform === 'Google' ? 0.5 : 0.2) + (Math.random() * 0.3);
-    const newClicks = Math.floor(newSpend / baseCpc) - (campaign.clicks || 0);
-    const newImpressions = (newClicks > 0 ? newClicks / (0.01 + Math.random() * 0.02) : 0);
+    if (newSpend <= (campaign.spend || 0)) return {}; // No update if new spend is not greater
+
+    // Simulate performance metrics based on the new total spend
+    const baseCpc = (campaign.platform === 'Google' ? 0.5 : 0.2) + (Math.random() * 0.3); // Add some randomness
+    const newTotalClicks = Math.floor(newSpend / baseCpc);
+    const newTotalImpressions = (newTotalClicks > 0 ? newTotalClicks / (0.01 + Math.random() * 0.02) : 0);
 
     const updatedCampaign: Partial<Campaign> = {
         spend: Math.min(newSpend, campaign.budget),
-        impressions: (campaign.impressions || 0) + Math.round(newImpressions),
-        clicks: (campaign.clicks || 0) + Math.round(newClicks),
+        impressions: Math.round(newTotalImpressions),
+        clicks: Math.round(newTotalClicks),
     };
 
-    // Recalculate CTR and CPC
+    // Recalculate CTR and CPC based on total values
     if (updatedCampaign.impressions && updatedCampaign.impressions > 0) {
         updatedCampaign.ctr = ((updatedCampaign.clicks || 0) / updatedCampaign.impressions) * 100;
     }
@@ -262,10 +264,10 @@ export default function CampaignsPage() {
 
     // Client-side campaign simulation effect
     useEffect(() => {
-        if (!campaigns || !firestore) return;
+        if (!campaigns || !firestore || !authUser) return;
 
-        const interval = setInterval(() => {
-            campaigns.forEach(campaign => {
+        const updateAllCampaigns = () => {
+             campaigns.forEach(campaign => {
                 if (campaign.status === 'بانتظار المراجعة') {
                     // Auto-activate pending campaigns after a short delay
                     const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
@@ -279,12 +281,16 @@ export default function CampaignsPage() {
                 }
             });
              // We call forceCollectionUpdate to get the latest data from the client cache after updates.
-             // This is not the most efficient way but it works for client-side simulation.
              forceCollectionUpdate();
-        }, 1800000); // Run every 30 minutes
+        }
+        
+        // Run once on mount to catch up on progress
+        updateAllCampaigns();
+
+        const interval = setInterval(updateAllCampaigns, 1800000); // Run every 30 minutes
 
         return () => clearInterval(interval);
-    }, [campaigns, firestore, forceCollectionUpdate]);
+    }, [campaigns, firestore, authUser, forceCollectionUpdate]);
 
 
     const sortedCampaigns = useMemo(() => {
