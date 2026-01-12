@@ -3,8 +3,8 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collectionGroup, query, getDocs, where, orderBy, limit, startAfter, endBefore, limitToLast, DocumentData } from 'firebase/firestore';
-import type { Campaign } from '@/lib/types';
+import { collection, query, getDocs, where, orderBy, limit } from 'firebase/firestore';
+import type { Campaign, User } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -59,29 +59,35 @@ export default function AdminCampaignsPage() {
     setIsLoading(true);
 
     try {
-      let q: any = collectionGroup(firestore, 'campaigns');
+      const allCampaigns: Campaign[] = [];
+      const usersSnapshot = await getDocs(collection(firestore, 'users'));
 
-      if (filter !== 'all') {
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+        let q = query(collection(firestore, `users/${userId}/campaigns`));
+        
+        if (filter !== 'all') {
           q = query(q, where('status', '==', filter));
+        }
+        
+        const campaignsSnapshot = await getDocs(q);
+        campaignsSnapshot.forEach(campaignDoc => {
+          allCampaigns.push({ id: campaignDoc.id, userId, ...campaignDoc.data() } as Campaign);
+        });
       }
       
-      const campaignsQuery = query(q, orderBy('startDate', 'desc'), limit(50)); // Limit to last 50 for performance
-      
-      const querySnapshot = await getDocs(campaignsQuery);
-      let fetchedCampaigns: Campaign[] = [];
-      
-      querySnapshot.forEach(doc => {
-        const pathSegments = doc.ref.path.split('/');
-        const userId = pathSegments[1];
-        const campaign = { id: doc.id, userId, ...doc.data() } as Campaign;
-        fetchedCampaigns.push(campaign);
+      // Sort all campaigns by date after fetching them
+      allCampaigns.sort((a, b) => {
+        const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+        const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+        return dateB - dateA;
       });
-      
 
-      setCampaigns(fetchedCampaigns);
+      setCampaigns(allCampaigns);
+
     } catch (error) {
       console.error("Error fetching campaigns:", error);
-      toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات.' });
+      toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات. قد تكون هناك مشكلة في الصلاحيات.' });
     } finally {
       setIsLoading(false);
     }
@@ -134,7 +140,7 @@ export default function AdminCampaignsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2"><Megaphone className="h-8 w-8" />مراقبة الحملات</h1>
         <p className="text-muted-foreground">
-          عرض جميع الحملات الإعلانية في النظام ومراجعتها (آخر 50 حملة).
+          عرض جميع الحملات الإعلانية في النظام ومراجعتها.
         </p>
       </div>
 
