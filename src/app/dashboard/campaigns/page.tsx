@@ -42,15 +42,14 @@ const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => 
 
     const now = new Date();
     const startDate = new Date(campaign.startDate);
-    const elapsedSeconds = (now.getTime() - startDate.getTime()) / 1000;
+    const elapsedHours = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
 
-    // Avoid updates if campaign just started
-    if (elapsedSeconds < 5) return {};
+    if (elapsedHours < 1) return {};
 
     // Simulate spend rate based on budget and duration
-    const totalDurationSeconds = campaign.durationDays * 24 * 60 * 60;
-    const spendRatePerSecond = campaign.budget / totalDurationSeconds;
-    let newSpend = (campaign.spend || 0) + (spendRatePerSecond * 5); // 5 seconds interval
+    const totalDurationHours = campaign.durationDays * 24;
+    const spendRatePerHour = campaign.budget / totalDurationHours;
+    let newSpend = (campaign.spend || 0) + spendRatePerHour; 
 
     // Simulate performance metrics
     const baseCpc = (campaign.platform === 'Google' ? 0.5 : 0.2) + (Math.random() * 0.3);
@@ -282,7 +281,7 @@ export default function CampaignsPage() {
              // We call forceCollectionUpdate to get the latest data from the client cache after updates.
              // This is not the most efficient way but it works for client-side simulation.
              forceCollectionUpdate();
-        }, 5000); // Run every 5 seconds
+        }, 3600000); // Run every 1 hour
 
         return () => clearInterval(interval);
     }, [campaigns, firestore, forceCollectionUpdate]);
