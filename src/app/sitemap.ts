@@ -1,4 +1,3 @@
-
 import { MetadataRoute } from 'next';
 import { initializeFirebaseServer } from '@/firebase/init-server';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';

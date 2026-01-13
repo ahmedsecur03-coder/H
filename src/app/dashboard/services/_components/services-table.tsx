@@ -298,5 +298,3 @@ export function ServicesTable() {
     </div>
   );
 }
-
-export { ServicesTable };

@@ -1,13 +1,13 @@
-
 'use server';
 
 import { initializeFirebaseServer } from '@/firebase/init-server';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import type { Metadata, ResolvingMetadata } from 'next';
 import type { BlogPost } from '@/lib/types';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { notFound } from 'next/navigation';
 
 type Props = {
   params: { slug: string }
@@ -31,7 +31,7 @@ async function getPostBySlug(slug: string): Promise<BlogPost | undefined> {
     if (!firestore) return undefined;
     
     try {
-        const postsQuery = query(collection(firestore, 'blogPosts'));
+        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
         const querySnapshot = await getDocs(postsQuery);
         const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
         return allPosts.find(p => titleToSlug(p.title) === slug);
@@ -71,10 +71,10 @@ export async function generateMetadata({ params }: Props, parent: ResolvingMetad
 }
 
 export async function generateStaticParams() {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) return [];
-
     try {
+        const { firestore } = initializeFirebaseServer();
+        if (!firestore) return [];
+
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const querySnapshot = await getDocs(postsQuery);
         const posts = querySnapshot.docs.map(doc => doc.data() as BlogPost);
@@ -109,10 +109,13 @@ function BlogPostPageSkeleton() {
     )
 }
 
-// This is the Server Component part
 export default async function BlogPostPage({ params }: Props) {
     // Fetching data on the server
     const post = await getPostBySlug(params.slug);
+    
+    if (!post) {
+      notFound();
+    }
 
     // Pass the fetched data to the client component
     return (
