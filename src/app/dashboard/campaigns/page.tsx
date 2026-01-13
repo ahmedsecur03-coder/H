@@ -34,6 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { CampaignDetailsDialog } from './_components/campaign-details-dialog';
 import { ChargeAdBalanceDialog } from '../agency-accounts/_components/charge-ad-balance-dialog';
+import { useRouter } from 'next/navigation';
 
 
 // This function simulates the performance of a single active campaign
@@ -87,9 +88,10 @@ const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => 
 };
 
 
-function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Campaign, forceCollectionUpdate: () => void }) {
+function UserCampaignActions({ campaign }: { campaign: Campaign }) {
     const firestore = useFirestore();
     const { toast } = useToast();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
 
@@ -120,7 +122,7 @@ function UserCampaignActions({ campaign, forceCollectionUpdate }: { campaign: Ca
             });
 
             toast({ title: "نجاح", description: "تم إيقاف الحملة وإعادة الرصيد المتبقي." });
-            forceCollectionUpdate();
+            router.refresh();
             setIsAlertOpen(false);
 
         } catch (error: any) {
@@ -210,7 +212,7 @@ const statusOrder: Record<Campaign['status'], number> = {
     'مكتمل': 4,
 };
 
-function CampaignCard({ campaign, onUpdate }: { campaign: Campaign, onUpdate: () => void }) {
+function CampaignCard({ campaign }: { campaign: Campaign }) {
     const Icon = PLATFORM_ICONS[campaign.platform] || PLATFORM_ICONS.Default;
     const statusVariant = {
         'نشط': 'default',
@@ -239,7 +241,7 @@ function CampaignCard({ campaign, onUpdate }: { campaign: Campaign, onUpdate: ()
                 </div>
             </CardContent>
             <CardFooter>
-                 <UserCampaignActions campaign={campaign} forceCollectionUpdate={onUpdate} />
+                 <UserCampaignActions campaign={campaign} />
             </CardFooter>
         </Card>
     )
@@ -277,7 +279,10 @@ export default function CampaignsPage() {
         const updateSimulation = () => {
             let hasChanges = false;
             const updatedCampaigns = campaigns.map(c => {
-                const campaign = { ...c }; // Create a shallow copy
+                 const campaign: Campaign = {
+                    ...c,
+                    targetCountries: c.targetCountries || '', // Ensure targetCountries is not undefined
+                 };
     
                 if (campaign.status === 'بانتظار المراجعة') {
                     campaign.status = 'نشط';
@@ -406,7 +411,7 @@ export default function CampaignsPage() {
                     <>
                         {/* Mobile View */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
-                            {sortedCampaigns.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} onUpdate={forceCollectionUpdate} />)}
+                            {sortedCampaigns.map(campaign => <CampaignCard key={campaign.id} campaign={campaign} />)}
                         </div>
 
                         {/* Desktop View */}
@@ -436,7 +441,7 @@ export default function CampaignsPage() {
                                                 ${(campaign.spend || 0).toFixed(2)} / ${campaign.budget.toFixed(2)}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <UserCampaignActions campaign={campaign} forceCollectionUpdate={forceCollectionUpdate} />
+                                                <UserCampaignActions campaign={campaign} />
                                             </TableCell>
                                         </TableRow>
                                         )
