@@ -54,23 +54,28 @@ function AdminNotifications() {
             setIsLoading(true);
             try {
                 // Fetch all documents and count them on the client to avoid index issues
-                const depositsQuery = query(collectionGroup(firestore, 'deposits'), where('status', '==', 'معلق'));
-                const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'), where('status', '==', 'معلق'));
-                const campaignsQuery = query(collectionGroup(firestore, 'campaigns'), where('status', '==', 'بانتظار المراجعة'));
-                const ticketsQuery = query(collectionGroup(firestore, 'tickets'), where('status', '!=', 'مغلقة'));
+                const depositsQuery = query(collectionGroup(firestore, 'deposits'));
+                const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'));
+                const campaignsQuery = query(collectionGroup(firestore, 'campaigns'));
+                const ticketsQuery = query(collectionGroup(firestore, 'tickets'));
                 
                 const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
-                    getCountFromServer(depositsQuery),
-                    getCountFromServer(withdrawalsQuery),
-                    getCountFromServer(campaignsQuery),
-                    getCountFromServer(ticketsQuery),
+                    getDocs(depositsQuery),
+                    getDocs(withdrawalsQuery),
+                    getDocs(campaignsQuery),
+                    getDocs(ticketsQuery),
                 ]);
 
+                const pendingDeposits = depositsSnap.docs.filter(doc => doc.data().status === 'معلق').length;
+                const pendingWithdrawals = withdrawalsSnap.docs.filter(doc => doc.data().status === 'معلق').length;
+                const pendingCampaigns = campaignsSnap.docs.filter(doc => doc.data().status === 'بانتظار المراجعة').length;
+                const openTickets = ticketsSnap.docs.filter(doc => doc.data().status !== 'مغلقة').length;
+
                 setCounts({
-                    deposits: depositsSnap.data().count,
-                    withdrawals: withdrawalsSnap.data().count,
-                    campaigns: campaignsSnap.data().count,
-                    tickets: ticketsSnap.data().count,
+                    deposits: pendingDeposits,
+                    withdrawals: pendingWithdrawals,
+                    campaigns: pendingCampaigns,
+                    tickets: openTickets,
                 });
             } catch (error) {
                 console.error("Failed to fetch admin notification counts:", error);
@@ -91,7 +96,7 @@ function AdminNotifications() {
     const notificationItems = [
         { key: 'deposits', count: counts.deposits, label: 'طلبات إيداع معلقة', href: '/admin/deposits' },
         { key: 'withdrawals', count: counts.withdrawals, label: 'طلبات سحب معلقة', href: '/admin/withdrawals' },
-        { key: 'campaigns', count: counts.campaigns, label: 'حملات بانتظار المراجعة', href: '/admin/campaigns?status=بانتظار+المراجعة' },
+        { key: 'campaigns', count: counts.campaigns, label: 'حملات بانتظار المراجعة', href: '/admin/campaigns' },
         { key: 'tickets', count: counts.tickets, label: 'تذاكر دعم نشطة', href: '/admin/support' },
     ].filter(item => item.count > 0);
 
