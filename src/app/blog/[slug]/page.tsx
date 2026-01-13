@@ -1,7 +1,7 @@
 
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-auth';
+import { initializeFirebaseServer } from '@/firebase/init-server';
 import { collection, query, getDocs } from 'firebase/firestore';
 import type { Metadata, ResolvingMetadata } from 'next';
 import type { BlogPost } from '@/lib/types';
@@ -109,11 +109,15 @@ function BlogPostPageSkeleton() {
     )
 }
 
-export default function BlogPostPage({ params }: Props) {
-    // This is now a server component, it will pass the slug to the client component
+// This is the Server Component part
+export default async function BlogPostPage({ params }: Props) {
+    // Fetching data on the server
+    const post = await getPostBySlug(params.slug);
+
+    // Pass the fetched data to the client component
     return (
         <Suspense fallback={<BlogPostPageSkeleton />}>
-            <BlogPostPageClient slug={params.slug} />
+            <BlogPostPageClient slug={params.slug} serverPost={post} />
         </Suspense>
     );
 }

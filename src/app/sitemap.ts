@@ -1,7 +1,7 @@
 
 import { MetadataRoute } from 'next';
-import { initializeFirebaseServer } from '@/firebase/server-auth';
-import { collection, getDocs, orderBy } from 'firebase/firestore';
+import { initializeFirebaseServer } from '@/firebase/init-server';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 
 // Helper function to convert titles to URL-friendly slugs

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -49,18 +50,18 @@ function BlogPostPageSkeleton() {
     )
 }
 
-export default function BlogPostPageClient({ slug }: { slug: string }) {
+export default function BlogPostPageClient({ slug, serverPost }: { slug: string, serverPost: BlogPost | undefined }) {
     const firestore = useFirestore();
 
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [prevPost, setPrevPost] = useState<BlogPost | null>(null);
-    const [nextPost, setNextPost] = useState<BlogPost | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [post, setPost] = useState<BlogPost | null | undefined>(serverPost);
+    const [relatedPosts, setRelatedPosts] = useState<{prevPost: BlogPost | null, nextPost: BlogPost | null}>({ prevPost: null, nextPost: null });
+    const [isLoading, setIsLoading] = useState(!serverPost);
 
     useEffect(() => {
-        if (!firestore || !slug) return;
+        if (serverPost) return; // Data is already provided by the server
 
         const fetchPostData = async () => {
+            if (!firestore || !slug) return;
             setIsLoading(true);
             try {
                 const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
@@ -68,16 +69,19 @@ export default function BlogPostPageClient({ slug }: { slug: string }) {
                 const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
 
                 const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
+                setPost(currentPost);
+                
                 if (currentPost) {
-                    setPost(currentPost);
                     const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
-                    setPrevPost(currentIndex > 0 ? allPosts[currentIndex - 1] : null);
-                    setNextPost(currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null);
+                    setRelatedPosts({
+                        prevPost: currentIndex > 0 ? allPosts[currentIndex - 1] : null,
+                        nextPost: currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null
+                    });
                 } else {
                     notFound();
                 }
             } catch (error) {
-                console.error("Error fetching post data:", error);
+                console.error("Error fetching post data on client:", error);
                 notFound();
             } finally {
                 setIsLoading(false);
@@ -85,7 +89,7 @@ export default function BlogPostPageClient({ slug }: { slug: string }) {
         };
 
         fetchPostData();
-    }, [firestore, slug]);
+    }, [firestore, slug, serverPost]);
     
 
     if (isLoading) {
@@ -93,7 +97,7 @@ export default function BlogPostPageClient({ slug }: { slug: string }) {
     }
 
     if (!post) {
-        return null; // notFound() would have been called in useEffect
+        return notFound();
     }
     
     return (
@@ -127,9 +131,9 @@ export default function BlogPostPageClient({ slug }: { slug: string }) {
 
                 <nav className="flex justify-between items-center mt-8 gap-4">
                     <div>
-                        {prevPost && (
+                        {relatedPosts.prevPost && (
                             <Button asChild variant="outline">
-                                <Link href={`/blog/${titleToSlug(prevPost.title)}`} title={prevPost.title}>
+                                <Link href={`/blog/${titleToSlug(relatedPosts.prevPost.title)}`} title={relatedPosts.prevPost.title}>
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                     المقالة السابقة
                                 </Link>
@@ -137,9 +141,9 @@ export default function BlogPostPageClient({ slug }: { slug: string }) {
                         )}
                     </div>
                     <div>
-                        {nextPost && (
+                        {relatedPosts.nextPost && (
                             <Button asChild>
-                                <Link href={`/blog/${titleToSlug(nextPost.title)}`} title={nextPost.title}>
+                                <Link href={`/blog/${titleToSlug(relatedPosts.nextPost.title)}`} title={relatedPosts.nextPost.title}>
                                     المقالة التالية
                                     <ChevronLeft className="mr-2 h-4 w-4" />
                                 </Link>
