@@ -1,7 +1,8 @@
+
 'use server';
 
 import { doc, updateDoc } from 'firebase/firestore';
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { initializeFirebaseServer } from '@/firebase/server-auth';
 
 /**
  * Regenerates the API key for a specific user.
