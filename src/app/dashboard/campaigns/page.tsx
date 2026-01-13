@@ -272,26 +272,26 @@ export default function CampaignsPage() {
 
     // Client-side campaign simulation effect
     useEffect(() => {
-        if (!campaigns || !firestore || !authUser) return;
+        if (!campaigns) return;
 
         const updateSimulation = () => {
             let hasChanges = false;
-            const updatedCampaigns = campaigns.map(campaign => {
-                 let updatedCampaign = { ...campaign };
-
-                if (updatedCampaign.status === 'بانتظار المراجعة') {
-                    // Simulate auto-activation
-                    updatedCampaign.status = 'نشط';
-                    updatedCampaign.startDate = new Date().toISOString();
+            const updatedCampaigns = campaigns.map(c => {
+                const campaign = { ...c }; // Create a shallow copy
+    
+                if (campaign.status === 'بانتظار المراجعة') {
+                    campaign.status = 'نشط';
+                    campaign.startDate = new Date().toISOString();
                     hasChanges = true;
-                } else if (updatedCampaign.status === 'نشط') {
-                    const performanceUpdates = calculateCampaignPerformance(updatedCampaign);
+                } else if (campaign.status === 'نشط') {
+                    const performanceUpdates = calculateCampaignPerformance(campaign);
                     if (Object.keys(performanceUpdates).length > 0) {
-                        updatedCampaign = { ...updatedCampaign, ...performanceUpdates };
+                        // Merge updates with the copy
+                        Object.assign(campaign, performanceUpdates);
                         hasChanges = true;
                     }
                 }
-                return updatedCampaign;
+                return campaign;
             });
             
             if (hasChanges) {
@@ -299,11 +299,13 @@ export default function CampaignsPage() {
             }
         }
         
-        updateSimulation(); // Run on mount
+        // Initial run to activate pending campaigns immediately
+        updateSimulation(); 
+        
         const interval = setInterval(updateSimulation, 300000); // 5 minutes
 
         return () => clearInterval(interval);
-    }, [campaigns, firestore, authUser]);
+    }, [campaigns]);
 
 
     const sortedCampaigns = useMemo(() => {
