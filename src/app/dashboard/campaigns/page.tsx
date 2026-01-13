@@ -87,7 +87,6 @@ const calculateCampaignPerformance = (campaign: Campaign): Partial<Campaign> => 
     return updatedCampaign;
 };
 
-
 function UserCampaignActions({ campaign }: { campaign: Campaign }) {
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -180,7 +179,6 @@ function UserCampaignActions({ campaign }: { campaign: Campaign }) {
     );
 }
 
-
 function CampaignsSkeleton() {
     return (
         <div className="space-y-6">
@@ -261,7 +259,11 @@ export default function CampaignsPage() {
 
     useEffect(() => {
         if (initialCampaigns) {
-            setCampaigns(initialCampaigns);
+            const updatedCampaigns = initialCampaigns.map(c => {
+                const performanceUpdates = calculateCampaignPerformance(c);
+                return { ...c, ...performanceUpdates };
+            });
+            setCampaigns(updatedCampaigns);
         }
     }, [initialCampaigns]);
 
@@ -278,11 +280,8 @@ export default function CampaignsPage() {
 
         const updateSimulation = () => {
             let hasChanges = false;
-            const updatedCampaigns = campaigns.map(c => {
-                 const campaign: Campaign = {
-                    ...c,
-                    targetCountries: c.targetCountries || '', // Ensure targetCountries is not undefined
-                 };
+            const updatedCampaignsList = campaigns.map(c => {
+                const campaign: Campaign = { ...c };
     
                 if (campaign.status === 'بانتظار المراجعة') {
                     campaign.status = 'نشط';
@@ -291,7 +290,6 @@ export default function CampaignsPage() {
                 } else if (campaign.status === 'نشط') {
                     const performanceUpdates = calculateCampaignPerformance(campaign);
                     if (Object.keys(performanceUpdates).length > 0) {
-                        // Merge updates with the copy
                         Object.assign(campaign, performanceUpdates);
                         hasChanges = true;
                     }
@@ -300,12 +298,9 @@ export default function CampaignsPage() {
             });
             
             if (hasChanges) {
-                setCampaigns(updatedCampaigns);
+                setCampaigns(updatedCampaignsList);
             }
         }
-        
-        // Initial run to activate pending campaigns immediately
-        updateSimulation(); 
         
         const interval = setInterval(updateSimulation, 300000); // 5 minutes
 
