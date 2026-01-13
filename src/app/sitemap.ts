@@ -1,6 +1,6 @@
 
 import { MetadataRoute } from 'next';
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { initializeFirebaseServer } from '@/firebase/server-auth';
 import { collection, getDocs, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 

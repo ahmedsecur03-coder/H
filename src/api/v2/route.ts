@@ -2,7 +2,7 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { initializeFirebaseServer } from '@/firebase/server-auth';
 import type { Service, Order, User, ServicePrice } from '@/lib/types';
 import { processOrderInTransaction } from '@/lib/service';
 import { SMM_SERVICES } from '@/lib/smm-services';

@@ -1,6 +1,7 @@
+
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/init-server';
+import { initializeFirebaseServer } from '@/firebase/server-auth';
 import { collection, query, getDocs } from 'firebase/firestore';
 import type { Metadata, ResolvingMetadata } from 'next';
 import type { BlogPost } from '@/lib/types';
