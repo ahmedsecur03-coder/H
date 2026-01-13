@@ -62,7 +62,7 @@ function AdminNotifications() {
                 const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
                     getDocs(depositsQuery),
                     getDocs(withdrawalsQuery),
-                    getDocs(campaignsSnap),
+                    getDocs(campaignsQuery),
                     getDocs(ticketsQuery),
                 ]);
 
