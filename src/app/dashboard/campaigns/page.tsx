@@ -253,7 +253,15 @@ export default function CampaignsPage() {
         () => (firestore && authUser ? query(collection(firestore, `users/${authUser.uid}/campaigns`), orderBy('startDate', 'desc')) : null),
         [firestore, authUser]
     );
-    const { data: campaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+    const { data: initialCampaigns, isLoading: campaignsLoading, forceCollectionUpdate } = useCollection<Campaign>(campaignsQuery);
+
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+    useEffect(() => {
+        if (initialCampaigns) {
+            setCampaigns(initialCampaigns);
+        }
+    }, [initialCampaigns]);
 
     const userDocRef = useMemoFirebase(
         () => (firestore && authUser ? doc(firestore, 'users', authUser.uid) : null),
@@ -266,31 +274,36 @@ export default function CampaignsPage() {
     useEffect(() => {
         if (!campaigns || !firestore || !authUser) return;
 
-        const updateAllCampaigns = () => {
-             campaigns.forEach(campaign => {
-                if (campaign.status === 'بانتظار المراجعة') {
-                    // Auto-activate pending campaigns after a short delay
-                    const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-                    updateDoc(campaignDocRef, { status: 'نشط', startDate: new Date().toISOString() });
-                } else if (campaign.status === 'نشط') {
-                    const updates = calculateCampaignPerformance(campaign);
-                    if (Object.keys(updates).length > 0) {
-                        const campaignDocRef = doc(firestore, `users/${campaign.userId}/campaigns`, campaign.id);
-                        updateDoc(campaignDocRef, updates);
+        const updateSimulation = () => {
+            let hasChanges = false;
+            const updatedCampaigns = campaigns.map(campaign => {
+                 let updatedCampaign = { ...campaign };
+
+                if (updatedCampaign.status === 'بانتظار المراجعة') {
+                    // Simulate auto-activation
+                    updatedCampaign.status = 'نشط';
+                    updatedCampaign.startDate = new Date().toISOString();
+                    hasChanges = true;
+                } else if (updatedCampaign.status === 'نشط') {
+                    const performanceUpdates = calculateCampaignPerformance(updatedCampaign);
+                    if (Object.keys(performanceUpdates).length > 0) {
+                        updatedCampaign = { ...updatedCampaign, ...performanceUpdates };
+                        hasChanges = true;
                     }
                 }
+                return updatedCampaign;
             });
-             // We call forceCollectionUpdate to get the latest data from the client cache after updates.
-             forceCollectionUpdate();
+            
+            if (hasChanges) {
+                setCampaigns(updatedCampaigns);
+            }
         }
         
-        // Run once on mount to catch up on progress
-        updateAllCampaigns();
-
-        const interval = setInterval(updateAllCampaigns, 300000); // Run every 5 minutes
+        updateSimulation(); // Run on mount
+        const interval = setInterval(updateSimulation, 300000); // 5 minutes
 
         return () => clearInterval(interval);
-    }, [campaigns, firestore, authUser, forceCollectionUpdate]);
+    }, [campaigns, firestore, authUser]);
 
 
     const sortedCampaigns = useMemo(() => {
