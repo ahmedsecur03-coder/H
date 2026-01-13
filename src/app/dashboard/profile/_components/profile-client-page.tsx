@@ -62,7 +62,7 @@ export function ProfileClientPage({ userData, onUpdate }: { userData: UserType, 
 
     const currentAvatarUrl = profileForm.watch('avatarUrl');
 
-    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>>) => {
+    const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         if (!authUser || !firestore) return;
         
         toast({ title: "جاري تحديث الملف الشخصي..." });
