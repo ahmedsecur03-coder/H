@@ -3,12 +3,12 @@
 
 import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Service } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Upload, ListFilter, Pencil, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Upload, ListFilter, Pencil, CheckCircle, XCircle, Search, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { useServices } from '@/hooks/useServices';
 import { PROFIT_MARGIN } from '@/lib/constants';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 const ITEMS_PER_PAGE = 25;
@@ -158,6 +159,20 @@ function AdminServicesPageComponent() {
     }
   };
 
+    const handleDeleteService = async (serviceId: string) => {
+        if (!firestore) return;
+
+        const priceDocRef = doc(firestore, 'servicePrices', String(serviceId));
+        try {
+            await deleteDoc(priceDocRef);
+            toast({ title: 'نجاح', description: 'تم حذف سعر الخدمة المخصص. سيعود للسعر الافتراضي.' });
+            fetchServiceData();
+        } catch (error) {
+            const permissionError = new FirestorePermissionError({ path: priceDocRef.path, operation: 'delete' });
+            errorEmitter.emit('permission-error', permissionError);
+        }
+    };
+
   const handleOpenDialog = (service?: Service) => {
       setSelectedService(service);
       setIsDialogOpen(true);
@@ -202,7 +217,26 @@ function AdminServicesPageComponent() {
             {service.refill ? <Badge variant="default"><CheckCircle className="w-3 h-3 me-1" />نعم</Badge> : <Badge variant="secondary"><XCircle className="w-3 h-3 me-1" />لا</Badge>}
           </TableCell>
           <TableCell className="text-right">
+              <div className="flex justify-end gap-1">
                 <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(service)}><Pencil className="h-4 w-4" /></Button>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80"><Trash2 className="h-4 w-4" /></Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                هذا الإجراء سيحذف السعر المخصص لهذه الخدمة من قاعدة البيانات، وسيعود سعرها إلى السعر الافتراضي.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteService(service.id)}>نعم، قم بالحذف</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+              </div>
           </TableCell>
       </TableRow>
     ));

@@ -1,3 +1,4 @@
+
 // IMPORTANT: This file should only be imported in server-side code.
 // It uses the Firebase Admin SDK and requires environment variables for authentication.
 
@@ -26,6 +27,11 @@ interface FirebaseServerServices {
   firestore: Firestore;
 }
 
+/**
+ * A more robust function to parse the service account JSON from an environment variable.
+ * It handles both single-line and multi-line formats.
+ * @returns {ServiceAccount | null}
+ */
 function parseServiceAccount(): ServiceAccount | null {
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!serviceAccountJson) {
@@ -33,13 +39,18 @@ function parseServiceAccount(): ServiceAccount | null {
     return null;
   }
   try {
-    // The JSON string is now expected to be a single line.
-    // The replace call for `\n` is still useful for keys.
-    const serviceAccount = JSON.parse(serviceAccountJson);
-    if (serviceAccount.private_key) {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    // Trim whitespace and check if it looks like a JSON object.
+    const cleanedJson = serviceAccountJson.trim();
+    if (cleanedJson.startsWith('{') && cleanedJson.endsWith('}')) {
+        const serviceAccount = JSON.parse(cleanedJson);
+        // Ensure private_key has correct newline characters.
+        if (serviceAccount.private_key) {
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
+        return serviceAccount;
+    } else {
+        throw new Error("Service account JSON doesn't seem to be a valid JSON object.");
     }
-    return serviceAccount;
   } catch (e) {
     console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT JSON.", e);
     return null;

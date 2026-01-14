@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -22,7 +23,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, Info, Terminal, Code2, User } from 'lucide-react';
+import { AlertTriangle, Info, Terminal, Code2, User, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Tooltip,
@@ -48,10 +49,12 @@ const levelConfig = {
   },
 };
 
-const eventConfig = {
+const eventConfig: {[key: string]: { icon: React.ElementType }} = {
     'api_request': { icon: Code2 },
     'permission_denied': { icon: AlertTriangle },
-    'user_created': { icon: User },
+    'user_created': { icon: UserPlus },
+    'broadcast_sent': { icon: Terminal },
+    'api_error': { icon: Code2 },
     'default': { icon: Terminal }
 }
 
