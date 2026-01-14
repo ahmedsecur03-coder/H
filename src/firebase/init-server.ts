@@ -1,4 +1,3 @@
-
 // IMPORTANT: This file should only be imported in server-side code.
 // It uses the Firebase Admin SDK and requires environment variables for authentication.
 
@@ -9,7 +8,7 @@ import { credential } from 'firebase-admin';
 
 // Since we are now using a dedicated JSON file, we can import it directly.
 // This requires `resolveJsonModule` to be true in tsconfig.json
-import serviceAccount from '../../../firebase-service-account.json';
+import serviceAccount from '../../firebase-service-account.json';
 
 
 interface FirebaseServerServices {
@@ -36,7 +35,9 @@ export function initializeFirebaseServer(): Partial<FirebaseServerServices> {
   }
 
   // Check if the service account has the necessary properties.
-  if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+  // The type assertion is needed because the JSON import might not be perfectly typed.
+  const sa = serviceAccount as { project_id?: string; private_key?: string; client_email?: string };
+  if (!sa.project_id || !sa.private_key || !sa.client_email) {
     console.error("The firebase-service-account.json file is missing or incomplete. Server-side Firebase features will be disabled.");
     return { firebaseApp: undefined, auth: undefined, firestore: undefined };
   }
