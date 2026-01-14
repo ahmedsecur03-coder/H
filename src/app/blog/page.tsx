@@ -1,24 +1,11 @@
-
+'use client';
 import BlogPageClient from "@/app/(public)/_components/blog-page";
-import { initializeFirebaseServer } from "@/firebase/init-server";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, orderBy, query } from "firebase/firestore";
 import type { BlogPost } from '@/lib/types';
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-
-export const revalidate = 60; // Revalidate every 60 seconds
-
-async function getPosts() {
-    const { firestore } = initializeFirebaseServer();
-    if (!firestore) {
-        return [];
-    }
-    const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-    const snapshot = await getDocs(postsQuery);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-}
-
 
 function BlogPageSkeleton() {
     return (
@@ -42,12 +29,27 @@ function BlogPageSkeleton() {
     )
 }
 
-export default async function BlogPage() {
-    const posts = await getPosts();
+function BlogPageContent() {
+    const firestore = useFirestore();
+    const postsQuery = useMemoFirebase(
+        () => (firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null),
+        [firestore]
+    );
+    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
 
+    if (isLoading) {
+        return <BlogPageSkeleton />;
+    }
+
+    return <BlogPageClient serverPosts={posts} />;
+}
+
+
+export default function BlogPage() {
     return (
         <Suspense fallback={<BlogPageSkeleton />}>
-            <BlogPageClient serverPosts={posts} />
+           <BlogPageContent />
         </Suspense>
     );
 }
+
