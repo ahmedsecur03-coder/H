@@ -33,7 +33,9 @@ function parseServiceAccount(): ServiceAccount | null {
     return null;
   }
   try {
-    return JSON.parse(serviceAccountJson);
+    // Replace escaped newlines with actual newlines before parsing
+    const cleanedJson = serviceAccountJson.replace(/\\n/g, '\n');
+    return JSON.parse(cleanedJson);
   } catch (e) {
     console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT JSON.", e);
     return null;

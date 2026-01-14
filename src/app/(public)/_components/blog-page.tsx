@@ -1,9 +1,6 @@
-
 'use client';
 
 import type { BlogPost } from '@/lib/types';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,35 +20,11 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-function BlogPageSkeleton() {
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i}>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4 w-1/4 mt-2" />
-                    </CardHeader>
-                    <CardContent>
-                        <Skeleton className="h-12 w-full" />
-                    </CardContent>
-                    <CardFooter>
-                        <Skeleton className="h-10 w-28" />
-                    </CardFooter>
-                </Card>
-            ))}
-        </div>
-    );
-}
+// This component now simply displays the post data passed from the server.
+export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] | null }) {
 
-
-export default function BlogPageClient() {
-    const firestore = useFirestore();
-    const blogPostsQuery = useMemoFirebase(
-      () => (firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null),
-      [firestore]
-    );
-    const { data: posts, isLoading } = useCollection<BlogPost>(blogPostsQuery);
+    // isLoading can be inferred by checking if serverPosts is null (if you decide to pass null on error)
+    const isLoading = !serverPosts;
 
     return (
         <div className="space-y-6 pb-8">
@@ -63,10 +36,18 @@ export default function BlogPageClient() {
             </div>
 
             {isLoading ? (
-                <BlogPageSkeleton />
-            ) : posts && posts.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i}>
+                            <CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-1/4 mt-2" /></CardHeader>
+                            <CardContent><Skeleton className="h-12 w-full" /></CardContent>
+                            <CardFooter><Skeleton className="h-10 w-28" /></CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            ) : serverPosts && serverPosts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.map(post => {
+                    {serverPosts.map(post => {
                         const slug = titleToSlug(post.title);
                         return (
                             <Card key={post.id} className="flex flex-col">
