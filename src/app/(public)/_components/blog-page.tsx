@@ -2,10 +2,13 @@
 'use client';
 
 import type { BlogPost } from '@/lib/types';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function titleToSlug(title: string): string {
   if (!title) return '';
@@ -20,8 +23,35 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-// This component now receives the posts as a prop from the server.
-export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] }) {
+function BlogPageSkeleton() {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-1/4 mt-2" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-12 w-full" />
+                    </CardContent>
+                    <CardFooter>
+                        <Skeleton className="h-10 w-28" />
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
+    );
+}
+
+
+export default function BlogPageClient() {
+    const firestore = useFirestore();
+    const blogPostsQuery = useMemoFirebase(
+      () => (firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null),
+      [firestore]
+    );
+    const { data: posts, isLoading } = useCollection<BlogPost>(blogPostsQuery);
 
     return (
         <div className="space-y-6 pb-8">
@@ -32,9 +62,11 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                 </p>
             </div>
 
-            {serverPosts && serverPosts.length > 0 ? (
+            {isLoading ? (
+                <BlogPageSkeleton />
+            ) : posts && posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {serverPosts.map(post => {
+                    {posts.map(post => {
                         const slug = titleToSlug(post.title);
                         return (
                             <Card key={post.id} className="flex flex-col">
