@@ -90,7 +90,6 @@ export default function AdminBlogPage() {
         }
     };
 
-
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
         const postDocRef = doc(firestore, 'blogPosts', id);
