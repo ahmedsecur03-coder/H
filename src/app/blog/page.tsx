@@ -16,7 +16,10 @@ export const metadata: Metadata = {
 // This function will fetch the data on the server
 async function getBlogPosts(): Promise<BlogPost[]> {
     const { firestore } = initializeFirebaseServer();
-    if (!firestore) return [];
+    if (!firestore) {
+        console.error("Firestore not available on server.");
+        return [];
+    };
     try {
         const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
         const snapshot = await getDocs(postsQuery);
