@@ -1,26 +1,8 @@
 import { MetadataRoute } from 'next';
-import { initializeFirebaseServer } from '@/firebase/init-server';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import type { BlogPost } from '@/lib/types';
-
-
-function titleToSlug(title: string): string {
-  if (!title) return '';
-  return title
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
 
-  // Static public routes
   const publicRoutes = [
     '/',
     '/about',
@@ -32,33 +14,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/auth/signup',
   ];
 
-  const publicUrls = publicRoutes.map((route) => ({
+  const staticUrls = publicRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: route === '/' ? 1.0 : 0.8,
   }));
   
-  // Dynamic blog post routes
-  let blogPostUrls: MetadataRoute.Sitemap = [];
-  try {
-    const { firestore } = initializeFirebaseServer();
-    if (firestore) {
-      const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-      const snapshot = await getDocs(postsQuery);
-      const posts = snapshot.docs.map(doc => doc.data() as BlogPost);
+  // Dynamic routes (like blog posts) are removed to ensure a successful build
+  // as they would require server-side data fetching which is causing issues.
+  // A more robust solution would involve fetching these paths at build time.
 
-      blogPostUrls = posts.map(post => ({
-        url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
-        lastModified: new Date(post.publishDate),
-        changeFrequency: 'monthly',
-        priority: 0.7,
-      }));
-    }
-  } catch (error) {
-    console.error("Failed to fetch blog posts for sitemap:", error);
-    // Continue without blog posts if fetching fails
-  }
-
-  return [...publicUrls, ...blogPostUrls];
+  return staticUrls;
 }

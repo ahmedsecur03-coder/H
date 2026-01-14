@@ -1,3 +1,4 @@
+
 'use client';
 
 import { notFound } from 'next/navigation';
@@ -8,6 +9,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from 'react';
+import { useFirestore } from '@/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 function titleToSlug(title: string): string {
     if (!title) return '';
@@ -22,14 +26,68 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-// This component now receives the post data directly from its parent server component
-export default function BlogPostPageClient({ serverPost }: { serverPost: BlogPost }) {
+function BlogPostPageSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+            <Skeleton className="h-8 w-32 mb-4" />
+             <div className="space-y-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-5 w-1/4 mt-2" />
+                <br/>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <br/>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+            </div>
+        </div>
+    )
+}
+
+// This component now fetches its own data on the client side.
+export default function BlogPostPageClient({ slug }: { slug: string }) {
+    const firestore = useFirestore();
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore || !slug) return;
+
+        const fetchPost = async () => {
+            setIsLoading(true);
+            try {
+                const postsRef = collection(firestore, 'blogPosts');
+                const snapshot = await getDocs(postsRef);
+                const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+                const foundPost = allPosts.find(p => titleToSlug(p.title) === slug);
+                
+                if (foundPost) {
+                    setPost(foundPost);
+                } else {
+                    notFound();
+                }
+            } catch (error) {
+                console.error("Failed to fetch post:", error);
+                notFound();
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPost();
+
+    }, [firestore, slug]);
     
-    // No more client-side fetching
-    const post = serverPost;
-    
+    if (isLoading) {
+        return <BlogPostPageSkeleton />;
+    }
+
     if (!post) {
-        notFound();
+        // This will be caught by notFound() in useEffect, but as a fallback.
+        return notFound();
     }
     
     return (
@@ -60,8 +118,6 @@ export default function BlogPostPageClient({ serverPost }: { serverPost: BlogPos
                     </CardContent>
                 </Card>
             </article>
-            {/* Note: The prev/next post logic is removed for simplicity with static generation.
-                A more advanced implementation could pass this data as well. */}
         </div>
     );
 }

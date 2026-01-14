@@ -8,10 +8,12 @@ import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFirestore } from '@/firebase';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 function titleToSlug(title: string): string {
   if (!title) return '';
-  // This version is safer for URLs and handles more edge cases.
   return title
     .toString()
     .normalize('NFD')
@@ -22,7 +24,6 @@ function titleToSlug(title: string): string {
     .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
     .replace(/-+/g, '-');
 }
-
 
 function BlogPageSkeleton() {
     return (
@@ -52,12 +53,34 @@ function BlogPageSkeleton() {
     )
 }
 
-// This component now receives the posts from its parent server component
-export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] }) {
+// This component now fetches its own data on the client.
+export default function BlogPageClient() {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     
-    // The posts are now received as a prop, no client-side fetching needed.
-    const posts = serverPosts;
-    const isLoading = false; // Data is pre-fetched on the server.
+    useEffect(() => {
+        if (!firestore) return;
+
+        const fetchPosts = async () => {
+            setIsLoading(true);
+            try {
+                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+                const querySnapshot = await getDocs(postsQuery);
+                const fetchedPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+                setPosts(fetchedPosts);
+            } catch (error) {
+                console.error("Failed to fetch blog posts:", error);
+                toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب مقالات المدونة.' });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, [firestore, toast]);
+
 
     if (isLoading) {
         return <BlogPageSkeleton />;
@@ -113,4 +136,3 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
         </div>
     );
 }
-
