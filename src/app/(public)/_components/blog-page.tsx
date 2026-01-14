@@ -1,16 +1,11 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useFirestore } from '@/firebase';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
 
 function titleToSlug(title: string): string {
   if (!title) return '';
@@ -25,66 +20,8 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-function BlogPageSkeleton() {
-    return (
-        <div className="space-y-6 pb-8">
-             <div>
-                <Skeleton className="h-8 w-1/3" />
-                <Skeleton className="h-5 w-2/3 mt-2" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                    <Card key={i} className="flex flex-col">
-                        <CardHeader>
-                            <Skeleton className="h-6 w-full" />
-                             <Skeleton className="h-4 w-1/3 mt-2" />
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-2">
-                             <Skeleton className="h-4 w-full" />
-                             <Skeleton className="h-4 w-5/6" />
-                        </CardContent>
-                        <CardFooter>
-                            <Skeleton className="h-10 w-28" />
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
-        </div>
-    )
-}
-
-// This component now fetches its own data on the client.
-export default function BlogPageClient() {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    
-    useEffect(() => {
-        if (!firestore) return;
-
-        const fetchPosts = async () => {
-            setIsLoading(true);
-            try {
-                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-                const querySnapshot = await getDocs(postsQuery);
-                const fetchedPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-                setPosts(fetchedPosts);
-            } catch (error) {
-                console.error("Failed to fetch blog posts:", error);
-                toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب مقالات المدونة.' });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchPosts();
-    }, [firestore, toast]);
-
-
-    if (isLoading) {
-        return <BlogPageSkeleton />;
-    }
+// This component now receives the posts as a prop from the server.
+export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] }) {
 
     return (
         <div className="space-y-6 pb-8">
@@ -95,9 +32,9 @@ export default function BlogPageClient() {
                 </p>
             </div>
 
-            {posts && posts.length > 0 ? (
+            {serverPosts && serverPosts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.map(post => {
+                    {serverPosts.map(post => {
                         const slug = titleToSlug(post.title);
                         return (
                             <Card key={post.id} className="flex flex-col">
