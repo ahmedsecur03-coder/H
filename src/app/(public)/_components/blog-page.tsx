@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -71,7 +72,7 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                 </p>
             </div>
 
-            {posts.length > 0 ? (
+            {posts && posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {posts.map(post => {
                         const slug = titleToSlug(post.title);
@@ -112,3 +113,4 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
         </div>
     );
 }
+

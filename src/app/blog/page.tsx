@@ -1,3 +1,6 @@
+
+'use server';
+
 import BlogPageClient from "@/app/(public)/_components/blog-page";
 import type { Metadata } from 'next';
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
@@ -11,7 +14,7 @@ export const metadata: Metadata = {
 }
 
 // This function will fetch the data on the server
-async function getBlogPosts() {
+async function getBlogPosts(): Promise<BlogPost[]> {
     const { firestore } = initializeFirebaseServer();
     if (!firestore) return [];
     try {
@@ -20,7 +23,7 @@ async function getBlogPosts() {
         const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
         return posts;
     } catch (error) {
-        console.error("Failed to fetch blog posts for sitemap:", error);
+        console.error("Failed to fetch blog posts:", error);
         return [];
     }
 }
