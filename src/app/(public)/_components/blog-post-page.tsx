@@ -8,6 +8,10 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function titleToSlug(title: string): string {
     if (!title) return '';
@@ -22,17 +26,68 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-// This is now a pure client component that receives all its data via props
-export default function BlogPostPageClient({ 
-    post, 
-    relatedPosts 
-}: { 
-    post?: BlogPost, 
-    relatedPosts: { prevPost: BlogPost | null, nextPost: BlogPost | null } 
-}) {
+function BlogPostPageSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+            <Skeleton className="h-8 w-32 mb-4" />
+             <div className="space-y-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-5 w-1/4 mt-2" />
+                <br/>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <br/>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+            </div>
+        </div>
+    )
+}
 
-    if (!post) {
-        notFound();
+export default function BlogPostPageClient({ slug }: { slug: string }) {
+    const firestore = useFirestore();
+    const [post, setPost] = useState<BlogPost | undefined>(undefined);
+    const [relatedPosts, setRelatedPosts] = useState<{ prevPost: BlogPost | null, nextPost: BlogPost | null }>({ prevPost: null, nextPost: null });
+    const [isLoading, setIsLoading] = useState(true);
+    
+    useEffect(() => {
+        if (!firestore) return;
+
+        const fetchPostData = async () => {
+            setIsLoading(true);
+            try {
+                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
+                const querySnapshot = await getDocs(postsQuery);
+                const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+                
+                const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
+                
+                if (currentPost) {
+                    setPost(currentPost);
+                    const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
+                    const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+                    const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+                    setRelatedPosts({ prevPost, nextPost });
+                } else {
+                    notFound();
+                }
+            } catch (error) {
+                console.error("Error fetching post data:", error);
+                notFound();
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPostData();
+    }, [firestore, slug]);
+
+
+    if (isLoading || !post) {
+        return <BlogPostPageSkeleton />;
     }
     
     return (
@@ -89,3 +144,4 @@ export default function BlogPostPageClient({
         </div>
     );
 }
+

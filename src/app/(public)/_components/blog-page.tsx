@@ -53,15 +53,12 @@ function BlogPageSkeleton() {
     )
 }
 
-export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] }) {
-    const [posts, setPosts] = useState<BlogPost[]>(serverPosts);
-    const [isLoading, setIsLoading] = useState(serverPosts.length === 0);
+export default function BlogPageClient() {
+    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const firestore = useFirestore();
 
     useEffect(() => {
-        // Only fetch on client if server data is missing
-        if (serverPosts.length > 0) return;
-
         const fetchPosts = async () => {
             if (!firestore) return;
             setIsLoading(true);
@@ -78,7 +75,7 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
         };
 
         fetchPosts();
-    }, [firestore, serverPosts]);
+    }, [firestore]);
 
 
     if (isLoading) {
@@ -135,3 +132,4 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
         </div>
     );
 }
+
