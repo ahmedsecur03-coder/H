@@ -1,4 +1,4 @@
-'use server';
+
 import BlogPageClient from "@/app/(public)/_components/blog-page";
 import type { Metadata } from 'next';
 import { initializeFirebaseServer } from '@/firebase/init-server';
