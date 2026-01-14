@@ -65,7 +65,6 @@ export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
   { href: '/dashboard/affiliate', label: 'التسويق بالعمولة', icon: Users },
   { href: '/dashboard/support', label: 'الدعم الفني', icon: MessageSquare },
-  { href: '/blog', label: 'المدونة', icon: BookOpen },
   { 
       label: 'الحساب',
       icon: UserCircle,
