@@ -20,10 +20,10 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-// This component now simply displays the post data passed from the server.
+// This component is now only used for the individual post page.
+// The main blog page logic is inside /app/blog/page.tsx now.
 export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] | null }) {
 
-    // isLoading can be inferred by checking if serverPosts is null (if you decide to pass null on error)
     const isLoading = !serverPosts;
 
     return (
