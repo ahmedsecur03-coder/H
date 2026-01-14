@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { BlogPost } from '@/lib/types';
@@ -8,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-
-// This component now simply displays the post data passed from the server.
 export default function BlogPostPageClient({ serverPost }: { serverPost: BlogPost }) {
     
     return (

@@ -20,8 +20,6 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-// This component is now only used for the individual post page.
-// The main blog page logic is inside /app/blog/page.tsx now.
 export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] | null }) {
 
     const isLoading = !serverPosts;
