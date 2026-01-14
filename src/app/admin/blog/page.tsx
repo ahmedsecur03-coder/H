@@ -16,7 +16,6 @@ import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsButton } from './_components/import-posts-button';
-import { AiPostDialog } from './_components/ai-post-dialog';
 
 
 export default function AdminBlogPage() {
@@ -64,7 +63,7 @@ export default function AdminBlogPage() {
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-                await updateDoc(postDocRef, data);
+                await updateDoc(postDocRef, { title: data.title, content: data.content });
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const newPostData = { 
@@ -135,12 +134,6 @@ export default function AdminBlogPage() {
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                                 <ImportPostsButton onImportComplete={fetchPosts} />
-                                <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                                    <Button variant="outline">
-                                        <Wand2 className="ml-2 h-4 w-4" />
-                                        توليد بالذكاء الاصطناعي
-                                    </Button>
-                                </AiPostDialog>
                             </div>
                         </div>
                     </TableCell>
@@ -189,12 +182,6 @@ export default function AdminBlogPage() {
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                         <ImportPostsButton onImportComplete={fetchPosts} />
-                         <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                            <Button variant="outline">
-                                <Wand2 className="ml-2 h-4 w-4" />
-                                توليد بالذكاء الاصطناعي
-                            </Button>
-                        </AiPostDialog>
                     </div>
                  )}
             </div>
