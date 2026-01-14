@@ -33,9 +33,13 @@ function parseServiceAccount(): ServiceAccount | null {
     return null;
   }
   try {
-    // Replace escaped newlines with actual newlines before parsing
-    const cleanedJson = serviceAccountJson.replace(/\\n/g, '\n');
-    return JSON.parse(cleanedJson);
+    // The JSON string is now expected to be a single line.
+    // The replace call for `\n` is still useful for keys.
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+    return serviceAccount;
   } catch (e) {
     console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT JSON.", e);
     return null;
