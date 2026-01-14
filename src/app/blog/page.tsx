@@ -1,4 +1,3 @@
-'use server';
 
 import BlogPageClient from "@/app/(public)/_components/blog-page";
 import { initializeFirebaseServer } from "@/firebase/init-server";
