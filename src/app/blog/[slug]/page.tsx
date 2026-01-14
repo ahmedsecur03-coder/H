@@ -26,45 +26,60 @@ function titleToSlug(title: string): string {
     .replace(/-+/g, '-');
 }
 
-async function getPostBySlug(slug: string): Promise<BlogPost | undefined> {
+async function getPostData(slug: string): Promise<{
+    currentPost: BlogPost | undefined,
+    relatedPosts: { prevPost: BlogPost | null, nextPost: BlogPost | null }
+}> {
     const { firestore } = initializeFirebaseServer();
-    if (!firestore) return undefined;
+    if (!firestore) return { currentPost: undefined, relatedPosts: { prevPost: null, nextPost: null } };
     
     try {
         const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
         const querySnapshot = await getDocs(postsQuery);
         const allPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-        return allPosts.find(p => titleToSlug(p.title) === slug);
+        
+        const currentPost = allPosts.find(p => titleToSlug(p.title) === slug);
+        
+        if (!currentPost) {
+            return { currentPost: undefined, relatedPosts: { prevPost: null, nextPost: null } };
+        }
+
+        const currentIndex = allPosts.findIndex(p => p.id === currentPost.id);
+        const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+        const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+        
+        return { currentPost, relatedPosts: { prevPost, nextPost } };
+
     } catch (error) {
-        console.error("Error fetching post for metadata:", error);
-        return undefined;
+        console.error("Error fetching post data for page:", error);
+        return { currentPost: undefined, relatedPosts: { prevPost: null, nextPost: null } };
     }
 }
 
 export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug);
+  const { currentPost } = await getPostData(params.slug);
 
-  if (!post) {
+  if (!currentPost) {
     return {
       title: 'المقالة غير موجودة',
     }
   }
 
-  const description = post.content.substring(0, 160).replace(/#/g, '').trim() + '...';
+  const description = currentPost.content.substring(0, 160).replace(/#/g, '').trim() + '...';
 
   return {
-    title: post.title,
+    title: currentPost.title,
     description: description,
     openGraph: {
-      title: post.title,
+      title: currentPost.title,
       description: description,
       type: 'article',
-      publishedTime: post.publishDate,
+      publishedTime: currentPost.publishDate,
       authors: ['Hagaaty Team'],
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
+      title: currentPost.title,
       description: description,
     },
   }
@@ -94,7 +109,7 @@ function BlogPostPageSkeleton() {
             <Skeleton className="h-8 w-32 mb-4" />
              <div className="space-y-4">
                 <Skeleton className="h-10 w-3/4" />
-                <Skeleton className="h-5 w-1/4" />
+                <Skeleton className="h-5 w-1/4 mt-2" />
                 <br/>
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-full" />
@@ -111,16 +126,16 @@ function BlogPostPageSkeleton() {
 
 export default async function BlogPostPage({ params }: Props) {
     // Fetching data on the server
-    const post = await getPostBySlug(params.slug);
+    const { currentPost, relatedPosts } = await getPostData(params.slug);
     
-    if (!post) {
+    if (!currentPost) {
       notFound();
     }
 
     // Pass the fetched data to the client component
     return (
         <Suspense fallback={<BlogPostPageSkeleton />}>
-            <BlogPostPageClient slug={params.slug} serverPost={post} />
+            <BlogPostPageClient post={currentPost} relatedPosts={relatedPosts} />
         </Suspense>
     );
 }

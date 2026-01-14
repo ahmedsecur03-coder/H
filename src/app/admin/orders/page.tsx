@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useFirestore } from '@/firebase';
-import { collectionGroup, query, orderBy, where, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, deleteDoc, doc, Query, getCountFromServer } from 'firebase/firestore';
+import { collectionGroup, query, getDocs, deleteDoc, doc, Query } from 'firebase/firestore';
 import type { Order } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ListFilter, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Search, ListFilter, Trash2 } from 'lucide-react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Pagination,
@@ -39,6 +39,8 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
+  PaginationLink,
+  PaginationEllipsis,
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { OrderActions } from './_components/order-actions';
@@ -179,6 +181,29 @@ function AdminOrdersPageComponent() {
         params.set('page', '1');
     }
     router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const renderPaginationItems = () => {
+    if (pageCount <= 1) return null;
+    const pageNumbers: (number | 'ellipsis')[] = [];
+    if (pageCount <= 7) {
+        for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
+    } else {
+        pageNumbers.push(1);
+        if (currentPage > 3) pageNumbers.push('ellipsis');
+        let start = Math.max(2, currentPage - 1);
+        let end = Math.min(pageCount - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) pageNumbers.push(i);
+        if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
+        pageNumbers.push(pageCount);
+    }
+    return pageNumbers.map((page, index) => (
+        <PaginationItem key={`${page}-${index}`}>
+            {page === 'ellipsis' ? <PaginationEllipsis /> : (
+                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
+            )}
+        </PaginationItem>
+    ));
   };
   
   const OrderCard = ({ order }: { order: Order }) => (
@@ -338,9 +363,7 @@ function AdminOrdersPageComponent() {
                 <PaginationItem>
                     <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
                 </PaginationItem>
-                <PaginationItem>
-                    <span className="p-2 text-sm">صفحة {currentPage} من {pageCount}</span>
-                </PaginationItem>
+                {renderPaginationItems()}
                 <PaginationItem>
                     <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
                 </PaginationItem>

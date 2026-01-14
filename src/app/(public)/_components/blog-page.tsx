@@ -53,15 +53,17 @@ function BlogPageSkeleton() {
     )
 }
 
-export default function BlogPageClient() {
+export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] }) {
+    const [posts, setPosts] = useState<BlogPost[]>(serverPosts);
+    const [isLoading, setIsLoading] = useState(serverPosts.length === 0);
     const firestore = useFirestore();
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!firestore) return;
+        // Only fetch on client if server data is missing
+        if (serverPosts.length > 0) return;
 
         const fetchPosts = async () => {
+            if (!firestore) return;
             setIsLoading(true);
             try {
                 const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
@@ -76,7 +78,7 @@ export default function BlogPageClient() {
         };
 
         fetchPosts();
-    }, [firestore]);
+    }, [firestore, serverPosts]);
 
 
     if (isLoading) {
