@@ -8,6 +8,10 @@ import type { BlogPost } from '@/lib/types';
 import { notFound } from 'next/navigation';
 import type { Metadata, ResolvingMetadata } from 'next';
 
+// This tells Next.js to revalidate this page every 60 seconds.
+// It allows new blog posts created after the build to be rendered.
+export const revalidate = 60;
+
 // Helper function to convert title to slug
 function titleToSlug(title: string): string {
     if (!title) return '';

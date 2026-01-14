@@ -1,8 +1,13 @@
+
 import BlogPageClient from '@/app/(public)/_components/blog-page';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { initializeFirebaseServer } from '@/firebase/init-server';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
+
+// This tells Next.js to revalidate this page every 60 seconds.
+// It allows new blog posts created after the build to appear.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'المدونة والأخبار',
