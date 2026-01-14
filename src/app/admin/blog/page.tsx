@@ -8,7 +8,7 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen, Wand2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -16,6 +16,7 @@ import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsButton } from './_components/import-posts-button';
+import { AiPostDialog } from './_components/ai-post-dialog';
 
 
 export default function AdminBlogPage() {
@@ -61,18 +62,23 @@ export default function AdminBlogPage() {
         setIsSaving(true);
         
         try {
-            if (selectedPost && selectedPost.id) { // Editing
+            if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
                 await updateDoc(postDocRef, data);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
-                const newPostData = { ...data, authorId: user.uid, publishDate: new Date().toISOString() };
+                const newPostData = { 
+                    title: data.title, 
+                    content: data.content, 
+                    authorId: user.uid, 
+                    publishDate: new Date().toISOString() 
+                };
                 const postsColRef = collection(firestore, 'blogPosts');
                 await addDoc(postsColRef, newPostData);
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
             }
             setIsPostDialogOpen(false);
-            fetchPosts(); // Re-fetch all posts
+            await fetchPosts(); // Re-fetch all posts
         } catch (serverError) {
              const permissionError = new FirestorePermissionError({ 
                 path: selectedPost?.id ? `blogPosts/${selectedPost.id}` : 'blogPosts',
@@ -83,6 +89,13 @@ export default function AdminBlogPage() {
         } finally {
             setIsSaving(false);
         }
+    };
+    
+    const handleArticleGenerated = (article: { title: string, content: string }) => {
+        // This function will receive the generated article and pre-fill the dialog
+        // We set a temporary post object without an ID
+        setSelectedPost({ title: article.title, content: article.content });
+        setIsPostDialogOpen(true); // Open the regular post dialog
     };
 
 
@@ -122,6 +135,12 @@ export default function AdminBlogPage() {
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                                 <ImportPostsButton onImportComplete={fetchPosts} />
+                                <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                                    <Button variant="outline">
+                                        <Wand2 className="ml-2 h-4 w-4" />
+                                        توليد بالذكاء الاصطناعي
+                                    </Button>
+                                </AiPostDialog>
                             </div>
                         </div>
                     </TableCell>
@@ -167,9 +186,15 @@ export default function AdminBlogPage() {
                     <p className="text-muted-foreground">إنشاء وتعديل وحذف منشورات الأخبار والإعلانات.</p>
                 </div>
                  {showHeaderActions && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
                         <ImportPostsButton onImportComplete={fetchPosts} />
+                         <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                            <Button variant="outline">
+                                <Wand2 className="ml-2 h-4 w-4" />
+                                توليد بالذكاء الاصطناعي
+                            </Button>
+                        </AiPostDialog>
                     </div>
                  )}
             </div>
