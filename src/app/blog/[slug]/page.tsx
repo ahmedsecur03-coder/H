@@ -1,24 +1,54 @@
-'use client';
-
-import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+'use server';
+import { initializeFirebaseServer } from '@/firebase/init-server';
+import { collection, getDocs } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-import { notFound, useParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { notFound } from 'next/navigation';
+import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
+import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 function titleToSlug(title: string): string {
-  if (!title) return '';
-  return title
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
+    if (!title) return '';
+    return title
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
+        .replace(/-+/g, '-');
+}
+
+async function getPostBySlug(slug: string) {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return null;
+    
+    const postsRef = collection(firestore, 'blogPosts');
+    const snapshot = await getDocs(postsRef);
+    const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+    
+    const foundPost = allPosts.find(p => titleToSlug(p.title) === slug);
+    return foundPost || null;
+}
+
+export async function generateStaticParams() {
+    const { firestore } = initializeFirebaseServer();
+    if (!firestore) return [];
+
+    try {
+        const postsRef = collection(firestore, 'blogPosts');
+        const snapshot = await getDocs(postsRef);
+        const allPosts = snapshot.docs.map(doc => doc.data() as BlogPost);
+        return allPosts.map(post => ({
+            slug: titleToSlug(post.title),
+        }));
+    } catch (error) {
+        console.error("Failed to generate static params for blog posts:", error);
+        return [];
+    }
 }
 
 function BlogPostPageSkeleton() {
@@ -42,48 +72,11 @@ function BlogPostPageSkeleton() {
     )
 }
 
-export default function BlogPostPage() {
-    const params = useParams();
-    const slug = params.slug as string;
-    const firestore = useFirestore();
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        if (!firestore || !slug) return;
-
-        const findPost = async () => {
-            setIsLoading(true);
-            try {
-                const postsRef = collection(firestore, 'blogPosts');
-                const snapshot = await getDocs(postsRef);
-                const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-                const foundPost = allPosts.find(p => titleToSlug(p.title) === slug);
-                
-                if (foundPost) {
-                    setPost(foundPost);
-                } else {
-                    notFound();
-                }
-            } catch (error) {
-                console.error("Error fetching post by slug:", error);
-                notFound();
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        findPost();
-
-    }, [firestore, slug]);
-
-
-    if (isLoading) {
-        return <BlogPostPageSkeleton />;
-    }
+export default async function BlogPostPage({ params }: { params: { slug: string }}) {
+    const post = await getPostBySlug(params.slug);
 
     if (!post) {
-        return notFound();
+        notFound();
     }
 
     return (
