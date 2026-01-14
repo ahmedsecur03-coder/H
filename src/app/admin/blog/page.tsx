@@ -63,7 +63,7 @@ export default function AdminBlogPage() {
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-                await updateDoc(postDocRef, { title: data.title, content: data.content });
+                await updateDoc(postDocRef, data);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const newPostData = { 
@@ -88,13 +88,6 @@ export default function AdminBlogPage() {
         } finally {
             setIsSaving(false);
         }
-    };
-    
-    const handleArticleGenerated = (article: { title: string, content: string }) => {
-        // This function will receive the generated article and pre-fill the dialog
-        // We set a temporary post object without an ID
-        setSelectedPost({ title: article.title, content: article.content });
-        setIsPostDialogOpen(true); // Open the regular post dialog
     };
 
 
