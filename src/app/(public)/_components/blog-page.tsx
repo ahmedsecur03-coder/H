@@ -6,8 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function titleToSlug(title: string): string {
@@ -53,30 +51,12 @@ function BlogPageSkeleton() {
     )
 }
 
-export default function BlogPageClient() {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const firestore = useFirestore();
-
-    useEffect(() => {
-        const fetchPosts = async () => {
-            if (!firestore) return;
-            setIsLoading(true);
-            try {
-                const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-                const querySnapshot = await getDocs(postsQuery);
-                const fetchedPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-                setPosts(fetchedPosts);
-            } catch (error) {
-                console.error("Error fetching blog posts:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchPosts();
-    }, [firestore]);
-
+// This component now receives the posts from its parent server component
+export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] }) {
+    
+    // The posts are now received as a prop, no client-side fetching needed.
+    const posts = serverPosts;
+    const isLoading = false; // Data is pre-fetched on the server.
 
     if (isLoading) {
         return <BlogPageSkeleton />;
@@ -132,4 +112,3 @@ export default function BlogPageClient() {
         </div>
     );
 }
-
