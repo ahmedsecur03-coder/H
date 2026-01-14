@@ -7,19 +7,10 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { credential } from 'firebase-admin';
 
-// Interface for the structured service account key
-interface ServiceAccount {
-  type: string;
-  project_id: string;
-  private_key_id: string;
-  private_key: string;
-  client_email: string;
-  client_id: string;
-  auth_uri: string;
-  token_uri: string;
-  auth_provider_x509_cert_url: string;
-  client_x509_cert_url: string;
-}
+// Since we are now using a dedicated JSON file, we can import it directly.
+// This requires `resolveJsonModule` to be true in tsconfig.json
+import serviceAccount from '../../../firebase-service-account.json';
+
 
 interface FirebaseServerServices {
   firebaseApp: App;
@@ -28,39 +19,9 @@ interface FirebaseServerServices {
 }
 
 /**
- * A more robust function to parse the service account JSON from an environment variable.
- * It handles both single-line and multi-line formats.
- * @returns {ServiceAccount | null}
- */
-function parseServiceAccount(): ServiceAccount | null {
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!serviceAccountJson) {
-    console.warn("FIREBASE_SERVICE_ACCOUNT environment variable is not set. Server-side Firebase features will be disabled.");
-    return null;
-  }
-  try {
-    // Trim whitespace and check if it looks like a JSON object.
-    const cleanedJson = serviceAccountJson.trim();
-    if (cleanedJson.startsWith('{') && cleanedJson.endsWith('}')) {
-        const serviceAccount = JSON.parse(cleanedJson);
-        // Ensure private_key has correct newline characters.
-        if (serviceAccount.private_key) {
-          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-        }
-        return serviceAccount;
-    } else {
-        throw new Error("Service account JSON doesn't seem to be a valid JSON object.");
-    }
-  } catch (e) {
-    console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT JSON.", e);
-    return null;
-  }
-}
-
-/**
  * Initializes the Firebase Admin SDK on the server-side if it hasn't been already.
  * This is a singleton; it's safe to call multiple times.
- * It relies on the `FIREBASE_SERVICE_ACCOUNT` environment variable.
+ * It now relies on the `firebase-service-account.json` file.
  * @returns An object containing the initialized Firebase Admin services.
  */
 export function initializeFirebaseServer(): Partial<FirebaseServerServices> {
@@ -74,14 +35,15 @@ export function initializeFirebaseServer(): Partial<FirebaseServerServices> {
     };
   }
 
-  const serviceAccount = parseServiceAccount();
-  if (!serviceAccount) {
-    // Return a partial object so the app doesn't crash on destructuring
+  // Check if the service account has the necessary properties.
+  if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+    console.error("The firebase-service-account.json file is missing or incomplete. Server-side Firebase features will be disabled.");
     return { firebaseApp: undefined, auth: undefined, firestore: undefined };
   }
   
   const firebaseApp = initializeApp({
-    credential: credential.cert(serviceAccount),
+    // We cast the imported JSON to the type expected by `credential.cert`
+    credential: credential.cert(serviceAccount as any),
     projectId: serviceAccount.project_id,
   });
 
