@@ -1,6 +1,3 @@
-
-'use server';
-
 import { NextResponse } from 'next/server';
 
 // This is a simplified version that does not require server auth.
