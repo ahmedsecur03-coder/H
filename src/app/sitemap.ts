@@ -1,19 +1,4 @@
 import { MetadataRoute } from 'next';
-import { firestoreAdmin } from '@/firebase/firebase-admin';
-import type { BlogPost } from '@/lib/types';
-
-function titleToSlug(title: string): string {
-    if (!title) return '';
-    return title
-        .toString()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-        .replace(/-+/g, '-');
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
@@ -36,22 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '/' ? 1.0 : 0.8,
   }));
   
-  let blogPostUrls: MetadataRoute.Sitemap = [];
-
-  try {
-      const postsSnapshot = await firestoreAdmin.collection('blogPosts').get();
-      blogPostUrls = postsSnapshot.docs.map(doc => {
-          const post = doc.data() as BlogPost;
-          return {
-              url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
-              lastModified: new Date(post.publishDate),
-              changeFrequency: 'monthly',
-              priority: 0.7,
-          };
-      });
-  } catch (error) {
-      console.error("Failed to fetch blog posts for sitemap:", error);
-  }
+  // Temporarily removing dynamic blog post URLs to fix build error.
+  // This can be re-enabled once server-side data fetching is stable.
+  const blogPostUrls: MetadataRoute.Sitemap = [];
 
   return [...staticUrls, ...blogPostUrls];
 }

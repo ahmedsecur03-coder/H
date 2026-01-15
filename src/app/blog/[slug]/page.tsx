@@ -1,81 +1,62 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { notFound, useParams } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
-import { firestoreAdmin } from '@/firebase/firebase-admin';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-import type { Metadata, ResolvingMetadata } from 'next';
+import { useEffect, useState, useMemo } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function titleToSlug(title: string): string {
-  if (!title) return '';
-  return title
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
+    if (!title) return '';
+    return title
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
+      .replace(/-+/g, '-');
 }
 
-// This function tells Next.js which pages to build at build time
-export async function generateStaticParams() {
-  try {
-    const snapshot = await firestoreAdmin.collection('blogPosts').get();
-    if (snapshot.empty) {
-      return [];
+function BlogPostSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8 space-y-4">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-96 w-full" />
+        </div>
+    );
+}
+
+export default function BlogPostPage() {
+    const params = useParams();
+    const slug = params.slug as string;
+    const firestore = useFirestore();
+
+    const postsQuery = useMemoFirebase(
+      () => (firestore ? query(collection(firestore, 'blogPosts')) : null),
+      [firestore]
+    );
+    const { data: allPosts, isLoading } = useCollection<BlogPost>(postsQuery);
+
+    const [post, setPost] = useState<BlogPost | null | undefined>(undefined);
+
+    useEffect(() => {
+        if (!isLoading && allPosts) {
+            const foundPost = allPosts.find(p => titleToSlug(p.title) === slug);
+            setPost(foundPost || null);
+        }
+    }, [isLoading, allPosts, slug]);
+
+    if (isLoading || post === undefined) {
+        return <BlogPostSkeleton />;
     }
-    const posts = snapshot.docs.map(doc => doc.data() as BlogPost);
-    return posts.map(post => ({
-      slug: titleToSlug(post.title),
-    }));
-  } catch (error) {
-    console.error("Failed to generate static params for blog posts:", error);
-    return []; // Return empty array on error to avoid build failure
-  }
-}
 
-// This function fetches the data for a specific post
-async function getPost(slug: string): Promise<BlogPost | null> {
-   try {
-    const snapshot = await firestoreAdmin.collection('blogPosts').get();
-     if (snapshot.empty) {
-      return null;
+    if (post === null) {
+        notFound();
     }
-    const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-    const foundPost = allPosts.find(p => titleToSlug(p.title) === slug);
-    return foundPost || null;
-  } catch (error) {
-    console.error(`Failed to fetch post with slug ${slug}:`, error);
-    return null;
-  }
-}
 
-// Generate dynamic metadata for each blog post
-export async function generateMetadata(
-  { params }: { params: { slug: string } },
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const post = await getPost(params.slug);
- 
-  if (!post) {
-    return {
-      title: 'المقالة غير موجودة',
-    }
-  }
- 
-  return {
-    title: post.title,
-    description: post.content.substring(0, 160).replace(/#/g, '').trim() + '...',
-  }
-}
-
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug);
-
-  if (!post) {
-    notFound();
-  }
-
-  return <BlogPostPageClient serverPost={post} />;
+    return <BlogPostPageClient serverPost={post} />;
 }
