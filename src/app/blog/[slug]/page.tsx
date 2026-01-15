@@ -1,62 +1,92 @@
-'use client';
 
-import { notFound, useParams } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase/init';
+import { collection, getDocs, query } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-import { useEffect, useState, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import type { Metadata } from 'next';
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
+// Utility to convert title to a URL-friendly slug
 function titleToSlug(title: string): string {
-    if (!title) return '';
-    return title
-      .toString()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-      .replace(/-+/g, '-');
+  if (!title) return '';
+  return title
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
 }
 
-function BlogPostSkeleton() {
-    return (
-        <div className="max-w-4xl mx-auto py-8 space-y-4">
-            <Skeleton className="h-8 w-1/4" />
-            <Skeleton className="h-96 w-full" />
-        </div>
-    );
+// Function to fetch a single post by its slug
+async function getPost(slug: string): Promise<BlogPost | null> {
+  const { firestore } = initializeFirebase();
+  if (!firestore) return null;
+  
+  const postsQuery = query(collection(firestore, 'blogPosts'));
+  const snapshot = await getDocs(postsQuery);
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  // Find the post by comparing slugs. This is necessary because slugs are derived.
+  const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
+  const post = allPosts.find(p => titleToSlug(p.title) === slug);
+  
+  return post || null;
 }
 
-export default function BlogPostPage() {
-    const params = useParams();
-    const slug = params.slug as string;
-    const firestore = useFirestore();
+// Generate metadata dynamically
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = await getPost(params.slug);
 
-    const postsQuery = useMemoFirebase(
-      () => (firestore ? query(collection(firestore, 'blogPosts')) : null),
-      [firestore]
-    );
-    const { data: allPosts, isLoading } = useCollection<BlogPost>(postsQuery);
+  if (!post) {
+    return {
+      title: 'المقالة غير موجودة',
+    };
+  }
 
-    const [post, setPost] = useState<BlogPost | null | undefined>(undefined);
+  return {
+    title: post.title,
+    description: post.content.substring(0, 160).replace(/#/g, '').trim() + '...',
+    openGraph: {
+      title: post.title,
+      description: post.content.substring(0, 160).replace(/#/g, '').trim() + '...',
+      type: 'article',
+      publishedTime: post.publishDate,
+    },
+  };
+}
 
-    useEffect(() => {
-        if (!isLoading && allPosts) {
-            const foundPost = allPosts.find(p => titleToSlug(p.title) === slug);
-            setPost(foundPost || null);
-        }
-    }, [isLoading, allPosts, slug]);
+// Generate static paths for all blog posts
+export async function generateStaticParams() {
+    const { firestore } = initializeFirebase();
+    if (!firestore) return [];
 
-    if (isLoading || post === undefined) {
-        return <BlogPostSkeleton />;
+    try {
+        const postsQuery = query(collection(firestore, 'blogPosts'));
+        const snapshot = await getDocs(postsQuery);
+        return snapshot.docs.map(doc => ({
+            slug: titleToSlug(doc.data().title),
+        }));
+    } catch (error) {
+        console.error("Failed to generate static params for blog posts:", error);
+        return [];
     }
+}
 
-    if (post === null) {
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+    const post = await getPost(params.slug);
+
+    if (!post) {
         notFound();
     }
 
+    // Pass the fetched post data to the client component for rendering
     return <BlogPostPageClient serverPost={post} />;
 }

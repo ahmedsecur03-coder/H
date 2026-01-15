@@ -4,10 +4,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // WARNING: Rules are wide open for development.
-    // Anyone can read, write, or delete any data.
+    // Allow public read access to blog posts for SEO
+    match /blogPosts/{postId} {
+      allow read: if true;
+      allow write: if request.auth != null; // Only authenticated users can write (for now, admin rules would be better)
+    }
+
+    // Default rule: Keep other data secure and allow access only to authenticated users.
+    // WARNING: This is a broad rule for development. Refine this for production.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
+    }
+
+    // Allow anyone to read service prices
+     match /servicePrices/{serviceId} {
+      allow read: if true;
+      allow write: if request.auth != null; // For admin updates
+    }
+    
+     // Allow settings to be read by authenticated users
+    match /settings/global {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // For admin updates
     }
   }
 }
