@@ -1,7 +1,5 @@
-
 import { MetadataRoute } from 'next';
-import { initializeFirebaseServer } from '@/firebase/init-server';
-import { collection, getDocs } from 'firebase/firestore';
+import { firestoreAdmin } from '@/firebase/firebase-admin';
 import type { BlogPost } from '@/lib/types';
 
 function titleToSlug(title: string): string {
@@ -38,25 +36,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '/' ? 1.0 : 0.8,
   }));
   
-  // Fetch blog posts from Firestore on the server
-  const { firestore } = initializeFirebaseServer();
   let blogPostUrls: MetadataRoute.Sitemap = [];
 
-  if (firestore) {
-    try {
-        const postsSnapshot = await getDocs(collection(firestore, 'blogPosts'));
-        blogPostUrls = postsSnapshot.docs.map(doc => {
-            const post = doc.data() as BlogPost;
-            return {
-                url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
-                lastModified: new Date(post.publishDate),
-                changeFrequency: 'monthly',
-                priority: 0.7,
-            };
-        });
-    } catch (error) {
-        console.error("Failed to fetch blog posts for sitemap:", error);
-    }
+  try {
+      const postsSnapshot = await firestoreAdmin.collection('blogPosts').get();
+      blogPostUrls = postsSnapshot.docs.map(doc => {
+          const post = doc.data() as BlogPost;
+          return {
+              url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
+              lastModified: new Date(post.publishDate),
+              changeFrequency: 'monthly',
+              priority: 0.7,
+          };
+      });
+  } catch (error) {
+      console.error("Failed to fetch blog posts for sitemap:", error);
   }
 
   return [...staticUrls, ...blogPostUrls];
