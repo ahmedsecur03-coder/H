@@ -1,4 +1,4 @@
-'use server';
+
 import admin from 'firebase-admin';
 
 // This function ensures that we initialize the app only once.
