@@ -13,10 +13,13 @@ export const revalidate = 60; // Revalidate every 60 seconds
 async function getPosts() {
     try {
         const snapshot = await firestoreAdmin.collection('blogPosts').orderBy('publishDate', 'desc').get();
+        if (snapshot.empty) {
+            return [];
+        }
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
     } catch (error) {
         console.error("Failed to fetch posts for blog page:", error);
-        return []; // Return empty array on error
+        return []; // Return empty array on error to prevent build failure
     }
 }
 
