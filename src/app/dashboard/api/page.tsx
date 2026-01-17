@@ -2,15 +2,16 @@
 'use client';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Code2, RefreshCw } from "lucide-react";
-import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import type { User as UserType } from '@/lib/types';
-import { doc, updateDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
 import { ApiKeyCard } from "./_components/api-key-card";
 import { CodeExample } from "./_components/code-example";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { regenerateApiKey } from "./_actions";
 
 function ApiPageSkeleton() {
     return (
@@ -33,30 +34,25 @@ export default function ApiPage() {
     const [isRegenerating, setIsRegenerating] = useState(false);
 
     const userDocRef = useMemoFirebase(() => (user && firestore ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
-    const { data: userData, isLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading } = useDoc<UserType>(userDocRef);
 
 
     const handleRegenerateApiKey = async () => {
-        if (!user || !userDocRef) return;
+        if (!user) return;
         setIsRegenerating(true);
         
-        const newApiKey = `hy_${crypto.randomUUID().replace(/-/g, '')}`;
-        const updateData = { apiKey: newApiKey };
+        const result = await regenerateApiKey(user.uid);
 
-        try {
-            await updateDoc(userDocRef, updateData);
-            forceDocUpdate();
+        if (result.success) {
             toast({ title: "نجاح!", description: "تم إنشاء مفتاح API جديد بنجاح." });
-        } catch (error) {
-            const permissionError = new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'update',
-                requestResourceData: updateData,
+        } else {
+             toast({
+                variant: 'destructive',
+                title: 'خطأ',
+                description: result.error || "فشل إنشاء مفتاح API جديد."
             });
-            errorEmitter.emit('permission-error', permissionError);
-        } finally {
-            setIsRegenerating(false);
         }
+        setIsRegenerating(false);
     }
 
 
