@@ -27,7 +27,7 @@ export async function generateBlogPost(topic: GenerateBlogPostInput): Promise<Ge
 
 const prompt = ai.definePrompt({
   name: 'generateBlogPostPrompt',
-  model: googleAI.model('gemini-1.5-flash-latest'),
+  model: googleAI.model('gemini-pro'),
   input: { schema: GenerateBlogPostInputSchema },
   output: { schema: GenerateBlogPostOutputSchema },
   prompt: `أنت خبير في التسويق الرقمي وإنشاء المحتوى لمنصة خدمات رقمية تسمى "حاجاتي".
