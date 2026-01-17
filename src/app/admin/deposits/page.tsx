@@ -267,7 +267,3 @@ export default function AdminDepositsPage() {
     </div>
   );
 }
-
-    
-
-    

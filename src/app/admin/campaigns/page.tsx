@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getDocs, where, orderBy, limit } from 'firebase/firestore';
+import { collection, query, getDocs, where, orderBy, limit, collectionGroup } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import {
   Card,
@@ -59,24 +59,19 @@ export default function AdminCampaignsPage() {
     setIsLoading(true);
 
     try {
-      const allCampaigns: Campaign[] = [];
-      // This is inefficient but avoids complex index creation.
-      // A better long-term solution is a server-side function or a more structured DB.
-      const usersSnapshot = await getDocs(collection(firestore, 'users'));
-
-      for (const userDoc of usersSnapshot.docs) {
-        const userId = userDoc.id;
-        let q = query(collection(firestore, `users/${userId}/campaigns`));
-        
-        if (filter !== 'all') {
-          q = query(q, where('status', '==', filter));
-        }
-        
-        const campaignsSnapshot = await getDocs(q);
-        campaignsSnapshot.forEach(campaignDoc => {
-          allCampaigns.push({ id: campaignDoc.id, userId, ...campaignDoc.data() } as Campaign);
-        });
+      // This is now much more efficient, fetching all campaigns in a single query.
+      let q = query(collectionGroup(firestore, 'campaigns'));
+      
+      if (filter !== 'all') {
+        q = query(q, where('status', '==', filter));
       }
+      
+      const campaignsSnapshot = await getDocs(q);
+      const allCampaigns = campaignsSnapshot.docs.map(doc => {
+          const pathSegments = doc.ref.path.split('/');
+          const userId = pathSegments[pathSegments.indexOf('users') + 1];
+          return { id: doc.id, userId, ...doc.data() } as Campaign
+      });
       
       // Sort all campaigns by date after fetching them
       allCampaigns.sort((a, b) => {
@@ -89,7 +84,7 @@ export default function AdminCampaignsPage() {
 
     } catch (error) {
       console.error("Error fetching campaigns:", error);
-      toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات. قد تكون هناك مشكلة في الصلاحيات.' });
+      toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات. قد تحتاج لإنشاء فهرس في Firestore.' });
     } finally {
       setIsLoading(false);
     }

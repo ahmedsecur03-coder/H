@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,28 +17,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { WhatsAppIcon } from '@/components/ui/icons';
 import { Facebook, Share2, Twitter } from 'lucide-react';
 import { CopyButton } from '@/app/dashboard/affiliate/_components/copy-button';
-
-function ProfileSkeleton() {
-    return (
-        <div className="container max-w-2xl mx-auto py-12">
-            <Card>
-                <CardHeader className="items-center text-center">
-                    <Skeleton className="h-24 w-24 rounded-full" />
-                    <Skeleton className="h-8 w-48 mt-4" />
-                    <Skeleton className="h-5 w-32 mt-2" />
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                        <Skeleton className="h-24" />
-                        <Skeleton className="h-24" />
-                        <Skeleton className="h-24" />
-                    </div>
-                    <Skeleton className="h-10 w-full" />
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
 
 function ShareButtons({ referralLink }: { referralLink: string }) {
     const shareText = encodeURIComponent(`انضم إلى منصة حاجاتي عبر الرابط الخاص بي واحصل على بداية قوية لرحلتك الرقمية!`);
@@ -76,27 +52,10 @@ function ShareButtons({ referralLink }: { referralLink: string }) {
 }
 
 
-export default function UserProfilePageClient({ userId }: { userId: string }) {
-    const firestore = useFirestore();
-
-    const userDocRef = useMemoFirebase(
-      () => (firestore && userId ? doc(firestore, `users/${userId}`) : null),
-      [firestore, userId]
-    );
-
-    const { data: userData, isLoading } = useDoc<User>(userDocRef);
-
-    useEffect(() => {
-        if (!isLoading && !userData) {
-            notFound();
-        }
-    }, [isLoading, userData]);
-
-
-    if (isLoading || !userData) {
-        return <ProfileSkeleton />;
-    }
-
+export default function UserProfilePageClient({ serverUser }: { serverUser: User }) {
+    
+    const userData = serverUser;
+    
     const currentLevelKey = userData.affiliateLevel || 'برونزي';
     const currentLevel = AFFILIATE_LEVELS[currentLevelKey];
     const referralLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'}/auth/signup?ref=${userData.referralCode}`;

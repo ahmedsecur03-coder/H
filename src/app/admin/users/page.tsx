@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, orderBy, getDocs, limit, startAfter, endBefore, limitToLast, DocumentData, where, Query } from 'firebase/firestore';
+import { collection, query, getDocs, Query } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
