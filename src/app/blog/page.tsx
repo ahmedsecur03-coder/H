@@ -1,18 +1,14 @@
 
 import BlogPageClient from "@/app/(public)/_components/blog-page";
 import type { BlogPost } from '@/lib/types';
-import { initializeFirebase } from "@/firebase/init";
+import { getFirestoreServer } from "@/firebase/init-server";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
 async function getPosts(): Promise<BlogPost[]> {
     // Initialize Firestore on the server
-    const { firestore } = initializeFirebase();
-    if (!firestore) {
-        console.error("Firestore is not initialized on the server.");
-        return [];
-    }
+    const firestore = getFirestoreServer();
     
     try {
         const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));

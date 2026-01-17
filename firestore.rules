@@ -6,8 +6,11 @@ service cloud.firestore {
     
     // Allow public read access to blog posts for SEO
     match /blogPosts/{postId} {
-      allow read: if true;
-      allow write: if request.auth != null; // Only authenticated users can write (for now, admin rules would be better)
+      allow get: if true;
+      allow write: if request.auth != null;
+    }
+     match /blogPosts {
+      allow list: if true;
     }
 
     // Default rule: Keep other data secure and allow access only to authenticated users.

@@ -1,6 +1,6 @@
 
 import { MetadataRoute } from 'next';
-import { initializeFirebase } from '@/firebase/init';
+import { getFirestoreServer } from '@/firebase/init-server';
 import { collection, getDocs, query } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 
@@ -40,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     let blogPostUrls: MetadataRoute.Sitemap = [];
     try {
-        const { firestore } = initializeFirebase();
+        const firestore = getFirestoreServer();
         if (firestore) {
             const postsQuery = query(collection(firestore, 'blogPosts'));
             const snapshot = await getDocs(postsQuery);

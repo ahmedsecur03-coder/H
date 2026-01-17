@@ -1,7 +1,7 @@
 
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
-import { initializeFirebase } from '@/firebase/init';
+import { getFirestoreServer } from '@/firebase/init-server';
 import { collection, getDocs, query } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
@@ -24,8 +24,7 @@ function titleToSlug(title: string): string {
 
 // Function to fetch a single post by its slug
 async function getPost(slug: string): Promise<BlogPost | null> {
-  const { firestore } = initializeFirebase();
-  if (!firestore) return null;
+  const firestore = getFirestoreServer();
   
   const postsQuery = query(collection(firestore, 'blogPosts'));
   const snapshot = await getDocs(postsQuery);
@@ -65,8 +64,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 // Generate static paths for all blog posts
 export async function generateStaticParams() {
-    const { firestore } = initializeFirebase();
-    if (!firestore) return [];
+    const firestore = getFirestoreServer();
 
     try {
         const postsQuery = query(collection(firestore, 'blogPosts'));
