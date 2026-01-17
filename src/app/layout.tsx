@@ -7,6 +7,7 @@ import GoogleAnalytics from '@/components/google-analytics';
 import Head from 'next/head';
 import { Providers } from '@/components/providers';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 
 
 export const metadata: Metadata = {
@@ -63,6 +64,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
          <link rel="manifest" href="/manifest.json" />
       </Head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
+        <Script
+            strategy="afterInteractive"
+            src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+        />
+        <Script
+            id="google-analytics"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+            __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '${measurementId}');
+            `,
+            }}
+        />
         <Suspense>
           <GoogleAnalytics gaId={measurementId} />
         </Suspense>

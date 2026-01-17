@@ -1,8 +1,13 @@
-
 'use client'
 
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, Suspense } from 'react'
+
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void;
+  }
+}
 
 const pageview = (GA_MEASUREMENT_ID: string, url: string) => {
   if (typeof window.gtag !== 'function') {
@@ -18,14 +23,13 @@ function Analytics({ gaId }: { gaId: string }) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const url = pathname + searchParams.toString();
+    const url = pathname + (searchParams.toString() ? `?${searchParams.toString()}`: '');
     pageview(gaId, url);
   }, [pathname, searchParams, gaId]);
   
   return null;
 }
 
-// Wrap Analytics in Suspense to handle dynamic routes
 export default function GoogleAnalytics({ gaId }: { gaId: string }) {
     return (
         <Suspense>
