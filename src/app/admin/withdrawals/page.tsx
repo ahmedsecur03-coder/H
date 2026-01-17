@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -10,6 +11,8 @@ import {
   runTransaction,
   doc,
   increment,
+  where,
+  orderBy
 } from 'firebase/firestore';
 import type { Withdrawal, User } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -123,35 +126,38 @@ function WithdrawalTable({ withdrawals, isLoading, onAction, loadingActionId }: 
 export default function AdminWithdrawalsPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
-    const [allWithdrawals, setAllWithdrawals] = useState<Withdrawal[]>([]);
+    const [activeTab, setActiveTab] = useState<Status>('معلق');
+    const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
 
-    const fetchAllData = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         if (!firestore) return;
         setIsLoading(true);
         try {
-            const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'));
+            const withdrawalsQuery = query(
+              collectionGroup(firestore, 'withdrawals'),
+              where('status', '==', activeTab),
+              orderBy('requestDate', 'desc')
+            );
             const snapshot = await getDocs(withdrawalsQuery);
             const fetchedData = snapshot.docs.map(doc => {
                 const pathSegments = doc.ref.path.split('/');
                 const userId = pathSegments[1];
                 return { id: doc.id, userId, ...doc.data() } as Withdrawal;
             });
-            // Sort client-side
-            fetchedData.sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime());
-            setAllWithdrawals(fetchedData);
+            setWithdrawals(fetchedData);
         } catch (err) {
-            console.error("Error fetching all withdrawals: ", err);
-            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات طلبات السحب.' });
+            console.error("Error fetching withdrawals: ", err);
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات طلبات السحب. قد تحتاج لإنشاء فهرس مركب.' });
         } finally {
             setIsLoading(false);
         }
-    }, [firestore, toast]);
+    }, [firestore, toast, activeTab]);
     
     useEffect(() => {
-        fetchAllData();
-    }, [fetchAllData]);
+        fetchData();
+    }, [fetchData]);
 
     const handleWithdrawalAction = async (withdrawal: Withdrawal, newStatus: 'مقبول' | 'مرفوض') => {
         if (!firestore) return;
@@ -177,7 +183,7 @@ export default function AdminWithdrawalsPage() {
                 }
             });
             toast({ title: 'نجاح', description: `تم ${newStatus === 'مقبول' ? 'قبول' : 'رفض'} طلب السحب بنجاح.` });
-            await fetchAllData();
+            await fetchData();
         } catch (error: any) {
             const isPermissionError = error.code === 'permission-denied';
             if (isPermissionError) {
@@ -191,14 +197,6 @@ export default function AdminWithdrawalsPage() {
           setLoadingActionId(null);
         }
     };
-  
-    const filteredWithdrawals = useMemo(() => {
-        return {
-            pending: allWithdrawals.filter(d => d.status === 'معلق'),
-            approved: allWithdrawals.filter(d => d.status === 'مقبول'),
-            rejected: allWithdrawals.filter(d => d.status === 'مرفوض'),
-        }
-    }, [allWithdrawals]);
 
   return (
     <div className="space-y-6 pb-8">
@@ -212,7 +210,7 @@ export default function AdminWithdrawalsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="معلق" className="w-full">
+      <Tabs defaultValue="معلق" className="w-full" onValueChange={(value) => setActiveTab(value as Status)}>
         <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="معلق">طلبات معلقة</TabsTrigger>
             <TabsTrigger value="مقبول">طلبات مقبولة</TabsTrigger>
@@ -220,15 +218,7 @@ export default function AdminWithdrawalsPage() {
         </TabsList>
         <Card className="mt-4">
           <CardContent className="p-0">
-            <TabsContent value="معلق" className="m-0">
-              <WithdrawalTable withdrawals={filteredWithdrawals.pending} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
-            </TabsContent>
-            <TabsContent value="مقبول" className="m-0">
-              <WithdrawalTable withdrawals={filteredWithdrawals.approved} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
-            </TabsContent>
-            <TabsContent value="مرفوض" className="m-0">
-              <WithdrawalTable withdrawals={filteredWithdrawals.rejected} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
-            </TabsContent>
+             <WithdrawalTable withdrawals={withdrawals} isLoading={isLoading} onAction={handleWithdrawalAction} loadingActionId={loadingActionId} />
           </CardContent>
         </Card>
       </Tabs>

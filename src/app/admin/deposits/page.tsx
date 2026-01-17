@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -11,8 +12,8 @@ import {
   doc,
   increment,
   arrayUnion,
-  getDoc,
   orderBy,
+  where
 } from 'firebase/firestore';
 import type { Deposit, User, Notification } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -126,7 +127,8 @@ function DepositsTable({ deposits, isLoading, onAction, loadingActionId }: { dep
 export default function AdminDepositsPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
-    const [allDeposits, setAllDeposits] = useState<Deposit[]>([]);
+    const [activeTab, setActiveTab] = useState<Status>('معلق');
+    const [deposits, setDeposits] = useState<Deposit[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
 
@@ -134,23 +136,25 @@ export default function AdminDepositsPage() {
         if(!firestore) return;
         setIsLoading(true);
         try {
-            const depositsQuery = query(collectionGroup(firestore, 'deposits'));
+            const depositsQuery = query(
+              collectionGroup(firestore, 'deposits'), 
+              where('status', '==', activeTab),
+              orderBy('depositDate', 'desc')
+            );
             const snapshot = await getDocs(depositsQuery);
             const fetchedData = snapshot.docs.map(doc => {
                  const pathSegments = doc.ref.path.split('/');
                  const userId = pathSegments[1];
                  return { id: doc.id, userId, ...doc.data()} as Deposit
             });
-            // Sort client-side
-            fetchedData.sort((a, b) => new Date(b.depositDate).getTime() - new Date(a.depositDate).getTime());
-            setAllDeposits(fetchedData);
+            setDeposits(fetchedData);
         } catch (error) {
              console.error("Error fetching deposits:", error);
-             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات.'});
+             toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب بيانات الإيداعات. قد تحتاج لإنشاء فهرس في Firestore.'});
         } finally {
             setIsLoading(false);
         }
-    }, [firestore, toast]);
+    }, [firestore, toast, activeTab]);
 
     useEffect(() => {
         fetchData();
@@ -228,15 +232,6 @@ export default function AdminDepositsPage() {
         }
     };
 
-    const filteredDeposits = useMemo(() => {
-        return {
-            pending: allDeposits.filter(d => d.status === 'معلق'),
-            approved: allDeposits.filter(d => d.status === 'مقبول'),
-            rejected: allDeposits.filter(d => d.status === 'مرفوض'),
-        }
-    }, [allDeposits]);
-
-
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -244,7 +239,7 @@ export default function AdminDepositsPage() {
         <p className="text-muted-foreground">مراجعة طلبات الإيداع اليدوية والموافقة عليها.</p>
       </div>
 
-      <Tabs defaultValue="معلق" className="w-full">
+      <Tabs defaultValue="معلق" className="w-full" onValueChange={(value) => setActiveTab(value as Status)}>
         <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="معلق">طلبات معلقة</TabsTrigger>
             <TabsTrigger value="مقبول">طلبات مقبولة</TabsTrigger>
@@ -252,15 +247,7 @@ export default function AdminDepositsPage() {
         </TabsList>
         <Card className="mt-4">
           <CardContent className="p-0">
-            <TabsContent value="معلق" className="m-0">
-              <DepositsTable deposits={filteredDeposits.pending} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
-            </TabsContent>
-            <TabsContent value="مقبول" className="m-0">
-              <DepositsTable deposits={filteredDeposits.approved} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
-            </TabsContent>
-            <TabsContent value="مرفوض" className="m-0">
-              <DepositsTable deposits={filteredDeposits.rejected} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
-            </TabsContent>
+             <DepositsTable deposits={deposits} isLoading={isLoading} onAction={handleDepositAction} loadingActionId={loadingActionId} />
           </CardContent>
         </Card>
       </Tabs>

@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getDocs, where, orderBy, limit, collectionGroup } from 'firebase/firestore';
+import { collection, query, getDocs, where, orderBy, collectionGroup } from 'firebase/firestore';
 import type { Campaign, User } from '@/lib/types';
 import {
   Card,
@@ -31,7 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, ListChecks, Hourglass, BarChart2, TrendingUp, FileText, Megaphone } from 'lucide-react';
+import { FileText, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { CampaignDetailsDialog } from '@/app/dashboard/campaigns/_components/campaign-details-dialog';
 import { CampaignActions } from './_components/campaign-actions';
@@ -59,8 +59,7 @@ export default function AdminCampaignsPage() {
     setIsLoading(true);
 
     try {
-      // This is now much more efficient, fetching all campaigns in a single query.
-      let q = query(collectionGroup(firestore, 'campaigns'));
+      let q = query(collectionGroup(firestore, 'campaigns'), orderBy('startDate', 'desc'));
       
       if (filter !== 'all') {
         q = query(q, where('status', '==', filter));
@@ -72,19 +71,12 @@ export default function AdminCampaignsPage() {
           const userId = pathSegments[pathSegments.indexOf('users') + 1];
           return { id: doc.id, userId, ...doc.data() } as Campaign
       });
-      
-      // Sort all campaigns by date after fetching them
-      allCampaigns.sort((a, b) => {
-        const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
-        const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
-        return dateB - dateA;
-      });
 
       setCampaigns(allCampaigns);
 
     } catch (error) {
       console.error("Error fetching campaigns:", error);
-      toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب الحملات. قد تحتاج لإنشاء فهرس في Firestore.' });
+      toast({ variant: 'destructive', title: 'خطأ في الاستعلام', description: 'فشل في جلب الحملات. قد تحتاج لإنشاء فهرس في Firestore.' });
     } finally {
       setIsLoading(false);
     }

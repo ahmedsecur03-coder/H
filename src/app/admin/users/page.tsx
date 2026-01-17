@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getDocs, Query } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, limit, startAfter, where, Query, DocumentData } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -60,51 +60,73 @@ function AdminUsersPageComponent() {
   const currentPage = Number(searchParams.get('page')) || 1;
   const currentSearch = searchParams.get('search') || '';
   
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const fetchUsers = useCallback(async () => {
+  const [pageCount, setPageCount] = useState(0);
+  const [pageMarkers, setPageMarkers] = useState<(DocumentData | null)[]>([null]);
+  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
+  
+  const fetchUsers = useCallback(async (page: number) => {
     if (!firestore) return;
     setIsLoading(true);
+
     try {
-        const q = query(collection(firestore, 'users'));
-        const snapshot = await getDocs(q);
+        let q: Query = collection(firestore, 'users');
+
+        if (currentSearch) {
+            // Firestore is case-sensitive and doesn't support substring searches natively.
+            // This query is a common workaround for "starts with" searches.
+            // For full-text search, a third-party service like Algolia or Elasticsearch is recommended.
+             q = query(q, orderBy('email'), where('email', '>=', currentSearch), where('email', '<=', currentSearch + '\uf8ff'));
+        } else {
+           q = query(q, orderBy('createdAt', 'desc'));
+        }
+        
+        const pageMarker = pageMarkers[page-1];
+        if (page > 1 && pageMarker) {
+            q = query(q, startAfter(pageMarker));
+        }
+        
+        const qWithLimit = query(q, limit(ITEMS_PER_PAGE));
+        
+        const snapshot = await getDocs(qWithLimit);
         const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-        setAllUsers(usersData);
+        setUsers(usersData);
+        
+        if (snapshot.docs.length > 0) {
+            const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+            setPageMarkers(prev => {
+                const newMarkers = [...prev];
+                newMarkers[page] = lastVisible;
+                return newMarkers;
+            });
+
+            // Check if there is a next page to enable/disable the 'Next' button
+            const nextQuery = query(q, startAfter(lastVisible), limit(1));
+            const nextSnapshot = await getDocs(nextQuery);
+            setIsNextPageAvailable(!nextSnapshot.empty);
+        } else {
+             setIsNextPageAvailable(false);
+        }
+
     } catch (error) {
         console.error(error);
-        toast({ variant: 'destructive', title: "خطأ", description: 'لا يمكن جلب المستخدمين.'})
+        toast({ variant: 'destructive', title: "خطأ في الاستعلام", description: 'لا يمكن جلب المستخدمين. قد يتطلب هذا البحث إنشاء فهرس مركب في Firestore. تحقق من سجلات الأخطاء للحصول على رابط الإنشاء.'})
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast]);
+  }, [firestore, toast, currentSearch, pageMarkers]); // pageMarkers dependency is important for pagination
   
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]); 
-
-  const { paginatedUsers, pageCount } = useMemo(() => {
-    if (isLoading) {
-      return { paginatedUsers: [], pageCount: 0 };
-    }
-
-    const filtered = allUsers.filter(user => 
-        !currentSearch ||
-        user.name.toLowerCase().includes(currentSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(currentSearch.toLowerCase()) ||
-        user.id.toLowerCase().includes(currentSearch.toLowerCase())
-    );
-
-    const sorted = filtered.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-    const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    
-    return {
-        paginatedUsers: sorted.slice(startIndex, startIndex + ITEMS_PER_PAGE),
-        pageCount: totalPages,
-    }
-  }, [allUsers, isLoading, currentSearch, currentPage]);
+    setPageMarkers([null]); // Reset pagination when search changes
+    fetchUsers(1);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSearch]); 
+  
+  useEffect(() => {
+      fetchUsers(currentPage);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage])
 
   const handleFilterChange = (key: 'search' | 'page', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -113,33 +135,20 @@ function AdminUsersPageComponent() {
     } else {
       params.delete(key);
     }
-    if (key !== 'page') {
-        params.set('page', '1');
+    if (key === 'search') {
+      params.set('page', '1');
     }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const renderPaginationItems = () => {
-    if (pageCount <= 1) return null;
-    const pageNumbers: (number | 'ellipsis')[] = [];
-    if (pageCount <= 7) {
-        for (let i = 1; i <= pageCount; i++) pageNumbers.push(i);
-    } else {
-        pageNumbers.push(1);
-        if (currentPage > 3) pageNumbers.push('ellipsis');
-        let start = Math.max(2, currentPage - 1);
-        let end = Math.min(pageCount - 1, currentPage + 1);
-        for (let i = start; i <= end; i++) pageNumbers.push(i);
-        if (currentPage < pageCount - 2) pageNumbers.push('ellipsis');
-        pageNumbers.push(pageCount);
-    }
-    return pageNumbers.map((page, index) => (
-        <PaginationItem key={`${page}-${index}`}>
-            {page === 'ellipsis' ? <PaginationEllipsis /> : (
-                <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(page)); }}>{page}</PaginationLink>
-            )}
-        </PaginationItem>
-    ));
+      // Since we don't know the total page count, we can't render all page numbers.
+      // We'll just show prev/current/next.
+      return (
+           <PaginationItem>
+                <span className="p-2 text-sm">صفحة {currentPage}</span>
+            </PaginationItem>
+      )
   };
 
 
@@ -169,7 +178,7 @@ function AdminUsersPageComponent() {
             </div>
         </CardContent>
         <CardFooter>
-            <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+            <EditUserDialog user={user} onUserUpdate={() => fetchUsers(currentPage)}>
                 <Button variant="outline" size="sm" className="w-full">تعديل</Button>
             </EditUserDialog>
         </CardFooter>
@@ -190,7 +199,7 @@ function AdminUsersPageComponent() {
           <div className="relative">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."
+                placeholder="ابحث بالبريد الإلكتروني..."
                 className="pe-10 rtl:ps-10"
                 defaultValue={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -207,11 +216,11 @@ function AdminUsersPageComponent() {
                 </div>
             </CardContent>
           </Card>
-       ) : paginatedUsers.length > 0 ? (
+       ) : users.length > 0 ? (
          <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
-                {paginatedUsers.map((user) => <UserCard key={user.id} user={user} />)}
+                {users.map((user) => <UserCard key={user.id} user={user} />)}
             </div>
 
             {/* Desktop View */}
@@ -232,7 +241,7 @@ function AdminUsersPageComponent() {
                           </TableRow>
                           </TableHeader>
                           <TableBody>
-                              {paginatedUsers.map((user) => (
+                              {users.map((user) => (
                               <TableRow key={user.id}>
                                   <TableCell>
                                   <div className="flex items-center gap-3">
@@ -260,7 +269,7 @@ function AdminUsersPageComponent() {
                                   <TableCell>${(user.totalSpent ?? 0).toFixed(2)}</TableCell>
                                   <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : 'N/A'}</TableCell>
                                   <TableCell className="text-right">
-                                      <EditUserDialog user={user} onUserUpdate={() => fetchUsers()}>
+                                      <EditUserDialog user={user} onUserUpdate={() => fetchUsers(currentPage)}>
                                           <Button variant="outline" size="sm">تعديل</Button>
                                       </EditUserDialog>
                                   </TableCell>
@@ -278,7 +287,7 @@ function AdminUsersPageComponent() {
                     </PaginationItem>
                      {renderPaginationItems()}
                     <PaginationItem>
-                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={currentPage === pageCount} />
+                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={!isNextPageAvailable} />
                     </PaginationItem>
                 </PaginationContent>
             </Pagination>

@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useEffect, Suspense, useMemo, useCallback } from 'react';
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
 import { collectionGroup, query, orderBy, getDocs, where } from 'firebase/firestore';
 import type { Ticket } from '@/lib/types';
 import {
@@ -115,7 +114,8 @@ function AdminSupportPageComponent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   
-  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
+  const [activeTab, setActiveTab] = useState<'open' | 'closed'>('open');
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const userIdFilter = searchParams.get('userId');
@@ -123,8 +123,21 @@ function AdminSupportPageComponent() {
   const fetchTickets = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
-    const ticketsQuery = query(collectionGroup(firestore, 'tickets'));
     try {
+        let ticketsQuery = query(collectionGroup(firestore, 'tickets'));
+
+        if(userIdFilter) {
+             ticketsQuery = query(ticketsQuery, where('userId', '==', userIdFilter));
+        }
+
+        if (activeTab === 'open') {
+             ticketsQuery = query(ticketsQuery, where('status', '!=', 'مغلقة'));
+        } else {
+             ticketsQuery = query(ticketsQuery, where('status', '==', 'مغلقة'));
+        }
+        
+        ticketsQuery = query(ticketsQuery, orderBy('createdDate', 'desc'));
+
         const snapshot = await getDocs(ticketsQuery);
         const fetchedTickets: Ticket[] = [];
         snapshot.forEach(doc => {
@@ -132,28 +145,18 @@ function AdminSupportPageComponent() {
             const userId = pathSegments[1];
             fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
         });
-        // Sort client-side
-        setAllTickets(fetchedTickets.sort((a,b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()));
+        setTickets(fetchedTickets);
     } catch(finalError) {
         console.error("Error fetching tickets:", finalError);
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم.' });
+        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم. قد تحتاج لإنشاء فهرس في Firestore.' });
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast]);
+  }, [firestore, toast, activeTab, userIdFilter]);
 
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
-  
-  const { activeTickets, closedTickets } = useMemo(() => {
-      const filtered = userIdFilter ? allTickets.filter(t => t.userId === userIdFilter) : allTickets;
-      return {
-          activeTickets: filtered.filter(t => t.status !== 'مغلقة'),
-          closedTickets: filtered.filter(t => t.status === 'مغلقة'),
-      };
-  }, [allTickets, userIdFilter]);
-
 
   return (
     <div className="space-y-6 pb-8">
@@ -167,19 +170,14 @@ function AdminSupportPageComponent() {
         </p>
       </div>
 
-       <Tabs defaultValue="open" className="w-full">
+       <Tabs defaultValue="open" className="w-full" onValueChange={(value) => setActiveTab(value as any)}>
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="open">التذاكر النشطة</TabsTrigger>
                 <TabsTrigger value="closed">التذاكر المغلقة</TabsTrigger>
             </TabsList>
             <Card className="mt-4">
                 <CardContent className="p-0">
-                    <TabsContent value="open" className="m-0">
-                        <TicketsTable tickets={activeTickets} isLoading={isLoading} />
-                    </TabsContent>
-                    <TabsContent value="closed" className="m-0">
-                       <TicketsTable tickets={closedTickets} isLoading={isLoading} />
-                    </TabsContent>
+                    <TicketsTable tickets={tickets} isLoading={isLoading} />
                 </CardContent>
             </Card>
         </Tabs>
