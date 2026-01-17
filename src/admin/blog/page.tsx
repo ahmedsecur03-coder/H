@@ -134,13 +134,13 @@ export default function AdminBlogPage() {
                             <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك أو استورد مقالات جاهزة.</p>
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                                <ImportPostsButton onImportComplete={fetchPosts} />
                                 <AiPostDialog onArticleGenerated={handleArticleGenerated}>
                                     <Button variant="outline">
                                         <Wand2 className="ml-2 h-4 w-4" />
-                                        توليد بالذكاء الاصطناعي
+                                        ai
                                     </Button>
                                 </AiPostDialog>
+                                <ImportPostsButton onImportComplete={fetchPosts} />
                             </div>
                         </div>
                     </TableCell>
@@ -188,13 +188,13 @@ export default function AdminBlogPage() {
                  {showHeaderActions && (
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                        <ImportPostsButton onImportComplete={fetchPosts} />
-                         <AiPostDialog onArticleGenerated={handleArticleGenerated}>
+                        <AiPostDialog onArticleGenerated={handleArticleGenerated}>
                             <Button variant="outline">
                                 <Wand2 className="ml-2 h-4 w-4" />
-                                توليد بالذكاء الاصطناعي
+                                ai
                             </Button>
                         </AiPostDialog>
+                        <ImportPostsButton onImportComplete={fetchPosts} />
                     </div>
                  )}
             </div>
