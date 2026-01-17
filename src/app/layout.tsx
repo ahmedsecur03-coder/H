@@ -4,7 +4,6 @@ import { Tajawal } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
-import Head from 'next/head';
 import { Providers } from '@/components/providers';
 import type { Metadata } from 'next';
 import Script from 'next/script';
@@ -37,6 +36,11 @@ export const metadata: Metadata = {
     description: 'منصتك المتكاملة لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.',
     images: ['https://hajaty.com/og-image.png'], // Replace with your actual OG image URL
   },
+  manifest: '/manifest.json',
+  themeColor: '#F39C12',
+  icons: {
+    apple: '/icon-192x192.png',
+  },
 }
 
 
@@ -58,11 +62,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-       <Head>
-        <meta name="theme-color" content="#F39C12" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png"></link>
-         <link rel="manifest" href="/manifest.json" />
-      </Head>
       <body className={cn('font-sans antialiased', fontSans.variable, fontHeadline.variable)}>
         <Script
             strategy="afterInteractive"
@@ -81,13 +80,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             `,
             }}
         />
-        <Suspense>
-          <GoogleAnalytics gaId={measurementId} />
-        </Suspense>
         <Providers>
             {children}
             <Toaster />
         </Providers>
+        <Suspense>
+          <GoogleAnalytics gaId={measurementId} />
+        </Suspense>
       </body>
     </html>
   );
