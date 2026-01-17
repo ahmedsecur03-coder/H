@@ -8,6 +8,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'genkit';
 
 const GenerateBlogPostInputSchema = z.string().describe('The topic for the blog post.');
@@ -26,6 +27,7 @@ export async function generateBlogPost(topic: GenerateBlogPostInput): Promise<Ge
 
 const prompt = ai.definePrompt({
   name: 'generateBlogPostPrompt',
+  model: googleAI.model('gemini-1.5-flash-latest'),
   input: { schema: GenerateBlogPostInputSchema },
   output: { schema: GenerateBlogPostOutputSchema },
   prompt: `أنت خبير في التسويق الرقمي وإنشاء المحتوى لمنصة خدمات رقمية تسمى "حاجاتي".
