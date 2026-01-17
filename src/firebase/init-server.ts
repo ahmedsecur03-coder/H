@@ -6,6 +6,7 @@ import { firebaseConfig } from '@/firebase/config';
 
 let app: FirebaseApp;
 
+// Singleton pattern to initialize Firebase app on the server
 function getFirebaseApp() {
     if (getApps().length === 0) {
         // No apps initialized, create a new one. This will be the 'default' app.

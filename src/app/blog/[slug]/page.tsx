@@ -64,9 +64,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 // Generate static paths for all blog posts
 export async function generateStaticParams() {
-    const firestore = getFirestoreServer();
-
     try {
+        const firestore = getFirestoreServer();
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
         return snapshot.docs.map(doc => ({
@@ -85,6 +84,41 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         notFound();
     }
 
-    // Pass the fetched post data to the client component for rendering
-    return <BlogPostPageClient serverPost={post} />;
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
+    const postUrl = `${baseUrl}/blog/${params.slug}`;
+
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': postUrl,
+        },
+        headline: post.title,
+        description: post.content.substring(0, 250).replace(/#/g, '').trim(),
+        author: {
+            '@type': 'Organization',
+            name: 'فريق حاجاتي',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'حاجاتي',
+            logo: {
+            '@type': 'ImageObject',
+            url: `${baseUrl}/icon-192x192.png`,
+            },
+        },
+        datePublished: post.publishDate,
+        dateModified: post.publishDate,
+    };
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <BlogPostPageClient serverPost={post} />
+        </>
+    );
 }

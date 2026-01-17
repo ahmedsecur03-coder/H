@@ -41,22 +41,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let blogPostUrls: MetadataRoute.Sitemap = [];
     try {
         const firestore = getFirestoreServer();
-        if (firestore) {
-            const postsQuery = query(collection(firestore, 'blogPosts'));
-            const snapshot = await getDocs(postsQuery);
-            blogPostUrls = snapshot.docs.map(doc => {
-                const post = doc.data() as BlogPost;
-                return {
-                    url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
-                    lastModified: new Date(post.publishDate),
-                    changeFrequency: 'monthly',
-                    priority: 0.7,
-                };
-            });
-        }
+        const postsQuery = query(collection(firestore, 'blogPosts'));
+        const snapshot = await getDocs(postsQuery);
+        blogPostUrls = snapshot.docs.map(doc => {
+            const post = doc.data() as BlogPost;
+            return {
+                url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
+                lastModified: new Date(post.publishDate),
+                changeFrequency: 'monthly',
+                priority: 0.7,
+            };
+        });
     } catch (error) {
         console.error("Failed to fetch blog posts for sitemap:", error);
-        // Return an empty array for blog posts if fetching fails
     }
 
     return [...staticUrls, ...blogPostUrls];
