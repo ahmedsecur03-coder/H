@@ -83,7 +83,7 @@ function ServicesTableSkeleton() {
   );
 }
 
-export function ServicesTable() {
+export function ServicesTable({ services: servicesProp }: { services?: Service[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -93,7 +93,13 @@ export function ServicesTable() {
   const platformFilter = searchParams.get('platform') || 'all';
   const categoryFilter = searchParams.get('category') || 'all';
 
-  const { services: mergedServices, isLoading: servicesLoading } = useServices();
+  const { services: servicesFromHook, isLoading: servicesLoadingFromHook } = useServices();
+
+  // If services are passed as a prop, use them directly. Otherwise, use the hook.
+  // This allows the component to be used in both server-fetched and client-fetched contexts.
+  const mergedServices = servicesProp || servicesFromHook;
+  const isLoading = servicesProp ? false : servicesLoadingFromHook;
+
 
     const handleFilterChange = (key: 'search' | 'platform' | 'category' | 'page', value: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -160,7 +166,7 @@ export function ServicesTable() {
   };
 
 
-  if (servicesLoading) {
+  if (isLoading) {
     return <ServicesTableSkeleton />;
   }
 
