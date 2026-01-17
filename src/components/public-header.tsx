@@ -19,13 +19,14 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from "@/components/ui/button";
-import { Menu, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { Menu, ChevronDown, LayoutDashboard, Rocket, LogIn, Loader2 } from 'lucide-react';
 import Logo from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { NestedNavItem } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { publicNavItems } from '@/lib/placeholder-data';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/firebase';
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -54,16 +55,43 @@ const ListItem = React.forwardRef<
 ListItem.displayName = "ListItem"
 
 function AuthButtons() {
-    return (
-        <Button asChild><Link href="/dashboard"><LayoutDashboard className="me-2 h-4 w-4" />لوحة التحكم</Link></Button>
-    );
+    const { user, isUserLoading } = useUser();
+
+    if (isUserLoading) {
+        return <Button disabled><Loader2 className="me-2 h-4 w-4 animate-spin" />انتظر...</Button>
+    }
+
+    if (user) {
+        return <Button asChild><Link href="/dashboard"><LayoutDashboard className="me-2 h-4 w-4" />لوحة التحكم</Link></Button>
+    }
+
+    return <Button asChild><Link href="/auth/signup"><Rocket className="me-2 h-4 w-4" />انطلق الآن</Link></Button>
 }
 
 function MobileAuthButtons() {
+    const { user, isUserLoading } = useUser();
+    
+    if (isUserLoading) {
+        return <Button disabled className="w-full"><Loader2 className="me-2 h-4 w-4 animate-spin" />انتظر...</Button>
+    }
+
+    if (user) {
+        return (
+             <SheetClose asChild>
+                <Button asChild className="w-full"><Link href="/dashboard"><LayoutDashboard className="me-2 h-4 w-4" />لوحة التحكم</Link></Button>
+            </SheetClose>
+        )
+    }
+
     return (
-        <SheetClose asChild>
-            <Button asChild className="w-full"><Link href="/dashboard"><LayoutDashboard className="me-2 h-4 w-4" />لوحة التحكم</Link></Button>
-        </SheetClose>
+        <>
+            <SheetClose asChild>
+                <Button asChild className="w-full"><Link href="/auth/signup"><Rocket className="me-2 h-4 w-4" />انطلق الآن</Link></Button>
+            </SheetClose>
+            <SheetClose asChild>
+                <Button asChild variant="outline" className="w-full"><Link href="/auth/login"><LogIn className="me-2 h-4 w-4" />تسجيل الدخول</Link></Button>
+            </SheetClose>
+        </>
     );
 }
 

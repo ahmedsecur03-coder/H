@@ -164,12 +164,6 @@ function Testimonials() {
 
 export default function HomePageClient() {
   const { user, isUserLoading } = useUser();
-  const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const primaryAction = {
     href: isUserLoading ? "#" : user ? "/dashboard" : "/auth/signup",
