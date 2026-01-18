@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
@@ -64,8 +63,6 @@ const STATUS_OPTIONS: (keyof typeof statusVariant)[] = [
   'جزئي',
 ];
 
-const ITEMS_PER_PAGE = 15;
-
 function OrdersPageSkeleton() {
     return (
         <div className="space-y-6 pb-8">
@@ -89,7 +86,7 @@ function OrdersPageSkeleton() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                                {Array.from({ length: 15 }).map((_, i) => (
                                     <TableRow key={i}>
                                         {Array.from({ length: 7 }).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
                                     </TableRow>
@@ -98,9 +95,6 @@ function OrdersPageSkeleton() {
                         </Table>
                     </div>
                 </CardContent>
-                 <CardFooter className="justify-center border-t pt-4">
-                    <Skeleton className="h-9 w-32" />
-                 </CardFooter>
             </Card>
         </div>
     );
@@ -114,16 +108,13 @@ function AdminOrdersPageComponent() {
   const { toast } = useToast();
   const { services } = useServices();
 
-  const currentPage = Number(searchParams.get('page')) || 1;
   const currentStatus = searchParams.get('status') || 'all';
   const currentSearch = searchParams.get('search') || '';
 
   const [isLoading, setIsLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [pageMarkers, setPageMarkers] = useState<(DocumentData | null)[]>([null]);
-  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
 
-  const fetchOrders = useCallback(async (page: number) => {
+  const fetchOrders = useCallback(async () => {
     if (!firestore) return;
     setIsLoading(true);
 
@@ -135,20 +126,8 @@ function AdminOrdersPageComponent() {
         }
 
         if (currentSearch) {
-          // This allows searching by either user ID or order ID. It requires a composite index.
-          // A more robust solution might involve a separate search index (e.g., Algolia).
           q = query(q, where('userId', '==', currentSearch)); 
         }
-
-        q = query(q, orderBy('orderDate', 'desc'));
-        
-        const currentPageMarker = pageMarkers[page-1];
-
-        if (page > 1 && currentPageMarker) {
-            q = query(q, startAfter(currentPageMarker));
-        }
-        
-        q = query(q, limit(ITEMS_PER_PAGE));
         
         const snapshot = await getDocs(q);
 
@@ -157,60 +136,24 @@ function AdminOrdersPageComponent() {
             userId: doc.ref.parent.parent!.id,
             ...doc.data()
         } as Order));
+        
+        // Sort client-side to avoid index errors
+        ordersData.sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
 
         setOrders(ordersData);
 
-        if (snapshot.docs.length > 0) {
-            const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-            setPageMarkers(prev => {
-                const newMarkers = [...prev];
-                newMarkers[page] = lastVisible;
-                return newMarkers;
-            });
-            
-            // Re-run the base query to check for a next page
-            let checkNextQuery = collectionGroup(firestore, 'orders');
-             if (currentStatus !== 'all') checkNextQuery = query(checkNextQuery, where('status', '==', currentStatus));
-             if (currentSearch) checkNextQuery = query(checkNextQuery, where('userId', '==', currentSearch));
-             checkNextQuery = query(checkNextQuery, orderBy('orderDate', 'desc'));
-
-            const nextQuery = query(checkNextQuery, startAfter(lastVisible), limit(1));
-            const nextSnapshot = await getDocs(nextQuery);
-            setIsNextPageAvailable(!nextSnapshot.empty);
-        } else {
-            setIsNextPageAvailable(false);
-        }
-
     } catch(error: any) {
         console.error("Failed to fetch orders:", error);
-        toast({ variant: 'destructive', title: "خطأ في الاستعلام", description: 'لا يمكن جلب الطلبات. قد يتطلب هذا البحث إنشاء فهرس مركب في Firestore. تحقق من سجلات الأخطاء للحصول على رابط الإنشاء.'})
+        toast({ variant: 'destructive', title: "خطأ في الاستعلام", description: 'لا يمكن جلب الطلبات. قد يتطلب هذا البحث إنشاء فهرس مركب في Firestore.'})
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, currentStatus, currentSearch, pageMarkers]);
+  }, [firestore, toast, currentStatus, currentSearch]);
 
   useEffect(() => {
-    setPageMarkers([null]); // Reset markers when filters change
-    fetchOrders(1);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStatus, currentSearch]);
+    fetchOrders();
+  }, [fetchOrders]);
   
-  useEffect(() => {
-    fetchOrders(currentPage);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
-  
-  const handleFilterChange = (key: 'search' | 'status' | 'page', value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== 'all') {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    params.set('page', '1');
-    router.replace(`${pathname}?${params.toString()}`);
-  };
-
 
   const handleDelete = async (order: Order) => {
     if (!firestore) return;
@@ -218,7 +161,7 @@ function AdminOrdersPageComponent() {
     try {
         await deleteDoc(orderDocRef);
         toast({ title: 'نجاح', description: 'تم حذف الطلب بنجاح.' });
-        fetchOrders(1);
+        fetchOrders();
     } catch (error) {
          const permissionError = new FirestorePermissionError({
             path: orderDocRef.path,
@@ -227,6 +170,17 @@ function AdminOrdersPageComponent() {
         errorEmitter.emit('permission-error', permissionError);
     }
   }
+
+  const handleFilterChange = (key: 'search' | 'status', value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== 'all') {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.delete('page'); // Remove pagination when filters change
+    router.replace(`${pathname}?${params.toString()}`);
+  };
   
   const OrderCard = ({ order }: { order: Order }) => (
     <Card>
@@ -252,7 +206,7 @@ function AdminOrdersPageComponent() {
         </div>
       </CardContent>
       <CardFooter className="gap-2">
-        <OrderActions order={order} onOrderUpdate={() => fetchOrders(currentPage)} />
+        <OrderActions order={order} onOrderUpdate={() => fetchOrders()} />
         <AlertDialog>
             <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="flex-1">حذف</Button>
@@ -269,7 +223,7 @@ function AdminOrdersPageComponent() {
     </Card>
   );
 
-  if (isLoading && orders.length === 0) {
+  if (isLoading) {
     return <OrdersPageSkeleton />;
   }
 
@@ -309,7 +263,7 @@ function AdminOrdersPageComponent() {
         </CardHeader>
       </Card>
 
-      {isLoading ? <OrdersPageSkeleton /> : orders.length > 0 ? (
+      {orders.length > 0 ? (
         <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
@@ -354,7 +308,7 @@ function AdminOrdersPageComponent() {
                                     </TableCell>
                                     <TableCell className="text-right">${order.charge.toFixed(2)}</TableCell>
                                     <TableCell className="text-right flex items-center justify-end gap-2">
-                                        <OrderActions order={order} onOrderUpdate={() => fetchOrders(currentPage)} />
+                                        <OrderActions order={order} onOrderUpdate={() => fetchOrders()} />
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
@@ -376,19 +330,6 @@ function AdminOrdersPageComponent() {
                 </div>
             </CardContent>
             </Card>
-             <Pagination>
-                <PaginationContent>
-                <PaginationItem>
-                    <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
-                </PaginationItem>
-                <PaginationItem>
-                    <span className="p-2 text-sm">صفحة {currentPage}</span>
-                </PaginationItem>
-                <PaginationItem>
-                    <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={!isNextPageAvailable} />
-                </PaginationItem>
-                </PaginationContent>
-            </Pagination>
         </>
       ) : (
         <Card className="flex flex-col items-center justify-center py-20 text-center">
