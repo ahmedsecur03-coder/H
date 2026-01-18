@@ -206,49 +206,47 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-96 w-full">
-                    <ResponsiveContainer>
-                        <ComposedChart
-                            data={performanceData}
-                            margin={{
-                                top: 5,
-                                right: 10,
-                                left: 10,
-                                bottom: 5,
-                            }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
-                            />
-                            <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
-                            <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
-                            <Tooltip
-                                content={<ChartTooltipContent
-                                    formatter={(value, name) => {
-                                        if (name === 'revenue') {
-                                            return `$${(value as number).toFixed(2)}`;
-                                        }
-                                        return value.toLocaleString();
-                                    }}
-                                    indicator="dot" 
-                                />}
-                            />
-                            <Legend />
-                            <Bar yAxisId="right" dataKey="users" fill="var(--color-users)" name={chartConfig.users.label} radius={4} />
-                            <Line
-                                yAxisId="left"
-                                type="monotone"
-                                dataKey="revenue"
-                                stroke="var(--color-revenue)"
-                                strokeWidth={2}
-                                name={chartConfig.revenue.label}
-                            />
-                        </ComposedChart>
-                    </ResponsiveContainer>
+                    <ComposedChart
+                        data={performanceData}
+                        margin={{
+                            top: 5,
+                            right: 10,
+                            left: 10,
+                            bottom: 5,
+                        }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}
+                        />
+                        <YAxis yAxisId="left" stroke="var(--color-revenue)" orientation="left" />
+                        <YAxis yAxisId="right" stroke="var(--color-users)" orientation="right" allowDecimals={false} />
+                        <Tooltip
+                            content={<ChartTooltipContent
+                                formatter={(value, name) => {
+                                    if (name === 'revenue') {
+                                        return `$${(value as number).toFixed(2)}`;
+                                    }
+                                    return value.toLocaleString();
+                                }}
+                                indicator="dot" 
+                            />}
+                        />
+                        <Legend />
+                        <Bar yAxisId="right" dataKey="users" fill="var(--color-users)" name={chartConfig.users.label} radius={4} />
+                        <Line
+                            yAxisId="left"
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="var(--color-revenue)"
+                            strokeWidth={2}
+                            name={chartConfig.revenue.label}
+                        />
+                    </ComposedChart>
                 </ChartContainer>
             </CardContent>
         </Card>

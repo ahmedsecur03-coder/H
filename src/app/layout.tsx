@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 import GoogleAnalytics from '@/components/google-analytics';
 import { Providers } from '@/components/providers';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
 
@@ -37,10 +37,13 @@ export const metadata: Metadata = {
     images: ['https://hajaty.com/og-image.png'], // Replace with your actual OG image URL
   },
   manifest: '/manifest.json',
-  themeColor: '#F39C12',
   icons: {
     apple: '/icon-192x192.png',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#F39C12',
 }
 
 
