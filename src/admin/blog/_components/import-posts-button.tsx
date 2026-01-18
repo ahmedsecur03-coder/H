@@ -57,7 +57,7 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
                 const postDocRef = doc(postsColRef);
                 const newPost: Omit<BlogPost, 'id'> = {
                     ...post,
-                    authorId: 'ai-generated', 
+                    authorId: 'system-generated', // Changed authorId for clarity
                     publishDate: new Date().toISOString(),
                 };
                 batch.set(postDocRef, newPost);
