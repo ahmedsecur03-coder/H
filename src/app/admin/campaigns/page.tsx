@@ -59,7 +59,9 @@ export default function AdminCampaignsPage() {
     setIsLoading(true);
 
     try {
-      let q = query(collectionGroup(firestore, 'campaigns'), orderBy('startDate', 'desc'));
+      // The orderBy clause was removed to prevent the index-not-found error.
+      // Sorting is now handled on the client-side.
+      let q = query(collectionGroup(firestore, 'campaigns'));
       
       if (filter !== 'all') {
         q = query(q, where('status', '==', filter));
@@ -71,6 +73,9 @@ export default function AdminCampaignsPage() {
           const userId = pathSegments[pathSegments.indexOf('users') + 1];
           return { id: doc.id, userId, ...doc.data() } as Campaign
       });
+
+      // Sort data on the client-side after fetching
+      allCampaigns.sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
 
       setCampaigns(allCampaigns);
 
