@@ -8,7 +8,7 @@ import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Pencil, Trash2, BookOpen, Wand2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -16,7 +16,6 @@ import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsButton } from './_components/import-posts-button';
-import { AiPostDialog } from './_components/ai-post-dialog';
 
 
 export default function AdminBlogPage() {
@@ -64,7 +63,10 @@ export default function AdminBlogPage() {
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-                await updateDoc(postDocRef, data);
+                await updateDoc(postDocRef, {
+                    title: data.title,
+                    content: data.content,
+                });
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const newPostData = { 
@@ -90,14 +92,6 @@ export default function AdminBlogPage() {
             setIsSaving(false);
         }
     };
-    
-    const handleArticleGenerated = (article: { title: string, content: string }) => {
-        // This function will receive the generated article and pre-fill the dialog
-        // We set a temporary post object without an ID
-        setSelectedPost({ title: article.title, content: article.content });
-        setIsPostDialogOpen(true); // Open the regular post dialog
-    };
-
 
     const handleDeletePost = async (id: string) => {
         if (!firestore) return;
@@ -134,12 +128,6 @@ export default function AdminBlogPage() {
                             <p className="mt-2 text-sm text-muted-foreground">ابدأ بكتابة أول منشور لمدونتك أو استورد مقالات جاهزة.</p>
                             <div className="mt-6 flex justify-center gap-2">
                                 <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                                <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                                    <Button variant="outline">
-                                        <Wand2 className="ml-2 h-4 w-4" />
-                                        ai
-                                    </Button>
-                                </AiPostDialog>
                                 <ImportPostsButton onImportComplete={fetchPosts} />
                             </div>
                         </div>
@@ -188,12 +176,6 @@ export default function AdminBlogPage() {
                  {showHeaderActions && (
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={() => handleOpenPostDialog()}><PlusCircle className="ml-2 h-4 w-4" />إضافة منشور جديد</Button>
-                        <AiPostDialog onArticleGenerated={handleArticleGenerated}>
-                            <Button variant="outline">
-                                <Wand2 className="ml-2 h-4 w-4" />
-                                ai
-                            </Button>
-                        </AiPostDialog>
                         <ImportPostsButton onImportComplete={fetchPosts} />
                     </div>
                  )}
