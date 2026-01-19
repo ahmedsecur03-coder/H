@@ -25,17 +25,15 @@ async function getPost(slug: string): Promise<BlogPost | null> {
         return { id: doc.id, ...doc.data() } as BlogPost;
     }
     
-    // Fallback for old data: if not found, iterate and check generated slugs.
-    // This is inefficient and only for migrating old data.
+    // Fallback for old/mismatched data: if not found, iterate and check generated slugs from titles.
+    // This is inefficient but provides resilience against data inconsistencies.
     try {
         const allPostsSnapshot = await getDocs(postsRef);
         for (const doc of allPostsSnapshot.docs) {
             const data = doc.data();
-            // Check only posts that don't have a slug field set.
-            if (data.title && !data.slug) {
-                if (titleToSlug(data.title) === slug) {
-                    return { id: doc.id, ...data } as BlogPost;
-                }
+            // If a post has a title, generate a slug from it and check for a match.
+            if (data.title && titleToSlug(data.title) === slug) {
+                return { id: doc.id, ...data } as BlogPost;
             }
         }
     } catch (e) {
@@ -104,13 +102,12 @@ export async function generateStaticParams() {
         const slugs = snapshot.docs.map(doc => {
             const data = doc.data();
             // A post must have a title to generate a slug if slug doesn't exist
-            if (!data.title && !data.slug) {
+            const slugValue = data.slug || (data.title ? titleToSlug(data.title) : null);
+            if (!slugValue) {
                 return null;
             }
-            return {
-                slug: data.slug || titleToSlug(data.title),
-            };
-        }).filter(item => item && item.slug); // Filter out nulls and items with empty/falsy slugs
+            return { slug: slugValue };
+        }).filter((item): item is { slug: string } => item !== null && !!item.slug);
 
         return slugs;
     } catch (error) {
