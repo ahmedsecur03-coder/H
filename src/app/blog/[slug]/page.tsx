@@ -1,4 +1,6 @@
 
+'use server';
+
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { getFirestoreServer } from '@/firebase/init-server';
