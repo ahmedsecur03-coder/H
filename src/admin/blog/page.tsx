@@ -56,22 +56,22 @@ export default function AdminBlogPage() {
         setIsPostDialogOpen(true);
     };
 
-    const handleSavePost = async (data: { title: string; content: string }) => {
+    const handleSavePost = async (data: Partial<Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>>) => {
         if (!firestore || !user) return;
         setIsSaving(true);
         
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-                await updateDoc(postDocRef, {
-                    title: data.title,
-                    content: data.content,
-                });
+                await updateDoc(postDocRef, data);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
-                const newPostData = { 
-                    title: data.title, 
-                    content: data.content, 
+                const newPostData: Omit<BlogPost, 'id'> = { 
+                    title: data.title || '',
+                    content: data.content || '', 
+                    description: data.description || '',
+                    imageUrl: data.imageUrl || '',
+                    imageHint: data.imageHint || '',
                     authorId: user.uid, 
                     publishDate: new Date().toISOString() 
                 };

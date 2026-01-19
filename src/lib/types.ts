@@ -175,6 +175,9 @@ export type Ticket = {
 export type BlogPost = {
   id: string;
   title: string;
+  description?: string;
+  imageUrl?: string;
+  imageHint?: string;
   content: string;
   authorId: string;
   publishDate: string;

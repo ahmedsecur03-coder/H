@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { BlogPost } from '@/lib/types';
@@ -6,9 +7,14 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function BlogPostPageClient({ serverPost }: { serverPost: BlogPost }) {
     
+    const postImage = serverPost.imageUrl ? PlaceHolderImages.find(img => img.id === serverPost.imageUrl) : null;
+    const finalImageUrl = postImage ? postImage.imageUrl : (serverPost.imageUrl?.startsWith('http') ? serverPost.imageUrl : null);
+
     return (
         <div className="max-w-4xl mx-auto py-8">
             <Button variant="ghost" asChild className="mb-4">
@@ -18,7 +24,19 @@ export default function BlogPostPageClient({ serverPost }: { serverPost: BlogPos
                 </Link>
             </Button>
             <article>
-                <Card>
+                <Card className="overflow-hidden">
+                    {finalImageUrl && (
+                        <div className="relative aspect-[16/9] w-full">
+                            <Image 
+                                src={finalImageUrl}
+                                alt={serverPost.title}
+                                fill
+                                className="object-cover"
+                                priority
+                                data-ai-hint={serverPost.imageHint}
+                            />
+                        </div>
+                    )}
                     <CardHeader>
                         <CardTitle className="text-3xl md:text-4xl font-headline leading-tight">{serverPost.title}</CardTitle>
                         <CardDescription>

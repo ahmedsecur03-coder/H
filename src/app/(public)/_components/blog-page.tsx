@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { BlogPost } from '@/lib/types';
@@ -6,6 +7,8 @@ import { BookOpen, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 function titleToSlug(title: string): string {
   if (!title) return '';
@@ -37,6 +40,7 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Array.from({ length: 3 }).map((_, i) => (
                         <Card key={i}>
+                            <Skeleton className="h-40 w-full rounded-t-lg" />
                             <CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-1/4 mt-2" /></CardHeader>
                             <CardContent><Skeleton className="h-12 w-full" /></CardContent>
                             <CardFooter><Skeleton className="h-10 w-28" /></CardFooter>
@@ -47,8 +51,22 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {serverPosts.map(post => {
                         const slug = titleToSlug(post.title);
+                        const postImage = post.imageUrl ? PlaceHolderImages.find(img => img.id === post.imageUrl) : null;
+                        const finalImageUrl = postImage ? postImage.imageUrl : (post.imageUrl?.startsWith('http') ? post.imageUrl : null);
+
                         return (
-                            <Card key={post.id} className="flex flex-col">
+                            <Card key={post.id} className="flex flex-col overflow-hidden transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
+                               {finalImageUrl && (
+                                 <div className="relative aspect-video">
+                                     <Image
+                                         src={finalImageUrl}
+                                         alt={post.title}
+                                         fill
+                                         className="object-cover"
+                                         data-ai-hint={post.imageHint}
+                                     />
+                                 </div>
+                               )}
                                 <CardHeader>
                                     <CardTitle className="font-headline text-xl leading-tight">{post.title}</CardTitle>
                                     <CardDescription>
@@ -57,7 +75,7 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                                 </CardHeader>
                                 <CardContent className="flex-grow">
                                     <p className="text-sm text-muted-foreground line-clamp-3">
-                                    {post.content.substring(0, 150).replace(/#/g, '').trim()}...
+                                    {post.description || post.content.substring(0, 150).replace(/#/g, '').trim() + '...'}
                                     </p>
                                 </CardContent>
                                 <CardFooter>
