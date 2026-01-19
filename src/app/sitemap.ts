@@ -18,7 +18,7 @@ function titleToSlug(title: string): string {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:9002');
 
     const publicRoutes = [
         '/',
