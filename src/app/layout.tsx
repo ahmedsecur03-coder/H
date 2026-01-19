@@ -1,3 +1,4 @@
+
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
@@ -20,13 +21,6 @@ export const metadata: Metadata = {
     description: 'نوفر حلولاً متكاملة لزيادة المتابعين، إدارة الحملات الإعلانية، وحسابات وكالة موثوقة.',
     url: 'https://hajaty.com',
     siteName: 'Hagaaty',
-    images: [
-      {
-        url: 'https://hajaty.com/og-image.png', // Replace with your actual OG image URL
-        width: 1200,
-        height: 630,
-      },
-    ],
     locale: 'ar_AR',
     type: 'website',
   },
@@ -34,12 +28,11 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'حاجاتي - بوابتك لنمو أعمالك الرقمية',
     description: 'منصتك المتكاملة لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.',
-    images: ['https://hajaty.com/og-image.png'], // Replace with your actual OG image URL
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#F39C12',
+  themeColor: '#3498DB',
 }
 
 

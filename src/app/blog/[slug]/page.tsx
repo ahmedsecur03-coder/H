@@ -16,7 +16,7 @@ async function getPost(slug: string): Promise<BlogPost | null> {
     const firestore = getFirestoreServer();
     const postsRef = collection(firestore, 'blogPosts');
     
-    // First, try to find by slug field, which is the most efficient.
+    // Attempt 1: Query by the 'slug' field directly. This is the most efficient.
     const qBySlug = query(postsRef, where("slug", "==", slug), limit(1));
     const snapshotBySlug = await getDocs(qBySlug);
 
@@ -25,19 +25,19 @@ async function getPost(slug: string): Promise<BlogPost | null> {
         return { id: doc.id, ...doc.data() } as BlogPost;
     }
     
-    // Fallback for old/mismatched data: if not found, iterate and check generated slugs from titles.
-    // This is inefficient but provides resilience against data inconsistencies.
+    // Fallback for older data: If not found, iterate and check generated slugs from titles.
+    // This is less efficient but ensures backward compatibility.
     try {
         const allPostsSnapshot = await getDocs(postsRef);
         for (const doc of allPostsSnapshot.docs) {
             const data = doc.data();
-            // If a post has a title, generate a slug from it and check for a match.
+            // Check if the generated slug from the title matches the requested slug.
             if (data.title && titleToSlug(data.title) === slug) {
                 return { id: doc.id, ...data } as BlogPost;
             }
         }
     } catch (e) {
-        console.error("Fallback search for post failed:", e);
+        console.error("Fallback search for post by title failed:", e);
     }
 
     return null;
@@ -99,15 +99,15 @@ export async function generateStaticParams() {
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
         
-        const slugs = snapshot.docs.map(doc => {
+        const slugs: { slug: string }[] = [];
+        snapshot.forEach(doc => {
             const data = doc.data();
-            // A post must have a title to generate a slug if slug doesn't exist
+            // A post must have a slug or a title to generate a valid slug
             const slugValue = data.slug || (data.title ? titleToSlug(data.title) : null);
-            if (!slugValue) {
-                return null;
+            if (slugValue) { // This check ensures we don't add null, undefined, or empty slugs
+                slugs.push({ slug: slugValue });
             }
-            return { slug: slugValue };
-        }).filter((item): item is { slug: string } => item !== null && !!item.slug);
+        });
 
         return slugs;
     } catch (error) {
@@ -124,7 +124,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         notFound();
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hajaty.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002';
     const postUrl = `${baseUrl}/blog/${params.slug}`;
 
     let finalImageUrl: string | undefined;
@@ -165,7 +165,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             name: 'حاجاتي',
             logo: {
             '@type': 'ImageObject',
-            url: `${baseUrl}/icon-192x192.png`,
+            url: `${baseUrl}/logo.png`,
             },
         },
         datePublished: post.publishDate,
