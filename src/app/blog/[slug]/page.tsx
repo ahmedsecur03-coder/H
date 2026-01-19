@@ -1,6 +1,4 @@
 
-'use server';
-
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { getFirestoreServer } from '@/firebase/init-server';
@@ -106,7 +104,7 @@ export async function generateStaticParams() {
         const slugs = snapshot.docs.map(doc => {
             const data = doc.data();
             // A post must have a title to generate a slug if slug doesn't exist
-            if (!data.title) {
+            if (!data.title && !data.slug) {
                 return null;
             }
             return {
