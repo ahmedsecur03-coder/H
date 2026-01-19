@@ -275,17 +275,15 @@ export default function DashboardPage() {
                     <CardContent className="flex items-center justify-center">
                        {orderStatusData.length > 0 ? (
                              <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                                <ResponsiveContainer>
-                                    <PieChart>
-                                        <Tooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
-                                        <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} outerRadius={80} paddingAngle={5}>
-                                            {orderStatusData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                            ))}
-                                        </Pie>
-                                        <Legend content={<ChartTooltipContent nameKey="status" hideLabel hideIndicator />} />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                                <PieChart>
+                                    <Tooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
+                                    <Pie data={orderStatusData} dataKey="value" nameKey="status" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                        {orderStatusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                                        ))}
+                                    </Pie>
+                                    <Legend content={<ChartTooltipContent nameKey="status" hideLabel hideIndicator />} />
+                                </PieChart>
                             </ChartContainer>
                        ) : (
                            <div className="flex flex-col items-center justify-center h-[250px] text-muted-foreground">
