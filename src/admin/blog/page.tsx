@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -204,6 +203,7 @@ export default function AdminBlogPage() {
                 post={selectedPost}
                 onSave={handleSavePost}
                 isSaving={isSaving}
+                allPosts={posts}
             />
         </div>
     );
