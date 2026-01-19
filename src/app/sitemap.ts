@@ -3,19 +3,7 @@ import { MetadataRoute } from 'next';
 import { getFirestoreServer } from '@/firebase/init-server';
 import { collection, getDocs, query } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-
-function titleToSlug(title: string): string {
-    if (!title) return '';
-    return title
-        .toString()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-        .replace(/-+/g, '-');
-}
+import { titleToSlug } from '@/lib/slugify';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:9002');

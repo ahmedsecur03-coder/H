@@ -11,6 +11,7 @@ import type { BlogPost } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { titleToSlug } from '@/lib/slugify';
 
 interface PostDialogProps {
     open: boolean;
@@ -19,19 +20,6 @@ interface PostDialogProps {
     onSave: (data: Partial<Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>>) => Promise<void>;
     isSaving: boolean;
     allPosts: BlogPost[]; // New prop
-}
-
-function titleToSlug(title: string): string {
-    if (!title) return '';
-    return title
-        .toString()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-        .replace(/-+/g, '-');
 }
 
 export function PostDialog({ open, onOpenChange, post, onSave, isSaving, allPosts }: PostDialogProps) {

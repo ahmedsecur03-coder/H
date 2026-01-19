@@ -8,22 +8,9 @@ import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { titleToSlug } from '@/lib/slugify';
 
 export const revalidate = 60; // Revalidate every 60 seconds
-
-// Utility to convert title to a URL-friendly slug
-function titleToSlug(title: string): string {
-  if (!title) return '';
-  return title
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
-}
 
 // Function to fetch a single post by its slug
 async function getPost(slug: string): Promise<BlogPost | null> {

@@ -9,19 +9,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
-
-function titleToSlug(title: string): string {
-  if (!title) return '';
-  return title
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\u0621-\u064A\u0660-\u0669a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
-}
+import { titleToSlug } from '@/lib/slugify';
 
 export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] | null }) {
 
