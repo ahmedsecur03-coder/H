@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
-import { titleToSlug } from '@/lib/slugify';
 
 export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] | null }) {
 
@@ -38,7 +37,6 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
             ) : serverPosts && serverPosts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {serverPosts.map(post => {
-                        const slug = titleToSlug(post.title);
                         const postImage = post.imageUrl ? PlaceHolderImages.find(img => img.id === post.imageUrl) : null;
                         const finalImageUrl = postImage ? postImage.imageUrl : (post.imageUrl?.startsWith('http') ? post.imageUrl : null);
 
@@ -68,7 +66,7 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                                 </CardContent>
                                 <CardFooter>
                                     <Button asChild variant="secondary">
-                                        <Link href={`/blog/${slug}`}>
+                                        <Link href={`/blog/${post.slug}`}>
                                             اقرأ المزيد
                                             <ChevronLeft className="h-4 w-4 ms-2" />
                                         </Link>

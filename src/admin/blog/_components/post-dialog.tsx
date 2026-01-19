@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Link as LinkIcon, ChevronsUpDown, Copy } from 'lucide-react';
+import { Loader2, Link as LinkIcon, ChevronsUpDown, Copy, RefreshCw } from 'lucide-react';
 import type { BlogPost } from '@/lib/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,11 +19,12 @@ interface PostDialogProps {
     post?: Partial<BlogPost>;
     onSave: (data: Partial<Omit<BlogPost, 'id' | 'authorId' | 'publishDate'>>) => Promise<void>;
     isSaving: boolean;
-    allPosts: BlogPost[]; // New prop
+    allPosts: BlogPost[]; 
 }
 
 export function PostDialog({ open, onOpenChange, post, onSave, isSaving, allPosts }: PostDialogProps) {
     const [title, setTitle] = useState('');
+    const [slug, setSlug] = useState('');
     const [content, setContent] = useState('');
     const [description, setDescription] = useState('');
     const [imageUrl, setImageUrl] = useState('');
@@ -33,6 +34,7 @@ export function PostDialog({ open, onOpenChange, post, onSave, isSaving, allPost
     useEffect(() => {
         if (open) {
             setTitle(post?.title || '');
+            setSlug(post?.slug || '');
             setContent(post?.content || '');
             setDescription(post?.description || '');
             setImageUrl(post?.imageUrl || '');
@@ -41,18 +43,27 @@ export function PostDialog({ open, onOpenChange, post, onSave, isSaving, allPost
     }, [open, post]);
 
     const handleCopyLink = (postToLink: BlogPost) => {
-        const slug = titleToSlug(postToLink.title);
-        const markdownLink = `[${postToLink.title}](/blog/${slug})`;
+        const markdownLink = `[${postToLink.title}](/blog/${postToLink.slug})`;
         navigator.clipboard.writeText(markdownLink);
         toast({
             title: 'تم نسخ الرابط',
             description: `تم نسخ رابط Markdown للمقال "${postToLink.title}".`,
         });
     };
+    
+    const generateSlugFromTitle = () => {
+        if (title) {
+            setSlug(titleToSlug(title));
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await onSave({ title, content, description, imageUrl, imageHint });
+        let finalSlug = slug.trim();
+        if (!finalSlug) {
+            finalSlug = titleToSlug(title);
+        }
+        await onSave({ title, slug: finalSlug, content, description, imageUrl, imageHint });
     };
 
     const availablePostsForLinking = allPosts.filter(p => p.id !== post?.id);
@@ -75,6 +86,13 @@ export function PostDialog({ open, onOpenChange, post, onSave, isSaving, allPost
                         <div className="space-y-2">
                             <Label htmlFor="title">العنوان</Label>
                             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="slug">الرابط الثابت (Slug)</Label>
+                            <div className="flex gap-2">
+                                <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="يتم إنشاؤه تلقائيا من العنوان" />
+                                <Button type="button" variant="ghost" size="icon" onClick={generateSlugFromTitle}><RefreshCw className="h-4 w-4" /></Button>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="description">الوصف (للسيو - 160 حرفًا)</Label>

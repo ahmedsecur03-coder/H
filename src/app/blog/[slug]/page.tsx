@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { getFirestoreServer } from '@/firebase/init-server';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 import fs from 'fs';
@@ -15,19 +15,15 @@ export const revalidate = 60; // Revalidate every 60 seconds
 // Function to fetch a single post by its slug
 async function getPost(slug: string): Promise<BlogPost | null> {
   const firestore = getFirestoreServer();
-  
-  const postsQuery = query(collection(firestore, 'blogPosts'));
-  const snapshot = await getDocs(postsQuery);
+  const postsRef = collection(firestore, 'blogPosts');
+  const q = query(postsRef, where("slug", "==", slug), limit(1));
+  const querySnapshot = await getDocs(q);
 
-  if (snapshot.empty) {
+  if (querySnapshot.empty) {
     return null;
   }
-
-  // Find the post by comparing slugs. This is necessary because slugs are derived.
-  const allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-  const post = allPosts.find(p => titleToSlug(p.title) === slug);
-  
-  return post || null;
+  const doc = querySnapshot.docs[0];
+  return { id: doc.id, ...doc.data() } as BlogPost;
 }
 
 // Generate metadata dynamically
@@ -86,7 +82,7 @@ export async function generateStaticParams() {
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
         return snapshot.docs.map(doc => ({
-            slug: titleToSlug(doc.data().title),
+            slug: doc.data().slug,
         }));
     } catch (error) {
         console.error("Failed to generate static params for blog posts:", error);

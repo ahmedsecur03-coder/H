@@ -36,10 +36,6 @@ export const metadata: Metadata = {
     description: 'منصتك المتكاملة لخدمات SMM، إدارة الحملات الإعلانية، ونظام إحالة فريد لنمو أعمالك بسرعة الصاروخ.',
     images: ['https://hajaty.com/og-image.png'], // Replace with your actual OG image URL
   },
-  manifest: '/manifest.json',
-  icons: {
-    apple: '/icon-192x192.png',
-  },
 }
 
 export const viewport: Viewport = {

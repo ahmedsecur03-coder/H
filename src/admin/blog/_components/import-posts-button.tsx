@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { titleToSlug } from '@/lib/slugify';
 
 export function ImportPostsButton({ onImportComplete }: { onImportComplete: () => void }) {
     const [isImporting, setIsImporting] = useState(false);
@@ -57,6 +58,7 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
                 const postDocRef = doc(postsColRef);
                 const newPost: Omit<BlogPost, 'id'> = {
                     ...post,
+                    slug: titleToSlug(post.title),
                     authorId: 'ai-generated', 
                     publishDate: new Date().toISOString(),
                 };

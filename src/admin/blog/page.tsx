@@ -15,6 +15,7 @@ import { PostDialog } from './_components/post-dialog';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ImportPostsButton } from './_components/import-posts-button';
+import { titleToSlug } from '@/lib/slugify';
 
 
 export default function AdminBlogPage() {
@@ -59,18 +60,24 @@ export default function AdminBlogPage() {
         if (!firestore || !user) return;
         setIsSaving(true);
         
+        const dataToSave = { ...data };
+        if (!dataToSave.slug && dataToSave.title) {
+            dataToSave.slug = titleToSlug(dataToSave.title);
+        }
+        
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-                await updateDoc(postDocRef, data);
+                await updateDoc(postDocRef, dataToSave);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const newPostData: Omit<BlogPost, 'id'> = { 
-                    title: data.title || '',
-                    content: data.content || '', 
-                    description: data.description || '',
-                    imageUrl: data.imageUrl || '',
-                    imageHint: data.imageHint || '',
+                    title: dataToSave.title || '',
+                    slug: dataToSave.slug || '',
+                    content: dataToSave.content || '', 
+                    description: dataToSave.description || '',
+                    imageUrl: dataToSave.imageUrl || '',
+                    imageHint: dataToSave.imageHint || '',
                     authorId: user.uid, 
                     publishDate: new Date().toISOString() 
                 };
@@ -84,7 +91,7 @@ export default function AdminBlogPage() {
              const permissionError = new FirestorePermissionError({ 
                 path: selectedPost?.id ? `blogPosts/${selectedPost.id}` : 'blogPosts',
                 operation: selectedPost?.id ? 'update' : 'create',
-                requestResourceData: data
+                requestResourceData: dataToSave
             });
             errorEmitter.emit('permission-error', permissionError);
         } finally {
