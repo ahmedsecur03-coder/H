@@ -1,4 +1,3 @@
-
 import { MetadataRoute } from 'next';
 import { getFirestoreServer } from '@/firebase/init-server';
 import { collection, getDocs, query } from 'firebase/firestore';
@@ -31,14 +30,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const firestore = getFirestoreServer();
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
-        blogPostUrls = snapshot.docs.map(doc => {
+        
+        snapshot.forEach(doc => {
             const post = doc.data() as BlogPost;
-            return {
-                url: `${baseUrl}/blog/${titleToSlug(post.title)}`,
-                lastModified: new Date(post.publishDate),
-                changeFrequency: 'monthly',
-                priority: 0.7,
-            };
+            // A post must have a slug to be included in the sitemap.
+            if (post.slug) {
+                blogPostUrls.push({
+                    url: `${baseUrl}/blog/${post.slug}`,
+                    lastModified: new Date(post.publishDate),
+                    changeFrequency: 'monthly',
+                    priority: 0.7,
+                });
+            }
         });
     } catch (error) {
         console.error("Failed to fetch blog posts for sitemap:", error);

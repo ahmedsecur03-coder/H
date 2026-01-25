@@ -1,4 +1,3 @@
-
 'use server';
 
 import { notFound } from 'next/navigation';
@@ -13,37 +12,23 @@ import { titleToSlug } from '@/lib/slugify';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
-// Function to fetch a single post by its slug
 async function getPost(slug: string): Promise<BlogPost | null> {
     const firestore = getFirestoreServer();
     const postsRef = collection(firestore, 'blogPosts');
     
-    // Attempt 1: Query by the 'slug' field directly. This is the most efficient.
-    const qBySlug = query(postsRef, where("slug", "==", slug), limit(1));
-    const snapshotBySlug = await getDocs(qBySlug);
+    // The slug is the canonical identifier. Do not fall back to title-based generation.
+    const q = query(postsRef, where("slug", "==", slug), limit(1));
+    const snapshot = await getDocs(q);
 
-    if (!snapshotBySlug.empty) {
-        const doc = snapshotBySlug.docs[0];
-        return { id: doc.id, ...doc.data() } as BlogPost;
+    if (snapshot.empty) {
+        console.warn(`Post with slug "${slug}" not found.`);
+        return null;
     }
     
-    // Fallback for older data: If not found, iterate and check generated slugs from titles.
-    // This is less efficient but ensures backward compatibility.
-    try {
-        const allPostsSnapshot = await getDocs(postsRef);
-        for (const doc of allPostsSnapshot.docs) {
-            const data = doc.data();
-            // Check if the generated slug from the title matches the requested slug.
-            if (data.title && titleToSlug(data.title) === slug) {
-                return { id: doc.id, ...data } as BlogPost;
-            }
-        }
-    } catch (e) {
-        console.error("Fallback search for post by title failed:", e);
-    }
-
-    return null;
+    const doc = snapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as BlogPost;
 }
+
 
 // Generate metadata dynamically
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -101,15 +86,11 @@ export async function generateStaticParams() {
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
         
-        const slugs: { slug: string }[] = [];
-        snapshot.forEach(doc => {
+        const slugs = snapshot.docs.map(doc => {
             const data = doc.data();
-            // A post must have a slug or a title to generate a valid slug
-            const slugValue = data.slug || (data.title ? titleToSlug(data.title) : null);
-            if (slugValue) { // This check ensures we don't add null, undefined, or empty slugs
-                slugs.push({ slug: slugValue });
-            }
-        });
+            // A post must have a slug to be a static page.
+            return { slug: data.slug };
+        }).filter(item => !!item.slug); // Filter out any posts that might have a null/undefined slug
 
         return slugs;
     } catch (error) {
