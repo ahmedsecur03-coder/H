@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -60,7 +61,7 @@ export default function AdminBlogPage() {
         if (!firestore || !user) return;
         setIsSaving(true);
         
-        const dataToSave = { ...data };
+        let dataToSave = { ...data };
         if (!dataToSave.slug && dataToSave.title) {
             dataToSave.slug = titleToSlug(dataToSave.title);
         }

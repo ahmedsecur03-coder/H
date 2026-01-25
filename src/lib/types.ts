@@ -176,9 +176,9 @@ export type BlogPost = {
   id: string;
   slug: string;
   title: string;
-  description?: string;
-  imageUrl?: string;
-  imageHint?: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
   content: string;
   authorId: string;
   publishDate: string;

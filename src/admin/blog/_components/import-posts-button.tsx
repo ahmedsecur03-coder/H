@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useFirestore } from '@/firebase';
-import { collection, writeBatch, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, writeBatch, doc, getDocs } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Loader2, AlertTriangle } from 'lucide-react';
@@ -56,8 +57,12 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
             postsToImport.forEach(post => {
                 const postDocRef = doc(postsColRef);
                 const newPost: Omit<BlogPost, 'id'> = {
-                    ...post,
+                    title: post.title,
+                    content: post.content,
                     slug: titleToSlug(post.title),
+                    description: post.description,
+                    imageUrl: post.imageUrl,
+                    imageHint: post.imageHint,
                     authorId: 'ai-generated', 
                     publishDate: new Date().toISOString(),
                 };
