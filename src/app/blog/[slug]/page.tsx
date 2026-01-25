@@ -1,4 +1,3 @@
-
 'use server';
 
 import { notFound } from 'next/navigation';
@@ -47,7 +46,8 @@ async function getPost(slug: string): Promise<BlogPost | null> {
 
 // Generate metadata dynamically
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await getPost(params.slug);
+  const { slug } = params;
+  const post = await getPost(slug);
 
   if (!post) {
     return {
@@ -120,14 +120,15 @@ export async function generateStaticParams() {
 
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-    const post = await getPost(params.slug);
+    const { slug } = params;
+    const post = await getPost(slug);
 
     if (!post) {
         notFound();
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002';
-    const postUrl = `${baseUrl}/blog/${params.slug}`;
+    const postUrl = `${baseUrl}/blog/${slug}`;
 
     let finalImageUrl: string | undefined;
      if (post.imageUrl) {
