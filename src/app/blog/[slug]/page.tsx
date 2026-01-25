@@ -4,40 +4,54 @@
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { getFirestoreServer } from '@/firebase/init-server';
-import { collection, getDocs, query, where, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, limit, doc, getDoc } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
 
 /**
- * Fetches a blog post from Firestore by its generated slug.
- * @param slug The URL-friendly slug of the post to fetch.
+ * Fetches a blog post from Firestore by its slug or ID.
+ * It first tries to query by the 'slug' field. If that fails, it falls back
+ * to getting the document directly by its ID, ensuring backward compatibility with old links.
+ * @param slugOrId The URL-friendly slug or the Firestore document ID of the post.
  * @returns A promise that resolves to the BlogPost object or null if not found.
  */
-async function getPost(slug: string): Promise<BlogPost | null> {
-    if (!slug || slug === 'undefined') {
-        console.error(`getPost was called with an invalid slug: '${slug}'`);
+async function getPost(slugOrId: string): Promise<BlogPost | null> {
+    if (!slugOrId || slugOrId === 'undefined') {
+        console.error(`getPost was called with an invalid slug/id: '${slugOrId}'`);
         return null;
     }
 
     const firestore = getFirestoreServer();
-    const decodedSlug = decodeURIComponent(slug);
+    const postsColRef = collection(firestore, 'blogPosts');
+    const decodedSlug = decodeURIComponent(slugOrId);
 
     try {
-        const q = query(collection(firestore, 'blogPosts'), where("slug", "==", decodedSlug), limit(1));
-        const snapshot = await getDocs(q);
+        // 1. First, try to find the post by slug. This is the preferred method.
+        const slugQuery = query(postsColRef, where("slug", "==", decodedSlug), limit(1));
+        const slugSnapshot = await getDocs(slugQuery);
 
-        if (snapshot.empty) {
-            console.error(`Post with slug "${decodedSlug}" was not found.`);
-            return null;
+        if (!slugSnapshot.empty) {
+            const postDoc = slugSnapshot.docs[0];
+            return { id: postDoc.id, ...postDoc.data() } as BlogPost;
         }
+
+        // 2. If not found by slug, assume the parameter is a document ID (fallback for old links).
+        console.warn(`Post with slug "${decodedSlug}" not found. Falling back to search by ID.`);
+        const docRef = doc(firestore, 'blogPosts', decodedSlug);
+        const docSnap = await getDoc(docRef);
         
-        const doc = snapshot.docs[0];
-        return { id: doc.id, ...doc.data() } as BlogPost;
+        if (docSnap.exists()) {
+            return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+        }
+       
+        // If not found by either method, log and return null.
+        console.error(`Post with slug or ID "${decodedSlug}" could not be found.`);
+        return null;
 
     } catch (error) {
-        console.error(`Error fetching post with slug ${decodedSlug}:`, error);
+        console.error(`Error fetching post with slug/ID ${decodedSlug}:`, error);
         return null;
     }
 }
