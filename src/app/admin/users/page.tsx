@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
+import { useState, useEffect, useCallback, Suspense, useMemo, useRef } from 'react';
 import { useFirestore } from '@/firebase';
 import { collection, query, orderBy, getDocs, limit, startAfter, where, Query, DocumentData } from 'firebase/firestore';
 import type { User } from '@/lib/types';
@@ -23,32 +23,46 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-  PaginationLink,
-  PaginationEllipsis
 } from '@/components/ui/pagination';
 
 const ITEMS_PER_PAGE = 15;
 
-
-function TableSkeleton() {
+function UsersPageSkeleton() {
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                    <TableRow key={i}>
-                        {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+        <div className="space-y-6 pb-8">
+            <div>
+                <Skeleton className="h-9 w-1/3" />
+                <Skeleton className="h-5 w-2/3 mt-2" />
+            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-10 w-full" />
+                </CardHeader>
+                <CardContent>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {Array.from({ length: 8 }).map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {Array.from({ length: 8 }).map((_, j) => <TableCell key={j}><Skeleton className="h-6 w-full" /></TableCell>)}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+                <CardFooter className="justify-center border-t pt-4">
+                    <Skeleton className="h-9 w-32" />
+                </CardFooter>
+            </Card>
+        </div>
     );
 }
-
 
 function AdminUsersPageComponent() {
   const firestore = useFirestore();
@@ -62,9 +76,7 @@ function AdminUsersPageComponent() {
   
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pageCount, setPageCount] = useState(0);
-  const [pageMarkers, setPageMarkers] = useState<(DocumentData | null)[]>([null]);
-  const [isNextPageAvailable, setIsNextPageAvailable] = useState(false);
+  const pageMarkersRef = useRef<(DocumentData | null)[]>([null]);
   
   const fetchUsers = useCallback(async (page: number) => {
     if (!firestore) return;
@@ -74,83 +86,59 @@ function AdminUsersPageComponent() {
         let q: Query = collection(firestore, 'users');
 
         if (currentSearch) {
-            // Firestore is case-sensitive and doesn't support substring searches natively.
-            // This query is a common workaround for "starts with" searches.
-            // For full-text search, a third-party service like Algolia or Elasticsearch is recommended.
-             q = query(q, orderBy('email'), where('email', '>=', currentSearch), where('email', '<=', currentSearch + '\uf8ff'));
-        } else {
-           q = query(q, orderBy('createdAt', 'desc'));
+             q = query(q, where('email', '>=', currentSearch), where('email', '<=', currentSearch + '\uf8ff'));
         }
-        
-        const pageMarker = pageMarkers[page-1];
+
+        q = query(q, orderBy('email', 'asc'));
+
+        const pageMarker = pageMarkersRef.current[page - 1];
         if (page > 1 && pageMarker) {
             q = query(q, startAfter(pageMarker));
         }
         
-        const qWithLimit = query(q, limit(ITEMS_PER_PAGE));
+        q = query(q, limit(ITEMS_PER_PAGE));
         
-        const snapshot = await getDocs(qWithLimit);
+        const snapshot = await getDocs(q);
         const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
         setUsers(usersData);
         
         if (snapshot.docs.length > 0) {
             const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-            setPageMarkers(prev => {
-                const newMarkers = [...prev];
-                newMarkers[page] = lastVisible;
-                return newMarkers;
-            });
-
-            // Check if there is a next page to enable/disable the 'Next' button
-            const nextQuery = query(q, startAfter(lastVisible), limit(1));
-            const nextSnapshot = await getDocs(nextQuery);
-            setIsNextPageAvailable(!nextSnapshot.empty);
-        } else {
-             setIsNextPageAvailable(false);
+            pageMarkersRef.current[page] = lastVisible;
         }
-
     } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: "خطأ في الاستعلام", description: 'لا يمكن جلب المستخدمين. قد يتطلب هذا البحث إنشاء فهرس مركب في Firestore. تحقق من سجلات الأخطاء للحصول على رابط الإنشاء.'})
     } finally {
         setIsLoading(false);
     }
-  }, [firestore, toast, currentSearch, pageMarkers]); // pageMarkers dependency is important for pagination
+  }, [firestore, toast, currentSearch]);
   
   useEffect(() => {
-    setPageMarkers([null]); // Reset pagination when search changes
+    pageMarkersRef.current = [null]; // Reset pagination when search changes
     fetchUsers(1);
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSearch]); 
-  
+  }, [currentSearch, fetchUsers]); 
+
   useEffect(() => {
       fetchUsers(currentPage);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
+  }, [currentPage, fetchUsers]);
 
-  const handleFilterChange = (key: 'search' | 'page', value: string) => {
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(newPage));
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+  
+  const handleFilterChange = (key: 'search', value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set(key, value);
     } else {
       params.delete(key);
     }
-    if (key === 'search') {
-      params.set('page', '1');
-    }
+    params.set('page', '1');
     router.replace(`${pathname}?${params.toString()}`);
   };
-
-  const renderPaginationItems = () => {
-      // Since we don't know the total page count, we can't render all page numbers.
-      // We'll just show prev/current/next.
-      return (
-           <PaginationItem>
-                <span className="p-2 text-sm">صفحة {currentPage}</span>
-            </PaginationItem>
-      )
-  };
-
 
   const UserCard = ({ user }: { user: User }) => (
     <Card>
@@ -185,6 +173,10 @@ function AdminUsersPageComponent() {
     </Card>
   );
   
+  if (isLoading && users.length === 0) {
+    return <UsersPageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 pb-8">
       <div>
@@ -199,7 +191,7 @@ function AdminUsersPageComponent() {
           <div className="relative">
               <Search className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث بالبريد الإلكتروني..."
+                placeholder="ابحث بالاسم، البريد الإلكتروني، أو المعرف..."
                 className="pe-10 rtl:ps-10"
                 defaultValue={currentSearch}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -208,15 +200,7 @@ function AdminUsersPageComponent() {
         </CardHeader>
        </Card>
 
-       {isLoading ? (
-          <Card>
-            <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <TableSkeleton />
-                </div>
-            </CardContent>
-          </Card>
-       ) : users.length > 0 ? (
+       {isLoading ? <UsersPageSkeleton /> : users.length > 0 ? (
          <>
             {/* Mobile View */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:hidden gap-4">
@@ -280,14 +264,16 @@ function AdminUsersPageComponent() {
                   </div>
               </CardContent>
             </Card>
-             <Pagination>
+            <Pagination>
                 <PaginationContent>
                     <PaginationItem>
-                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage - 1)); }} disabled={currentPage === 1}/>
+                        <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }} disabled={currentPage === 1}/>
                     </PaginationItem>
-                     {renderPaginationItems()}
+                     <PaginationItem>
+                        <span className="p-2 text-sm">صفحة {currentPage}</span>
+                    </PaginationItem>
                     <PaginationItem>
-                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handleFilterChange('page', String(currentPage + 1)); }} disabled={!isNextPageAvailable} />
+                        <PaginationNext href="#" onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }} disabled={users.length < ITEMS_PER_PAGE} />
                     </PaginationItem>
                 </PaginationContent>
             </Pagination>
@@ -317,24 +303,7 @@ function AdminUsersPageComponent() {
 
 export default function AdminUsersPage() {
     return (
-        <Suspense fallback={
-            <div className="space-y-6 pb-8">
-                <div>
-                    <Skeleton className="h-9 w-1/3" />
-                    <Skeleton className="h-5 w-2/3 mt-2" />
-                </div>
-                <Card>
-                    <CardHeader><Skeleton className="h-10 w-full" /></CardHeader>
-                </Card>
-                <Card>
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
-                        <TableSkeleton />
-                      </div>
-                    </CardContent>
-                </Card>
-            </div>
-        }>
+        <Suspense fallback={<UsersPageSkeleton />}>
             <AdminUsersPageComponent />
         </Suspense>
     )
