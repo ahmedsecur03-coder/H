@@ -1,4 +1,3 @@
-'use server';
 
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
@@ -8,7 +7,6 @@ import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
-import { titleToSlug } from '@/lib/slugify';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
