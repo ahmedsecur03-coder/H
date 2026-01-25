@@ -59,7 +59,7 @@ export function ImportPostsButton({ onImportComplete }: { onImportComplete: () =
                 const newPost: Omit<BlogPost, 'id'> = {
                     title: post.title,
                     content: post.content,
-                    slug: postDocRef.id, // Use the new ID as the slug
+                    slug: titleToSlug(post.title), // Generate slug from title
                     description: post.description,
                     imageUrl: post.imageUrl,
                     imageHint: post.imageHint,

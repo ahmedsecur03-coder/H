@@ -61,19 +61,24 @@ export default function AdminBlogPage() {
         if (!firestore || !user) return;
         setIsSaving(true);
         
+        const finalSlug = data.slug || titleToSlug(data.title || '');
+        if (!finalSlug) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'لا يمكن إنشاء رابط للمقال بدون عنوان.' });
+            setIsSaving(false);
+            return;
+        }
+
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
-                // When editing, ensure the slug remains the ID
-                const dataToSave = { ...data, slug: selectedPost.id };
+                const dataToSave = { ...data, slug: finalSlug };
                 await updateDoc(postDocRef, dataToSave);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
                 const postsColRef = collection(firestore, 'blogPosts');
-                const newPostRef = doc(postsColRef); // Create ref with a new unique ID
                 const newPostData: Omit<BlogPost, 'id'> = { 
                     title: data.title || '',
-                    slug: newPostRef.id, // Use the document ID as the slug
+                    slug: finalSlug,
                     content: data.content || '', 
                     description: data.description || '',
                     imageUrl: data.imageUrl || '',
@@ -81,7 +86,7 @@ export default function AdminBlogPage() {
                     authorId: user.uid, 
                     publishDate: new Date().toISOString() 
                 };
-                await setDoc(newPostRef, newPostData); // Use setDoc to save with the generated ID
+                await addDoc(postsColRef, newPostData);
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
             }
             setIsPostDialogOpen(false);

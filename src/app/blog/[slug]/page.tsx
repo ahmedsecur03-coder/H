@@ -4,45 +4,40 @@
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { getFirestoreServer } from '@/firebase/init-server';
-import { collection, getDocs, query, where, limit, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
 
 /**
- * Fetches a blog post from Firestore by its slug, which is the document ID.
- * @param postId The ID of the post to fetch (from the URL slug).
+ * Fetches a blog post from Firestore by its generated slug.
+ * @param slug The URL-friendly slug of the post to fetch.
  * @returns A promise that resolves to the BlogPost object or null if not found.
  */
-async function getPost(postId: string): Promise<BlogPost | null> {
-    if (!postId || postId === 'undefined') {
-        console.error(`getPost was called with an invalid ID: '${postId}'`);
+async function getPost(slug: string): Promise<BlogPost | null> {
+    if (!slug || slug === 'undefined') {
+        console.error(`getPost was called with an invalid slug: '${slug}'`);
         return null;
     }
 
     const firestore = getFirestoreServer();
-    try {
-        const postDocRef = doc(firestore, 'blogPosts', postId);
-        const postDoc = await getDoc(postDocRef);
+    const decodedSlug = decodeURIComponent(slug);
 
-        if (!postDoc.exists()) {
-            console.warn(`Post with ID "${postId}" not found directly. Falling back to query...`);
-            // Fallback for old slugs, less efficient.
-            const q = query(collection(firestore, 'blogPosts'), where("slug", "==", postId), limit(1));
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) {
-                 console.error(`Post with slug "${postId}" could not be found via direct get or query.`);
-                 return null;
-            }
-            const fallbackDoc = snapshot.docs[0];
-            return { id: fallbackDoc.id, ...fallbackDoc.data() } as BlogPost;
+    try {
+        const q = query(collection(firestore, 'blogPosts'), where("slug", "==", decodedSlug), limit(1));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            console.error(`Post with slug "${decodedSlug}" was not found.`);
+            return null;
         }
         
-        return { id: postDoc.id, ...postDoc.data() } as BlogPost;
+        const doc = snapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as BlogPost;
 
     } catch (error) {
-        console.error(`Error fetching post with slug/ID ${postId}:`, error);
+        console.error(`Error fetching post with slug ${decodedSlug}:`, error);
         return null;
     }
 }
@@ -104,11 +99,10 @@ export async function generateStaticParams() {
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
         
-        // Ensure every post has a valid slug (which should be its ID)
-        const slugs = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return { slug: data.slug || doc.id };
-        }).filter(item => !!item.slug);
+        const slugs = snapshot.docs
+            .map(doc => doc.data()?.slug)
+            .filter(slug => typeof slug === 'string' && slug.length > 0)
+            .map(slug => ({ slug }));
 
         return slugs;
     } catch (error) {
