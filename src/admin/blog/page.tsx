@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, doc, addDoc, updateDoc, deleteDoc, getDocs, orderBy, setDoc } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -61,29 +61,27 @@ export default function AdminBlogPage() {
         if (!firestore || !user) return;
         setIsSaving(true);
         
-        let dataToSave = { ...data };
-        if (!dataToSave.slug && dataToSave.title) {
-            dataToSave.slug = titleToSlug(dataToSave.title);
-        }
-        
         try {
             if (selectedPost && selectedPost.id) { // Editing existing post
                 const postDocRef = doc(firestore, 'blogPosts', selectedPost.id);
+                // When editing, ensure the slug remains the ID
+                const dataToSave = { ...data, slug: selectedPost.id };
                 await updateDoc(postDocRef, dataToSave);
                 toast({ title: 'نجاح', description: 'تم تحديث المنشور بنجاح.' });
             } else { // Adding new post
+                const postsColRef = collection(firestore, 'blogPosts');
+                const newPostRef = doc(postsColRef); // Create ref with a new unique ID
                 const newPostData: Omit<BlogPost, 'id'> = { 
-                    title: dataToSave.title || '',
-                    slug: dataToSave.slug || '',
-                    content: dataToSave.content || '', 
-                    description: dataToSave.description || '',
-                    imageUrl: dataToSave.imageUrl || '',
-                    imageHint: dataToSave.imageHint || '',
+                    title: data.title || '',
+                    slug: newPostRef.id, // Use the document ID as the slug
+                    content: data.content || '', 
+                    description: data.description || '',
+                    imageUrl: data.imageUrl || '',
+                    imageHint: data.imageHint || '',
                     authorId: user.uid, 
                     publishDate: new Date().toISOString() 
                 };
-                const postsColRef = collection(firestore, 'blogPosts');
-                await addDoc(postsColRef, newPostData);
+                await setDoc(newPostRef, newPostData); // Use setDoc to save with the generated ID
                 toast({ title: 'نجاح', description: 'تم نشر المنشور بنجاح.' });
             }
             setIsPostDialogOpen(false);
@@ -92,7 +90,7 @@ export default function AdminBlogPage() {
              const permissionError = new FirestorePermissionError({ 
                 path: selectedPost?.id ? `blogPosts/${selectedPost.id}` : 'blogPosts',
                 operation: selectedPost?.id ? 'update' : 'create',
-                requestResourceData: dataToSave
+                requestResourceData: data
             });
             errorEmitter.emit('permission-error', permissionError);
         } finally {

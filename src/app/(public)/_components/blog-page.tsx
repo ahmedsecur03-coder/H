@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
-import { titleToSlug } from '@/lib/slugify';
 
 export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[] | null }) {
 
@@ -40,7 +39,8 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                     {serverPosts.map(post => {
                         const postImage = post.imageUrl ? PlaceHolderImages.find(img => img.id === post.imageUrl) : null;
                         const finalImageUrl = postImage ? postImage.imageUrl : (post.imageUrl?.startsWith('http') ? post.imageUrl : null);
-                        const slug = post.slug || titleToSlug(post.title);
+                        // Use slug as the primary identifier for the link. Fallback to ID for robustness.
+                        const linkSlug = post.slug || post.id;
 
                         return (
                             <Card key={post.id} className="flex flex-col overflow-hidden transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
@@ -68,7 +68,7 @@ export default function BlogPageClient({ serverPosts }: { serverPosts: BlogPost[
                                 </CardContent>
                                 <CardFooter>
                                     <Button asChild variant="secondary">
-                                        <Link href={`/blog/${slug}`}>
+                                        <Link href={`/blog/${linkSlug}`}>
                                             اقرأ المزيد
                                             <ChevronLeft className="h-4 w-4 ms-2" />
                                         </Link>

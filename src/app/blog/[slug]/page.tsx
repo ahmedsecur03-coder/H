@@ -1,52 +1,50 @@
 
+'use server';
+
 import { notFound } from 'next/navigation';
 import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
 import { getFirestoreServer } from '@/firebase/init-server';
-import { collection, getDocs, query, where, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, limit, doc, getDoc } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
 import type { Metadata } from 'next';
 import fs from 'fs';
 import path from 'path';
-import { titleToSlug } from '@/lib/slugify';
 
-export const revalidate = 60; // Revalidate every 60 seconds
-
-async function getPost(slug: string): Promise<BlogPost | null> {
-    // Add a guard clause for invalid slugs right at the beginning.
-    if (!slug || slug === 'undefined') {
-        console.error(`getPost was called with an invalid slug: '${slug}'`);
+/**
+ * Fetches a blog post from Firestore by its slug, which is the document ID.
+ * @param postId The ID of the post to fetch (from the URL slug).
+ * @returns A promise that resolves to the BlogPost object or null if not found.
+ */
+async function getPost(postId: string): Promise<BlogPost | null> {
+    if (!postId || postId === 'undefined') {
+        console.error(`getPost was called with an invalid ID: '${postId}'`);
         return null;
     }
 
     const firestore = getFirestoreServer();
-    const postsRef = collection(firestore, 'blogPosts');
-    
-    // 1. Try the direct, efficient query first.
-    const q = query(postsRef, where("slug", "==", slug), limit(1));
-    const directSnapshot = await getDocs(q);
+    try {
+        const postDocRef = doc(firestore, 'blogPosts', postId);
+        const postDoc = await getDoc(postDocRef);
 
-    if (!directSnapshot.empty) {
-        const doc = directSnapshot.docs[0];
-        return { id: doc.id, ...doc.data() } as BlogPost;
-    }
-
-    // 2. If the direct query fails, fall back to a manual search.
-    // This is less efficient but more robust against indexing issues.
-    console.warn(`Direct query for slug "${slug}" failed. Falling back to manual search.`);
-    const allPostsSnapshot = await getDocs(postsRef);
-    
-    for (const doc of allPostsSnapshot.docs) {
-        const postData = doc.data();
-        // Check against the stored slug and a dynamically generated one for legacy data.
-        if (postData.slug === slug || titleToSlug(postData.title) === slug) {
-            console.warn(`Found post with slug "${slug}" via manual search.`);
-            return { id: doc.id, ...postData } as BlogPost;
+        if (!postDoc.exists()) {
+            console.warn(`Post with ID "${postId}" not found directly. Falling back to query...`);
+            // Fallback for old slugs, less efficient.
+            const q = query(collection(firestore, 'blogPosts'), where("slug", "==", postId), limit(1));
+            const snapshot = await getDocs(q);
+            if (snapshot.empty) {
+                 console.error(`Post with slug "${postId}" could not be found via direct get or query.`);
+                 return null;
+            }
+            const fallbackDoc = snapshot.docs[0];
+            return { id: fallbackDoc.id, ...fallbackDoc.data() } as BlogPost;
         }
+        
+        return { id: postDoc.id, ...postDoc.data() } as BlogPost;
+
+    } catch (error) {
+        console.error(`Error fetching post with slug/ID ${postId}:`, error);
+        return null;
     }
-    
-    // If no match was found after checking all posts
-    console.warn(`Post with slug "${slug}" could not be found via direct query or manual search.`);
-    return null;
 }
 
 
@@ -106,11 +104,11 @@ export async function generateStaticParams() {
         const postsQuery = query(collection(firestore, 'blogPosts'));
         const snapshot = await getDocs(postsQuery);
         
+        // Ensure every post has a valid slug (which should be its ID)
         const slugs = snapshot.docs.map(doc => {
             const data = doc.data();
-            // A post must have a slug to be a static page.
-            return { slug: data.slug };
-        }).filter(item => !!item.slug); // Filter out any posts that might have a null/undefined slug
+            return { slug: data.slug || doc.id };
+        }).filter(item => !!item.slug);
 
         return slugs;
     } catch (error) {
