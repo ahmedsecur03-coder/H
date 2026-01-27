@@ -1,3 +1,4 @@
+
 import type { NestedNavItem } from '@/lib/types';
 import {
   LayoutDashboard,
@@ -97,7 +98,6 @@ export const adminNavItems: NestedNavItem[] = [
         ]
     },
     { href: '/admin/services', label: 'الخدمات', icon: Package },
-    { href: '/admin/support', label: 'الدعم', icon: MessageSquare },
     { 
         label: 'إدارة المحتوى',
         icon: PenSquare,

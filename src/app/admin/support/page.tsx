@@ -1,195 +1,37 @@
 
 'use client';
 
-import { useState, useEffect, Suspense, useMemo, useCallback } from 'react';
-import { useFirestore } from '@/firebase';
-import { collectionGroup, query, orderBy, getDocs } from 'firebase/firestore';
-import type { Ticket } from '@/lib/types';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSearchParams } from 'next/navigation';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MessageSquare } from "lucide-react";
+import Link from "next/link";
 
-const statusVariant = {
-  'مفتوحة': 'secondary',
-  'مغلقة': 'destructive',
-  'قيد المراجعة': 'default',
-} as const;
-
-type Status = keyof typeof statusVariant;
-
-
-function TicketsTable({ tickets, isLoading }: { tickets: Ticket[], isLoading: boolean }) {
-   
-    if (isLoading) {
-        return (
-            <div className="overflow-x-auto">
-             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>الموضوع</TableHead>
-                        <TableHead>المستخدم</TableHead>
-                        <TableHead>الحالة</TableHead>
-                        <TableHead>تاريخ الإنشاء</TableHead>
-                        <TableHead className="text-right">إجراء</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                     {Array.from({length: 5}).map((_, i) => (
-                        <TableRow key={i}>
-                            {Array.from({length: 5}).map((_, j) => <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>)}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            </div>
-        );
-    }
-
-    if (!tickets || tickets.length === 0) {
-        return (
-            <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                لا توجد تذاكر دعم في هذا القسم.
-            </div>
-        );
-    }
-    
-    return (
-        <div className="overflow-x-auto">
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>الموضوع</TableHead>
-                    <TableHead>المستخدم</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead>تاريخ الإنشاء</TableHead>
-                    <TableHead className="text-right">إجراء</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                 {tickets.map((ticket) => (
-                    <TableRow key={ticket.id}>
-                        <TableCell className="font-medium">{ticket.subject}</TableCell>
-                        <TableCell>
-                            <Link href={`/admin/users?search=${ticket.userId}`} className="font-mono text-xs text-primary hover:underline">{ticket.userId}</Link>
-                        </TableCell>
-                        <TableCell>
-                        <Badge variant={statusVariant[ticket.status] || 'default'}>{ticket.status}</Badge>
-                        </TableCell>
-                        <TableCell>{new Date(ticket.createdDate).toLocaleDateString('ar-EG')}</TableCell>
-                        <TableCell className="text-right">
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={`/admin/support/${ticket.id}?userId=${ticket.userId}`}>
-                            عرض و رد
-                            </Link>
-                        </Button>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-        </div>
-    );
-};
-
-function AdminSupportPageComponent() {
-  const firestore = useFirestore();
-  const { toast } = useToast();
-  const searchParams = useSearchParams();
-  
-  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const userIdFilter = searchParams.get('userId');
-
-  const fetchTickets = useCallback(async () => {
-    if (!firestore) return;
-    setIsLoading(true);
-    try {
-        let ticketsQuery = query(collectionGroup(firestore, 'tickets'), orderBy('createdDate', 'desc'));
-
-        const snapshot = await getDocs(ticketsQuery);
-        const fetchedTickets: Ticket[] = [];
-        snapshot.forEach(doc => {
-            const pathSegments = doc.ref.path.split('/');
-            const userId = pathSegments[1];
-            fetchedTickets.push({ id: doc.id, userId: userId, ...doc.data() } as Ticket);
-        });
-        setAllTickets(fetchedTickets);
-    } catch(finalError) {
-        console.error("Error fetching tickets:", finalError);
-        toast({ variant: 'destructive', title: 'خطأ', description: 'فشل في جلب تذاكر الدعم. قد تحتاج لإنشاء فهرس في Firestore.' });
-    } finally {
-        setIsLoading(false);
-    }
-  }, [firestore, toast]);
-
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
-  
-  const filteredTickets = useMemo(() => {
-    const openTickets = allTickets.filter(t => (t.status === 'مفتوحة' || t.status === 'قيد المراجعة') && (!userIdFilter || t.userId === userIdFilter));
-    const closedTickets = allTickets.filter(t => t.status === 'مغلقة' && (!userIdFilter || t.userId === userIdFilter));
-    return { openTickets, closedTickets };
-  }, [allTickets, userIdFilter]);
-
-
+export default function AdminSupportPage() {
   return (
     <div className="space-y-6 pb-8">
-      <div>
+       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">إدارة الدعم الفني</h1>
         <p className="text-muted-foreground">
-            {userIdFilter 
-                ? `عرض تذاكر الدعم للمستخدم: ${userIdFilter}`
-                : "عرض والرد على تذاكر الدعم من المستخدمين."
-            }
+          عرض والرد على تذاكر الدعم من المستخدمين.
         </p>
       </div>
 
-       <Tabs defaultValue="open" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="open">التذاكر النشطة ({filteredTickets.openTickets.length})</TabsTrigger>
-                <TabsTrigger value="closed">التذاكر المغلقة ({filteredTickets.closedTickets.length})</TabsTrigger>
-            </TabsList>
-            <Card className="mt-4">
-                <CardContent className="p-0">
-                   <TabsContent value="open" className="m-0">
-                        <TicketsTable tickets={filteredTickets.openTickets} isLoading={isLoading} />
-                   </TabsContent>
-                   <TabsContent value="closed" className="m-0">
-                        <TicketsTable tickets={filteredTickets.closedTickets} isLoading={isLoading} />
-                   </TabsContent>
-                </CardContent>
-            </Card>
-        </Tabs>
+       <Card className="text-center py-20">
+          <CardHeader>
+            <MessageSquare className="mx-auto h-16 w-16 text-primary" />
+            <CardTitle className="mt-4 text-2xl">تم نقل قسم الدعم</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              تم نقل قسم الدعم الفني إلى لوحة تحكم المستخدم. يمكنك الرد على تذاكر المستخدمين من هناك.
+            </p>
+             <Button asChild className="mt-6">
+                <Link href="/dashboard/support">
+                    الانتقال إلى قسم الدعم الجديد
+                </Link>
+            </Button>
+          </CardContent>
+        </Card>
     </div>
   );
-}
-
-
-export default function AdminSupportPage() {
-    return (
-        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-            <AdminSupportPageComponent />
-        </Suspense>
-    )
 }
