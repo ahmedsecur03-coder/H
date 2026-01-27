@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, Suspense, useMemo, useCallback } from 'react';
@@ -131,7 +132,7 @@ function AdminSupportPageComponent() {
         }
 
         if (activeTab === 'open') {
-             ticketsQuery = query(ticketsQuery, where('status', '!=', 'مغلقة'));
+             ticketsQuery = query(ticketsQuery, where('status', 'in', ['مفتوحة', 'قيد المراجعة']));
         } else {
              ticketsQuery = query(ticketsQuery, where('status', '==', 'مغلقة'));
         }
