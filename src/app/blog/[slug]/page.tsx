@@ -1,198 +1,141 @@
+'use client';
 
-'use server';
-
-import { notFound } from 'next/navigation';
-import BlogPostPageClient from '@/app/(public)/_components/blog-post-page';
-import { getFirestoreServer } from '@/firebase/init-server';
+import { useState, useEffect } from 'react';
+import { notFound, useParams } from 'next/navigation';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, getDocs, query, where, limit, doc, getDoc } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-import type { Metadata } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import ReactMarkdown from 'react-markdown';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Skeleton } from '@/components/ui/skeleton';
 
-/**
- * Fetches a blog post from Firestore by its slug or ID.
- * It first tries to query by the 'slug' field. If that fails, it falls back
- * to getting the document directly by its ID, ensuring backward compatibility with old links.
- * @param slugOrId The URL-friendly slug or the Firestore document ID of the post.
- * @returns A promise that resolves to the BlogPost object or null if not found.
- */
-async function getPost(slugOrId: string): Promise<BlogPost | null> {
-    if (!slugOrId || slugOrId === 'undefined') {
-        console.error(`getPost was called with an invalid slug/id: '${slugOrId}'`);
-        return null;
-    }
 
-    const firestore = getFirestoreServer();
-    const postsColRef = collection(firestore, 'blogPosts');
-    const decodedSlug = decodeURIComponent(slugOrId);
-
-    try {
-        // 1. First, try to find the post by slug. This is the preferred method.
-        const slugQuery = query(postsColRef, where("slug", "==", decodedSlug), limit(1));
-        const slugSnapshot = await getDocs(slugQuery);
-
-        if (!slugSnapshot.empty) {
-            const postDoc = slugSnapshot.docs[0];
-            return { id: postDoc.id, ...postDoc.data() } as BlogPost;
-        }
-
-        // 2. If not found by slug, assume the parameter is a document ID (fallback for old links).
-        console.warn(`Post with slug "${decodedSlug}" not found. Falling back to search by ID.`);
-        const docRef = doc(firestore, 'blogPosts', decodedSlug);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-            return { id: docSnap.id, ...docSnap.data() } as BlogPost;
-        }
-       
-        // If not found by either method, log and return null.
-        console.error(`Post with slug or ID "${decodedSlug}" could not be found.`);
-        return null;
-
-    } catch (error) {
-        console.error(`Error fetching post with slug/ID ${decodedSlug}:`, error);
-        return null;
-    }
+function BlogPostPageSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+            <Skeleton className="h-8 w-32 mb-4" />
+            <Card>
+                <Skeleton className="aspect-[16/9] w-full rounded-t-lg" />
+                <CardHeader>
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-5 w-1/4 mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-5/6" />
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
 
-// Generate metadata dynamically
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await getPost(params.slug);
+export default function BlogPostPage() {
+    const params = useParams();
+    const slug = params.slug as string;
+    const firestore = useFirestore();
 
-  if (!post) {
-    return {
-      title: 'المقالة غير موجودة',
-    };
-  }
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-  let finalImageUrl: string | undefined;
+    useEffect(() => {
+        if (!firestore || !slug) {
+            setIsLoading(false);
+            return;
+        };
 
-  if (post.imageUrl) {
-    if (post.imageUrl.startsWith('http')) {
-        finalImageUrl = post.imageUrl;
-    } else {
-        try {
-            const jsonPath = path.join(process.cwd(), 'src', 'lib', 'placeholder-images.json');
-            const jsonData = fs.readFileSync(jsonPath, 'utf-8');
-            const placeholderData = JSON.parse(jsonData);
-            const image = placeholderData.placeholderImages.find((img: any) => img.id === post.imageUrl);
-            if (image) {
-                finalImageUrl = image.imageUrl;
+        const fetchPost = async () => {
+            setIsLoading(true);
+            try {
+                const postsColRef = collection(firestore, 'blogPosts');
+                const decodedSlug = decodeURIComponent(slug);
+
+                // 1. Query by slug
+                const q = query(postsColRef, where("slug", "==", decodedSlug), limit(1));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const postDoc = querySnapshot.docs[0];
+                    setPost({ id: postDoc.id, ...postDoc.data() } as BlogPost);
+                } else {
+                    // 2. Fallback to get by ID
+                    const docRef = doc(firestore, 'blogPosts', decodedSlug);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        setPost({ id: docSnap.id, ...docSnap.data() } as BlogPost);
+                    } else {
+                        setPost(null);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching post client-side:", error);
+                setPost(null);
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error("Could not read placeholder images for metadata:", error);
-        }
+        };
+
+        fetchPost();
+    }, [firestore, slug]);
+
+
+    if (isLoading) {
+        return <BlogPostPageSkeleton />;
     }
-  }
-
-  return {
-    title: post.title,
-    description: post.description || post.content.substring(0, 160).replace(/#/g, '').trim() + '...',
-    openGraph: {
-      title: post.title,
-      description: post.description || post.content.substring(0, 160).replace(/#/g, '').trim() + '...',
-      type: 'article',
-      publishedTime: post.publishDate,
-      images: finalImageUrl ? [finalImageUrl] : undefined,
-    },
-     twitter: {
-      card: 'summary_large_image',
-      title: post.title,
-      description: post.description || post.content.substring(0, 160).replace(/#/g, '').trim() + '...',
-      images: finalImageUrl ? [finalImageUrl] : undefined,
-    },
-  };
-}
-
-// Generate static paths for all blog posts
-export async function generateStaticParams() {
-    try {
-        const firestore = getFirestoreServer();
-        const postsQuery = query(collection(firestore, 'blogPosts'));
-        const snapshot = await getDocs(postsQuery);
-        
-        const slugs = snapshot.docs
-            .map(doc => doc.data()?.slug)
-            .filter(slug => typeof slug === 'string' && slug.length > 0)
-            .map(slug => ({ slug }));
-
-        return slugs;
-    } catch (error) {
-        console.error("Failed to generate static params for blog posts:", error);
-        return [];
-    }
-}
-
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-    if (!params || !params.slug || params.slug === 'undefined') {
-        console.error("BlogPostPage rendered without a valid slug in params.");
-        notFound();
-    }
-    
-    const post = await getPost(params.slug);
 
     if (!post) {
         notFound();
     }
-
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002';
-    const postUrl = `${baseUrl}/blog/${params.slug}`;
-
-    let finalImageUrl: string | undefined;
-     if (post.imageUrl) {
-        if (post.imageUrl.startsWith('http')) {
-            finalImageUrl = post.imageUrl;
-        } else {
-             try {
-                const jsonPath = path.join(process.cwd(), 'src', 'lib', 'placeholder-images.json');
-                const jsonData = fs.readFileSync(jsonPath, 'utf-8');
-                const placeholderData = JSON.parse(jsonData);
-                const image = placeholderData.placeholderImages.find((img: any) => img.id === post.imageUrl);
-                if (image) {
-                    finalImageUrl = image.imageUrl;
-                }
-            } catch (error) {
-                console.error("Could not read placeholder images for json-ld:", error);
-            }
-        }
-    }
-
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'BlogPosting',
-        mainEntityOfPage: {
-            '@type': 'WebPage',
-            '@id': postUrl,
-        },
-        headline: post.title,
-        description: post.description || post.content.substring(0, 250).replace(/#/g, '').trim(),
-        image: finalImageUrl,
-        author: {
-            '@type': 'Organization',
-            name: 'فريق حاجاتي',
-        },
-        publisher: {
-            '@type': 'Organization',
-            name: 'حاجاتي',
-            logo: {
-            '@type': 'ImageObject',
-            url: `${baseUrl}/logo.png`,
-            },
-        },
-        datePublished: post.publishDate,
-        dateModified: post.publishDate,
-    };
+    
+    const postImage = post.imageUrl ? PlaceHolderImages.find(img => img.id === post.imageUrl) : null;
+    const finalImageUrl = postImage ? postImage.imageUrl : (post.imageUrl?.startsWith('http') ? post.imageUrl : null);
 
     return (
-        <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
-            <BlogPostPageClient serverPost={post} />
-        </>
+        <div className="max-w-4xl mx-auto py-8">
+            <Button variant="ghost" asChild className="mb-4">
+                <Link href="/blog">
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                    العودة إلى المدونة
+                </Link>
+            </Button>
+            <article>
+                <Card className="overflow-hidden">
+                    {finalImageUrl && (
+                        <div className="relative aspect-[16/9] w-full">
+                            <Image 
+                                src={finalImageUrl}
+                                alt={post.title}
+                                fill
+                                className="object-cover"
+                                priority
+                                data-ai-hint={post.imageHint}
+                            />
+                        </div>
+                    )}
+                    <CardHeader>
+                        <CardTitle className="text-3xl md:text-4xl font-headline leading-tight">{post.title}</CardTitle>
+                        <CardDescription>
+                            نُشر في: {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="prose dark:prose-invert max-w-none">
+                        <ReactMarkdown
+                            components={{
+                                h2: ({node, ...props}) => <h2 className="font-headline" {...props} />,
+                                h3: ({node, ...props}) => <h3 className="font-headline" {...props} />,
+                            }}
+                        >
+                            {post.content}
+                        </ReactMarkdown>
+                    </CardContent>
+                </Card>
+            </article>
+        </div>
     );
 }

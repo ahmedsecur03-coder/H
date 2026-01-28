@@ -1,28 +1,97 @@
+'use client';
 
-import BlogPageClient from "@/app/(public)/_components/blog-page";
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { BlogPost } from '@/lib/types';
-import { getFirestoreServer } from "@/firebase/init-server";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
-
-export const revalidate = 60; // Revalidate every 60 seconds
-
-async function getPosts(): Promise<BlogPost[]> {
-    const firestore = getFirestoreServer();
-    try {
-        const postsQuery = query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc'));
-        const snapshot = await getDocs(postsQuery);
-        if (snapshot.empty) {
-            return [];
-        }
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPost));
-    } catch (error) {
-        console.error("Failed to fetch blog posts for page:", error);
-        return [];
-    }
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { BookOpen, ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 
-export default async function BlogPage() {
-    const posts = await getPosts();
-    return <BlogPageClient serverPosts={posts} />;
+export default function BlogPage() {
+    const firestore = useFirestore();
+    const postsQuery = useMemoFirebase(
+        () => firestore ? query(collection(firestore, 'blogPosts'), orderBy('publishDate', 'desc')) : null,
+        [firestore]
+    );
+    const { data: posts, isLoading } = useCollection<BlogPost>(postsQuery);
+
+    return (
+        <div className="space-y-6 pb-8">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">المدونة والأخبار</h1>
+                <p className="text-muted-foreground">
+                    تابع آخر التحديثات والإعلانات والنصائح من فريق حاجاتي.
+                </p>
+            </div>
+
+            {isLoading ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i}>
+                            <Skeleton className="h-40 w-full rounded-t-lg" />
+                            <CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-1/4 mt-2" /></CardHeader>
+                            <CardContent><Skeleton className="h-12 w-full" /></CardContent>
+                            <CardFooter><Skeleton className="h-10 w-28" /></CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            ) : posts && posts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {posts.map(post => {
+                        const postImage = post.imageUrl ? PlaceHolderImages.find(img => img.id === post.imageUrl) : null;
+                        const finalImageUrl = postImage ? postImage.imageUrl : (post.imageUrl?.startsWith('http') ? post.imageUrl : null);
+                        const linkSlug = post.slug || post.id;
+
+                        return (
+                            <Card key={post.id} className="flex flex-col overflow-hidden transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
+                               {finalImageUrl && (
+                                 <div className="relative aspect-video">
+                                     <Image
+                                         src={finalImageUrl}
+                                         alt={post.title}
+                                         fill
+                                         className="object-cover"
+                                         data-ai-hint={post.imageHint}
+                                     />
+                                 </div>
+                               )}
+                                <CardHeader>
+                                    <CardTitle className="font-headline text-xl leading-tight">{post.title}</CardTitle>
+                                    <CardDescription>
+                                        {new Date(post.publishDate).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className="text-sm text-muted-foreground line-clamp-3">
+                                    {post.description || post.content.substring(0, 150).replace(/#/g, '').trim() + '...'}
+                                    </p>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button asChild variant="secondary">
+                                        <Link href={`/blog/${linkSlug}`}>
+                                            اقرأ المزيد
+                                            <ChevronLeft className="h-4 w-4 ms-2" />
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        )
+                    })}
+                </div>
+            ) : (
+                <div className="text-center py-20 bg-card border rounded-lg">
+                    <BookOpen className="mx-auto h-16 w-16 text-muted-foreground" />
+                    <h2 className="mt-4 text-2xl font-bold">لا توجد منشورات بعد</h2>
+                    <p className="text-muted-foreground">
+                        لم نقم بنشر أي أخبار أو إعلانات حتى الآن. تحقق مرة أخرى قريبًا!
+                    </p>
+                </div>
+            )}
+        </div>
+    );
 }
