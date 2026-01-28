@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
@@ -127,7 +128,7 @@ function AdminOrdersPageComponent() {
     setIsLoading(true);
 
     try {
-        const q: FirestoreQuery = query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc'));
+        const q: FirestoreQuery = query(collectionGroup(firestore, 'orders'));
         const snapshot = await getDocs(q);
 
         const ordersData = snapshot.docs.map(doc => ({
@@ -135,6 +136,9 @@ function AdminOrdersPageComponent() {
             userId: doc.ref.parent.parent!.id,
             ...doc.data()
         } as Order));
+
+        // Sort on the client side
+        ordersData.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
 
         setAllOrders(ordersData);
 
