@@ -26,7 +26,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                 {children}
             </main>
             {isPublicPage && <PublicFooter />}
-            {isPublicPage && <FloatingActionButtons />}
+            <FloatingActionButtons />
         </div>
     );
 }
