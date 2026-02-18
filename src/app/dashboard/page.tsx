@@ -8,12 +8,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  DollarSign,
-  Rocket,
   Star,
-  ShoppingCart,
   ListOrdered,
-  Archive,
   ArrowUpRight,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
@@ -36,7 +32,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { DailyRewardCard } from './_components/daily-reward-card';
@@ -63,7 +58,7 @@ function DashboardSkeleton() {
 }
 
 const chartConfig = {
-  charge: { label: 'التكلفة', color: 'hsl(var(--primary))' },
+  charge: { label: 'الإنفاق', color: 'hsl(var(--primary))' },
 };
 
 export default function DashboardPage() {
@@ -130,7 +125,7 @@ export default function DashboardPage() {
         >
             <div className='mb-4'>
                 <h1 className='text-xl md:text-3xl font-bold font-headline'>أهلاً بك، {userData?.name}!</h1>
-                <p className='text-muted-foreground'>نمو حساباتك يبدأ من هنا. اطلب خدمات الـ SMM الآن.</p>
+                <p className='text-muted-foreground'>ابدأ نمو حساباتك الآن باختيار أفضل خدمات SMM.</p>
             </div>
             
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
@@ -145,11 +140,11 @@ export default function DashboardPage() {
                         <CardContent className="text-center">
                              <rank.icon className="h-16 w-16 text-primary mx-auto" />
                              <h3 className="text-2xl font-bold mt-2">{rank.name}</h3>
-                             <p className="text-sm text-primary font-medium">خصم {rank.discount}% حصري</p>
+                             <p className="text-sm text-primary font-medium">خصم {rank.discount}% دائم</p>
                              {nextRank && (
                                 <div className="mt-4 text-xs">
                                      <Progress value={progressToNextRank} className="h-1.5" />
-                                    <p className="mt-2 text-muted-foreground">أنفق <span className="font-bold text-foreground">${amountToNextRank.toFixed(2)}</span> للوصول لرتبة {nextRank.name}!</p>
+                                    <p className="mt-2 text-muted-foreground">أنفق <span className="font-bold text-foreground">${amountToNextRank.toFixed(2)}</span> للترقية لـ {nextRank.name}</p>
                                 </div>
                              )}
                         </CardContent>
@@ -161,8 +156,8 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                  <Card>
                          <CardHeader>
-                            <CardTitle className="font-headline text-xl">نشاط الإنفاق (آخر 7 أيام)</CardTitle>
-                            <CardDescription>متابعة حجم استثماراتك في خدمات SMM.</CardDescription>
+                            <CardTitle className="font-headline text-xl">تحليل الإنفاق (أسبوعي)</CardTitle>
+                            <CardDescription>متابعة حجم استثماراتك في نمو حساباتك.</CardDescription>
                          </CardHeader>
                          <CardContent>
                             <ChartContainer config={chartConfig} className="h-[250px] w-full">

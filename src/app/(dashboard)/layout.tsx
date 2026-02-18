@@ -19,19 +19,17 @@ import {
 import { dashboardNavItems } from '@/lib/placeholder-data';
 import Logo from '@/components/logo';
 import { UserNav } from '@/app/dashboard/_components/user-nav';
-import type { NestedNavItem, User, Notification, SystemLog } from '@/lib/types';
-import React, {useEffect} from 'react';
+import type { NestedNavItem, User } from '@/lib/types';
+import React from 'react';
 import { BottomNavBar } from '@/app/dashboard/_components/bottom-nav';
 import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
-import { ChevronDown, Shield, Loader2, Wallet, DollarSign } from 'lucide-react';
-import { doc, getDoc, setDoc, runTransaction, increment, arrayUnion, collection, addDoc } from 'firebase/firestore';
+import { Shield, Loader2, DollarSign } from 'lucide-react';
+import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getRankForSpend, RANKS } from '@/lib/service';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Notifications } from '@/components/notifications';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -54,17 +52,8 @@ function DesktopHeader({ isAdmin, userData }: { isAdmin: boolean, userData: User
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                      </div>
                     <div>
-                        <div className="text-xs text-muted-foreground">الرصيد الأساسي</div>
-                        <div className="font-bold font-mono">${(userData.balance ?? 0).toFixed(2)}</div>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-muted rounded-md">
-                        <Wallet className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                     <div>
-                        <div className="text-xs text-muted-foreground">رصيد الإعلانات</div>
-                        <div className="font-bold font-mono">${(userData.adBalance ?? 0).toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">رصيدك الحالي</div>
+                        <div className="font-bold font-mono text-lg">${(userData.balance ?? 0).toFixed(2)}</div>
                     </div>
                 </div>
              </div>
@@ -94,10 +83,12 @@ function NavItems() {
           <SidebarMenuSubContent>
             {item.children.map((child) => (
                <SidebarMenuItem key={child.href}>
-                <Link href={child.href || '#'} passHref>
-                  <SidebarMenuSubButton isActive={pathname === child.href}>
+                <Link href={child.href || '#'}>
+                  <SidebarMenuSubButton asChild isActive={pathname === child.href}>
+                    <span>
                       {child.icon && <child.icon className="w-4 h-4" />}
                       <span>{child.label}</span>
+                    </span>
                   </SidebarMenuSubButton>
                 </Link>
               </SidebarMenuItem>
@@ -108,20 +99,20 @@ function NavItems() {
     }
 
     return (
-        <Link href={item.href || '#'} passHref key={item.href}>
-          <SidebarMenuButton isActive={pathname === item.href}>
-            {Icon && <Icon className="h-4 w-4" />}
-            <span>{item.label}</span>
-          </SidebarMenuButton>
-        </Link>
+        <SidebarMenuItem key={item.href}>
+            <Link href={item.href || '#'}>
+                <SidebarMenuButton isActive={pathname === item.href}>
+                    {Icon && <Icon className="h-4 w-4" />}
+                    <span>{item.label}</span>
+                </SidebarMenuButton>
+            </Link>
+        </SidebarMenuItem>
     );
   };
 
   return (
     <>
-      {dashboardNavItems.map((item) => (
-        <SidebarMenuItem key={item.label}>{renderNavItem(item)}</SidebarMenuItem>
-      ))}
+      {dashboardNavItems.map((item) => renderNavItem(item))}
     </>
   );
 }
@@ -167,17 +158,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                     </SidebarHeader>
                     <SidebarContent>
-                      <div className="flex flex-col p-2 items-center gap-2 group-data-[collapsible=icon]:hidden">
+                      <div className="flex flex-col p-4 items-center gap-2 group-data-[collapsible=icon]:hidden">
                         <Avatar className="h-20 w-20 border-2 border-primary">
                           <AvatarImage src={userData.avatarUrl}/>
                           <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <p className="font-semibold">{userData.name}</p>
-                        <Badge>{rank.name}</Badge>
+                        <p className="font-semibold text-lg">{userData.name}</p>
+                        <Badge variant="secondary" className="px-4">{rank.name}</Badge>
                         {nextRank && (
                           <div className="w-full text-center mt-2">
-                             <Progress value={progressToNextRank} className="h-1"/>
-                             <p className="text-xs text-muted-foreground mt-1">أنفق <span className="font-bold text-foreground">${(nextRank.spend - userData.totalSpent).toFixed(2)}</span> للوصول لرتبة {nextRank.name}!</p>
+                             <Progress value={progressToNextRank} className="h-1.5"/>
+                             <p className="text-[10px] text-muted-foreground mt-2">أنفق <span className="font-bold text-foreground">${(nextRank.spend - userData.totalSpent).toFixed(2)}</span> للترقية إلى {nextRank.name}</p>
                           </div>
                         )}
                       </div>
@@ -190,7 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           <Link href="/admin/dashboard" passHref>
                               <SidebarMenuButton>
                                   <Shield className="h-4 w-4 text-primary" />
-                                  <span>لوحة تحكم المسؤول</span>
+                                  <span>إدارة المنصة</span>
                               </SidebarMenuButton>
                           </Link>
                       </SidebarFooter>

@@ -16,17 +16,15 @@ export type User = {
   rank: 'مستكشف نجمي' | 'قائد صاروخي' | 'سيد المجرة' | 'سيد كوني';
   role?: 'admin' | 'user';
   balance: number;
-  adBalance: number;
   totalSpent: number;
   apiKey: string;
   referralCode: string;
   referrerId: string | null;
   createdAt: string;
-  lastRewardClaimedAt?: string; // Date and time the daily reward was last claimed.
+  lastRewardClaimedAt?: string;
   affiliateEarnings?: number;
   referralsCount?: number;
   affiliateLevel?: 'برونزي' | 'فضي' | 'ذهبي' | 'ماسي';
-  favoriteServices?: string[]; // Array of service IDs
   notificationPreferences?: {
     newsletter?: boolean;
     orderUpdates?: boolean;
@@ -38,7 +36,7 @@ export type Service = {
   id: string;
   platform: string;
   category: string;
-  price: number; // Price per 1000
+  price: number; 
   min: number;
   max: number;
   description?: string;
@@ -78,55 +76,6 @@ export type NavItem = {
 export type NestedNavItem = NavItem & {
   children?: Omit<NestedNavItem, 'children'>[];
 }
-
-
-export type Campaign = {
-    id: string;
-    userId: string;
-    name: string;
-    platform: 'Google' | 'Facebook' | 'TikTok' | 'Snapchat';
-    goal: string;
-    adLink: string;
-    targetCountries: string;
-    targetCities?: string;
-    targetAge: string;
-    targetGender: 'الكل' | 'رجال' | 'نساء';
-    targetInterests?: string;
-    targetAudience: string;
-    startDate: string;
-    endDate?: string;
-    budget: number;
-    durationDays: number;
-    spend: number;
-    status: 'نشط' | 'متوقف' | 'مكتمل' | 'بانتظار المراجعة';
-    impressions: number;
-    clicks: number;
-    ctr: number;
-    cpc: number;
-    results: number;
-};
-
-export type AgencyAccount = {
-    id: string;
-    userId: string;
-    accountId: string;
-    accountName: string;
-    platform: 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
-    status: 'Active' | 'Suspended';
-    createdAt: string;
-    balance: number;
-};
-
-export type AgencyChargeRequest = {
-    id: string;
-    userId: string;
-    accountId: string;
-    accountName: string;
-    platform: 'Meta' | 'Google' | 'TikTok' | 'Snapchat';
-    amount: number;
-    requestDate: string;
-    status: 'معلق' | 'مقبول' | 'مرفوض';
-};
 
 export type Deposit = {
     id: string;
@@ -184,7 +133,6 @@ export type BlogPost = {
   publishDate: string;
 };
 
-
 export type SystemLog = {
     id: string;
     event: string;
@@ -195,7 +143,7 @@ export type SystemLog = {
 };
 
 export type DailyStat = {
-    id: string; // YYYY-MM-DD
+    id: string;
     totalRevenue: number;
     totalOrders: number;
     newUsers: number;

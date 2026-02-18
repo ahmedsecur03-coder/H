@@ -1,8 +1,9 @@
+
 'use client';
 import { useState } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, updateDoc, increment } from 'firebase/firestore';
+import { doc, setDoc, runTransaction, collection, query, where, getDocs, limit, increment } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,9 +45,6 @@ export default function SignupForm() {
 
       await runTransaction(firestore, async (transaction) => {
         let referrerId: string | null = null;
-        
-        // Always give a $5 bonus
-        const adBalanceBonus = 5; 
 
         if (referralCode) {
           const usersRef = collection(firestore, 'users');
@@ -55,7 +53,6 @@ export default function SignupForm() {
           if (!querySnapshot.empty) {
               const referrerDoc = querySnapshot.docs[0];
               referrerId = referrerDoc.id;
-              // Increment referrer's count within the transaction
               transaction.update(referrerDoc.ref, { referralsCount: increment(1) });
           }
         }
@@ -66,7 +63,6 @@ export default function SignupForm() {
           email: newUser.email!,
           avatarUrl: avatarUrl,
           balance: 0,
-          adBalance: adBalanceBonus, // Apply the bonus here for everyone
           totalSpent: 0,
           rank: 'مستكشف نجمي',
           role: 'user',
@@ -83,17 +79,14 @@ export default function SignupForm() {
         transaction.set(userDocRef, newUserDoc);
       });
 
-      // The dailyStats update is moved out of the user creation transaction.
-      // In a production app, this should be handled by a Cloud Function triggered on user creation.
-      // For this client-side prototype, we'll do it as a separate, non-critical write.
       const today = new Date().toISOString().split('T')[0];
       const dailyStatRef = doc(firestore, 'dailyStats', today);
       setDoc(dailyStatRef, { newUsers: increment(1) }, { merge: true }).catch(err => {
-        console.warn("Could not update daily new user stats. This is non-critical.", err);
+        console.warn("Could not update daily new user stats.", err);
       });
 
 
-      toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح وحصلت على 5$ رصيد إعلاني. سيتم توجيهك الآن.' });
+      toast({ title: 'أهلاً بك في حاجاتي!', description: 'تم إنشاء حسابك بنجاح. سيتم توجيهك الآن.' });
       router.push('/dashboard');
 
     } catch (error: any) {
@@ -104,11 +97,6 @@ export default function SignupForm() {
             description = 'كلمة المرور ضعيفة جداً. يجب أن تكون 6 أحرف على الأقل.';
         } else if (error.code === 'auth/invalid-email') {
             description = 'البريد الإلكتروني الذي أدخلته غير صالح.';
-        } else {
-             // For permission errors during the transaction
-            const permissionError = new FirestorePermissionError({ path: `users/${auth.currentUser?.uid}`, operation: 'create' });
-            errorEmitter.emit('permission-error', permissionError);
-            description = "فشل إنشاء ملف المستخدم بسبب الصلاحيات."
         }
         
         toast({
@@ -116,9 +104,6 @@ export default function SignupForm() {
             title: 'فشل إنشاء الحساب',
             description: description,
         });
-
-        console.error("Signup Error:", error);
-
     } finally {
         setLoading(false);
     }
@@ -133,42 +118,21 @@ export default function SignupForm() {
             <div className="text-center">
                  <h1 className="text-2xl font-headline font-bold">إنشاء حساب جديد</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                    انضم إلى منصة حاجاتي واحصل على 5$ رصيد إعلاني مجاني لبدء رحلتك!
+                    انضم إلى منصة حاجاتي وابدأ رحلة نمو حساباتك الآن!
                 </p>
             </div>
             <form onSubmit={handleSignup} className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="name">الاسم</Label>
-                    <Input 
-                        id="name" 
-                        required 
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        disabled={loading}
-                    />
+                    <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} disabled={loading} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">البريد الإلكتروني</Label>
-                    <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                    />
+                    <Input id="email" type="email" placeholder="name@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password">كلمة المرور</Label>
-                    <Input 
-                        id="password" 
-                        type="password" 
-                        required 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                        />
+                    <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} />
                 </div>
                  <div>
                     <Button type="submit" className="w-full" disabled={loading}>

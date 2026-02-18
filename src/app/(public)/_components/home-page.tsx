@@ -169,7 +169,7 @@ export default function HomePageClient() {
 
   const coreFeatures = [
     { key: "feat-1", icon: Zap, title: "تنفيذ فوري", description: "معظم خدماتنا تبدأ فور تأكيد الطلب، لضمان وصولك إلى القمة في أسرع وقت." },
-    { key: "feat-2", icon: Globe, title: "تغطية عالمية", description: "ندعم جميع منصات التواصل الاجتماعي الرئيسية بما في ذلك انستغرام وتيك توك وفيسبوك." },
+    { key: "feat-2", icon: Globe, title: "تغطية شاملة", description: "ندعم جميع منصات التواصل الاجتماعي الرئيسية: انستغرام، تيك توك، فيسبوك، والمزيد." },
     { key: "feat-3", icon: CheckCircle2, title: "جودة مضمونة", description: "نوفر خدمات عالية الجودة مع ضمانات حقيقية لإعادة التعبئة في حال حدوث أي نقص." },
 ];
 
@@ -188,7 +188,7 @@ export default function HomePageClient() {
                 transition={{ duration: 0.7, ease: "easeOut" }}
                 className="text-4xl md:text-6xl lg:text-8xl font-bold font-headline tracking-tighter animated-gradient-text bg-gradient-to-br from-foreground via-primary to-foreground"
             >
-                ضاعف تفاعلك بضغطة زر
+                سيطرة كاملة على تفاعلك
             </motion.h1>
              <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -196,7 +196,7 @@ export default function HomePageClient() {
                 transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
                 className="mt-6 text-lg md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             >
-                المنصة العربية الأسرع والأكثر موثوقية لخدمات الـ SMM. متابعون، مشاهدات، وتفاعل حقيقي لجميع منصاتك الرقمية.
+                المنصة العربية الأسرع والأكثر موثوقية لخدمات الـ SMM. متابعون، مشاهدات، وتفاعل حقيقي لجميع حساباتك الرقمية بضغطة زر واحدة.
             </motion.p>
              <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -308,7 +308,7 @@ export default function HomePageClient() {
                  <CardContent className="p-16">
                     <h2 className="text-4xl md:text-5xl font-bold font-headline mb-6">هل أنت جاهز لتغيير اللعبة؟</h2>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-                        انضم إلى مئات المسوقين والمؤثرين الذين يثقون في حاجاتي كشريكهم الاستراتيجي الأول للنمو الرقمي.
+                        انضم إلى آلاف المسوقين والمؤثرين الذين يثقون في حاجاتي كشريكهم الاستراتيجي الأول للنمو الرقمي.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                          <Button size="lg" asChild className="text-xl py-8 px-12 w-full sm:w-auto rounded-full font-bold shadow-2xl" disabled={isUserLoading}>

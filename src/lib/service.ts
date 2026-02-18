@@ -1,14 +1,14 @@
 
-import type { User, Order, BlogPost, Notification } from '@/lib/types';
-import { collection, doc, Firestore, Transaction, DocumentSnapshot, addDoc, runTransaction, getDoc, arrayUnion, increment } from 'firebase/firestore';
+import type { User, Order, Notification } from '@/lib/types';
+import { collection, doc, Firestore, Transaction, increment, arrayUnion } from 'firebase/firestore';
 import { Crown, Rocket, Star, Users } from 'lucide-react';
 
 
 export const RANKS: { name: User['rank']; spend: number; discount: number, reward: number, icon: React.ElementType }[] = [
   { name: 'مستكشف نجمي', spend: 0, discount: 0, reward: 0, icon: Star },
-  { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 5, icon: Rocket },
-  { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 20, icon: Users },
-  { name: 'سيد كوني', spend: 10000, discount: 10, reward: 50, icon: Crown },
+  { name: 'قائد صاروخي', spend: 500, discount: 2, reward: 0, icon: Rocket },
+  { name: 'سيد المجرة', spend: 2500, discount: 5, reward: 0, icon: Users },
+  { name: 'سيد كوني', spend: 10000, discount: 10, reward: 0, icon: Crown },
 ];
 
 export const AFFILIATE_LEVELS: { [key in Exclude<User['affiliateLevel'], undefined>]: { commission: number, nextLevel: User['affiliateLevel'] | null, requirement: number } } = {
@@ -17,9 +17,6 @@ export const AFFILIATE_LEVELS: { [key in Exclude<User['affiliateLevel'], undefin
     'ذهبي': { commission: 10, nextLevel: 'ماسي', requirement: 200 },
     'ماسي': { commission: 15, nextLevel: null, requirement: Infinity },
 };
-
-
-const MULTI_LEVEL_COMMISSIONS = [3, 2, 1, 0.5, 0.25]; // Level 2 gets 3%, Level 3 gets 2%, etc. up to 6 levels total.
 
 
 export function getRankForSpend(spend: number) {
@@ -33,23 +30,8 @@ export function getRankForSpend(spend: number) {
   return currentRank;
 }
 
-const PROFIT_MARGIN = 1.50; // 50% profit margin
-
 /**
  * Processes a new order within a Firestore transaction.
- * This function encapsulates the logic for:
- * - Updating user's balance and total spent.
- * - Checking for rank promotion and applying rewards.
- * - Creating the order document.
- * 
- * NOTE: Affiliate commissions have been moved to the deposit approval logic.
- * This function now only handles order-related finances.
- * 
- * @param transaction The Firestore transaction object.
- * @param firestore The Firestore instance.
- * @param userId The ID of the user placing the order.
- * @param orderData The data for the new order.
- * @returns A promise that resolves with an object containing the new orderId and an optional promotion message.
  */
 export async function processOrderInTransaction(
     transaction: Transaction,
@@ -66,7 +48,6 @@ export async function processOrderInTransaction(
 
     const userData = userDoc.data() as User;
     
-    // Recalculate cost with discount on the server to prevent manipulation
     const rank = getRankForSpend(userData.totalSpent || 0);
     const discount = rank.discount / 100;
     const finalCost = orderData.charge * (1 - discount);
@@ -75,7 +56,6 @@ export async function processOrderInTransaction(
         throw new Error("رصيدك غير كافٍ لإتمام هذا الطلب.");
     }
 
-    // Use the server-calculated cost
     orderData.charge = finalCost;
     
     const newBalance = userData.balance - finalCost;
@@ -92,33 +72,27 @@ export async function processOrderInTransaction(
     
     if (newRank.name !== oldRank.name) {
         userUpdates.rank = newRank.name;
-        if (newRank.reward > 0) {
-            userUpdates.adBalance = (userData.adBalance || 0) + newRank.reward;
-            promotion = {
-                title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
-                description: `لقد حصلت على مكافأة ${newRank.reward}$ في رصيد إعلاناتك!`,
-            };
-            // Add a notification for the rank promotion
-            const rankUpNotification: Notification = {
-                id: `rank-${newRank.name}-${Date.now()}`,
-                message: `تهانينا! لقد تمت ترقيتك إلى رتبة ${newRank.name} وحصلت على ${newRank.reward}$ مكافأة.`,
-                type: 'success',
-                read: false,
-                createdAt: new Date().toISOString(),
-                href: '/dashboard/profile'
-            };
-            userUpdates.notifications = arrayUnion(rankUpNotification);
-        }
+        promotion = {
+            title: `🎉 ترقية! أهلاً بك في رتبة ${newRank.name}`,
+            description: `لقد تمت ترقيتك وحصلت على خصم إضافي ${newRank.discount}% على جميع الخدمات!`,
+        };
+        const rankUpNotification: Notification = {
+            id: `rank-${newRank.name}-${Date.now()}`,
+            message: `تهانينا! لقد تمت ترقيتك إلى رتبة ${newRank.name} وحصلت على خصم ${newRank.discount}% دائم.`,
+            type: 'success',
+            read: false,
+            createdAt: new Date().toISOString(),
+            href: '/dashboard/profile'
+        };
+        userUpdates.notifications = arrayUnion(rankUpNotification);
     }
     
     transaction.update(userRef, userUpdates);
 
-    // Create the new order document
     const newOrderRef = doc(collection(firestore, `users/${userId}/orders`));
     transaction.set(newOrderRef, orderData);
 
-    // Aggregate daily stats
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
     const dailyStatRef = doc(firestore, 'dailyStats', today);
     transaction.set(dailyStatRef, {
         totalRevenue: increment(finalCost),
