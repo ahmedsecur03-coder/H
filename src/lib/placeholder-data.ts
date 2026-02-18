@@ -7,7 +7,6 @@ import {
   ListOrdered,
   DollarSign,
   Users,
-  Megaphone,
   MessageSquare,
   Settings,
   Banknote,
@@ -17,22 +16,15 @@ import {
   Code2,
   Rocket,
   PenSquare,
-  Briefcase,
-  Palette,
   Shield,
-  History,
   Home,
   HandCoins,
-  AppWindow,
   UserCircle,
   Info,
   Terminal,
-  WalletCards,
   ShoppingBag,
   ServerCrash,
 } from 'lucide-react';
-import { PLATFORM_ICONS } from './icon-data';
-
 
 export const publicNavItems: NestedNavItem[] = [
     { href: '/', label: 'الرئيسية', icon: Home },
@@ -40,9 +32,8 @@ export const publicNavItems: NestedNavItem[] = [
       label: 'الخدمات',
       icon: Package,
       children: [
-        { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Users },
-        { href: '/dashboard/campaigns/new', label: 'الحملات الإعلانية', description: 'إدارة حملاتك الإعلانية على جوجل، ميتا، وتيك توك.', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات إعلانية وكالة', description: 'تجاوز قيود الحسابات بحسابات موثوقة ذات حدود إنفاق عالية.', icon: Briefcase },
+        { href: '/services', label: 'خدمات SMM', description: 'زيادة المتابعين، الإعجابات، المشاهدات لجميع المنصات.', icon: Rocket },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي', description: 'أضف مئات الطلبات دفعة واحدة بسهولة.', icon: Package },
       ]
     },
     { href: '/about', label: 'من نحن', icon: Info },
@@ -52,14 +43,12 @@ export const publicNavItems: NestedNavItem[] = [
 export const dashboardNavItems: NestedNavItem[] = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
   { 
-    label: 'خدمات المنصة',
+    label: 'خدمات SMM',
     icon: ShoppingBag,
     children: [
-        { href: '/dashboard/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
-        { href: '/dashboard/agency-accounts', label: 'حسابات الوكالة', icon: Briefcase },
-        { href: '/dashboard/services', label: 'كل خدمات SMM', icon: Rocket },
-        { href: '/dashboard/mass-order', label: 'طلب جماعي SMM', icon: Package },
-        { href: '/dashboard/orders', label: 'سجل طلبات SMM', icon: ListOrdered },
+        { href: '/dashboard/services', label: 'قائمة الخدمات', icon: Rocket },
+        { href: '/dashboard/mass-order', label: 'طلب جماعي', icon: Package },
+        { href: '/dashboard/orders', label: 'سجل الطلبات', icon: ListOrdered },
     ]
   },
   { href: '/dashboard/add-funds', label: 'شحن الرصيد', icon: DollarSign },
@@ -70,7 +59,7 @@ export const dashboardNavItems: NestedNavItem[] = [
       icon: UserCircle,
       children: [
         { href: '/dashboard/profile', label: 'الملف الشخصي', icon: UserCircle },
-        { href: '/dashboard/api', label: 'API', icon: Code2 },
+        { href: '/dashboard/api', label: 'واجهة API', icon: Code2 },
         { href: '/dashboard/settings', label: 'الإعدادات', icon: Settings },
       ]
    },
@@ -86,20 +75,12 @@ export const adminNavItems: NestedNavItem[] = [
         children: [
            { href: '/admin/deposits', label: 'الإيداعات', icon: Banknote },
            { href: '/admin/withdrawals', label: 'السحوبات', icon: HandCoins },
-           { href: '/admin/agency-charges', label: 'شحن حسابات الوكالة', icon: WalletCards },
         ]
     },
+    { href: '/admin/orders', label: 'إدارة الطلبات', icon: ListOrdered },
+    { href: '/admin/services', label: 'إدارة الخدمات', icon: Package },
     { 
-        label: 'الطلبات والحملات',
-        icon: ShoppingCart,
-        children: [
-           { href: '/admin/orders', label: 'طلبات SMM', icon: ListOrdered },
-           { href: '/admin/campaigns', label: 'الحملات الإعلانية', icon: Megaphone },
-        ]
-    },
-    { href: '/admin/services', label: 'الخدمات', icon: Package },
-    { 
-        label: 'إدارة المحتوى',
+        label: 'المحتوى',
         icon: PenSquare,
         children: [
            { href: '/admin/blog', label: 'المدونة', icon: BookOpen },

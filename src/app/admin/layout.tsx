@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, Shield, ChevronDown, Loader2 } from 'lucide-react';
+import { Bell, Shield, Loader2 } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -12,7 +12,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
-  useSidebar,
   SidebarMenuSub,
   SidebarMenuSubTrigger,
   SidebarMenuSubContent,
@@ -33,18 +32,15 @@ import { UserNav } from '@/app/dashboard/_components/user-nav';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter, usePathname, redirect } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { doc, collectionGroup, query, where, getDocs, getCountFromServer } from 'firebase/firestore';
-import type { User, NestedNavItem, Deposit, Withdrawal, Campaign, Ticket } from '@/lib/types';
-import { Notifications } from '@/components/notifications';
+import { doc, collectionGroup, query, getDocs } from 'firebase/firestore';
+import type { User, NestedNavItem } from '@/lib/types';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { MobileHeader } from '@/app/dashboard/_components/mobile-header';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 
 function AdminNotifications() {
     const firestore = useFirestore();
-    const [counts, setCounts] = useState({ deposits: 0, withdrawals: 0, campaigns: 0, tickets: 0 });
+    const [counts, setCounts] = useState({ deposits: 0, withdrawals: 0, tickets: 0 });
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -53,51 +49,43 @@ function AdminNotifications() {
         const fetchCounts = async () => {
             setIsLoading(true);
             try {
-                // Fetch all documents and count them on the client to avoid index issues
                 const depositsQuery = query(collectionGroup(firestore, 'deposits'));
                 const withdrawalsQuery = query(collectionGroup(firestore, 'withdrawals'));
-                const campaignsQuery = query(collectionGroup(firestore, 'campaigns'));
                 const ticketsQuery = query(collectionGroup(firestore, 'tickets'));
                 
-                const [depositsSnap, withdrawalsSnap, campaignsSnap, ticketsSnap] = await Promise.all([
+                const [depositsSnap, withdrawalsSnap, ticketsSnap] = await Promise.all([
                     getDocs(depositsQuery),
                     getDocs(withdrawalsQuery),
-                    getDocs(campaignsQuery),
                     getDocs(ticketsQuery),
                 ]);
 
                 const pendingDeposits = depositsSnap.docs.filter(doc => doc.data().status === 'معلق').length;
                 const pendingWithdrawals = withdrawalsSnap.docs.filter(doc => doc.data().status === 'معلق').length;
-                const pendingCampaigns = campaignsSnap.docs.filter(doc => doc.data().status === 'بانتظار المراجعة').length;
                 const openTickets = ticketsSnap.docs.filter(doc => doc.data().status !== 'مغلقة').length;
 
                 setCounts({
                     deposits: pendingDeposits,
                     withdrawals: pendingWithdrawals,
-                    campaigns: pendingCampaigns,
                     tickets: openTickets,
                 });
             } catch (error) {
-                console.error("Failed to fetch admin notification counts:", error);
+                console.error("Failed to fetch admin counts:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchCounts();
-        const interval = setInterval(fetchCounts, 60000); // Refresh every minute
-
+        const interval = setInterval(fetchCounts, 60000);
         return () => clearInterval(interval);
-
     }, [firestore]);
     
     const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
 
     const notificationItems = [
-        { key: 'deposits', count: counts.deposits, label: 'طلبات إيداع معلقة', href: '/admin/deposits' },
-        { key: 'withdrawals', count: counts.withdrawals, label: 'طلبات سحب معلقة', href: '/admin/withdrawals' },
-        { key: 'campaigns', count: counts.campaigns, label: 'حملات بانتظار المراجعة', href: '/admin/campaigns' },
-        { key: 'tickets', count: counts.tickets, label: 'تذاكر دعم نشطة', href: '/admin/support' },
+        { key: 'deposits', count: counts.deposits, label: 'إيداعات معلقة', href: '/admin/deposits' },
+        { key: 'withdrawals', count: counts.withdrawals, label: 'سحوبات معلقة', href: '/admin/withdrawals' },
+        { key: 'tickets', count: counts.tickets, label: 'تذاكر نشطة', href: '/dashboard/support' },
     ].filter(item => item.count > 0);
 
     return (
@@ -106,32 +94,28 @@ function AdminNotifications() {
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
                     {totalCount > 0 && (
-                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive flex items-center justify-center text-xs text-destructive-foreground">
+                        <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive flex items-center justify-center text-xs text-destructive-foreground font-bold">
                             {totalCount}
                         </div>
                     )}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-80" align="end">
-                <DropdownMenuLabel>إشعارات المسؤول</DropdownMenuLabel>
+                <DropdownMenuLabel>طلبات الإدارة</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {isLoading ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                    </div>
+                    <div className="p-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></div>
                 ) : notificationItems.length > 0 ? (
                     notificationItems.map(item => (
                         <DropdownMenuItem key={item.key} asChild>
-                            <Link href={item.href} className="flex justify-between items-center">
+                            <Link href={item.href} className="flex justify-between items-center cursor-pointer">
                                 <span>{item.label}</span>
                                 <span className="font-bold text-primary">{item.count}</span>
                             </Link>
                         </DropdownMenuItem>
                     ))
                 ) : (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                        لا توجد إشعارات جديدة.
-                    </div>
+                    <div className="p-4 text-center text-sm text-muted-foreground">لا توجد طلبات معلقة.</div>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
@@ -210,11 +194,7 @@ function AdminNavItems() {
 }
 
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
@@ -241,40 +221,18 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full flex-col bg-muted/40 md:flex-row">
-        {/* Desktop Sidebar */}
         <Sidebar side="right" className="hidden md:flex">
             <SidebarHeader>
               <div className="flex h-16 items-center justify-between px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                   <Logo className="group-data-[collapsible=icon]:hidden" />
-                  <div className="hidden group-data-[collapsible=icon]:block">
-                  <Logo/>
-                  </div>
+                  <div className="hidden group-data-[collapsible=icon]:block"><Logo/></div>
               </div>
             </SidebarHeader>
             <SidebarContent>
-            <SidebarMenu>
-                <AdminNavItems />
-            </SidebarMenu>
+            <SidebarMenu><AdminNavItems /></SidebarMenu>
             </SidebarContent>
         </Sidebar>
         
-        {/* Mobile Sidebar (Sheet) */}
-        <Sheet>
-            <Sidebar>
-                <SheetContent side="right" className="flex flex-col p-0">
-                     <SheetHeader className="border-b p-4">
-                      <SheetTitle><Logo /></SheetTitle>
-                      <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
-                    </SheetHeader>
-                    <SidebarContent>
-                        <SidebarMenu>
-                            <AdminNavItems />
-                        </SidebarMenu>
-                    </SidebarContent>
-                </SheetContent>
-            </Sidebar>
-        </Sheet>
-
         <div className="flex flex-1 flex-col">
             <AdminHeader userData={userData} />
             <main className="flex-1 p-4 sm:px-6 sm:py-6 overflow-auto">

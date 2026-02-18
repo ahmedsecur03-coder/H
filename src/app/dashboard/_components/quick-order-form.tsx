@@ -1,8 +1,8 @@
 
 'use client';
 import { useState, useMemo, useEffect } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { runTransaction, collection, doc, query, getDocs } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
+import { runTransaction, doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,26 +14,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Info, Rocket, ChevronLeft, Sparkles, AlertTriangle, ChevronsRight, Timer, Gauge, TrendingDown, ShieldCheck, Megaphone, Briefcase } from 'lucide-react';
-import type { Service, Order, User as UserType, ServicePrice } from '@/lib/types';
+import { Loader2, Info, Rocket, Timer, Gauge, TrendingDown, ShieldCheck, ListOrdered, Package } from 'lucide-react';
+import type { Service, Order, User as UserType } from '@/lib/types';
 import { getRankForSpend, processOrderInTransaction } from '@/lib/service';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useServices } from '@/hooks/useServices';
-import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 function ServiceDescription({ service }: { service: Service }) {
     if (!service) return null;
 
     const details = [
-        { label: "وقت البدء", value: service.startTime, icon: Timer },
-        { label: "السرعة", value: service.speed, icon: Gauge },
-        { label: "معدل النقصان", value: service.dropRate, icon: TrendingDown },
-        { label: "الضمان", value: "متوفر", icon: ShieldCheck },
-        { label: "متوسط الوقت", value: service.avgTime, icon: ChevronsRight },
+        { label: "وقت البدء", value: service.startTime || "فوري", icon: Timer },
+        { label: "السرعة", value: service.speed || "سريع", icon: Gauge },
+        { label: "معدل النقص", value: service.dropRate || "0-1%", icon: TrendingDown },
+        { label: "الضمان", value: service.guarantee ? "متوفر" : "لا يوجد", icon: ShieldCheck },
     ];
 
     return (
@@ -49,7 +47,6 @@ function ServiceDescription({ service }: { service: Service }) {
              )}
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                 {details.map(detail => {
-                    if (!detail.value) return null;
                     const Icon = detail.icon;
                     return (
                         <div key={detail.label} className="flex justify-between items-center text-xs">
@@ -132,7 +129,6 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
         }
 
         setIsSubmitting(true);
-        let promotionToast: { title: string; description: string } | null = null;
         try {
              await runTransaction(firestore, async (transaction) => {
                 const orderData: Omit<Order, 'id'> = {
@@ -145,30 +141,15 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     orderDate: new Date().toISOString(),
                     status: 'قيد التنفيذ',
                 };
-                const result = await processOrderInTransaction(
-                    transaction,
-                    firestore,
-                    user.uid,
-                    orderData,
-                );
-                if (result.promotion) {
-                    promotionToast = result.promotion;
-                }
+                await processOrderInTransaction(transaction, firestore, user.uid, orderData);
              });
              toast({ title: 'تم تقديم الطلب بنجاح!', description: 'طلبك الآن قيد التنفيذ.' });
-             if (promotionToast) {
-                setTimeout(() => toast(promotionToast!), 1000);
-             }
              setLink('');
              setQuantity('');
 
         } catch (error: any) {
-             if (error.message.includes("رصيدك") || error.message.includes("المستخدم")) {
-                 toast({ variant: "destructive", title: 'فشل تقديم الطلب', description: error.message });
-             } else {
-                 const permissionError = new FirestorePermissionError({ path: `users/${user.uid}`, operation: 'update' });
-                 errorEmitter.emit('permission-error', permissionError);
-             }
+             const permissionError = new FirestorePermissionError({ path: `users/${user.uid}`, operation: 'update' });
+             errorEmitter.emit('permission-error', permissionError);
         } finally {
             setIsSubmitting(false);
         }
@@ -181,19 +162,19 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
     };
 
     return (
-        <Card className="overflow-hidden flex flex-col">
+        <Card className="overflow-hidden flex flex-col border-primary/10">
             <div className="p-6 bg-gradient-to-br from-primary/10 via-background to-background flex items-center justify-between">
                 <div>
-                    <CardTitle className="font-headline text-2xl">مركز العمليات</CardTitle>
-                    <CardDescription>ابدأ طلبًا جديدًا أو انتقل إلى أقسامك الهامة.</CardDescription>
+                    <CardTitle className="font-headline text-2xl">طلب خدمة سريعة</CardTitle>
+                    <CardDescription>اختر الخدمة المناسبة لحسابك وابدأ النمو فوراً.</CardDescription>
                 </div>
-                <Rocket className="h-10 w-10 text-primary" />
+                <Rocket className="h-10 w-10 text-primary animate-pulse" />
             </div>
 
             <form onSubmit={handleSubmit} className="flex-grow flex flex-col">
                 <CardContent className="space-y-4 pt-6 flex-grow">
                     <Select onValueChange={setPlatform} disabled={servicesLoading} value={platform}>
-                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري التحميل...' : '1. اختر المنصة'} /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={servicesLoading ? 'جاري تحميل المنصات...' : '1. اختر المنصة'} /></SelectTrigger>
                         <SelectContent>
                             {platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                         </SelectContent>
@@ -237,24 +218,19 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
                     <AnimatePresence>
                     {serviceId && (
                          <motion.div key="order-inputs" initial="hidden" animate="visible" exit="exit" variants={cardVariants} className="space-y-4 pt-4 border-t">
-                            <Input placeholder="4. أدخل الرابط" value={link} onChange={e => setLink(e.target.value)} required />
-                            <Input type="number" placeholder={`5. أدخل الكمية (بين ${selectedService?.min} و ${selectedService?.max})`} value={quantity} onChange={e => setQuantity(e.target.value)} required min={selectedService?.min} max={selectedService?.max}/>
+                            <Input placeholder="4. أدخل الرابط (رابط البروفايل أو المنشور)" value={link} onChange={e => setLink(e.target.value)} required />
+                            <Input type="number" placeholder={`5. أدخل الكمية (الحد الأدنى: ${selectedService?.min})`} value={quantity} onChange={e => setQuantity(e.target.value)} required min={selectedService?.min} max={selectedService?.max}/>
                         </motion.div>
                     )}
                     </AnimatePresence>
                     
                     <AnimatePresence>
                     {selectedService && quantity && (
-                        <motion.div key="order-cost" initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center">
-                            <p className="text-sm text-muted-foreground">التكلفة النهائية</p>
-                            {discountPercentage > 0 && (
-                                <p className="text-xs text-muted-foreground line-through">
-                                    التكلفة الأصلية: ${orderCost.base.toFixed(4)}
-                                </p>
-                            )}
-                            <p className="text-2xl font-bold font-mono">${orderCost.final.toFixed(4)}</p>
+                        <motion.div key="order-cost" initial={{ opacity: 0 }} animate={{ opacity: 1}} className="p-4 bg-muted rounded-md text-center border-2 border-primary/20">
+                            <p className="text-sm text-muted-foreground">التكلفة الإجمالية</p>
+                            <p className="text-3xl font-bold font-mono text-primary">${orderCost.final.toFixed(4)}</p>
                              {discountPercentage > 0 && (
-                                <p className="text-xs text-primary mt-1 font-semibold">
+                                <p className="text-[10px] text-green-500 mt-1 font-bold">
                                     تم تطبيق خصم رتبة {rank.name} بنسبة {rank.discount}%
                                 </p>
                             )}
@@ -265,15 +241,15 @@ export function QuickOrderForm({ user, userData }: { user: any, userData: UserTy
 
                 <CardFooter className="mt-auto flex-col items-stretch gap-4 pt-6">
                     {serviceId && (
-                        <Button type="submit" className="w-full" disabled={isSubmitting || servicesLoading}>
-                            {isSubmitting ? <Loader2 className="animate-spin me-2" /> : null}
-                            إرسال الطلب
+                        <Button type="submit" className="w-full text-lg py-6" disabled={isSubmitting || servicesLoading}>
+                            {isSubmitting ? <Loader2 className="animate-spin me-2" /> : <Package className="me-2 h-5 w-5" />}
+                            تأكيد الطلب
                         </Button>
                     )}
                      <Separator />
                     <div className="grid grid-cols-2 gap-2">
-                         <Button asChild variant="outline"><Link href="/dashboard/campaigns"><Megaphone className="ml-2 h-4 w-4" />إدارة الحملات</Link></Button>
-                        <Button asChild variant="outline"><Link href="/dashboard/agency-accounts"><Briefcase className="ml-2 h-4 w-4" />حسابات الوكالة</Link></Button>
+                         <Button asChild variant="outline" size="sm"><Link href="/dashboard/orders"><ListOrdered className="ml-2 h-4 w-4" />سجل الطلبات</Link></Button>
+                        <Button asChild variant="outline" size="sm"><Link href="/dashboard/mass-order"><Package className="ml-2 h-4 w-4" />طلب جماعي</Link></Button>
                     </div>
                 </CardFooter>
             </form>

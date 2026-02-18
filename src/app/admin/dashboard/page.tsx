@@ -13,13 +13,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Bar, ComposedChart } from 'recharts';
+import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, ComposedChart } from 'recharts';
 import { DollarSign, Users, ShoppingCart, Activity } from 'lucide-react';
 import { useFirestore } from '@/firebase';
-import { collection, query, getCountFromServer, Timestamp, orderBy, limit, getDocs, collectionGroup, where } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
+import { collection, query, getDocs, collectionGroup, where } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { User, Order, Ticket, DailyStat } from '@/lib/types';
+import type { DailyStat } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -82,21 +82,20 @@ export default function AdminDashboardPage() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // --- Efficient stat fetching ---
                 const usersCol = collection(firestore, 'users');
                 const ordersColGroup = collectionGroup(firestore, 'orders');
                 const ticketsColGroup = collectionGroup(firestore, 'tickets');
 
-                const usersSnapshot = await getDocs(usersCol);
-                const ordersSnapshot = await getDocs(ordersColGroup);
-                const ticketsSnapshot = await getDocs(ticketsColGroup);
+                const [usersSnapshot, ordersSnapshot, ticketsSnapshot] = await Promise.all([
+                    getDocs(usersCol),
+                    getDocs(ordersColGroup),
+                    getDocs(ticketsColGroup)
+                ]);
 
                 const totalUsersCount = usersSnapshot.size;
                 const totalOrdersCount = ordersSnapshot.size;
                 const openTicketsCount = ticketsSnapshot.docs.filter(doc => doc.data().status !== 'مغلقة').length;
 
-                
-                // Fetch last 7 days of aggregated stats for the chart and totals
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
                 const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
@@ -105,11 +104,9 @@ export default function AdminDashboardPage() {
                 const dailyStatsSnapshot = await getDocs(dailyStatsQuery);
                 const last7DaysStats = dailyStatsSnapshot.docs.map(doc => doc.data() as DailyStat);
 
-                // Calculate totals from aggregated data to save reads
                 const totalRevenue = last7DaysStats.reduce((acc, stat) => acc + stat.totalRevenue, 0);
                 const newUsersLast7Days = last7DaysStats.reduce((acc, stat) => acc + stat.newUsers, 0);
 
-                // --- Set State ---
                 setStats({
                     totalRevenue: totalRevenue,
                     totalUsers: totalUsersCount,
@@ -124,8 +121,8 @@ export default function AdminDashboardPage() {
                 console.error("Error fetching dashboard data:", error);
                 toast({
                     variant: "destructive",
-                    title: "خطأ في جلب البيانات",
-                    description: "فشل تحميل بيانات لوحة التحكم. قد تكون بسبب الصلاحيات.",
+                    title: "خطأ",
+                    description: "فشل تحميل بيانات الإدارة.",
                 });
             } finally {
                 setIsLoading(false);
@@ -139,10 +136,7 @@ export default function AdminDashboardPage() {
   if(isLoading) {
     return (
         <div className="space-y-6 pb-8">
-            <div>
-                <Skeleton className="h-8 w-1/3" />
-                <Skeleton className="h-5 w-1/2 mt-2" />
-            </div>
+            <Skeleton className="h-32 w-full" />
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {Array.from({length: 4}).map((_,i) => <Skeleton key={i} className="h-32" />)}
             </div>
@@ -155,14 +149,14 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6 pb-8">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight font-headline">لوحة تحكم المسؤول</h1>
-            <p className="text-muted-foreground">نظرة عامة وشاملة على أداء منصة حاجاتي.</p>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">لوحة التحكم الإدارية</h1>
+            <p className="text-muted-foreground">نظرة عامة وشاملة على أداء منصة حاجاتي للـ SMM.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">إجمالي الإيرادات (آخر 7 أيام)</CardTitle>
+                    <CardTitle className="text-sm font-medium">الإيرادات (آخر 7 أيام)</CardTitle>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -176,7 +170,7 @@ export default function AdminDashboardPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-                    <p className="text-xs text-muted-foreground">+{stats.newUsersLast7Days.toLocaleString()} في آخر 7 أيام</p>
+                    <p className="text-xs text-muted-foreground">+{stats.newUsersLast7Days.toLocaleString()} مؤخراً</p>
                 </CardContent>
             </Card>
              <Card>
@@ -190,7 +184,7 @@ export default function AdminDashboardPage() {
             </Card>
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">تذاكر الدعم المفتوحة</CardTitle>
+                    <CardTitle className="text-sm font-medium">التذاكر النشطة</CardTitle>
                     <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -201,19 +195,14 @@ export default function AdminDashboardPage() {
         
         <Card>
             <CardHeader>
-                <CardTitle>نظرة عامة على الأداء</CardTitle>
+                <CardTitle>تحليل النمو</CardTitle>
                  <CardDescription>الإيرادات والمستخدمون الجدد في آخر 7 أيام.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ChartContainer config={chartConfig} className="h-96 w-full">
                     <ComposedChart
                         data={performanceData}
-                        margin={{
-                            top: 5,
-                            right: 10,
-                            left: 10,
-                            bottom: 5,
-                        }}
+                        margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis
@@ -228,9 +217,7 @@ export default function AdminDashboardPage() {
                         <Tooltip
                             content={<ChartTooltipContent
                                 formatter={(value, name) => {
-                                    if (name === 'revenue') {
-                                        return `$${(value as number).toFixed(2)}`;
-                                    }
+                                    if (name === 'revenue') return `$${(value as number).toFixed(2)}`;
                                     return value.toLocaleString();
                                 }}
                                 indicator="dot" 
