@@ -1,20 +1,20 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { runTransaction, doc, collection, addDoc } from 'firebase/firestore';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, DollarSign, Send, Copy, AlertTriangle, Info } from 'lucide-react';
-import type { User as UserType, Deposit } from '@/lib/types';
+import { Loader2, DollarSign, Send, AlertTriangle, Info } from 'lucide-react';
+import type { User as UserType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle } from '@/components/ui/alert';
 import { CopyButton } from '../affiliate/_components/copy-button';
+import React, { useState } from 'react';
 
 function AddFundsSkeleton() {
     return (
@@ -35,7 +35,7 @@ function AddFundsSkeleton() {
     )
 }
 
-function DepositForm({ method, paymentInfo, userData }: { method: 'فودافون كاش' | 'Binance Pay', paymentInfo: string, userData: UserType }) {
+function DepositForm({ method, paymentInfo }: { method: 'فودافون كاش' | 'Binance Pay', paymentInfo: string }) {
     const { user: authUser } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -43,7 +43,7 @@ function DepositForm({ method, paymentInfo, userData }: { method: 'فودافو�
     
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const form = e.currentTarget; // Save a direct reference to the form
+        const form = e.currentTarget;
         const formData = new FormData(form);
         const amount = parseFloat(formData.get('amount') as string);
         const transactionId = formData.get('transactionId') as string;
@@ -54,15 +54,10 @@ function DepositForm({ method, paymentInfo, userData }: { method: 'فودافو�
         }
 
         setIsSubmitting(true);
-        
-        // Simulate a short delay for user experience
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         toast({ title: 'تم استلام طلب الإيداع', description: 'سيتم مراجعة طلبك وإضافة الرصيد إلى حسابك قريباً.' });
-        if (form) {
-            form.reset();
-        }
-        
+        form.reset();
         setIsSubmitting(false);
     };
 
@@ -129,7 +124,7 @@ export default function AddFundsPage() {
             <div>
                 <h1 className="text-3xl font-bold tracking-tight font-headline">شحن الرصيد</h1>
                 <p className="text-muted-foreground">
-                    اختر طريقة الدفع المناسبة لك واتبع التعليمات لشحن رصيدك.
+                    اختر طريقة الدفع المناسبة لك واتبع التعليمات لشحن رصيدك للبدء في طلب خدمات SMM.
                 </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -142,10 +137,10 @@ export default function AddFundsPage() {
                         <Card className="mt-4">
                             <CardContent className="p-6">
                                 <TabsContent value="vodafone">
-                                    <DepositForm method="فودافون كاش" paymentInfo={vodafoneNumber} userData={userData} />
+                                    <DepositForm method="فودافون كاش" paymentInfo={vodafoneNumber} />
                                 </TabsContent>
                                 <TabsContent value="binance">
-                                    <DepositForm method="Binance Pay" paymentInfo={binanceId} userData={userData} />
+                                    <DepositForm method="Binance Pay" paymentInfo={binanceId} />
                                 </TabsContent>
                             </CardContent>
                         </Card>
@@ -173,8 +168,4 @@ export default function AddFundsPage() {
             </div>
         </div>
     );
-
-    
 }
-
-    

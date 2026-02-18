@@ -4,7 +4,7 @@
 import Logo from "@/components/logo"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { PanelLeft, Shield, ChevronDown, DollarSign, Wallet } from "lucide-react"
+import { PanelLeft, Shield, ChevronDown, DollarSign } from "lucide-react"
 import Link from "next/link";
 import { dashboardNavItems } from "@/lib/placeholder-data";
 import { usePathname } from "next/navigation";
@@ -27,7 +27,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
         id: userData.id
     };
 
-    const renderNavItem = (item: NestedNavItem, isSubItem = false) => {
+    const renderNavItem = (item: NestedNavItem) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
 
@@ -57,7 +57,7 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                     className={cn(
                         'flex items-center gap-4 rounded-md p-2',
                         isActive ? 'bg-muted font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground',
-                        isSubItem ? 'text-base' : 'text-lg font-medium'
+                        'text-lg font-medium'
                     )}
                 >
                     <Icon className="h-5 w-5" />
@@ -82,14 +82,15 @@ export function MobileHeader({ isAdmin, userData }: { isAdmin: boolean, userData
                 <SheetDescription className="sr-only">Main mobile navigation menu</SheetDescription>
               </SheetHeader>
 
-              <div className="grid grid-cols-2 gap-4 p-4">
-                <div className="flex-1">
-                    <div className="text-xs text-muted-foreground">الرصيد الأساسي</div>
-                    <div className="font-bold font-mono text-lg">${(userData.balance ?? 0).toFixed(2)}</div>
-                </div>
-                 <div className="flex-1">
-                    <div className="text-xs text-muted-foreground">رصيد الإعلانات</div>
-                    <div className="font-bold font-mono text-lg">${(userData.adBalance ?? 0).toFixed(2)}</div>
+              <div className="p-4">
+                <div className="flex items-center gap-2">
+                     <div className="p-2 bg-muted rounded-md">
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                     </div>
+                    <div>
+                        <div className="text-xs text-muted-foreground">رصيدك الحالي</div>
+                        <div className="font-bold font-mono text-lg">${(userData.balance ?? 0).toFixed(2)}</div>
+                    </div>
                 </div>
               </div>
 

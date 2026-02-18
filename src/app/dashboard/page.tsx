@@ -34,7 +34,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { DailyRewardCard } from './_components/daily-reward-card';
 
 
 function DashboardSkeleton() {
@@ -66,7 +65,7 @@ export default function DashboardPage() {
     const firestore = useFirestore();
     
     const userDocRef = useMemoFirebase(() => authUser ? doc(firestore, 'users', authUser.uid) : null, [authUser, firestore]);
-    const { data: userData, isLoading: isUserDataLoading, forceDocUpdate } = useDoc<UserType>(userDocRef);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<UserType>(userDocRef);
 
     const ordersQuery = useMemoFirebase(() => authUser ? query(collection(firestore, `users/${authUser.uid}/orders`), orderBy('orderDate', 'desc')) : null, [authUser, firestore]);
     const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
@@ -140,7 +139,7 @@ export default function DashboardPage() {
                         <CardContent className="text-center">
                              <rank.icon className="h-16 w-16 text-primary mx-auto" />
                              <h3 className="text-2xl font-bold mt-2">{rank.name}</h3>
-                             <p className="text-sm text-primary font-medium">خصم {rank.discount}% دائم</p>
+                             <p className="text-sm text-primary font-medium">خصم {rank.discount}% دائم على جميع الخدمات</p>
                              {nextRank && (
                                 <div className="mt-4 text-xs">
                                      <Progress value={progressToNextRank} className="h-1.5" />
@@ -149,7 +148,6 @@ export default function DashboardPage() {
                              )}
                         </CardContent>
                     </Card>
-                    <DailyRewardCard user={userData} onClaim={forceDocUpdate} />
                 </div>
             </div>
 
