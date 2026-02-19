@@ -1,15 +1,15 @@
 
 'use client';
 
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { doc, collection, addDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, DollarSign, Send, AlertTriangle, Info } from 'lucide-react';
-import type { User as UserType } from '@/lib/types';
+import type { User as UserType, Deposit } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle } from '@/components/ui/alert';
@@ -35,7 +35,7 @@ function AddFundsSkeleton() {
     )
 }
 
-function DepositForm({ method, paymentInfo }: { method: 'فودافون كاش' | 'Binance Pay', paymentInfo: string }) {
+function DepositForm({ method, paymentInfo }: { method: 'فودافون كاش' | 'Binance Pay' | 'سرياتيل كاش', paymentInfo: string }) {
     const { user: authUser } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -54,11 +54,31 @@ function DepositForm({ method, paymentInfo }: { method: 'فودافون كاش' 
         }
 
         setIsSubmitting(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
         
-        toast({ title: 'تم استلام طلب الإيداع', description: 'سيتم مراجعة طلبك وإضافة الرصيد إلى حسابك قريباً.' });
-        form.reset();
-        setIsSubmitting(false);
+        const depositData: Omit<Deposit, 'id'> = {
+            userId: authUser.uid,
+            amount,
+            paymentMethod: method,
+            details: method === 'Binance Pay' ? { transactionId } : { senderNumber: transactionId },
+            depositDate: new Date().toISOString(),
+            status: 'معلق'
+        };
+
+        try {
+            const depositsColRef = collection(firestore, `users/${authUser.uid}/deposits`);
+            await addDoc(depositsColRef, depositData);
+            toast({ title: 'تم استلام طلب الإيداع', description: 'سيتم مراجعة طلبك وإضافة الرصيد إلى حسابك قريباً.' });
+            form.reset();
+        } catch (error) {
+            const permissionError = new FirestorePermissionError({
+                path: `users/${authUser.uid}/deposits`,
+                operation: 'create',
+                requestResourceData: depositData
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -74,7 +94,7 @@ function DepositForm({ method, paymentInfo }: { method: 'فودافون كاش' 
             </Alert>
 
             <div className="space-y-2">
-                <Label>{method === 'فودافون كاش' ? 'رقم فودافون كاش للتحويل' : 'معرف Binance Pay للتحويل'}</Label>
+                <Label>{method === 'فودافون كاش' ? 'رقم فودافون كاش للتحويل' : method === 'سرياتيل كاش' ? 'رقم سرياتيل كاش للتحويل' : 'معرف Binance Pay للتحويل'}</Label>
                 <div className="flex items-center gap-2">
                     <Input readOnly value={paymentInfo} className="font-mono text-center" />
                     <CopyButton textToCopy={paymentInfo} />
@@ -87,7 +107,7 @@ function DepositForm({ method, paymentInfo }: { method: 'فودافون كاش' 
                     <Input id={`amount-${method}`} name="amount" type="number" step="0.01" min="1" required placeholder="10" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor={`transactionId-${method}`}>{method === 'فودافون كاش' ? 'رقم هاتفك' : 'معرف المعاملة (TxID)'}</Label>
+                    <Label htmlFor={`transactionId-${method}`}>{method === 'Binance Pay' ? 'معرف المعاملة (TxID)' : 'رقم هاتفك المحول منه'}</Label>
                     <Input id={`transactionId-${method}`} name="transactionId" required placeholder="..." />
                 </div>
             </div>
@@ -118,6 +138,7 @@ export default function AddFundsPage() {
 
     const vodafoneNumber = settingsData?.vodafoneNumber || 'غير متوفر حالياً';
     const binanceId = settingsData?.binanceId || 'غير متوفر حالياً';
+    const syriatelNumber = settingsData?.syriatelNumber || '0931462523';
 
     return (
          <div className="space-y-6 pb-8">
@@ -130,14 +151,18 @@ export default function AddFundsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <div className="lg:col-span-2">
                     <Tabs defaultValue="vodafone" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="vodafone">فودافون كاش</TabsTrigger>
+                            <TabsTrigger value="syriatel">سرياتيل كاش (سوريا)</TabsTrigger>
                             <TabsTrigger value="binance">Binance Pay</TabsTrigger>
                         </TabsList>
                         <Card className="mt-4">
                             <CardContent className="p-6">
                                 <TabsContent value="vodafone">
                                     <DepositForm method="فودافون كاش" paymentInfo={vodafoneNumber} />
+                                </TabsContent>
+                                <TabsContent value="syriatel">
+                                    <DepositForm method="سرياتيل كاش" paymentInfo={syriatelNumber} />
                                 </TabsContent>
                                 <TabsContent value="binance">
                                     <DepositForm method="Binance Pay" paymentInfo={binanceId} />
@@ -161,7 +186,7 @@ export default function AddFundsPage() {
                         <AlertTitle className="font-semibold">سعر صرف الدولار</AlertTitle>
                         <div className="text-sm text-muted-foreground space-y-1 mt-2">
                             <p>السعر الحالي هو: <span className="font-bold text-foreground">{settingsData?.usdRate || 'N/A'} جنيه مصري</span> للدولار الواحد.</p>
-                            <p>مثال: لشحن 10$، يجب تحويل 10 * {settingsData?.usdRate || 'N/A'} = {10 * (settingsData?.usdRate || 0)} جنيه.</p>
+                            <p>بالنسبة لسوريا، يرجى مراجعة الدعم لتحديد سعر الصرف المعتمد حالياً.</p>
                         </div>
                     </Alert>
                 </div>

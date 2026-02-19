@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -10,19 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2, Send } from 'lucide-react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, Timestamp, orderBy, collection, addDoc, Firestore } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collectionGroup, writeBatch, query, where, collection, addDoc, Firestore } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { Textarea } from '@/components/ui/textarea';
@@ -79,7 +67,7 @@ async function runBroadcast(firestore: Firestore, message: string, type: Notific
         message,
         type,
         createdAt: new Date().toISOString(),
-        sent: false, // This field can be used by a Cloud Function to track which broadcasts have been processed
+        sent: false,
     };
     await addDoc(collection(firestore, 'broadcasts'), broadcastData);
 }
@@ -104,6 +92,7 @@ export default function AdminSettingsPage() {
 
   const [vodafoneNumber, setVodafoneNumber] = useState('');
   const [binanceId, setBinanceId] = useState('');
+  const [syriatelNumber, setSyriatelNumber] = useState('');
   const [usdRate, setUsdRate] = useState('');
   const [whatsappSupport, setWhatsappSupport] = useState('');
 
@@ -111,6 +100,7 @@ export default function AdminSettingsPage() {
     if (settingsData) {
       setVodafoneNumber(settingsData.vodafoneNumber || '');
       setBinanceId(settingsData.binanceId || '');
+      setSyriatelNumber(settingsData.syriatelNumber || '0931462523');
       setUsdRate(settingsData.usdRate?.toString() || '');
       setWhatsappSupport(settingsData.whatsappSupport || '');
     }
@@ -124,6 +114,7 @@ export default function AdminSettingsPage() {
     const settingsToSave = {
         vodafoneNumber,
         binanceId,
+        syriatelNumber,
         usdRate: parseFloat(usdRate) || 0,
         whatsappSupport,
     };
@@ -230,6 +221,10 @@ export default function AdminSettingsPage() {
                      <div className="space-y-2">
                         <Label htmlFor="binance-id">معرف Binance Pay</Label>
                         <Input id="binance-id" value={binanceId} onChange={e => setBinanceId(e.target.value)} placeholder="USER12345" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="syriatel-number">رقم سرياتيل كاش (سوريا)</Label>
+                        <Input id="syriatel-number" value={syriatelNumber} onChange={e => setSyriatelNumber(e.target.value)} placeholder="09xxxxxxxx" />
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="usd-rate">سعر صرف الدولار (مقابل الجنيه المصري)</Label>

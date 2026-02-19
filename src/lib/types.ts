@@ -81,7 +81,7 @@ export type Deposit = {
     id: string;
     userId: string;
     amount: number;
-    paymentMethod: 'فودافون كاش' | 'Binance Pay';
+    paymentMethod: 'فودافون كاش' | 'Binance Pay' | 'سرياتيل كاش';
     details: Record<string, any>;
     depositDate: string;
     status: 'معلق' | 'مقبول' | 'مرفوض';
@@ -91,7 +91,7 @@ export type Withdrawal = {
     id: string;
     userId: string;
     amount: number;
-    method: 'فودافون كاش' | 'Binance Pay';
+    method: 'فودافون كاش' | 'Binance Pay' | 'سرياتيل كاش';
     details: Record<string, any>;
     requestDate: string;
     status: 'معلق' | 'مقبول' | 'مرفوض';

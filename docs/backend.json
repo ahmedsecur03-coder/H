@@ -28,10 +28,6 @@
           "type": "number",
           "description": "User's account balance."
         },
-        "adBalance": {
-          "type": "number",
-          "description": "User's advertising balance."
-        },
         "totalSpent": {
           "type": "number",
           "description": "Total amount of money spent by the user."
@@ -61,11 +57,6 @@
           "type": "string",
           "description": "Date and time the user was created.",
           "format": "date-time"
-        },
-        "lastRewardClaimedAt": {
-            "type": "string",
-            "description": "Date and time the daily reward was last claimed.",
-            "format": "date-time"
         },
         "affiliateEarnings": {
           "type": "number",
@@ -100,7 +91,6 @@
         "name",
         "email",
         "balance",
-        "adBalance",
         "totalSpent",
         "rank",
         "apiKey",
@@ -228,84 +218,6 @@
         "status"
       ]
     },
-    "Campaign": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Campaign",
-      "type": "object",
-      "description": "Represents an advertising campaign.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the campaign." },
-        "userId": { "type": "string", "description": "Reference to the User who created the campaign." },
-        "name": { "type": "string", "description": "Name of the campaign." },
-        "platform": { "type": "string", "description": "Platform the campaign is running on." },
-        "goal": { "type": "string", "description": "The objective of the campaign." },
-        "adLink": { "type": "string", "description": "The URL to the ad creative (post, website, etc.)." },
-        "targetCountry": { "type": "string", "description": "Target country for the ad." },
-        "targetAge": { "type": "string", "description": "Target age range for the ad." },
-        "targetGender": { "type": "string", "enum": ["الكل", "رجال", "نساء"], "description": "Target gender for the ad." },
-        "targetInterests": { "type": "string", "description": "Comma-separated list of target interests." },
-        "targetAudience": { "type": "string", "description": "A description of the target audience for the campaign." },
-        "startDate": { "type": "string", "description": "Date the campaign started.", "format": "date-time" },
-        "endDate": { "type": "string", "description": "Date the campaign ended.", "format": "date-time" },
-        "budget": { "type": "number", "description": "Budget allocated to the campaign." },
-        "durationDays": { "type": "number", "description": "Duration of the campaign in days." },
-        "spend": { "type": "number", "description": "Amount of the budget already spent." },
-        "status": { "type": "string", "enum": ["نشط", "متوقف", "مكتمل", "بانتظار المراجعة"], "description": "Current status of the campaign." },
-        "impressions": { "type": "number", "description": "Total number of times the ad was shown." },
-        "clicks": { "type": "number", "description": "Total number of clicks on the ad." },
-        "ctr": { "type": "number", "description": "Click-Through Rate (clicks / impressions)." },
-        "cpc": { "type": "number", "description": "Cost Per Click (spend / clicks)." },
-        "results": { "type": "number", "description": "Number of results achieved, based on the campaign goal." }
-      },
-      "required": [
-        "id",
-        "userId",
-        "name",
-        "platform",
-        "goal",
-        "adLink",
-        "targetCountry",
-        "targetAge",
-        "targetGender",
-        "budget",
-        "durationDays",
-        "status"
-      ]
-    },
-    "AgencyAccount": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Agency Account",
-        "type": "object",
-        "description": "Represents a purchased agency advertising account.",
-        "properties": {
-            "id": { "type": "string" },
-            "userId": { "type": "string" },
-            "accountId": { "type": "string", "description": "The unique identifier for the ad account (e.g., from Meta or Google)." },
-            "accountName": { "type": "string", "description": "A user-friendly name for the account." },
-            "platform": { "type": "string", "enum": ["Meta", "Google", "TikTok", "Snapchat"] },
-            "status": { "type": "string", "enum": ["Active", "Suspended"] },
-            "createdAt": { "type": "string", "format": "date-time" },
-            "balance": { "type": "number" }
-        },
-        "required": ["id", "userId", "accountId", "accountName", "platform", "status", "createdAt", "balance"]
-    },
-    "AgencyChargeRequest": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Agency Account Charge Request",
-        "type": "object",
-        "description": "Represents a user's request to charge an agency account.",
-        "properties": {
-            "id": { "type": "string" },
-            "userId": { "type": "string" },
-            "accountId": { "type": "string", "description": "The unique identifier of the agency account being charged." },
-            "accountName": { "type": "string", "description": "Denormalized name of the account for easy display." },
-            "platform": { "type": "string", "enum": ["Meta", "Google", "TikTok", "Snapchat"] },
-            "amount": { "type": "number" },
-            "requestDate": { "type": "string", "format": "date-time" },
-            "status": { "type": "string", "enum": ["معلق", "مقبول", "مرفوض"] }
-        },
-        "required": ["id", "userId", "accountId", "accountName", "platform", "amount", "requestDate", "status"]
-    },
     "Deposit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Deposit",
@@ -326,7 +238,7 @@
         },
         "paymentMethod": {
           "type": "string",
-          "enum": ["فودافون كاش", "Binance Pay"],
+          "enum": ["فودافون كاش", "Binance Pay", "سرياتيل كاش"],
           "description": "Payment method used for the deposit."
         },
         "details": {
@@ -363,7 +275,7 @@
         "id": { "type": "string", "description": "Unique identifier for the withdrawal entity." },
         "userId": { "type": "string", "description": "Reference to User. (Relationship: User 1:N Withdrawal)" },
         "amount": { "type": "number", "description": "Amount requested for withdrawal." },
-        "method": { "type": "string", "enum": ["فودافون كاش", "Binance Pay"], "description": "Payment method for the withdrawal." },
+        "method": { "type": "string", "enum": ["فودافون كاش", "Binance Pay", "سرياتيل كاش"], "description": "Payment method for the withdrawal." },
         "details": { "type": "object", "description": "Withdrawal method specific details (e.g., phone number, Binance ID)." },
         "requestDate": { "type": "string", "description": "Date and time the withdrawal was requested.", "format": "date-time" },
         "status": { "type": "string", "enum": ["معلق", "مقبول", "مرفوض"], "description": "Status of the withdrawal request." }
@@ -574,24 +486,6 @@
         "$ref": "#/entities/Order"
       },
       "description": "Stores orders placed by users. Includes denormalized 'userId' for authorization independence."
-    },
-    "/users/{userId}/campaigns/{campaignId}": {
-      "schema": {
-        "$ref": "#/entities/Campaign"
-      },
-      "description": "Stores advertising campaigns created by users. Includes denormalized 'userId' for authorization independence."
-    },
-    "/users/{userId}/agencyAccounts/{accountId}": {
-        "schema": {
-            "$ref": "#/entities/AgencyAccount"
-        },
-        "description": "Stores purchased agency accounts for a user."
-    },
-     "/users/{userId}/agencyChargeRequests/{requestId}": {
-      "schema": {
-        "$ref": "#/entities/AgencyChargeRequest"
-      },
-      "description": "Stores requests from users to charge their agency accounts."
     },
     "/users/{userId}/deposits/{depositId}": {
       "schema": {
