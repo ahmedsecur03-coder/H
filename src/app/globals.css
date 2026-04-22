@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    /* تم استخراج هذه الألوان من الصورة المرفقة */
     --background: 220 20% 10%;
     --foreground: 210 40% 98%;
     --card: 220 20% 13%;
@@ -11,69 +12,69 @@
     --popover: 220 20% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 204 70% 53%; /* Saturated blue */
+    --primary: 215 100% 50%; /* الأزرق الصريح من الصورة */
     --primary-foreground: 210 40% 98%;
-    --secondary: 282 39% 55%; /* Purple */
+    --secondary: 222 47% 11%; /* الكحلي العميق من الجزء S */
     --secondary-foreground: 210 40% 98%;
     
     --muted: 220 20% 18%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 282 39% 55%;
+    --accent: 215 100% 50%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 20% 18%;
     --input: 220 20% 18%;
-    --ring: 204 70% 53%; /* Ring color to match primary */
+    --ring: 215 100% 50%;
     --radius: 0.75rem;
 
-    --chart-1: 204 70% 53%;
-    --chart-2: 282 39% 55%;
+    --chart-1: 215 100% 50%;
+    --chart-2: 222 47% 11%;
     --chart-3: 180 82% 50%;
     --chart-4: 38 90% 55%;
     --chart-5: 207 90% 54%;
     
     --sidebar-background: 220 20% 11%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 204 70% 53%;
+    --sidebar-primary: 215 100% 50%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 220 20% 18%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 220 20% 18%;
-    --sidebar-ring: 204 70% 53%;
+    --sidebar-ring: 215 100% 50%;
   }
 
   .light {
-    --background: 204 16% 94%; /* Light grayish-blue */
-    --foreground: 220 20% 10%;
-    --card: 210 40% 100%;
-    --card-foreground: 220 20% 10%;
-    --popover: 210 40% 100%;
-    --popover-foreground: 220 20% 10%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 204 70% 53%; /* Saturated blue */
+    --primary: 215 100% 50%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 282 39% 55%; /* Purple */
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 210 40% 96%;
     --muted-foreground: 215 20.2% 45.1%;
-    --accent: 282 39% 55%; /* Purple as accent */
+    --accent: 215 100% 50%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 210 40% 92%;
     --input: 210 40% 92%;
-    --ring: 204 70% 53%;
+    --ring: 215 100% 50%;
 
     --sidebar-background: 210 40% 99%;
-    --sidebar-foreground: 220 20% 10%;
-    --sidebar-primary: 204 70% 53%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 215 100% 50%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 210 40% 94%;
-    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 210 40% 92%;
-    --sidebar-ring: 204 70% 53%;
+    --sidebar-ring: 215 100% 50%;
   }
 }
 
@@ -101,29 +102,16 @@
     background-color: hsl(var(--background));
   }
 
-  /* Apply moving stars only in dark mode */
   .dark .cosmic-background {
     background-image:
-      radial-gradient(ellipse at center, hsla(var(--primary), 0.1), transparent 70%),
-      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="0.5" fill="hsl(var(--foreground))" opacity="0.1"/><circle cx="50" cy="30" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/><circle cx="80" cy="70" r="0.4" fill="hsl(var(--foreground))" opacity="0.09"/><circle cx="30" cy="60" r="0.2" fill="hsl(var(--foreground))" opacity="0.07"/><circle cx="90" cy="10" r="0.5" fill="hsl(var(--foreground))" opacity="0.11"/><circle cx="20" cy="90" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/></svg>'),
-      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="15" cy="80" r="0.5" fill="hsl(var(--foreground))" opacity="0.1"/><circle cx="55" cy="50" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/><circle cx="85" cy="20" r="0.4" fill="hsl(var(--foreground))" opacity="0.09"/><circle cx="35" cy="10" r="0.2" fill="hsl(var(--foreground))" opacity="0.07"/><circle cx="95" cy="90" r="0.5" fill="hsl(var(--foreground))" opacity="0.11"/><circle cx="25" cy="40" r="0.3" fill="hsl(var(--foreground))" opacity="0.08"/></svg>');
-    animation: move-stars 200s linear infinite;
-  }
-  
-  /* Apply snowfall only in light mode */
-  .light .snow-background {
-      background-image:
-          url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="10" cy="10" r="0.5" fill="hsl(var(--primary))" opacity="0.6"/><circle cx="50" cy="30" r="0.3" fill="hsl(var(--primary))" opacity="0.5"/><circle cx="80" cy="70" r="0.4" fill="hsl(var(--primary))" opacity="0.7"/><circle cx="30" cy="60" r="0.2" fill="hsl(var(--primary))" opacity="0.4"/><circle cx="90" cy="10" r="0.5" fill="hsl(var(--primary))" opacity="0.8"/><circle cx="20" cy="90" r="0.3" fill="hsl(var(--primary))" opacity="0.6"/></svg>'),
-          url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="15" cy="80" r="0.3" fill="hsl(var(--primary))" opacity="0.5"/><circle cx="55" cy="50" r="0.2" fill="hsl(var(--primary))" opacity="0.4"/><circle cx="85" cy="20" r="0.4" fill="hsl(var(--primary))" opacity="0.6"/><circle cx="35" cy="10" r="0.2" fill="hsl(var(--primary))" opacity="0.4"/><circle cx="95" cy="90" r="0.3" fill="hsl(var(--primary))" opacity="0.5"/><circle cx="25" cy="40" r="0.2" fill="hsl(var(--primary))" opacity="0.5"/></svg>');
-      animation: snowfall 30s linear infinite;
+      radial-gradient(ellipse at center, hsla(var(--primary), 0.05), transparent 70%);
   }
 
   .glassmorphism-card {
-    background-color: hsl(var(--card) / 0.5);
+    background-color: hsl(var(--card) / 0.7);
     @apply backdrop-blur-lg border shadow-lg shadow-black/5;
   }
 }
-
 
 @layer utilities {
     @keyframes animated-gradient-text {
@@ -139,40 +127,17 @@
         color: transparent;
     }
 
-    @keyframes move-stars {
-      from { background-position: 0 0; }
-      to { background-position: -10000px 5000px; }
-    }
-    
-    @keyframes snowfall {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 500px 1000px, 400px 400px; }
-    }
-
-
      /* Animation for blob effect */
     @keyframes blob {
-      0% {
-        transform: translate(0px, 0px) scale(1);
-      }
-      33% {
-        transform: translate(30px, -50px) scale(1.1);
-      }
-      66% {
-        transform: translate(-20px, 20px) scale(0.9);
-      }
-      100% {
-        transform: translate(0px, 0px) scale(1);
-      }
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
     }
     .animate-blob {
         animation: blob 7s infinite;
     }
 
-    .animation-delay-2000 {
-        animation-delay: 2s;
-    }
-    .animation-delay-4000 {
-        animation-delay: 4s;
-    }
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
 }

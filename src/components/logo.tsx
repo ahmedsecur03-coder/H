@@ -3,43 +3,49 @@ import { cn } from '@/lib/utils';
 
 const HagaatySmmIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
-    width="40"
-    height="40"
-    viewBox="0 0 100 100"
+    width="44"
+    height="44"
+    viewBox="0 0 120 100"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
     <defs>
-      <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="h-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#0052D4" />
-        <stop offset="50%" stopColor="#4364F7" />
+        <stop offset="100%" stopColor="#6FB1FC" />
+      </linearGradient>
+      <linearGradient id="swoosh-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#0052D4" />
         <stop offset="100%" stopColor="#6FB1FC" />
       </linearGradient>
     </defs>
-    {/* H Shape */}
+    
+    {/* H Shape (Blue Gradient) */}
     <path
-      d="M20 20V80H35V55H65V80H80V20H65V45H35V20H20Z"
-      fill="url(#logo-gradient)"
+      d="M10 20V80H25V55H45V80H60V20H45V45H25V20H10Z"
+      fill="url(#h-gradient)"
     />
-    {/* S Shape Overlay Effect */}
+    
+    {/* S Shape (Dark Navy/Black) */}
     <path
-      d="M45 35C45 30 50 25 60 25H85V40H60C55 40 55 45 60 45H75C85 45 90 55 90 65C90 75 85 85 70 85H40V70H70C75 70 75 65 70 65H55C45 65 40 55 40 45C40 40 42 37 45 35Z"
-      fill="#1A1A1A"
-      className="dark:fill-white/90"
+      d="M55 35C55 30 60 25 75 25H100V40H75C70 40 70 45 75 45H90C105 45 110 55 110 65C110 75 105 85 90 85H50V70H90C95 70 95 65 90 65H75C60 65 55 55 55 45C55 40 57 37 60 35Z"
+      fill="#0B1120"
+      className="dark:fill-slate-200"
     />
-    {/* Dynamic Swoosh */}
+    
+    {/* Dynamic Swoosh (The diagonal cut from the image) */}
     <path
-      d="M10 65L90 35L95 40L15 70L10 65Z"
-      fill="url(#logo-gradient)"
-      opacity="0.8"
+      d="M5 75L115 35L118 42L8 82L5 75Z"
+      fill="url(#swoosh-gradient)"
+      opacity="0.9"
     />
   </svg>
 );
 
 export default function Logo({ className, hideText }: { className?: string; hideText?: boolean }) {
   return (
-    <Link href="/" className={cn("flex items-center gap-2 group", className)}>
+    <Link href="/" className={cn("flex items-center gap-3 group", className)}>
       <div className="relative flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
         <HagaatySmmIcon />
       </div>
@@ -49,7 +55,7 @@ export default function Logo({ className, hideText }: { className?: string; hide
             Hagaaty <span className="text-primary">SMM</span>
           </span>
           <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">
-            Your Trusted Panel
+            Creative Digital Growth
           </span>
         </div>
       )}
