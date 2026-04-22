@@ -15,17 +15,33 @@ const HagaatySmmIcon = (props: React.SVGProps<SVGSVGElement>) => (
         <stop offset="0%" stopColor="#0052D4" />
         <stop offset="100%" stopColor="#6FB1FC" />
       </linearGradient>
+      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
     </defs>
     
-    {/* Creative Abstract Growth Mark (Representing speed and digital expansion) */}
-    <circle cx="50" cy="50" r="45" stroke="url(#logo-gradient)" strokeWidth="2" strokeDasharray="10 5" opacity="0.3" />
+    {/* Animated Living Pulse Layers */}
+    <circle cx="50" cy="50" r="40" stroke="url(#logo-gradient)" strokeWidth="1" strokeDasharray="10 5" opacity="0.4" className="animate-[spin_10s_linear_infinite]" />
+    
+    <circle cx="50" cy="50" r="30" fill="url(#logo-gradient)" opacity="0.2" className="animate-pulse">
+        <animate attributeName="r" values="25;35;25" dur="3s" repeatCount="indefinite" />
+    </circle>
+    
+    <circle cx="50" cy="50" r="20" fill="url(#logo-gradient)" opacity="0.5" filter="url(#glow)">
+         <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
+    </circle>
+
+    {/* Dynamic Center Mark */}
+    <rect x="45" y="45" width="10" height="10" rx="2" fill="white" className="animate-bounce" />
+    
+    {/* Orbital Path */}
     <path
-      d="M30 70L50 20L70 70L50 60L30 70Z"
-      fill="url(#logo-gradient)"
-    />
-    <path
-      d="M45 75L50 65L55 75H45Z"
-      fill="#6FB1FC"
+      d="M50 15 A 35 35 0 0 1 85 50"
+      stroke="url(#logo-gradient)"
+      strokeWidth="3"
+      strokeLinecap="round"
+      className="animate-[spin_3s_linear_infinite]"
     />
   </svg>
 );
