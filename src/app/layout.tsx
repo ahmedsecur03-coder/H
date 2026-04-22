@@ -1,4 +1,3 @@
-
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Tajawal } from 'next/font/google';
@@ -12,21 +11,21 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | حاجاتي - منصة خدمات SMM المتكاملة',
-    default: 'حاجاتي - منصة خدمات SMM المتكاملة',
+    template: '%s | Hagaaty SMM - حاجاتي',
+    default: 'Hagaaty SMM - حاجاتي لخدمات الـ SMM المتكاملة',
   },
-  description: 'حاجاتي هي وجهتك الأولى لنمو حسابات التواصل الاجتماعي. متابعون، لايكات، ومشاهدات حقيقية وسريعة لجميع المنصات بأسعار تنافسية.',
+  description: 'Hagaaty SMM هي وجهتك الأولى لنمو حسابات التواصل الاجتماعي. متابعون، لايكات، ومشاهدات حقيقية وسريعة لجميع المنصات بأسعار تنافسية.',
   openGraph: {
-    title: 'حاجاتي - منصة خدمات SMM المتكاملة',
+    title: 'Hagaaty SMM - حاجاتي لخدمات الـ SMM المتكاملة',
     description: 'أفضل موقع لزيادة المتابعين والتفاعل على انستغرام وتيك توك وفيسبوك. جودة عالية وسرعة فائقة.',
     url: 'https://hajaty.com',
-    siteName: 'Hagaaty',
+    siteName: 'Hagaaty SMM',
     locale: 'ar_AR',
     type: 'website',
   },
    twitter: {
     card: 'summary_large_image',
-    title: 'حاجاتي - منصة خدمات SMM المتكاملة',
+    title: 'Hagaaty SMM - حاجاتي',
     description: 'ضاعف تفاعلك على السوشيال ميديا مع خدمات SMM الاحترافية من حاجاتي.',
   },
 }
