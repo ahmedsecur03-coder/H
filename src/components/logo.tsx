@@ -5,28 +5,27 @@ const HagaatySmmIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     width="44"
     height="44"
-    viewBox="0 0 120 100"
+    viewBox="0 0 100 100"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
     <defs>
-      <linearGradient id="h-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#0052D4" />
         <stop offset="100%" stopColor="#6FB1FC" />
       </linearGradient>
     </defs>
     
-    {/* H Shape (Blue Gradient) */}
+    {/* Creative Abstract Growth Mark (Representing speed and digital expansion) */}
+    <circle cx="50" cy="50" r="45" stroke="url(#logo-gradient)" strokeWidth="2" strokeDasharray="10 5" opacity="0.3" />
     <path
-      d="M10 20V80H25V55H45V80H60V20H45V45H25V20H10Z"
-      fill="url(#h-gradient)"
+      d="M30 70L50 20L70 70L50 60L30 70Z"
+      fill="url(#logo-gradient)"
     />
-    
-    {/* S Shape (White/Light Grey to match image) */}
     <path
-      d="M55 35C55 30 60 25 75 25H100V40H75C70 40 70 45 75 45H90C105 45 110 55 110 65C110 75 105 85 90 85H50V70H90C95 70 95 65 90 65H75C60 65 55 55 55 45C55 40 57 37 60 35Z"
-      className="fill-slate-100 dark:fill-slate-200"
+      d="M45 75L50 65L55 75H45Z"
+      fill="#6FB1FC"
     />
   </svg>
 );
